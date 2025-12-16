@@ -1,6 +1,10 @@
 # Project-specific ignores
-addons/plugin_restarter
-addons/editor_icon_previewer
+addons/kenyoni/plugin_reloader
+addons/explore-editor-theme
+addons/resources_spreadsheet_view
+addons/resource_databases
+addons/zylann.editor_debugger
+example
 
 # Godot 4+ specific ignores
 .godot/
