@@ -1,3 +1,7 @@
+# Project-specific ignores
+addons/plugin_restarter
+addons/editor_icon_previewer
+
 # Godot 4+ specific ignores
 .godot/
 *.import
