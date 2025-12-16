@@ -10,6 +10,7 @@ func _enter_tree() -> void:
 	get_editor_interface().get_editor_main_screen().add_child(editor_view)
 	_make_visible(false)
 
+
 func _exit_tree() -> void:
 	if is_instance_valid(editor_view):
 		editor_view.queue_free()
