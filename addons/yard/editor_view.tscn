@@ -1,6 +1,10 @@
-[gd_scene format=3 uid="uid://dsg55mejcqgyb"]
+[gd_scene load_steps=4 format=3 uid="uid://dsg55mejcqgyb"]
 
-[node name="EditorView" type="PanelContainer"]
+[ext_resource type="Script" uid="uid://pbm1netkyiqy" path="res://addons/yard/editor_view.gd" id="1_7nv21"]
+[ext_resource type="PackedScene" uid="uid://dbxops3hf7npp" path="res://addons/yard/registries_list.tscn" id="2_sa7uu"]
+[ext_resource type="PackedScene" uid="uid://bgqxbl7icporn" path="res://addons/yard/registry_view.tscn" id="3_s75vu"]
+
+[node name="EditorView" type="MarginContainer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -8,11 +12,72 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 6
+script = ExtResource("1_7nv21")
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="PanelContainer" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 6.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="CenterContainer"]
+[node name="DatabaseMenuButton" type="MenuButton" parent="VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 1
-text = "Yet Another Resource Database :)"
+text = "File"
+switch_on_hover = true
+item_count = 11
+popup/item_0/text = "New Registry"
+popup/item_0/id = 0
+popup/item_1/text = "Open..."
+popup/item_1/id = 1
+popup/item_2/text = "Open Recent"
+popup/item_2/id = 2
+popup/item_3/id = 3
+popup/item_3/separator = true
+popup/item_4/text = "Save"
+popup/item_4/id = 4
+popup/item_4/disabled = true
+popup/item_5/text = "Save As..."
+popup/item_5/id = 5
+popup/item_5/disabled = true
+popup/item_6/text = "Save All"
+popup/item_6/id = 6
+popup/item_6/disabled = true
+popup/item_7/id = 7
+popup/item_7/separator = true
+popup/item_8/text = "Copy Registry Path"
+popup/item_8/id = 8
+popup/item_8/disabled = true
+popup/item_9/text = "Copy Registry UID"
+popup/item_9/id = 9
+popup/item_9/disabled = true
+popup/item_10/text = "Show in FileSystem"
+popup/item_10/id = 10
+popup/item_10/disabled = true
+
+[node name="Button" type="Button" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "Settings"
+flat = true
+
+[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RegistriesList" parent="VBoxContainer/HSplitContainer" instance=ExtResource("2_sa7uu")]
+layout_mode = 2
+
+[node name="RegistryView" parent="VBoxContainer/HSplitContainer" instance=ExtResource("3_s75vu")]
+layout_mode = 2

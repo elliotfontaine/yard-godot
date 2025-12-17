@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=3 uid="uid://dbxops3hf7npp"]
+
+[ext_resource type="Script" uid="uid://cjexlxqbbpm26" path="res://addons/yard/registries_list.gd" id="1_ej2x7"]
+
+[sub_resource type="DPITexture" id="DPITexture_7f3h0"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#ff5d5d\" d=\"M2 1v8.586l1.293-1.293a1 1 0 0 1 1.414 0L7 10.587l2.293-2.293a1 1 0 0 1 1.414 0L13 10.586l1-1V6H9V1H2zm8 0v4h4zm-6 9.414-2 2V15h12v-2.586l-.293.293a1 1 0 0 1-1.414 0L10 10.414l-2.293 2.293a1 1 0 0 1-1.414 0L4 10.414z\"/></svg>
+"
+
+[node name="RegistriesList" type="VBoxContainer"]
+size_flags_horizontal = 3
+script = ExtResource("1_ej2x7")
+
+[node name="FilterRegistriesLineEdit" type="LineEdit" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Filter Registries"
+right_icon = SubResource("DPITexture_7f3h0")
+
+[node name="ItemList" type="ItemList" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_type_variation = &"ItemListSecondary"
+auto_height = true
+item_count = 3
+item_0/text = "Items"
+item_1/text = "Moves"
+item_2/text = "SpeciesVeryLongHaha"
