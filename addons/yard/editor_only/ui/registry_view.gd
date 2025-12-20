@@ -2,22 +2,23 @@
 extends Panel
 
 # Reference to dynamic table
-@onready var dynamic_table = $DynamicTable
+@onready var dynamic_table := $DynamicTable
 # Popups
-@onready var popup = $PopupMenu
-@onready var confirm_popup = $ConfirmationDialog
-@onready var ico = load("res://icon.svg")
+@onready var popup := $PopupMenu
+@onready var confirm_popup := $ConfirmationDialog
+@onready var ico := load("res://icon.svg")
 
-var headers																				# array of columns header
-var data																				# array of data, rows and columns
-var current_selected_row = -1															# current selected row
-var current_multiple_selected_rows = -1													# current multiple selected_rows
-var multiple_selected_rows = null														# array o selected rows
+var headers: Array # array of columns header
+var data: Array # array of data, rows and columns
+var current_selected_row := -1
+var current_multiple_selected_rows := -1 # current multiple selected_rows
+var multiple_selected_rows: Array # array of selected rows
 
-func _ready():
+
+func _ready() -> void:
 	grow_horizontal = Control.GROW_DIRECTION_END
 	grow_vertical = Control.GROW_DIRECTION_END
-	# Set table header
+
 	headers = ["ID|C", "Name", "Lastname", "Age|r", "Job", "City", "Date", "Task|p", "Completed|check", "Icon|image"]
 	dynamic_table.set_headers(headers)
 	
@@ -53,12 +54,12 @@ func _ready():
 		[28, "Ashley", "Young", 39, "Chef", "Paris", "22/05/2024", 0, 0],
 		[29, "Kevin", "Allen", 42, "Financial Analyst", "Mexico City", "08/02/2025", 0, 0],
 		[30, "Elizabeth", "King", 31, "Photographer", "Rome", "11/09/2020", 0, 0]
-	]	
+	]
 
 	# Insert data table
 	dynamic_table.set_data(data)
 	# Default sorted column 
-	dynamic_table.ordering_data(0, true)  # 0 -> ID column and true -> ascending order
+	dynamic_table.ordering_data(0, true) # 0 -> ID column and true -> ascending order
 	
 	# Signals connections
 	dynamic_table.cell_selected.connect(_on_cell_selected)
@@ -68,20 +69,21 @@ func _ready():
 	dynamic_table.column_resized.connect(_on_column_resized)
 	dynamic_table.multiple_rows_selected.connect(_on_multiple_rows_selected)
 
-func _process(_delta):
-	if (Input.is_key_pressed(KEY_DELETE) and (current_selected_row >= 0 or current_multiple_selected_rows > 0)):  # add support deleting items from keyboard
+
+func _process(_delta: float) -> void:
+	if (Input.is_key_pressed(KEY_DELETE) and (current_selected_row >= 0 or current_multiple_selected_rows > 0)): # add support deleting items from keyboard
 		_confirm_delete_rows()
 		
-# On selected cell callback
-func _on_cell_selected(row, column):
+
+func _on_cell_selected(row: int, column: int) -> void:
 	print("Cell selected on row ", row, ", column ", column, " Cell value: ", dynamic_table.get_cell_value(row, column), " Row value: ", dynamic_table.get_row_value(row))
 	current_selected_row = row
 	current_multiple_selected_rows = -1
-	
-# On right selected cell callback
-func _on_cell_right_selected(row, column, mouse_pos):
+
+
+func _on_cell_right_selected(row: int, column: int, mouse_pos: Vector2) -> void:
 	print("Cell right selected on row ", row, ", column ", column, " Mouse position x: ", mouse_pos.x, " y: ", mouse_pos.y)
-	if (row >= 0):		# ignore header cells
+	if (row >= 0): # ignore header cells
 		current_selected_row = row
 		popup.position = mouse_pos
 		if (data.size() == 0 or row == data.size()):
@@ -90,49 +92,47 @@ func _on_cell_right_selected(row, column, mouse_pos):
 		else:
 			popup.set("item_1/disabled", false)
 		popup.show()
-		
-# On multiple rows selected
-func _on_multiple_rows_selected(rows: Array):
-	current_multiple_selected_rows = rows.size()		# number of current multiple rows selected
-	multiple_selected_rows = rows						# current multiple rows selected array
-	
-# On edited cell callback
-func _on_cell_edited(row, column, old_value, new_value):
+
+
+func _on_multiple_rows_selected(rows: Array) -> void:
+	current_multiple_selected_rows = rows.size() # number of current multiple rows selected
+	multiple_selected_rows = rows # current multiple rows selected array
+
+
+func _on_cell_edited(row: int, column: int, old_value: Variant, new_value: Variant) -> void:
 	print("Cell edited on row ", row, ", column ", column, " Old value: ", old_value, " New value: ", new_value)
-		
-# On clicked header cell callback
-func _on_header_clicked(column):
+
+
+func _on_header_clicked(column: int) -> void:
 	print("Header clicked on column ", column)
-	
-# On resized column callback
-func _on_column_resized(column, new_width):
+
+
+func _on_column_resized(column: int, new_width: float) -> void:
 	print("Column ", column, " resized at width ", new_width)
 
-# On pressed popup menu entry
+
 func _on_popup_menu_id_pressed(id: int) -> void:
-	if (id == 0):	# Insert data row
+	if (id == 0): # Insert data row
 		dynamic_table.insert_row(current_selected_row, [0, "----", "--------", "--", "-----", "-----", "01/01/2000", 0, 0])
-	else:			# Delete data row
+	else: # Delete data row
 		_confirm_delete_rows()
-		
-# On confirm delete row(s)
-func _confirm_delete_rows():
-	var dialogtext = "Are you sure you want to delete %s?"
+
+
+func _confirm_delete_rows() -> void:
+	var dialogtext := "Are you sure you want to delete %s?"
 	if (current_multiple_selected_rows > 0):
 		confirm_popup.dialog_text = dialogtext % ["these " + str(current_multiple_selected_rows) + " rows"]
 	else:
 		confirm_popup.dialog_text = dialogtext % "this row"
 	confirm_popup.show()
 
-# On delete confirmation 
+
 func _on_confirmation_dialog_confirmed() -> void:
-	if (current_multiple_selected_rows > 0):			# multiple rows
-		multiple_selected_rows.sort_custom(func(a, b): return a > b) 
-		for rowidx in range (0, multiple_selected_rows.size()):
+	if (current_multiple_selected_rows > 0): # multiple rows
+		multiple_selected_rows.sort_custom(func(a: Array, b: Array) -> bool: return a > b)
+		for rowidx in range(0, multiple_selected_rows.size()):
 			dynamic_table.delete_row(multiple_selected_rows[rowidx])
 		multiple_selected_rows.clear()
 	else:
-		dynamic_table.delete_row(current_selected_row)	# single row
-	dynamic_table.set_selected_cell(-1, -1)				# cancel current selection
-		
-	
+		dynamic_table.delete_row(current_selected_row) # single row
+	dynamic_table.set_selected_cell(-1, -1) # cancel current selection
