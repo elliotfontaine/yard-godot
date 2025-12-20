@@ -1,8 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://bgqxbl7icporn"]
-
-[ext_resource type="Script" uid="uid://sycbunspyia8" path="res://addons/yard/registry_view.gd" id="1_lsert"]
-
-[node name="RegistryView" type="Panel"]
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 6.0
-script = ExtResource("1_lsert")

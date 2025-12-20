@@ -1,5 +1,6 @@
 # MIT License
 # Copyright (c) 2025 Giuseppe Pica (jospic)
+# https://github.com/jospic/dynamicdatatable
 
 @tool
 extends Control

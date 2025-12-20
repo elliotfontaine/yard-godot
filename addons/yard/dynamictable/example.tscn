@@ -1,0 +1,47 @@
+[gd_scene load_steps=5 format=3 uid="uid://crnac01bnyk3"]
+
+[ext_resource type="Script" uid="uid://tahli441tq7q" path="res://addons/yard/dynamictable/main.gd" id="1_isv8r"]
+[ext_resource type="Script" uid="uid://d25c0lxjdxouk" path="res://addons/yard/classes/dynamic_table.gd" id="2_wsykm"]
+[ext_resource type="Texture2D" uid="uid://cjfdp8ebhgoe4" path="res://addons/yard/dynamictable/add.png" id="3_d0p6g"]
+[ext_resource type="Texture2D" uid="uid://bfrj3arrri1q8" path="res://addons/yard/dynamictable/remove.png" id="4_8lxdp"]
+
+[node name="RegistryView" type="Panel"]
+clip_children = 1
+clip_contents = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_isv8r")
+
+[node name="DynamicTable" type="Control" parent="."]
+anchors_preset = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+focus_mode = 2
+script = ExtResource("2_wsykm")
+headers = Array[String](["ID|C", "Name", "Lastname", "Age|r", "Job", "City", "Date", "Task|p", "Completed|check", "Icon|image"])
+header_color = Color(0.15294118, 0.1764706, 0.21176471, 1)
+grid_color = Color(0.15294118, 0.1764706, 0.21176471, 1)
+row_color = Color(0.21176471, 0.23921569, 0.2901961, 1)
+alternate_row_color = Color(0.1764706, 0.2, 0.24313726, 1)
+
+[node name="PopupMenu" type="PopupMenu" parent="."]
+size = Vector2i(130, 65)
+item_count = 2
+item_0/text = "Insert row"
+item_0/icon = ExtResource("3_d0p6g")
+item_0/id = 0
+item_1/text = "Delete row(s)"
+item_1/icon = ExtResource("4_8lxdp")
+item_1/id = 1
+
+[node name="ConfirmationDialog" type="ConfirmationDialog" parent="."]
+title = "Please Confirm deleting data"
+initial_position = 1
+size = Vector2i(400, 100)
+ok_button_text = "Yes"
+
+[connection signal="id_pressed" from="PopupMenu" to="." method="_on_popup_menu_id_pressed"]
+[connection signal="confirmed" from="ConfirmationDialog" to="." method="_on_confirmation_dialog_confirmed"]

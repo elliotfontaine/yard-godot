@@ -1,8 +1,11 @@
 [gd_scene load_steps=4 format=3 uid="uid://dsg55mejcqgyb"]
 
 [ext_resource type="Script" uid="uid://pbm1netkyiqy" path="res://addons/yard/editor_view.gd" id="1_7nv21"]
-[ext_resource type="PackedScene" uid="uid://dbxops3hf7npp" path="res://addons/yard/registries_list.tscn" id="2_sa7uu"]
-[ext_resource type="PackedScene" uid="uid://bgqxbl7icporn" path="res://addons/yard/registry_view.tscn" id="3_s75vu"]
+[ext_resource type="PackedScene" uid="uid://crnac01bnyk3" path="res://addons/yard/dynamictable/example.tscn" id="2_6v8me"]
+
+[sub_resource type="DPITexture" id="DPITexture_6v8me"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#ff5d5d\" d=\"M2 1v8.586l1.293-1.293a1 1 0 0 1 1.414 0L7 10.587l2.293-2.293a1 1 0 0 1 1.414 0L13 10.586l1-1V6H9V1H2zm8 0v4h4zm-6 9.414-2 2V15h12v-2.586l-.293.293a1 1 0 0 1-1.414 0L10 10.414l-2.293 2.293a1 1 0 0 1-1.414 0L4 10.414z\"/></svg>
+"
 
 [node name="EditorView" type="MarginContainer"]
 anchors_preset = 15
@@ -76,8 +79,26 @@ flat = true
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="RegistriesList" parent="VBoxContainer/HSplitContainer" instance=ExtResource("2_sa7uu")]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HSplitContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 
-[node name="RegistryView" parent="VBoxContainer/HSplitContainer" instance=ExtResource("3_s75vu")]
+[node name="RegistriesFilter" type="LineEdit" parent="VBoxContainer/HSplitContainer/VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
+placeholder_text = "Filter Registries"
+right_icon = SubResource("DPITexture_6v8me")
+
+[node name="RegistriesList" type="ItemList" parent="VBoxContainer/HSplitContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_type_variation = &"ItemListSecondary"
+auto_height = true
+
+[node name="RegistryView" parent="VBoxContainer/HSplitContainer" instance=ExtResource("2_6v8me")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_stretch_ratio = 6.0
+
+[connection signal="text_changed" from="VBoxContainer/HSplitContainer/VBoxContainer/RegistriesFilter" to="." method="_on_registries_filter_text_changed"]
