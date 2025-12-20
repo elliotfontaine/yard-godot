@@ -47,7 +47,7 @@ signal cell_edited(row: int, column: int, old_value: Variant, new_value: Variant
 
 # Internal variables
 var _data: Array = []
-var _full_data: Array = [] 
+var _full_data: Array = []
 var _column_widths: Array = []
 var _min_column_widths: Array = []
 var _total_rows := 0
@@ -68,11 +68,11 @@ var _progress_drag_row := -1
 var _progress_drag_col := -1
 
 # Selection and focus variables
-var _selected_rows: Array = []  				# Indici delle righe selezionate
-var _previous_sort_selected_rows: Array = []	# Array con le righe selezionate prima dell'ordinamento
-var _anchor_row: int = -1       				# Riga di ancoraggio per la selezione con Shift
-var _focused_row: int = -1      				# Riga con il focus corrente
-var _focused_col: int = -1      				# Colonna con il focus corrente
+var _selected_rows: Array = [] # Indici delle righe selezionate
+var _previous_sort_selected_rows: Array = [] # Array con le righe selezionate prima dell'ordinamento
+var _anchor_row: int = -1 # Riga di ancoraggio per la selezione con Shift
+var _focused_row: int = -1 # Riga con il focus corrente
+var _focused_col: int = -1 # Colonna con il focus corrente
 
 # Editing variables
 var _editing_cell := [-1, -1]
@@ -84,8 +84,8 @@ var _double_click_threshold := 400 # milliseconds
 var _click_position_threshold := 5 # pixels
 
 # Filtering variables
-var _filter_line_edit: LineEdit 
-var _filtering_column := -1     
+var _filter_line_edit: LineEdit
+var _filtering_column := -1
 
 # Tooltip variable
 var _tooltip_cell := [-1, -1] # [row, col]
@@ -102,7 +102,7 @@ func _ready() -> void:
 	self.focus_mode = Control.FOCUS_ALL # For input from keyboard
 	
 	_setup_editing_components()
-	_setup_filtering_components() 
+	_setup_filtering_components()
 	
 	_h_scroll = HScrollBar.new()
 	_h_scroll.name = "HScrollBar"
@@ -180,7 +180,7 @@ func _is_date_column(column_index: int) -> bool:
 		total += 1
 		if _is_date_string(value):
 			match_count += 1
-	return (total > 0 and match_count > total / 2) 
+	return (total > 0 and match_count > total / 2)
 
 func _is_progress_column(column_index: int) -> bool:
 	if column_index >= headers.size():
@@ -233,9 +233,9 @@ func set_headers(new_headers: Array) -> void:
 
 func set_data(new_data: Array) -> void:
 	# Memorizza una copia completa dei dati come master list
-	_full_data = new_data.duplicate(true) 
+	_full_data = new_data.duplicate(true)
 	# La vista (_data) contiene riferimenti alle righe nella master list
-	_data = _full_data.duplicate(false) 
+	_data = _full_data.duplicate(false)
 	
 	_total_rows = _data.size()
 	_visible_rows_range = [0, min(_total_rows, floor(self.size.y / row_height) if row_height > 0 else 0)]
@@ -251,7 +251,7 @@ func set_data(new_data: Array) -> void:
 			row_data_item.append(blank)
 	
 	for r in range(_total_rows):
-		for col in range (_total_columns):
+		for col in range(_total_columns):
 			var header_size := font.get_string_size(str(_get_header_text(col)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
 			var data_s := Vector2.ZERO
 			
@@ -304,18 +304,18 @@ func ordering_data(column_index: int, ascending: bool = true) -> int:
 			_set_icon_down() if ascending else _set_icon_up()
 			# Gestione robusta per tipi misti o null
 			if typeof(a_val) != typeof(b_val):
-				if a_val == null: 
+				if a_val == null:
 					return ascending # nulls first if ascending
-				if b_val == null: 
+				if b_val == null:
 					return not ascending # nulls last if ascending
 				# Confronta come stringhe se i tipi sono diversi ma non null
 				_restore_selected_rows()
 				return str(a_val) < str(b_val) if ascending else str(a_val) > str(b_val)
-			if a_val == null and b_val == null : 
+			if a_val == null and b_val == null:
 				return false # Entrambi null, considerati uguali
-			if a_val == null: 
+			if a_val == null:
 				return ascending
-			if b_val == null: 
+			if b_val == null:
 				return not ascending
 			_restore_selected_rows()
 			return a_val < b_val if ascending else a_val > b_val)
@@ -397,14 +397,14 @@ func set_progress_colors(bar_start_color: Color, bar_middle_color: Color, bar_en
 #------------------------------------------------------------
 
 func _store_selected_rows() -> void:
-	if (_selected_rows.size() == 0 ):
+	if (_selected_rows.size() == 0):
 		return
 	_previous_sort_selected_rows.clear()
 	for index in range(_selected_rows.size()):
 		_previous_sort_selected_rows.append(_data[_selected_rows[index]])
 
 func _restore_selected_rows() -> void:
-	if (_previous_sort_selected_rows.size() == 0 ):
+	if (_previous_sort_selected_rows.size() == 0):
 		return
 	_selected_rows.clear()
 	for index in range(_previous_sort_selected_rows.size()):
@@ -413,7 +413,7 @@ func _restore_selected_rows() -> void:
 			_selected_rows.append(idx)
 	
 func _start_cell_editing(r: int, col: int) -> void: # Rinominato `row` a `r`
-	if _is_checkbox_column(col): return   # or _is_progress_column(col)  enable also for progress bar column
+	if _is_checkbox_column(col): return # or _is_progress_column(col)  enable also for progress bar column
 	_editing_cell = [r, col]
 	var cell_rect := _get_cell_rect(r, col)
 	if cell_rect == Rect2(): return
@@ -461,7 +461,7 @@ func _update_scrollbars() -> void:
 	if not is_inside_tree(): return
 	if _total_rows == null or row_height == null:
 		_total_rows = 0 if _total_rows == null else _total_rows
-		row_height = 30.0 if row_height == null or row_height <=0 else row_height
+		row_height = 30.0 if row_height == null or row_height <= 0 else row_height
 
 	var visible_width = size.x - (_v_scroll.size.x if _v_scroll.visible else 0)
 	var visible_height = size.y - (_h_scroll.size.y if _h_scroll.visible else 0) - header_height
@@ -505,7 +505,6 @@ func _get_header_text(col: int) -> String:
 	return headers[col].split("|")[0]
 
 func _draw() -> void:
-	
 	if not is_inside_tree(): return
 	
 	var current_x_offset := -_h_scroll_position # Rinominato `x_offset`
@@ -535,15 +534,15 @@ func _draw() -> void:
 				else:
 					header_font_color = default_font_color
 				var text_s = font.get_string_size(header_text_content, h_align_val, col_width, font_size) # Rinominato `text_size`
-				draw_string(font, Vector2(header_cell_x + x_margin_val, header_height/2.0 + text_s.y/2.0 - (font_size/2.0 - 2.0)), header_text_content, h_align_val, col_width - abs(x_margin_val), font_size, header_font_color)
+				draw_string(font, Vector2(header_cell_x + x_margin_val, header_height / 2.0 + text_s.y / 2.0 - (font_size / 2.0 - 2.0)), header_text_content, h_align_val, col_width - abs(x_margin_val), font_size, header_font_color)
 				if (col == _last_column_sorted):
 					var icon_h_align = HORIZONTAL_ALIGNMENT_LEFT
 					if (h_align_val == HORIZONTAL_ALIGNMENT_LEFT or h_align_val == HORIZONTAL_ALIGNMENT_CENTER):
 						icon_h_align = HORIZONTAL_ALIGNMENT_RIGHT
-					draw_string(font, Vector2(header_cell_x, header_height/2.0 + text_s.y/2.0 - (font_size/2.0 - 1.0)), _icon_sort, icon_h_align, col_width, font_size/1.3, header_font_color)
+					draw_string(font, Vector2(header_cell_x, header_height / 2.0 + text_s.y / 2.0 - (font_size / 2.0 - 1.0)), _icon_sort, icon_h_align, col_width, font_size / 1.3, header_font_color)
 	
 			var divider_x_pos = header_cell_x + col_width
-			if (divider_x_pos < visible_drawing_width and col <= _total_columns -1): # Non disegnare per l'ultima colonna
+			if (divider_x_pos < visible_drawing_width and col <= _total_columns - 1): # Non disegnare per l'ultima colonna
 				draw_line(Vector2(divider_x_pos, 0), Vector2(divider_x_pos, header_height), grid_color, 2.0 if _mouse_over_divider == col else 1.0)
 		header_cell_x += col_width
 				
@@ -556,7 +555,7 @@ func _draw() -> void:
 		draw_rect(Rect2(0, row_y_pos, visible_drawing_width, row_height), current_bg_color)
 		
 		if _selected_rows.has(r_idx):
-			draw_rect(Rect2(0, row_y_pos, visible_drawing_width, row_height -1), selected_back_color)
+			draw_rect(Rect2(0, row_y_pos, visible_drawing_width, row_height - 1), selected_back_color)
 
 		draw_line(Vector2(0, row_y_pos + row_height), Vector2(visible_drawing_width, row_y_pos + row_height), grid_color)
 		
@@ -603,7 +602,7 @@ func _draw_progress_bar(cell_x: float, row_y: float, col: int, r_idx: int) -> vo
 		
 	var perc_text := str(int(round(cell_val * 100.0))) + "%" # Rinominato `percentage_text`
 	var text_s := font.get_string_size(perc_text, HORIZONTAL_ALIGNMENT_CENTER, bar_w, font_size) # Rinominato `text_size`
-	draw_string(font, Vector2(bar_x_pos + bar_w/2.0 - text_s.x/2.0, bar_y_pos + bar_h/2.0 + text_s.y/2.0 - 5.0), perc_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, progress_text_color)
+	draw_string(font, Vector2(bar_x_pos + bar_w / 2.0 - text_s.x / 2.0, bar_y_pos + bar_h / 2.0 + text_s.y / 2.0 - 5.0), perc_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, progress_text_color)
 
 func _draw_checkbox(cell_x: float, row_y: float, col: int, r_idx: int) -> void: # `row` rinominato a `r_idx`
 	var cell_val := false # Rinominato `cell_value`
@@ -665,7 +664,7 @@ func _get_interpolated_three_colors(start_c: Color, mid_c: Color, end_c: Color, 
 
 func _draw_cell_text(cell_x: float, row_y: float, col: int, r_idx: int) -> void: # `row` rinominato a `r_idx`
 	var cell_val = "" # Rinominato `cell_value`
-	if r_idx >=0 and r_idx < _data.size() and col >=0 and col < _data[r_idx].size(): # Aggiunto check limiti
+	if r_idx >= 0 and r_idx < _data.size() and col >= 0 and col < _data[r_idx].size(): # Aggiunto check limiti
 		cell_val = str(_data[r_idx][col])
 	
 	var align_info = _align_text_in_cell(col)
@@ -673,7 +672,7 @@ func _draw_cell_text(cell_x: float, row_y: float, col: int, r_idx: int) -> void:
 	var x_margin_val = align_info[2]
 	
 	var text_s = font.get_string_size(cell_val, h_align_val, _column_widths[col] - abs(x_margin_val) * 2, font_size) # Rinominato e corretto width per text
-	var text_y_pos = row_y + row_height/2.0 + text_s.y/2.0 - (font_size/2.0 - 2.0) # Calcolo y per centrare meglio
+	var text_y_pos = row_y + row_height / 2.0 + text_s.y / 2.0 - (font_size / 2.0 - 2.0) # Calcolo y per centrare meglio
 	draw_string(font, Vector2(cell_x + x_margin_val, text_y_pos), cell_val, h_align_val, _column_widths[col] - abs(x_margin_val), font_size, default_font_color)
 			
 func _align_text_in_cell(col: int) -> Array:
@@ -703,7 +702,7 @@ func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> voi
 	if row_height > 0: # Evita divisione per zero
 		clicked_row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
 	
-	if clicked_row < 0 or clicked_row >= _total_rows : # Click fuori area righe valide
+	if clicked_row < 0 or clicked_row >= _total_rows: # Click fuori area righe valide
 		# Opzionale: deseleziona tutto se si clicca fuori
 		# _selected_rows.clear()
 		# _anchor_row = -1
@@ -712,7 +711,7 @@ func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> voi
 		# queue_redraw()
 		return
 
-	var current_x_pos = -_h_scroll_position
+	var current_x_pos = - _h_scroll_position
 	var clicked_col = -1
 	for c in range(_total_columns):
 		if c >= _column_widths.size(): continue
@@ -781,7 +780,7 @@ func _handle_right_click(mouse_pos: Vector2) -> void:
 	if mouse_pos.y >= header_height: # Non su header
 		if row_height > 0: r = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
 		if r >= 0 and r < _total_rows:
-			var current_x = -_h_scroll_position
+			var current_x = - _h_scroll_position
 			for i in range(_total_columns):
 				if i >= _column_widths.size(): continue
 				if mouse_pos.x >= current_x and mouse_pos.x < current_x + _column_widths[i]:
@@ -801,7 +800,7 @@ func _handle_double_click(mouse_pos: Vector2) -> void:
 		if row_height > 0: r = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
 		
 		if r >= 0 and r < _total_rows:
-			var current_x = -_h_scroll_position # Rinominato `x_offset`
+			var current_x = - _h_scroll_position # Rinominato `x_offset`
 			var c = -1 # Rinominato `col`
 			for i in range(_total_columns):
 				if i >= _column_widths.size(): continue
@@ -813,19 +812,19 @@ func _handle_double_click(mouse_pos: Vector2) -> void:
 			if c != -1:
 				# Se la cella cliccata non è quella correntemente "focused" per la selezione,
 				# aggiorna la selezione come un singolo click prima di iniziare l'editing.
-				if not (_selected_rows.size() == 1 and _selected_rows[0] == r and _focused_row == r and _focused_col == c) :
+				if not (_selected_rows.size() == 1 and _selected_rows[0] == r and _focused_row == r and _focused_col == c):
 					_focused_row = r
 					_focused_col = c
 					_selected_rows.clear()
 					_selected_rows.append(r)
 					_anchor_row = r
-					cell_selected.emit(r,c) # Emetti segnale di selezione
+					cell_selected.emit(r, c) # Emetti segnale di selezione
 					queue_redraw() # Aggiorna la vista della selezione
 					
 				_start_cell_editing(r, c)
 		
 func _handle_header_click(mouse_pos: Vector2) -> void:
-	var current_x = -_h_scroll_position # Rinominato `x_offset`
+	var current_x = - _h_scroll_position # Rinominato `x_offset`
 	for col in range(_total_columns):
 		if col >= _column_widths.size(): continue
 		if mouse_pos.x >= current_x + _divider_width / 2 and mouse_pos.x < current_x + _column_widths[col] - _divider_width / 2:
@@ -847,7 +846,7 @@ func _handle_header_click(mouse_pos: Vector2) -> void:
 
 func _handle_header_double_click(mouse_pos: Vector2) -> void:
 	_finish_editing(false) # Termina l'editing di una cella, se attivo
-	var current_x = -_h_scroll_position
+	var current_x = - _h_scroll_position
 	for col in range(_total_columns):
 		if col >= _column_widths.size(): continue
 		var col_width = _column_widths[col]
@@ -956,7 +955,7 @@ func _on_gui_input(event: InputEvent) -> void:
 		
 		if _dragging_progress and _progress_drag_row >= 0 and _progress_drag_col >= 0:
 			_handle_progress_drag(m_pos)
-		elif (_resizing_column >= 0 and _resizing_column < _total_columns -1 ): # Modificato headers.size() a _total_columns
+		elif (_resizing_column >= 0 and _resizing_column < _total_columns - 1): # Modificato headers.size() a _total_columns
 			var delta_x = m_pos.x - _resizing_start_pos
 			var new_width = max(_resizing_start_width + delta_x, _min_column_widths[_resizing_column])
 			_column_widths[_resizing_column] = new_width
@@ -975,8 +974,8 @@ func _check_mouse_over_divider(mouse_pos: Vector2) -> void:
 	_mouse_over_divider = -1
 	mouse_default_cursor_shape = CURSOR_ARROW
 	if mouse_pos.y < header_height:
-		var current_x = -_h_scroll_position
-		for col in range(_total_columns -1): # Non per l'ultima colonna
+		var current_x = - _h_scroll_position
+		for col in range(_total_columns - 1): # Non per l'ultima colonna
 			if col >= _column_widths.size(): continue
 			current_x += _column_widths[col]
 			var divider_rect = Rect2(current_x - _divider_width / 2, 0, _divider_width, header_height)
@@ -990,7 +989,7 @@ func _update_tooltip(mouse_pos: Vector2) -> void:
 	var new_tooltip = ""
 
 	if mouse_pos.y < header_height:
-		var current_x = -_h_scroll_position
+		var current_x = - _h_scroll_position
 		for col in range(_total_columns):
 			if col >= _column_widths.size(): continue
 			var col_width = _column_widths[col]
@@ -1004,7 +1003,7 @@ func _update_tooltip(mouse_pos: Vector2) -> void:
 	else:
 		var row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
 		if row >= 0 and row < _total_rows:
-			var current_x = -_h_scroll_position
+			var current_x = - _h_scroll_position
 			for col in range(_total_columns):
 				if col >= _column_widths.size(): continue
 				var col_width = _column_widths[col]
@@ -1063,7 +1062,7 @@ func _handle_progress_drag(mouse_pos: Vector2) -> void:
 	var margin := 4.0
 	var bar_x_pos := current_x + margin
 	var bar_w = _column_widths[_progress_drag_col] - (margin * 2.0)
-	if bar_w <=0: return # Evita divisione per zero
+	if bar_w <= 0: return # Evita divisione per zero
 
 	var rel_x := mouse_pos.x - bar_x_pos # Rinominato `relative_x`
 	var new_prog = clamp(rel_x / bar_w, 0.0, 1.0) # Rinominato `new_progress`
@@ -1089,7 +1088,7 @@ func _handle_checkbox_click(mouse_pos: Vector2) -> bool:
 	
 	if c >= 0 and _is_checkbox_column(c):
 		# Se si clicca su una checkbox, la riga diventa la selezione singola corrente (se non lo è già)
-		if _focused_row != r or _focused_col != c :
+		if _focused_row != r or _focused_col != c:
 			_focused_row = r
 			_focused_col = c
 			if not _selected_rows.has(r) or _selected_rows.size() > 1: # Se non è l'unica riga selezionata
@@ -1152,7 +1151,6 @@ func _handle_key_input(event: InputEventKey) -> void:
 	var emit_multiple_selection_signal := false
 	
 	if is_ctrl_cmd and keycode == KEY_A:
-		
 		if _total_rows > 0:
 			_selected_rows.clear()
 			for i in range(_total_rows):
@@ -1188,18 +1186,18 @@ func _handle_key_input(event: InputEventKey) -> void:
 			event_consumed = false # Nessuna riga, nessuna azione
 			
 	# Altri tasti di navigazione (generalmente richiedono un focus iniziale)
-	elif current_focused_r != -1 and current_focused_c != -1 : 
+	elif current_focused_r != -1 and current_focused_c != -1:
 		match keycode:
-			KEY_UP: 
+			KEY_UP:
 				new_focused_r = max(0, current_focused_r - 1)
 				key_operation_performed = true
-			KEY_DOWN: 
+			KEY_DOWN:
 				new_focused_r = min(_total_rows - 1, current_focused_r + 1)
 				key_operation_performed = true
-			KEY_LEFT: 
+			KEY_LEFT:
 				new_focused_c = max(0, current_focused_c - 1)
 				key_operation_performed = true
-			KEY_RIGHT: 
+			KEY_RIGHT:
 				new_focused_c = min(_total_columns - 1, current_focused_c + 1)
 				key_operation_performed = true
 			KEY_PAGEUP:
@@ -1213,22 +1211,22 @@ func _handle_key_input(event: InputEventKey) -> void:
 				new_focused_r = min(_total_rows - 1, current_focused_r + page_row_count)
 				key_operation_performed = true
 			KEY_SPACE:
-				if is_ctrl_cmd: 
+				if is_ctrl_cmd:
 					if _selected_rows.has(current_focused_r):
 						_selected_rows.erase(current_focused_r)
 					else:
 						if not _selected_rows.has(current_focused_r): _selected_rows.append(current_focused_r)
-					_anchor_row = current_focused_r 
-					key_operation_performed = true 
-				else: event_consumed = false 
-			KEY_ESCAPE: 
+					_anchor_row = current_focused_r
+					key_operation_performed = true
+				else: event_consumed = false
+			KEY_ESCAPE:
 				if _selected_rows.size() > 0 or _focused_row != -1: # Agisci solo se c'è una selezione o un focus
 					_selected_rows.clear()
 					_previous_sort_selected_rows.clear()
 					_anchor_row = -1
-					_focused_row = -1 
+					_focused_row = -1
 					_focused_col = -1
-					key_operation_performed = true 
+					key_operation_performed = true
 					set_selected_cell(-1, -1)
 				else:
 					event_consumed = false # Nessuna selezione/focus da annullare
@@ -1248,7 +1246,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 			#var emit_multiple_selection_signal = false
 			if is_shift:
 				# Imposta l'ancora se non è definita, usando il focus precedente o 0 come fallback
-				if _anchor_row == -1: 
+				if _anchor_row == -1:
 					_anchor_row = old_focused_r if old_focused_r != -1 else 0
 				
 				if _focused_row != -1: # Solo se il nuovo focus sulla riga è valido
@@ -1257,7 +1255,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 					var end_r: int = max(_anchor_row, _focused_row)
 					for i in range(start_r, end_r + 1):
 						if i >= 0 and i < _total_rows: # Verifica validità indice
-							if not _selected_rows.has(i): 
+							if not _selected_rows.has(i):
 								_selected_rows.append(i)
 								emit_multiple_selection_signal = true
 				# Se _focused_row è -1 (es. tabella vuota), _selected_rows rimane vuoto o viene svuotato
@@ -1265,11 +1263,11 @@ func _handle_key_input(event: InputEventKey) -> void:
 					# L'array _selected_rows contiene già gli indici corretti
 					#multiple_rows_selected.emit(_selected_rows)
 			
-			elif is_ctrl_cmd and not (keycode == KEY_SPACE): 
+			elif is_ctrl_cmd and not (keycode == KEY_SPACE):
 				# Ctrl + Frecce/Pg/Home/End: sposta solo il focus, non cambia la selezione.
 				# L'ancora non cambia per permettere future selezioni con Shift.
-				pass 
-			elif not (keycode == KEY_SPACE and is_ctrl_cmd): 
+				pass
+			elif not (keycode == KEY_SPACE and is_ctrl_cmd):
 				# Nessun modificatore (o Ctrl non per navigazione pura): seleziona solo la riga focus
 				if _focused_row != -1: # Solo se il nuovo focus sulla riga è valido
 					_selected_rows.clear()
@@ -1281,7 +1279,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 					_anchor_row = -1
 				
 					
-		if _focused_row != -1 : 
+		if _focused_row != -1:
 			_ensure_row_visible(_focused_row)
 			# Qui potresti aggiungere: _ensure_col_visible(_focused_col) se vuoi scorrimento orizzontale automatico
 		
