@@ -95,6 +95,7 @@ var _v_scroll: VScrollBar
 var font := get_theme_default_font()
 var font_size := get_theme_default_font_size()
 
+
 func _ready() -> void:
 	self.focus_mode = Control.FOCUS_ALL # For input from keyboard
 	
@@ -128,6 +129,7 @@ func _ready() -> void:
 		
 	queue_redraw()
 
+
 func _setup_filtering_components() -> void:
 	_filter_line_edit = LineEdit.new()
 	_filter_line_edit.name = "FilterLineEdit"
@@ -135,7 +137,8 @@ func _setup_filtering_components() -> void:
 	_filter_line_edit.text_submitted.connect(_apply_filter)
 	_filter_line_edit.focus_exited.connect(_on_filter_focus_exited)
 	add_child(_filter_line_edit)
-	
+
+
 func _setup_editing_components() -> void:
 	_edit_line_edit = LineEdit.new()
 	_edit_line_edit.visible = false
@@ -149,9 +152,11 @@ func _setup_editing_components() -> void:
 	_double_click_timer.timeout.connect(_on_double_click_timeout)
 	add_child(_double_click_timer)
 
+
 func _on_resized() -> void:
 	_update_scrollbars()
 	queue_redraw()
+
 
 func _update_column_widths() -> void:
 	_column_widths.resize(headers.size())
@@ -162,10 +167,12 @@ func _update_column_widths() -> void:
 			_min_column_widths[i] = default_minimum_column_width
 	_total_columns = headers.size()
 
+
 func _is_date_string(value: String) -> bool:
 	var date_regex := RegEx.new()
 	date_regex.compile("^\\d{2}/\\d{2}/\\d{4}$")
 	return date_regex.search(value) != null
+
 
 func _is_date_column(column_index: int) -> bool:
 	var match_count := 0
@@ -179,11 +186,13 @@ func _is_date_column(column_index: int) -> bool:
 			match_count += 1
 	return (total > 0 and match_count > total / 2)
 
+
 func _is_progress_column(column_index: int) -> bool:
 	if column_index >= headers.size():
 		return false
 	var header_parts := headers[column_index].split("|")
 	return header_parts.size() > 1 and (header_parts[1].to_lower().contains("p") or header_parts[1].to_lower().contains("progress"))
+
 
 func _is_checkbox_column(column_index: int) -> bool:
 	if column_index >= headers.size():
@@ -191,17 +200,20 @@ func _is_checkbox_column(column_index: int) -> bool:
 	var header_parts := headers[column_index].split("|")
 	return header_parts.size() > 1 and (header_parts[1].to_lower().contains("check") or header_parts[1].to_lower().contains("checkbox"))
 
+
 func _is_image_column(column_index: int) -> bool:
 	if column_index >= headers.size():
 		return false
 	var header_parts := headers[column_index].split("|")
 	return header_parts.size() > 1 and header_parts[1].to_lower().contains("image")
 
+
 func _is_numeric_value(value: Variant) -> bool:
 	if value == null:
 		return false
 	var str_val := str(value)
 	return str_val.is_valid_float() or str_val.is_valid_int()
+
 
 func _get_progress_value(value: Variant) -> float:
 	if value == null: return 0.0
@@ -211,10 +223,12 @@ func _get_progress_value(value: Variant) -> float:
 	elif num_val >= 0.0 and num_val <= 100.0: return num_val / 100.0
 	else: return clamp(num_val, 0.0, 1.0)
 
+
 func _parse_date(date_str: String) -> Array:
 	var parts := date_str.split("/")
 	if parts.size() != 3: return [0, 0, 0]
 	return [int(parts[2]), int(parts[1]), int(parts[0])] # Year, Month, Day
+
 
 #------------------------------------------------------------
 # PUBLIC FUNCTIONS
@@ -227,6 +241,7 @@ func set_headers(new_headers: Array) -> void:
 	_update_column_widths()
 	_update_scrollbars()
 	queue_redraw()
+
 
 func set_data(new_data: Array) -> void:
 	# Store a full copy of the data as the master list
@@ -268,7 +283,8 @@ func set_data(new_data: Array) -> void:
 			
 	_update_scrollbars()
 	queue_redraw()
-	
+
+
 func ordering_data(column_index: int, ascending: bool = true) -> int:
 	_finish_editing(false)
 	_last_column_sorted = column_index
@@ -319,6 +335,7 @@ func ordering_data(column_index: int, ascending: bool = true) -> int:
 	queue_redraw()
 	return -1 # The original function returned -1
 
+
 func insert_row(index: int, row_data: Array) -> void:
 	while row_data.size() < _total_columns: # Ensure column consistency
 		row_data.append(null) # or a default value
@@ -326,6 +343,7 @@ func insert_row(index: int, row_data: Array) -> void:
 	_total_rows += 1
 	_update_scrollbars()
 	queue_redraw()
+
 
 func delete_row(index: int) -> void:
 	if (_total_rows >= 1 and index < _total_rows):
@@ -335,21 +353,25 @@ func delete_row(index: int) -> void:
 			_selected_rows.clear()
 		_update_scrollbars()
 		queue_redraw()
-		
+
+
 func update_cell(row: int, col: int, value: Variant) -> void:
 	if row >= 0 and row < _data.size() and col >= 0 and col < _total_columns:
 		while _data[row].size() <= col: _data[row].append("")
 		_data[row][col] = value
 		queue_redraw()
 
+
 func get_cell_value(row: int, col: int) -> Variant:
 	if row >= 0 and row < _data.size() and col >= 0 and col < _data[row].size():
 		return _data[row][col]
 	return null
 
+
 func get_row_value(row: int) -> Variant:
 	if row >= 0 and row < _data.size(): return _data[row]
 	return null
+
 
 func set_selected_cell(row: int, col: int) -> void:
 	if row >= 0 and row < _total_rows and col >= 0 and col < _total_columns:
@@ -367,18 +389,21 @@ func set_selected_cell(row: int, col: int) -> void:
 		_anchor_row = -1
 		queue_redraw()
 	cell_selected.emit(_focused_row, _focused_col)
-	
+
+
 func set_progress_value(row: int, col: int, value: float) -> void:
 	if row >= 0 and row < _data.size() and col >= 0 and col < _total_columns:
 		if _is_progress_column(col):
 			_data[row][col] = clamp(value, 0.0, 1.0)
 			queue_redraw()
 
+
 func get_progress_value(row_idx: int, col: int) -> float:
 	if row_idx >= 0 and row_idx < _data.size() and col >= 0 and col < _data[row_idx].size():
 		if _is_progress_column(col):
 			return _get_progress_value(_data[row_idx][col]) # Use the internal function for the logic
 	return 0.0
+
 
 func set_progress_colors(bar_start_color: Color, bar_middle_color: Color, bar_end_color: Color, bg_color: Color, border_c: Color, text_c: Color) -> void:
 	progress_bar_start_color = bar_start_color
@@ -388,6 +413,7 @@ func set_progress_colors(bar_start_color: Color, bar_middle_color: Color, bar_en
 	progress_border_color = border_c
 	progress_text_color = text_c
 	queue_redraw()
+
 
 #------------------------------------------------------------
 # END PUBLIC FUNCTIONS
@@ -400,6 +426,7 @@ func _store_selected_rows() -> void:
 	for index in range(_selected_rows.size()):
 		_previous_sort_selected_rows.append(_data[_selected_rows[index]])
 
+
 func _restore_selected_rows() -> void:
 	if (_previous_sort_selected_rows.size() == 0):
 		return
@@ -408,7 +435,8 @@ func _restore_selected_rows() -> void:
 		var idx := _data.find(_previous_sort_selected_rows[index])
 		if (idx >= 0):
 			_selected_rows.append(idx)
-	
+
+
 func _start_cell_editing(row: int, col: int) -> void:
 	if _is_checkbox_column(col): return # or _is_progress_column(col)  enable also for progress bar column
 	_editing_cell = [row, col]
@@ -424,6 +452,7 @@ func _start_cell_editing(row: int, col: int) -> void:
 	_edit_line_edit.grab_focus()
 	_edit_line_edit.select_all()
 
+
 func _finish_editing(save_changes: bool = true) -> void:
 	if _editing_cell[0] >= 0 and _editing_cell[1] >= 0:
 		if save_changes and _edit_line_edit.visible:
@@ -438,6 +467,7 @@ func _finish_editing(save_changes: bool = true) -> void:
 		_edit_line_edit.visible = false
 		queue_redraw()
 
+
 func _get_cell_rect(row: int, col: int) -> Rect2:
 	if row < _visible_rows_range[0] or row >= _visible_rows_range[1]: return Rect2()
 	var x_offset := -_h_scroll_position
@@ -448,12 +478,18 @@ func _get_cell_rect(row: int, col: int) -> Rect2:
 	var row_y_pos = header_height + (row - _visible_rows_range[0]) * row_height
 	return Rect2(cell_x, row_y_pos, _column_widths[col], row_height)
 
+
 func _on_edit_text_submitted(text: String) -> void: _finish_editing(true)
+
 func _on_edit_focus_exited() -> void: _finish_editing(true)
+
 func _on_double_click_timeout() -> void: _click_count = 0
+
 func _set_icon_down() -> void: _icon_sort = " ▼ "
+
 func _set_icon_up() -> void: _icon_sort = " ▲ "
-		
+
+
 func _update_scrollbars() -> void:
 	if not is_inside_tree(): return
 	if _total_rows == null or row_height == null:
@@ -479,11 +515,13 @@ func _update_scrollbars() -> void:
 		_v_scroll.max_value = total_content_height
 		_v_scroll.page = visible_height
 		_v_scroll.step = row_height
-	
+
+
 func _on_h_scroll_changed(value) -> void:
 	_h_scroll_position = value
 	if _edit_line_edit.visible: _finish_editing(false)
 	queue_redraw()
+
 
 func _on_v_scroll_changed(value) -> void:
 	_v_scroll_position = value
@@ -497,9 +535,11 @@ func _on_v_scroll_changed(value) -> void:
 	if _edit_line_edit.visible: _finish_editing(false)
 	queue_redraw()
 
+
 func _get_header_text(col: int) -> String:
 	if col >= headers.size(): return ""
 	return headers[col].split("|")[0]
+
 
 func _draw() -> void:
 	if not is_inside_tree(): return
@@ -578,7 +618,8 @@ func _draw() -> void:
 		# Draw the final right vertical line of the table (right border of the last column)
 		if cell_x_pos <= visible_drawing_width and cell_x_pos > -_h_scroll_position:
 			draw_line(Vector2(cell_x_pos, row_y_pos), Vector2(cell_x_pos, row_y_pos + row_height), grid_color)
-				
+
+
 func _draw_progress_bar(cell_x: float, row_y: float, col: int, row: int) -> void:
 	var cell_value = 0.0
 	if row < _data.size() and col < _data[row].size():
@@ -601,6 +642,7 @@ func _draw_progress_bar(cell_x: float, row_y: float, col: int, row: int) -> void
 	var text_size := font.get_string_size(perc_text, HORIZONTAL_ALIGNMENT_CENTER, bar_width, font_size)
 	draw_string(font, Vector2(bar_x_pos + bar_width / 2.0 - text_size.x / 2.0, bar_y_pos + bar_h / 2.0 + text_size.y / 2.0 - 5.0), perc_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, progress_text_color)
 
+
 func _draw_checkbox(cell_x: float, row_y: float, col: int, row: int) -> void:
 	var cell_value := false
 	if row < _data.size() and col < _data[row].size():
@@ -619,6 +661,7 @@ func _draw_checkbox(cell_x: float, row_y: float, col: int, row: int) -> void:
 		draw_rect(fill_rect, checkbox_checked_color)
 	else:
 		draw_rect(fill_rect, checkbox_unchecked_color)
+
 
 func _draw_image_cell(cell_x: float, row_y: float, col: int, row: int) -> void:
 	var value: Variant = get_cell_value(row, col)
@@ -653,12 +696,14 @@ func _draw_image_cell(cell_x: float, row_y: float, col: int, row: int) -> void:
 		
 	draw_texture_rect(texture, drawn_rect, false)
 
+
 func _get_interpolated_three_colors(start_c: Color, mid_c: Color, end_c: Color, t_val: float) -> Color:
 	var clamped_t = clampf(t_val, 0.0, 1.0)
 	if clamped_t <= 0.5:
 		return start_c.lerp(mid_c, clamped_t * 2.0)
 	else:
 		return mid_c.lerp(end_c, (clamped_t - 0.5) * 2.0)
+
 
 func _draw_cell_text(cell_x: float, row_y: float, col: int, row: int) -> void:
 	var cell_value = ""
@@ -686,7 +731,7 @@ func _draw_cell_text(cell_x: float, row_y: float, col: int, row: int) -> void:
 		default_font_color
 	)
 
-			
+
 func _align_text_in_cell(col: int) -> Array:
 	var header_parts = headers[col].split("|")
 	var h_alignment_character = ""
@@ -706,6 +751,7 @@ func _align_text_in_cell(col: int) -> Array:
 		h_align_enum = HORIZONTAL_ALIGNMENT_RIGHT
 		x_margin = -5 # Negative for right margin
 	return [header_text_content, h_align_enum, x_margin]
+
 
 func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> void:
 	_finish_editing(true)
@@ -786,6 +832,7 @@ func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> voi
 
 	queue_redraw()
 
+
 func _handle_right_click(mouse_pos: Vector2) -> void:
 	var row = -1
 	var col = -1
@@ -805,7 +852,8 @@ func _handle_right_click(mouse_pos: Vector2) -> void:
 		cell_right_selected.emit(row, col, get_global_mouse_position())
 	elif (row > _total_rows):
 		cell_right_selected.emit(_total_rows, col, get_global_mouse_position())
-		
+
+
 func _handle_double_click(mouse_pos: Vector2) -> void:
 	if mouse_pos.y >= header_height: # Not on the header
 		var row = -1
@@ -836,7 +884,7 @@ func _handle_double_click(mouse_pos: Vector2) -> void:
 					
 				_start_cell_editing(row, col)
 
-		
+
 func _handle_header_click(mouse_pos: Vector2) -> void:
 	var current_x = - _h_scroll_position
 	for col in range(_total_columns):
@@ -881,6 +929,7 @@ func _handle_header_double_click(mouse_pos: Vector2) -> void:
 
 		current_x += col_width
 
+
 func _start_filtering(col: int, header_rect: Rect2) -> void:
 	if _filtering_column == col and _filter_line_edit.visible:
 		return # Already in filter mode on this column
@@ -891,6 +940,7 @@ func _start_filtering(col: int, header_rect: Rect2) -> void:
 	_filter_line_edit.text = ""
 	_filter_line_edit.visible = true
 	_filter_line_edit.grab_focus()
+
 
 func _apply_filter(search_key: String) -> void:
 	if not _filter_line_edit.visible:
@@ -926,11 +976,13 @@ func _apply_filter(search_key: String) -> void:
 	_update_scrollbars()
 	queue_redraw()
 
+
 func _on_filter_focus_exited() -> void:
 	# Apply the filter also when the text field loses focus
 	if _filter_line_edit.visible:
 		_apply_filter(_filter_line_edit.text)
-	
+
+
 func _on_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mouse_btn_event = event as InputEventMouseButton
@@ -1039,7 +1091,7 @@ func _on_gui_input(event: InputEvent) -> void:
 		# accept_event() or get_viewport().set_input_as_handled()
 		# will be called inside _handle_key_input
 
-	
+
 func _check_mouse_over_divider(mouse_pos: Vector2) -> void:
 	_mouse_over_divider = -1
 	mouse_default_cursor_shape = CURSOR_ARROW
@@ -1100,6 +1152,7 @@ func _update_tooltip(mouse_pos: Vector2) -> void:
 	if current_cell != _tooltip_cell:
 		_tooltip_cell = current_cell
 		self.tooltip_text = new_tooltip
+
 
 func _is_clicking_progress_bar(mouse_pos: Vector2) -> bool:
 	if mouse_pos.y < header_height:
@@ -1173,6 +1226,7 @@ func _handle_progress_drag(mouse_pos: Vector2) -> void:
 		progress_changed.emit(_progress_drag_row, _progress_drag_col, new_progress)
 		queue_redraw()
 
+
 func _handle_checkbox_click(mouse_pos: Vector2) -> bool:
 	if mouse_pos.y < header_height:
 		return false
@@ -1221,6 +1275,7 @@ func _handle_checkbox_click(mouse_pos: Vector2) -> bool:
 
 	return false
 
+
 func _ensure_row_visible(row_idx: int) -> void:
 	if _total_rows == 0 or row_height == 0 or not _v_scroll.visible:
 		return
@@ -1249,6 +1304,7 @@ func _ensure_row_visible(row_idx: int) -> void:
 	_v_scroll.value = clamp(_v_scroll.value, 0, _v_scroll.max_value)
 	# _on_v_scroll_changed will be called, updating _visible_rows_range
 	# and triggering queue_redraw()
+
 
 func _handle_key_input(event: InputEventKey) -> void:
 	if _edit_line_edit.visible: # Let the LineEdit handle input during editing
