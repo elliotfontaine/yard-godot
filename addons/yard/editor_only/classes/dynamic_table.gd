@@ -6,13 +6,13 @@
 extends Control
 
 # Signals
-signal cell_selected(row: int, column: int)
+signal cell_selected(row: int, col: int)
 signal multiple_rows_selected(selected_row_indices: Array)
-signal cell_right_selected(row: int, column: int, mousepos: Vector2)
+signal cell_right_selected(row: int, col: int, mousepos: Vector2)
 signal header_clicked(column: int)
 signal column_resized(column: int, new_width: float)
-signal progress_changed(row: int, column: int, new_value: float)
-signal cell_edited(row: int, column: int, old_value: Variant, new_value: Variant)
+signal progress_changed(row: int, col: int, new_value: float)
+signal cell_edited(row: int, col: int, old_value: Variant, new_value: Variant)
 
 # Theming properties
 @export_group("Default color")
@@ -65,11 +65,11 @@ var _progress_drag_row := -1
 var _progress_drag_col := -1
 
 # Selection and focus variables
-var _selected_rows: Array = [] # Indici delle righe selezionate
-var _previous_sort_selected_rows: Array = [] # Array con le righe selezionate prima dell'ordinamento
-var _anchor_row: int = -1 # Riga di ancoraggio per la selezione con Shift
-var _focused_row: int = -1 # Riga con il focus corrente
-var _focused_col: int = -1 # Colonna con il focus corrente
+var _selected_rows: Array = [] # Indices of the selected rows
+var _previous_sort_selected_rows: Array = [] # Array containing the selected rows before sorting
+var _anchor_row: int = -1 # Anchor row for Shift-based selection
+var _focused_row: int = -1 # Currently focused row
+var _focused_col: int = -1 # Currently focused column
 
 # Editing variables
 var _editing_cell := [-1, -1]
@@ -170,7 +170,7 @@ func _is_date_string(value: String) -> bool:
 func _is_date_column(column_index: int) -> bool:
 	var match_count := 0
 	var total := 0
-	for row_data_item in _data: # Rinominato `row` a `row_data_item` per evitare shadowing
+	for row_data_item in _data:
 		if column_index >= row_data_item.size():
 			continue
 		var value := str(row_data_item[column_index])
@@ -229,9 +229,9 @@ func set_headers(new_headers: Array) -> void:
 	queue_redraw()
 
 func set_data(new_data: Array) -> void:
-	# Memorizza una copia completa dei dati come master list
+	# Store a full copy of the data as the master list
 	_full_data = new_data.duplicate(true)
-	# La vista (_data) contiene riferimenti alle righe nella master list
+	# The view (_data) contains references to rows in the master list
 	_data = _full_data.duplicate(false)
 	
 	_total_rows = _data.size()
@@ -299,17 +299,17 @@ func ordering_data(column_index: int, ascending: bool = true) -> int:
 			var a_val: Variant = a[column_index]
 			var b_val: Variant = b[column_index]
 			_set_icon_down() if ascending else _set_icon_up()
-			# Gestione robusta per tipi misti o null
+			# Robust handling for mixed types or null values
 			if typeof(a_val) != typeof(b_val):
 				if a_val == null:
 					return ascending # nulls first if ascending
 				if b_val == null:
 					return not ascending # nulls last if ascending
-				# Confronta come stringhe se i tipi sono diversi ma non null
+				# Compare as strings if types differ but are not null
 				_restore_selected_rows()
 				return str(a_val) < str(b_val) if ascending else str(a_val) > str(b_val)
 			if a_val == null and b_val == null:
-				return false # Entrambi null, considerati uguali
+				return false # Both null, considered equal
 			if a_val == null:
 				return ascending
 			if b_val == null:
@@ -317,11 +317,11 @@ func ordering_data(column_index: int, ascending: bool = true) -> int:
 			_restore_selected_rows()
 			return a_val < b_val if ascending else a_val > b_val)
 	queue_redraw()
-	return -1 # La funzione originale ritornava -1
+	return -1 # The original function returned -1
 
 func insert_row(index: int, row_data: Array) -> void:
-	while row_data.size() < _total_columns: # Assicura consistenza colonne
-		row_data.append(null) # o un valore di default
+	while row_data.size() < _total_columns: # Ensure column consistency
+		row_data.append(null) # or a default value
 	_data.insert(index, row_data)
 	_total_rows += 1
 	_update_scrollbars()
@@ -336,31 +336,31 @@ func delete_row(index: int) -> void:
 		_update_scrollbars()
 		queue_redraw()
 		
-func update_cell(r: int, column: int, value: Variant) -> void: # Rinominato `row` a `r`
-	if r >= 0 and r < _data.size() and column >= 0 and column < _total_columns:
-		while _data[r].size() <= column: _data[r].append("")
-		_data[r][column] = value
+func update_cell(row: int, col: int, value: Variant) -> void:
+	if row >= 0 and row < _data.size() and col >= 0 and col < _total_columns:
+		while _data[row].size() <= col: _data[row].append("")
+		_data[row][col] = value
 		queue_redraw()
 
-func get_cell_value(r: int, column: int) -> Variant: # Rinominato `row` a `r`
-	if r >= 0 and r < _data.size() and column >= 0 and column < _data[r].size():
-		return _data[r][column]
+func get_cell_value(row: int, col: int) -> Variant:
+	if row >= 0 and row < _data.size() and col >= 0 and col < _data[row].size():
+		return _data[row][col]
 	return null
 
-func get_row_value(r: int) -> Variant: # Rinominato `row` a `r`
-	if r >= 0 and r < _data.size(): return _data[r]
+func get_row_value(row: int) -> Variant:
+	if row >= 0 and row < _data.size(): return _data[row]
 	return null
 
-func set_selected_cell(r: int, col: int) -> void: # Rinominato `row` a `r`
-	if r >= 0 and r < _total_rows and col >= 0 and col < _total_columns:
-		_focused_row = r
+func set_selected_cell(row: int, col: int) -> void:
+	if row >= 0 and row < _total_rows and col >= 0 and col < _total_columns:
+		_focused_row = row
 		_focused_col = col
 		_selected_rows.clear()
-		_selected_rows.append(r)
-		_anchor_row = r
-		_ensure_row_visible(r)
+		_selected_rows.append(row)
+		_anchor_row = row
+		_ensure_row_visible(row)
 		queue_redraw()
-	else: # Selezione non valida, deseleziona tutto
+	else: # Invalid selection, clear everything
 		_focused_row = -1
 		_focused_col = -1
 		_selected_rows.clear()
@@ -368,16 +368,16 @@ func set_selected_cell(r: int, col: int) -> void: # Rinominato `row` a `r`
 		queue_redraw()
 	cell_selected.emit(_focused_row, _focused_col)
 	
-func set_progress_value(r: int, column: int, value: float) -> void: # Rinominato `row` a `r`
-	if r >= 0 and r < _data.size() and column >= 0 and column < _total_columns:
-		if _is_progress_column(column):
-			_data[r][column] = clamp(value, 0.0, 1.0)
+func set_progress_value(row: int, col: int, value: float) -> void:
+	if row >= 0 and row < _data.size() and col >= 0 and col < _total_columns:
+		if _is_progress_column(col):
+			_data[row][col] = clamp(value, 0.0, 1.0)
 			queue_redraw()
 
-func get_progress_value(row_idx: int, column: int) -> float:
-	if row_idx >= 0 and row_idx < _data.size() and column >= 0 and column < _data[row_idx].size():
-		if _is_progress_column(column):
-			return _get_progress_value(_data[row_idx][column]) # Usa la funzione interna per la logica
+func get_progress_value(row_idx: int, col: int) -> float:
+	if row_idx >= 0 and row_idx < _data.size() and col >= 0 and col < _data[row_idx].size():
+		if _is_progress_column(col):
+			return _get_progress_value(_data[row_idx][col]) # Use the internal function for the logic
 	return 0.0
 
 func set_progress_colors(bar_start_color: Color, bar_middle_color: Color, bar_end_color: Color, bg_color: Color, border_c: Color, text_c: Color) -> void:
@@ -409,17 +409,17 @@ func _restore_selected_rows() -> void:
 		if (idx >= 0):
 			_selected_rows.append(idx)
 	
-func _start_cell_editing(r: int, col: int) -> void: # Rinominato `row` a `r`
+func _start_cell_editing(row: int, col: int) -> void:
 	if _is_checkbox_column(col): return # or _is_progress_column(col)  enable also for progress bar column
-	_editing_cell = [r, col]
-	var cell_rect := _get_cell_rect(r, col)
+	_editing_cell = [row, col]
+	var cell_rect := _get_cell_rect(row, col)
 	if cell_rect == Rect2(): return
 	_edit_line_edit.position = cell_rect.position
 	_edit_line_edit.size = cell_rect.size
-	var cell_value := get_cell_value(r, col)
+	var cell_value := get_cell_value(row, col)
 	if cell_value is float:
 		cell_value = snapped(cell_value, 0.01)
-	_edit_line_edit.text = str(cell_value) if get_cell_value(r, col) != null else ""
+	_edit_line_edit.text = str(cell_value) if get_cell_value(row, col) != null else ""
 	_edit_line_edit.visible = true
 	_edit_line_edit.grab_focus()
 	_edit_line_edit.select_all()
@@ -429,7 +429,7 @@ func _finish_editing(save_changes: bool = true) -> void:
 		if save_changes and _edit_line_edit.visible:
 			var old_value: Variant = get_cell_value(_editing_cell[0], _editing_cell[1])
 			var new_value_text := _edit_line_edit.text
-			var new_value: Variant = new_value_text # Default a stringa
+			var new_value: Variant = new_value_text # # Default to string
 			if new_value_text.is_valid_int(): new_value = int(new_value_text)
 			elif new_value_text.is_valid_float(): new_value = float(new_value_text)
 			update_cell(_editing_cell[0], _editing_cell[1], new_value)
@@ -438,14 +438,14 @@ func _finish_editing(save_changes: bool = true) -> void:
 		_edit_line_edit.visible = false
 		queue_redraw()
 
-func _get_cell_rect(r: int, col: int) -> Rect2: # Rinominato `row` a `r`
-	if r < _visible_rows_range[0] or r >= _visible_rows_range[1]: return Rect2()
+func _get_cell_rect(row: int, col: int) -> Rect2:
+	if row < _visible_rows_range[0] or row >= _visible_rows_range[1]: return Rect2()
 	var x_offset := -_h_scroll_position
 	var cell_x := x_offset
 	for c in range(col): cell_x += _column_widths[c]
 	var visible_w = size.x - (_v_scroll.size.x if _v_scroll.visible else 0)
 	if col >= _column_widths.size() or cell_x + _column_widths[col] <= 0 or cell_x >= visible_w: return Rect2()
-	var row_y_pos = header_height + (r - _visible_rows_range[0]) * row_height
+	var row_y_pos = header_height + (row - _visible_rows_range[0]) * row_height
 	return Rect2(cell_x, row_y_pos, _column_widths[col], row_height)
 
 func _on_edit_text_submitted(text: String) -> void: _finish_editing(true)
@@ -463,7 +463,7 @@ func _update_scrollbars() -> void:
 	var visible_width = size.x - (_v_scroll.size.x if _v_scroll.visible else 0)
 	var visible_height = size.y - (_h_scroll.size.y if _h_scroll.visible else 0) - header_height
 
-	var total_content_width := 0 # Rinominato `total_width`
+	var total_content_width := 0
 	for width in _column_widths:
 		if width != null: total_content_width += width
 
@@ -471,9 +471,9 @@ func _update_scrollbars() -> void:
 	if _h_scroll.visible:
 		_h_scroll.max_value = total_content_width
 		_h_scroll.page = visible_width
-		_h_scroll.step = default_minimum_column_width / 2.0 # Assicura float division
+		_h_scroll.step = default_minimum_column_width / 2.0 # Ensure float division
 
-	var total_content_height := float(_total_rows) * row_height # Rinominato `total_height`
+	var total_content_height := float(_total_rows) * row_height
 	_v_scroll.visible = total_content_height > visible_height
 	if _v_scroll.visible:
 		_v_scroll.max_value = total_content_height
@@ -487,11 +487,11 @@ func _on_h_scroll_changed(value) -> void:
 
 func _on_v_scroll_changed(value) -> void:
 	_v_scroll_position = value
-	if row_height > 0: # Evita divisione per zero
+	if row_height > 0: # Avoid division by zero
 		_visible_rows_range[0] = floor(value / row_height)
 		_visible_rows_range[1] = _visible_rows_range[0] + floor((size.y - header_height) / row_height) + 1
 		_visible_rows_range[1] = min(_visible_rows_range[1], _total_rows)
-	else: # fallback se row_height non è valido
+	else: # Fallback if row_height is not valid
 		_visible_rows_range = [0, _total_rows]
 
 	if _edit_line_edit.visible: _finish_editing(false)
@@ -504,9 +504,9 @@ func _get_header_text(col: int) -> String:
 func _draw() -> void:
 	if not is_inside_tree(): return
 	
-	var current_x_offset := -_h_scroll_position # Rinominato `x_offset`
-	var current_y_offset := header_height # Rinominato `y_offset`
-	var visible_drawing_width = size.x - (_v_scroll.size.x if _v_scroll.visible else 0) # Rinominato `visible_width`
+	var current_x_offset := -_h_scroll_position
+	var current_y_offset := header_height
+	var visible_drawing_width = size.x - (_v_scroll.size.x if _v_scroll.visible else 0)
 	var header_font_color := default_font_color
 	
 	draw_rect(Rect2(0, 0, size.x, header_height), header_color)
@@ -517,8 +517,8 @@ func _draw() -> void:
 		var col_width = _column_widths[col]
 		if header_cell_x + col_width > 0 and header_cell_x < visible_drawing_width:
 			draw_line(Vector2(header_cell_x, 0), Vector2(header_cell_x, header_height), grid_color)
-			var rect_w = min(header_cell_x + col_width, visible_drawing_width)
-			draw_line(Vector2(header_cell_x, header_height), Vector2(rect_w, header_height), grid_color)
+			var rect_width = min(header_cell_x + col_width, visible_drawing_width)
+			draw_line(Vector2(header_cell_x, header_height), Vector2(rect_width, header_height), grid_color)
 			
 			if col < headers.size():
 				var align_info = _align_text_in_cell(col) # Array [text, h_align, x_margin]
@@ -530,107 +530,108 @@ func _draw() -> void:
 					header_text_content += " (" + str(_data.size()) + ")"
 				else:
 					header_font_color = default_font_color
-				var text_s = font.get_string_size(header_text_content, h_align_val, col_width, font_size) # Rinominato `text_size`
-				draw_string(font, Vector2(header_cell_x + x_margin_val, header_height / 2.0 + text_s.y / 2.0 - (font_size / 2.0 - 2.0)), header_text_content, h_align_val, col_width - abs(x_margin_val), font_size, header_font_color)
+				var text_size = font.get_string_size(header_text_content, h_align_val, col_width, font_size)
+				draw_string(font, Vector2(header_cell_x + x_margin_val, header_height / 2.0 + text_size.y / 2.0 - (font_size / 2.0 - 2.0)), header_text_content, h_align_val, col_width - abs(x_margin_val), font_size, header_font_color)
 				if (col == _last_column_sorted):
 					var icon_h_align = HORIZONTAL_ALIGNMENT_LEFT
 					if (h_align_val == HORIZONTAL_ALIGNMENT_LEFT or h_align_val == HORIZONTAL_ALIGNMENT_CENTER):
 						icon_h_align = HORIZONTAL_ALIGNMENT_RIGHT
-					draw_string(font, Vector2(header_cell_x, header_height / 2.0 + text_s.y / 2.0 - (font_size / 2.0 - 1.0)), _icon_sort, icon_h_align, col_width, font_size / 1.3, header_font_color)
+					draw_string(font, Vector2(header_cell_x, header_height / 2.0 + text_size.y / 2.0 - (font_size / 2.0 - 1.0)), _icon_sort, icon_h_align, col_width, font_size / 1.3, header_font_color)
 	
 			var divider_x_pos = header_cell_x + col_width
-			if (divider_x_pos < visible_drawing_width and col <= _total_columns - 1): # Non disegnare per l'ultima colonna
+			if (divider_x_pos < visible_drawing_width and col <= _total_columns - 1): # Do not draw for the last column
 				draw_line(Vector2(divider_x_pos, 0), Vector2(divider_x_pos, header_height), grid_color, 2.0 if _mouse_over_divider == col else 1.0)
 		header_cell_x += col_width
 				
-	# Disegna le righe di dati
-	for r_idx in range(_visible_rows_range[0], _visible_rows_range[1]): # `row` rinominato a `r_idx`
-		if r_idx >= _total_rows: continue # Safety break
-		var row_y_pos = current_y_offset + (r_idx - _visible_rows_range[0]) * row_height
+	# Draw data rows
+	for row in range(_visible_rows_range[0], _visible_rows_range[1]):
+		if row >= _total_rows: continue # Safety break
+		var row_y_pos = current_y_offset + (row - _visible_rows_range[0]) * row_height
 		
-		var current_bg_color = alternate_row_color if r_idx % 2 == 1 else row_color
+		var current_bg_color = alternate_row_color if row % 2 == 1 else row_color
 		draw_rect(Rect2(0, row_y_pos, visible_drawing_width, row_height), current_bg_color)
 		
-		if _selected_rows.has(r_idx):
+		if _selected_rows.has(row):
 			draw_rect(Rect2(0, row_y_pos, visible_drawing_width, row_height - 1), selected_back_color)
 
 		draw_line(Vector2(0, row_y_pos + row_height), Vector2(visible_drawing_width, row_y_pos + row_height), grid_color)
 		
-		var cell_x_pos = current_x_offset # Riferito a -_h_scroll_position
-		for c_idx in range(_total_columns): # `col` rinominato a `c_idx`
-			if c_idx >= _column_widths.size(): continue
-			var current_col_w = _column_widths[c_idx]
+		var cell_x_pos = current_x_offset # Relative to -_h_scroll_position
+		for col in range(_total_columns):
+			if col >= _column_widths.size(): continue
+			var current_col_width = _column_widths[col]
 			
-			if cell_x_pos < visible_drawing_width and cell_x_pos + current_col_w > 0:
+			if cell_x_pos < visible_drawing_width and cell_x_pos + current_col_width > 0:
 				draw_line(Vector2(cell_x_pos, row_y_pos), Vector2(cell_x_pos, row_y_pos + row_height), grid_color)
 						
-				if not (_editing_cell[0] == r_idx and _editing_cell[1] == c_idx):
-					if _is_progress_column(c_idx):
-						_draw_progress_bar(cell_x_pos, row_y_pos, c_idx, r_idx)
-					elif _is_checkbox_column(c_idx):
-						_draw_checkbox(cell_x_pos, row_y_pos, c_idx, r_idx)
-					elif _is_image_column(c_idx):
-						_draw_image_cell(cell_x_pos, row_y_pos, c_idx, r_idx)
+				if not (_editing_cell[0] == row and _editing_cell[1] == col):
+					if _is_progress_column(col):
+						_draw_progress_bar(cell_x_pos, row_y_pos, col, row)
+					elif _is_checkbox_column(col):
+						_draw_checkbox(cell_x_pos, row_y_pos, col, row)
+					elif _is_image_column(col):
+						_draw_image_cell(cell_x_pos, row_y_pos, col, row)
 					else:
-						_draw_cell_text(cell_x_pos, row_y_pos, c_idx, r_idx)
-			cell_x_pos += current_col_w
+						_draw_cell_text(cell_x_pos, row_y_pos, col, row)
+			cell_x_pos += current_col_width
 		
-		# Disegna la linea verticale destra finale della tabella (bordo destro dell'ultima colonna)
+		# Draw the final right vertical line of the table (right border of the last column)
 		if cell_x_pos <= visible_drawing_width and cell_x_pos > -_h_scroll_position:
 			draw_line(Vector2(cell_x_pos, row_y_pos), Vector2(cell_x_pos, row_y_pos + row_height), grid_color)
 				
-func _draw_progress_bar(cell_x: float, row_y: float, col: int, r_idx: int) -> void: # `row` rinominato a `r_idx`
-	var cell_val = 0.0 # Rinominato `cell_value`
-	if r_idx < _data.size() and col < _data[r_idx].size():
-		cell_val = _get_progress_value(_data[r_idx][col])
+func _draw_progress_bar(cell_x: float, row_y: float, col: int, row: int) -> void:
+	var cell_value = 0.0
+	if row < _data.size() and col < _data[row].size():
+		cell_value = _get_progress_value(_data[row][col])
 	
 	var margin := 4.0
-	var bar_x_pos := cell_x + margin # Rinominato `bar_x`
-	var bar_y_pos := row_y + margin # Rinominato `bar_y`
-	var bar_w = _column_widths[col] - (margin * 2.0) # Rinominato `bar_width`
-	var bar_h := row_height - (margin * 2.0) # Rinominato `bar_height`
+	var bar_x_pos := cell_x + margin
+	var bar_y_pos := row_y + margin
+	var bar_width = _column_widths[col] - (margin * 2.0)
+	var bar_h := row_height - (margin * 2.0)
 	
-	draw_rect(Rect2(bar_x_pos, bar_y_pos, bar_w, bar_h), progress_background_color)
-	draw_rect(Rect2(bar_x_pos, bar_y_pos, bar_w, bar_h), progress_border_color, false, 1.0)
+	draw_rect(Rect2(bar_x_pos, bar_y_pos, bar_width, bar_h), progress_background_color)
+	draw_rect(Rect2(bar_x_pos, bar_y_pos, bar_width, bar_h), progress_border_color, false, 1.0)
 	
-	var progress_w = bar_w * cell_val # Rinominato `progress_width`
+	var progress_w = bar_width * cell_value
 	if progress_w > 0:
-		draw_rect(Rect2(bar_x_pos, bar_y_pos, progress_w, bar_h), _get_interpolated_three_colors(progress_bar_start_color, progress_bar_middle_color, progress_bar_end_color, cell_val))
+		draw_rect(Rect2(bar_x_pos, bar_y_pos, progress_w, bar_h), _get_interpolated_three_colors(progress_bar_start_color, progress_bar_middle_color, progress_bar_end_color, cell_value))
 		
-	var perc_text := str(int(round(cell_val * 100.0))) + "%" # Rinominato `percentage_text`
-	var text_s := font.get_string_size(perc_text, HORIZONTAL_ALIGNMENT_CENTER, bar_w, font_size) # Rinominato `text_size`
-	draw_string(font, Vector2(bar_x_pos + bar_w / 2.0 - text_s.x / 2.0, bar_y_pos + bar_h / 2.0 + text_s.y / 2.0 - 5.0), perc_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, progress_text_color)
+	var perc_text := str(int(round(cell_value * 100.0))) + "%"
+	var text_size := font.get_string_size(perc_text, HORIZONTAL_ALIGNMENT_CENTER, bar_width, font_size)
+	draw_string(font, Vector2(bar_x_pos + bar_width / 2.0 - text_size.x / 2.0, bar_y_pos + bar_h / 2.0 + text_size.y / 2.0 - 5.0), perc_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, progress_text_color)
 
-func _draw_checkbox(cell_x: float, row_y: float, col: int, r_idx: int) -> void: # `row` rinominato a `r_idx`
-	var cell_val := false # Rinominato `cell_value`
-	if r_idx < _data.size() and col < _data[r_idx].size():
-		cell_val = bool(_data[r_idx][col])
+func _draw_checkbox(cell_x: float, row_y: float, col: int, row: int) -> void:
+	var cell_value := false
+	if row < _data.size() and col < _data[row].size():
+		cell_value = bool(_data[row][col])
 	
-	var chk_size = min(row_height, _column_widths[col]) * 0.6 # Rinominato `checkbox_size`
-	var x_off_centered = cell_x + (_column_widths[col] - chk_size) / 2.0 # Rinominato `x_offset_centered`
-	var y_off_centered = row_y + (row_height - chk_size) / 2.0 # Rinominato `y_offset_centered`
+	var checkbox_size = min(row_height, _column_widths[col]) * 0.6
+	var x_offset_centered = cell_x + (_column_widths[col] - checkbox_size) / 2.0
+	var y_offset_centered = row_y + (row_height - checkbox_size) / 2.0
 	
-	var chk_rect := Rect2(x_off_centered, y_off_centered, chk_size, chk_size) # Rinominato `checkbox_rect`
+	var checkbox_rect := Rect2(x_offset_centered, y_offset_centered, checkbox_size, checkbox_size)
 	
-	draw_rect(chk_rect, checkbox_border_color, false, 1.0) # Bordo
+	draw_rect(checkbox_rect, checkbox_border_color, false, 1.0) # Border
 	
-	var fill_r := chk_rect.grow(-chk_size * 0.15) # Rinominato `fill_rect`
-	if cell_val:
-		draw_rect(fill_r, checkbox_checked_color)
+	var fill_rect := checkbox_rect.grow(-checkbox_size * 0.15)
+	if cell_value:
+		draw_rect(fill_rect, checkbox_checked_color)
 	else:
-		draw_rect(fill_r, checkbox_unchecked_color)
+		draw_rect(fill_rect, checkbox_unchecked_color)
 
-func _draw_image_cell(cell_x: float, row_y: float, col: int, r_idx: int) -> void:
-	var value: Variant = get_cell_value(r_idx, col)
+func _draw_image_cell(cell_x: float, row_y: float, col: int, row: int) -> void:
+	var value: Variant = get_cell_value(row, col)
 	if not value is Texture2D:
-		return # Disegna solo se il valore è una texture
+		return # Draw only if the value is a texture
 
 	var texture: Texture2D = value
 	var margin := 2.0
 	var cell_inner_width: float = _column_widths[col] - margin * 2
 	var cell_inner_height: float = row_height - margin * 2
 	
-	if cell_inner_width <= 0 or cell_inner_height <= 0: return
+	if cell_inner_width <= 0 or cell_inner_height <= 0:
+		return
 
 	var tex_size := texture.get_size()
 	var tex_aspect := tex_size.x / tex_size.y
@@ -638,13 +639,13 @@ func _draw_image_cell(cell_x: float, row_y: float, col: int, r_idx: int) -> void
 
 	var drawn_rect := Rect2()
 	if tex_aspect > cell_aspect:
-		# La texture è più "larga" della cella, adatta alla larghezza
+		# The texture is wider than the cell, fit to width
 		drawn_rect.size.x = cell_inner_width
 		drawn_rect.size.y = cell_inner_width / tex_aspect
 		drawn_rect.position.x = cell_x + margin
 		drawn_rect.position.y = row_y + margin + (cell_inner_height - drawn_rect.size.y) / 2
 	else:
-		# La texture è più "alta" o uguale, adatta all'altezza
+		# The texture is taller or equal, fit to height
 		drawn_rect.size.y = cell_inner_height
 		drawn_rect.size.x = cell_inner_height * tex_aspect
 		drawn_rect.position.y = row_y + margin
@@ -652,55 +653,69 @@ func _draw_image_cell(cell_x: float, row_y: float, col: int, r_idx: int) -> void
 		
 	draw_texture_rect(texture, drawn_rect, false)
 
-func _get_interpolated_three_colors(start_c: Color, mid_c: Color, end_c: Color, t_val: float) -> Color: # Rinominato var
-	var cl_t = clampf(t_val, 0.0, 1.0) # Rinominato `clamped_t`
-	if cl_t <= 0.5:
-		return start_c.lerp(mid_c, cl_t * 2.0)
+func _get_interpolated_three_colors(start_c: Color, mid_c: Color, end_c: Color, t_val: float) -> Color:
+	var clamped_t = clampf(t_val, 0.0, 1.0)
+	if clamped_t <= 0.5:
+		return start_c.lerp(mid_c, clamped_t * 2.0)
 	else:
-		return mid_c.lerp(end_c, (cl_t - 0.5) * 2.0)
+		return mid_c.lerp(end_c, (clamped_t - 0.5) * 2.0)
 
-func _draw_cell_text(cell_x: float, row_y: float, col: int, r_idx: int) -> void: # `row` rinominato a `r_idx`
-	var cell_val = "" # Rinominato `cell_value`
-	if r_idx >= 0 and r_idx < _data.size() and col >= 0 and col < _data[r_idx].size(): # Aggiunto check limiti
-		cell_val = str(_data[r_idx][col])
+func _draw_cell_text(cell_x: float, row_y: float, col: int, row: int) -> void:
+	var cell_value = ""
+	if row >= 0 and row < _data.size() and col >= 0 and col < _data[row].size(): # bounds check
+		cell_value = str(_data[row][col])
 	
 	var align_info = _align_text_in_cell(col)
 	var h_align_val = align_info[1]
 	var x_margin_val = align_info[2]
 	
-	var text_s = font.get_string_size(cell_val, h_align_val, _column_widths[col] - abs(x_margin_val) * 2, font_size) # Rinominato e corretto width per text
-	var text_y_pos = row_y + row_height / 2.0 + text_s.y / 2.0 - (font_size / 2.0 - 2.0) # Calcolo y per centrare meglio
-	draw_string(font, Vector2(cell_x + x_margin_val, text_y_pos), cell_val, h_align_val, _column_widths[col] - abs(x_margin_val), font_size, default_font_color)
+	var text_size = font.get_string_size(
+		cell_value,
+		h_align_val,
+		_column_widths[col] - abs(x_margin_val) * 2,
+		font_size
+	)
+	var text_y_pos = row_y + row_height / 2.0 + text_size.y / 2.0 - (font_size / 2.0 - 2.0) # Y calculation to better center text
+	draw_string(
+		font,
+		Vector2(cell_x + x_margin_val, text_y_pos),
+		cell_value,
+		h_align_val,
+		_column_widths[col] - abs(x_margin_val),
+		font_size,
+		default_font_color
+	)
+
 			
 func _align_text_in_cell(col: int) -> Array:
 	var header_parts = headers[col].split("|")
-	var h_align_char = "" # Rinominato `_h_alignment`
+	var h_alignment_character = ""
 	if header_parts.size() > 1:
-		for char_code in header_parts[1].to_lower(): # Rinominato `char`
+		for char_code in header_parts[1].to_lower():
 			if char_code in ["l", "c", "r"]:
-				h_align_char = char_code
+				h_alignment_character = char_code
 				break
 	
 	var header_text_content = header_parts[0]
 	var h_align_enum = HORIZONTAL_ALIGNMENT_LEFT
-	var x_marg = 5 # Rinominato `x_margin`
-	if (h_align_char == "c"):
+	var x_margin = 5
+	if (h_alignment_character == "c"):
 		h_align_enum = HORIZONTAL_ALIGNMENT_CENTER
-		x_marg = 0
-	elif (h_align_char == "r"):
+		x_margin = 0
+	elif (h_alignment_character == "r"):
 		h_align_enum = HORIZONTAL_ALIGNMENT_RIGHT
-		x_marg = -5 # Negativo per margine destro
-	return [header_text_content, h_align_enum, x_marg]
+		x_margin = -5 # Negative for right margin
+	return [header_text_content, h_align_enum, x_margin]
 
 func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> void:
 	_finish_editing(true)
 
 	var clicked_row = -1
-	if row_height > 0: # Evita divisione per zero
+	if row_height > 0: # Avoid division by zero
 		clicked_row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
 	
-	if clicked_row < 0 or clicked_row >= _total_rows: # Click fuori area righe valide
-		# Opzionale: deseleziona tutto se si clicca fuori
+	if clicked_row < 0 or clicked_row >= _total_rows: # Click outside valid row area
+		# Optional: clear selection when clicking outside
 		# _selected_rows.clear()
 		# _anchor_row = -1
 		# _focused_row = -1
@@ -717,15 +732,15 @@ func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> voi
 			break
 		current_x_pos += _column_widths[c]
 
-	if clicked_col == -1: return # Click fuori area colonne
+	if clicked_col == -1: return # Click outside column area
 
 	_focused_row = clicked_row
 	_focused_col = clicked_col
 
 	var is_shift = event.is_shift_pressed()
-	var is_ctrl_cmd = event.is_ctrl_pressed() or event.is_meta_pressed() # Ctrl o Cmd
+	var is_ctrl_cmd = event.is_ctrl_pressed() or event.is_meta_pressed() # Ctrl or Cmd
 
-	var selection_was_multiple = _selected_rows.size() > 1 # Stato prima della modifica
+	var selection_was_multiple = _selected_rows.size() > 1 # State before the change
 	var emit_multiple_selection_signal = false
 
 	if is_shift and _anchor_row != -1:
@@ -734,7 +749,7 @@ func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> voi
 		var end_range = max(_anchor_row, _focused_row)
 		for i in range(start_range, end_range + 1):
 			_selected_rows.append(i)
-		# Dopo una selezione con Shift, se ci sono più righe selezionate, impostiamo per emettere.
+		# After a Shift selection, if more than one row is selected, prepare to emit.
 		if _selected_rows.size() > 1:
 			emit_multiple_selection_signal = true
 	elif is_ctrl_cmd:
@@ -742,120 +757,133 @@ func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> voi
 			_selected_rows.erase(_focused_row)
 		else:
 			_selected_rows.append(_focused_row)
-		_anchor_row = _focused_row # Aggiorna l'ancora per future selezioni con Shift
-		# Dopo una selezione con Ctrl/Cmd, se ci sono più righe selezionate, impostiamo per emettere.
+		_anchor_row = _focused_row # Update the anchor for future Shift selections
+		# After a Ctrl/Cmd selection, if more than one row is selected, prepare to emit.
 		if _selected_rows.size() > 1:
 			emit_multiple_selection_signal = true
-		# Se la selezione era multipla e ora non lo è più (a causa di Ctrl-click che deseleziona),
-		# potresti voler emettere comunque per indicare un cambiamento da uno stato di selezione multipla.
-		# Tuttavia, la richiesta è "quando ESISTE una selezione multipla".
-		# Quindi, se _selected_rows.size() <= 1, non impostiamo emit_multiple_selection_signal = true.
-	else: # Click singolo senza modificatori
+		# If the selection was multiple and now is no longer multiple (because Ctrl-click deselects),
+		# you might still want to emit to indicate a change from a multiple-selection state.
+		# However, the requirement is "when a multiple selection EXISTS".
+		# So if _selected_rows.size() <= 1, we do not set emit_multiple_selection_signal = true.
+	else: # Single click without modifiers
 		_selected_rows.clear()
 		_selected_rows.append(_focused_row)
 		_anchor_row = _focused_row
-		# In questo caso, _selected_rows.size() sarà 1.
-		# Se la selezione precedente era multipla, e ora è singola,
-		# non emettiamo multiple_rows_selected perché non *esiste* più una selezione multipla.
+		# In this case, _selected_rows.size() will be 1.
+		# If the previous selection was multiple and now is single,
+		# we do not emit multiple_rows_selected because a multiple selection no longer exists.
 
-	cell_selected.emit(_focused_row, _focused_col) # Emetti sempre per un click valido su una cella
+	cell_selected.emit(_focused_row, _focused_col) # Always emit for a valid cell click
 
-	# Emetti il nuovo segnale se è stata identificata una selezione multipla
+	# Emit the new signal if a multiple selection was identified
 	if emit_multiple_selection_signal:
-		# L'array _selected_rows contiene già gli indici corretti
+		# _selected_rows already contains the correct indices
 		multiple_rows_selected.emit(_selected_rows)
-	# Considera anche il caso in cui la selezione PASSA da multipla a singola/nulla
-	# a seguito di un'operazione Ctrl. Se vuoi un segnale anche per questo "cambiamento",
-	# la logica qui dovrebbe essere leggermente diversa. Ma attenendoci a "quando esiste",
-	# l'approccio attuale è corretto.
+	# Also consider the case where the selection transitions from multiple to single/none
+	# due to a Ctrl operation. If you want a signal for that "change" as well,
+	# the logic here should be slightly different. But sticking to "when it exists",
+	# the current approach is correct.
 
 	queue_redraw()
 
 func _handle_right_click(mouse_pos: Vector2) -> void:
-	var r = -1 # Rinominato `row`
-	var c = -1 # Rinominato `col`
+	var row = -1
+	var col = -1
 	if mouse_pos.y >= header_height: # Non su header
-		if row_height > 0: r = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
-		if r >= 0 and r < _total_rows:
+		if row_height > 0: row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
+		if row >= 0 and row < _total_rows:
 			var current_x = - _h_scroll_position
 			for i in range(_total_columns):
 				if i >= _column_widths.size(): continue
 				if mouse_pos.x >= current_x and mouse_pos.x < current_x + _column_widths[i]:
-					c = i; break
+					col = i; break
 				current_x += _column_widths[i]
 	if (_selected_rows.size() <= 1):
-		set_selected_cell(r, c)
-		cell_right_selected.emit(r, c, get_global_mouse_position())
-	if (_total_rows > 0 and r <= _total_rows):
-		cell_right_selected.emit(r, c, get_global_mouse_position())
-	elif (r > _total_rows):
-		cell_right_selected.emit(_total_rows, c, get_global_mouse_position())
+		set_selected_cell(row, col)
+		cell_right_selected.emit(row, col, get_global_mouse_position())
+	if (_total_rows > 0 and row <= _total_rows):
+		cell_right_selected.emit(row, col, get_global_mouse_position())
+	elif (row > _total_rows):
+		cell_right_selected.emit(_total_rows, col, get_global_mouse_position())
 		
 func _handle_double_click(mouse_pos: Vector2) -> void:
-	if mouse_pos.y >= header_height: # Non su header
-		var r = -1 # Rinominato `row`
-		if row_height > 0: r = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
+	if mouse_pos.y >= header_height: # Not on the header
+		var row = -1
+		if row_height > 0:
+			row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
 		
-		if r >= 0 and r < _total_rows:
-			var current_x = - _h_scroll_position # Rinominato `x_offset`
-			var c = -1 # Rinominato `col`
+		if row >= 0 and row < _total_rows:
+			var current_x = - _h_scroll_position
+			var col = -1
 			for i in range(_total_columns):
 				if i >= _column_widths.size(): continue
 				if mouse_pos.x >= current_x and mouse_pos.x < current_x + _column_widths[i]:
-					c = i
+					col = i
 					break
 				current_x += _column_widths[i]
 			
-			if c != -1:
-				# Se la cella cliccata non è quella correntemente "focused" per la selezione,
-				# aggiorna la selezione come un singolo click prima di iniziare l'editing.
-				if not (_selected_rows.size() == 1 and _selected_rows[0] == r and _focused_row == r and _focused_col == c):
-					_focused_row = r
-					_focused_col = c
+			if col != -1:
+				# If the clicked cell is not the currently focused/selected one,
+				# update the selection as a single click before starting editing.
+				if not (_selected_rows.size() == 1 and _selected_rows[0] == row and _focused_row == row and _focused_col == col):
+					_focused_row = row
+					_focused_col = col
 					_selected_rows.clear()
-					_selected_rows.append(r)
-					_anchor_row = r
-					cell_selected.emit(r, c) # Emetti segnale di selezione
-					queue_redraw() # Aggiorna la vista della selezione
+					_selected_rows.append(row)
+					_anchor_row = row
+					cell_selected.emit(row, col) # Emit selection signal
+					queue_redraw() # Update the selection view
 					
-				_start_cell_editing(r, c)
+				_start_cell_editing(row, col)
+
 		
 func _handle_header_click(mouse_pos: Vector2) -> void:
-	var current_x = - _h_scroll_position # Rinominato `x_offset`
+	var current_x = - _h_scroll_position
 	for col in range(_total_columns):
-		if col >= _column_widths.size(): continue
-		if mouse_pos.x >= current_x + _divider_width / 2 and mouse_pos.x < current_x + _column_widths[col] - _divider_width / 2:
-			# Termina l'editing se attivo
+		if col >= _column_widths.size():
+			continue
+
+		if (
+			mouse_pos.x >= current_x + _divider_width / 2
+			and mouse_pos.x < current_x + _column_widths[col] - _divider_width / 2
+		):
+			# Finish editing if active
 			_finish_editing(false)
-			
-			if (_last_column_sorted == col):
+
+			if _last_column_sorted == col:
 				_ascending = not _ascending
 			else:
 				_ascending = true
+
 			ordering_data(col, _ascending)
 			header_clicked.emit(col)
 			break
+
 		current_x += _column_widths[col]
+
 
 #------------------------------------------------------------
 # FILTERING FUNCTIONS
 #------------------------------------------------------------
 
 func _handle_header_double_click(mouse_pos: Vector2) -> void:
-	_finish_editing(false) # Termina l'editing di una cella, se attivo
+	_finish_editing(false) # Finish cell editing, if active
 	var current_x = - _h_scroll_position
 	for col in range(_total_columns):
-		if col >= _column_widths.size(): continue
+		if col >= _column_widths.size():
+			continue
+
 		var col_width = _column_widths[col]
 		if mouse_pos.x >= current_x and mouse_pos.x < current_x + col_width:
 			var header_rect = Rect2(current_x, 0, col_width, header_height)
 			_start_filtering(col, header_rect)
 			break
+
 		current_x += col_width
 
 func _start_filtering(col: int, header_rect: Rect2) -> void:
 	if _filtering_column == col and _filter_line_edit.visible:
-		return # Già in modalità filtro su questa colonna
+		return # Already in filter mode on this column
 
 	_filtering_column = col
 	_filter_line_edit.position = header_rect.position + Vector2(1, 1)
@@ -865,13 +893,15 @@ func _start_filtering(col: int, header_rect: Rect2) -> void:
 	_filter_line_edit.grab_focus()
 
 func _apply_filter(search_key: String) -> void:
-	if not _filter_line_edit.visible: return
+	if not _filter_line_edit.visible:
+		return
 	
 	_filter_line_edit.visible = false
-	if _filtering_column == -1: return
+	if _filtering_column == -1:
+		return
 
 	if search_key.is_empty():
-		# Se la chiave è vuota, ripristina tutti i dati (rimuovi il filtro)
+		# If the key is empty, restore all data (remove the filter)
 		_data = _full_data.duplicate(false)
 		_filtering_column = -1
 	else:
@@ -881,105 +911,159 @@ func _apply_filter(search_key: String) -> void:
 			if _filtering_column < row_data.size() and row_data[_filtering_column] != null:
 				var cell_value = str(row_data[_filtering_column]).to_lower()
 				if cell_value.contains(key_lower):
-					filtered_data.append(row_data) # Aggiunge il riferimento
+					filtered_data.append(row_data) # Adds the reference
 		_data = filtered_data
 
-	# Resetta la vista
+	# Reset the view
 	_total_rows = _data.size()
 	_v_scroll_position = 0
 	_v_scroll.value = 0
 	_selected_rows.clear()
 	_previous_sort_selected_rows.clear()
 	_focused_row = -1
-	_last_column_sorted = -1 # Resetta l'ordinamento visuale
+	_last_column_sorted = -1 # Reset visual sorting
 	
 	_update_scrollbars()
 	queue_redraw()
 
 func _on_filter_focus_exited() -> void:
-	# Applica il filtro anche quando si perde il focus dal campo di testo
+	# Apply the filter also when the text field loses focus
 	if _filter_line_edit.visible:
 		_apply_filter(_filter_line_edit.text)
 	
 func _on_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var mouse_btn_event = event as InputEventMouseButton
+
 		if mouse_btn_event.button_index == MOUSE_BUTTON_LEFT:
 			if mouse_btn_event.pressed:
 				var m_pos = mouse_btn_event.position
-				
-				# Gestione doppio click
-				if _click_count == 1 and _double_click_timer.time_left > 0 and _last_click_pos.distance_to(m_pos) < _click_position_threshold:
+
+				# Double-click handling
+				if (
+					_click_count == 1
+					and _double_click_timer.time_left > 0
+					and _last_click_pos.distance_to(m_pos) < _click_position_threshold
+				):
 					_click_count = 0
 					_double_click_timer.stop()
+
 					if m_pos.y < header_height:
-						_handle_header_double_click(m_pos) # <-- NUOVA CHIAMATA
+						_handle_header_double_click(m_pos) # <-- NEW CALL
 					else:
 						_handle_double_click(m_pos)
-				else: # Gestione singolo click
+				else:
+					# Single-click handling
 					_click_count = 1
 					_last_click_pos = m_pos
 					_double_click_timer.start()
 
 					if m_pos.y < header_height:
-						# Se il LineEdit del filtro è visibile, non processare il click singolo sull'header
+						# If the filter LineEdit is visible, do not process single header clicks
 						if not _filter_line_edit.visible:
 							_handle_header_click(m_pos)
 					else:
 						_handle_checkbox_click(m_pos)
 						_handle_cell_click(m_pos, mouse_btn_event)
+
 						if _is_clicking_progress_bar(m_pos):
 							_dragging_progress = true
+
 					if _mouse_over_divider >= 0:
 						_resizing_column = _mouse_over_divider
 						_resizing_start_pos = m_pos.x
 						_resizing_start_width = _column_widths[_resizing_column]
-			else: # Mouse button released
+
+			else:
+				# Mouse button released
 				_resizing_column = -1
 				_dragging_progress = false
 				_progress_drag_row = -1
 				_progress_drag_col = -1
+
 		elif mouse_btn_event.button_index == MOUSE_BUTTON_RIGHT and mouse_btn_event.pressed:
-			_handle_right_click(mouse_btn_event.position) # Usa mouse_btn_event.position
+			_handle_right_click(mouse_btn_event.position) # Use mouse_btn_event.position
+
 		elif mouse_btn_event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			if _v_scroll.visible: _v_scroll.value = max(0, _v_scroll.value - _v_scroll.step * 1)
+			if _v_scroll.visible:
+				_v_scroll.value = max(
+					0,
+					_v_scroll.value - _v_scroll.step * 1
+				)
+
 		elif mouse_btn_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			if _v_scroll.visible: _v_scroll.value = min(_v_scroll.max_value, _v_scroll.value + _v_scroll.step * 1)
-			
+			if _v_scroll.visible:
+				_v_scroll.value = min(
+					_v_scroll.max_value,
+					_v_scroll.value + _v_scroll.step * 1
+				)
+
 	elif event is InputEventMouseMotion:
 		var mouse_mot_event = event as InputEventMouseMotion # Cast
-		var m_pos = mouse_mot_event.position # Rinominato `mouse_pos`
-		
-		if _dragging_progress and _progress_drag_row >= 0 and _progress_drag_col >= 0:
+		var m_pos = mouse_mot_event.position # Renamed from `mouse_pos`
+
+		if (
+			_dragging_progress
+			and _progress_drag_row >= 0
+			and _progress_drag_col >= 0
+		):
 			_handle_progress_drag(m_pos)
-		elif (_resizing_column >= 0 and _resizing_column < _total_columns - 1): # Modificato headers.size() a _total_columns
+
+		elif (
+			_resizing_column >= 0
+			and _resizing_column < _total_columns - 1
+		):
+			# Changed from headers.size() to _total_columns
 			var delta_x = m_pos.x - _resizing_start_pos
-			var new_width = max(_resizing_start_width + delta_x, _min_column_widths[_resizing_column])
+			var new_width = max(
+				_resizing_start_width + delta_x,
+				_min_column_widths[_resizing_column]
+			)
+
 			_column_widths[_resizing_column] = new_width
 			_update_scrollbars()
 			column_resized.emit(_resizing_column, new_width)
 			queue_redraw()
+
 		else:
 			_check_mouse_over_divider(m_pos)
 			_update_tooltip(m_pos)
-	
-	elif event is InputEventKey and event.is_pressed() and has_focus(): # Gestione input tastiera
-		_handle_key_input(event as InputEventKey) # Chiama la nuova funzione dedicata
-		# accept_event() o get_viewport().set_input_as_handled() sarà chiamato in _handle_key_input
+
+	elif (
+		event is InputEventKey
+		and event.is_pressed()
+		and has_focus()
+	):
+		# Keyboard input handling
+		_handle_key_input(event as InputEventKey) # Call the dedicated handler
+		# accept_event() or get_viewport().set_input_as_handled()
+		# will be called inside _handle_key_input
+
 	
 func _check_mouse_over_divider(mouse_pos: Vector2) -> void:
 	_mouse_over_divider = -1
 	mouse_default_cursor_shape = CURSOR_ARROW
+
 	if mouse_pos.y < header_height:
 		var current_x = - _h_scroll_position
-		for col in range(_total_columns - 1): # Non per l'ultima colonna
-			if col >= _column_widths.size(): continue
+		for col in range(_total_columns - 1): # Not for the last column
+			if col >= _column_widths.size():
+				continue
+
 			current_x += _column_widths[col]
-			var divider_rect = Rect2(current_x - _divider_width / 2, 0, _divider_width, header_height)
+			var divider_rect = Rect2(
+				current_x - _divider_width / 2,
+				0,
+				_divider_width,
+				header_height
+			)
+
 			if divider_rect.has_point(mouse_pos):
 				_mouse_over_divider = col
 				mouse_default_cursor_shape = CURSOR_HSIZE
-	queue_redraw() # Aggiorna per mostrare il divisore evidenziato
+
+	queue_redraw() # Refresh to show the highlighted divider
+
 
 func _update_tooltip(mouse_pos: Vector2) -> void:
 	var current_cell = [-1, -1]
@@ -1018,115 +1102,157 @@ func _update_tooltip(mouse_pos: Vector2) -> void:
 		self.tooltip_text = new_tooltip
 
 func _is_clicking_progress_bar(mouse_pos: Vector2) -> bool:
-	if mouse_pos.y < header_height: return false
-	var r := -1 # Rinominato `row`
-	if row_height > 0: r = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
-	if r < 0 or r >= _total_rows: return false
+	if mouse_pos.y < header_height:
+		return false
+
+	var row := -1
+	if row_height > 0:
+		row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
+
+	if row < 0 or row >= _total_rows:
+		return false
 	
-	var current_x := -_h_scroll_position # Rinominato `x_offset`
-	var c := -1 # Rinominato `col`
+	var current_x := -_h_scroll_position # Renamed from `x_offset`
+	var col := -1
+
 	for i in range(_total_columns):
-		if i >= _column_widths.size(): continue
+		if i >= _column_widths.size():
+			continue
 		if mouse_pos.x >= current_x and mouse_pos.x < current_x + _column_widths[i]:
-			c = i; break
+			col = i
+			break
 		current_x += _column_widths[i]
 	
-	if c >= 0 and _is_progress_column(c):
-		# Imposta _focused_row e _focused_col se si clicca su una progress bar
-		# Questo assicura che la riga diventi "attiva"
-		if _focused_row != r or _focused_col != c:
-			_focused_row = r
-			_focused_col = c
-			# Se non è già selezionata, la si seleziona come singola
-			if not _selected_rows.has(r):
+	if col >= 0 and _is_progress_column(col):
+		# Set _focused_row and _focused_col when clicking on a progress bar
+		# This ensures the row becomes "active"
+		if _focused_row != row or _focused_col != col:
+			_focused_row = row
+			_focused_col = col
+			# If not already selected, select it as a single row
+			if not _selected_rows.has(row):
 				_selected_rows.clear()
-				_selected_rows.append(r)
-				_anchor_row = r
-			cell_selected.emit(_focused_row, _focused_col) # Emetti segnale
+				_selected_rows.append(row)
+				_anchor_row = row
+			cell_selected.emit(_focused_row, _focused_col) # Emit signal
 			queue_redraw()
-
-		_progress_drag_row = r
-		_progress_drag_col = c
+		_progress_drag_row = row
+		_progress_drag_col = col
 		return true
+
 	return false
 
+
 func _handle_progress_drag(mouse_pos: Vector2) -> void:
-	if _progress_drag_row < 0 or _progress_drag_col < 0 or _progress_drag_col >= _column_widths.size(): return
+	if (
+		_progress_drag_row < 0
+		or _progress_drag_col < 0
+		or _progress_drag_col >= _column_widths.size()
+	):
+		return
 	
-	var current_x := -_h_scroll_position # Rinominato `x_offset`
-	for c_loop in range(_progress_drag_col): current_x += _column_widths[c_loop]
+	var current_x := -_h_scroll_position
+	for col_loop in range(_progress_drag_col):
+		current_x += _column_widths[col_loop]
 	
 	var margin := 4.0
 	var bar_x_pos := current_x + margin
-	var bar_w = _column_widths[_progress_drag_col] - (margin * 2.0)
-	if bar_w <= 0: return # Evita divisione per zero
+	var bar_width = _column_widths[_progress_drag_col] - (margin * 2.0)
 
-	var rel_x := mouse_pos.x - bar_x_pos # Rinominato `relative_x`
-	var new_prog = clamp(rel_x / bar_w, 0.0, 1.0) # Rinominato `new_progress`
+	if bar_width <= 0:
+		return # Avoid division by zero
+
+	var relative_x := mouse_pos.x - bar_x_pos
+	var new_progress = clamp(relative_x / bar_width, 0.0, 1.0)
 	
-	if _progress_drag_row < _data.size() and _progress_drag_col < _data[_progress_drag_row].size():
-		_data[_progress_drag_row][_progress_drag_col] = new_prog
-		progress_changed.emit(_progress_drag_row, _progress_drag_col, new_prog)
+	if (
+		_progress_drag_row < _data.size()
+		and _progress_drag_col < _data[_progress_drag_row].size()
+	):
+		_data[_progress_drag_row][_progress_drag_col] = new_progress
+		progress_changed.emit(_progress_drag_row, _progress_drag_col, new_progress)
 		queue_redraw()
 
 func _handle_checkbox_click(mouse_pos: Vector2) -> bool:
-	if mouse_pos.y < header_height: return false
-	var r := -1 # Rinominato `row`
-	if row_height > 0: r = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
-	if r < 0 or r >= _total_rows: return false
+	if mouse_pos.y < header_height:
+		return false
+
+	var row := -1
+	if row_height > 0:
+		row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
+
+	if row < 0 or row >= _total_rows:
+		return false
 	
-	var current_x := -_h_scroll_position # Rinominato `x_offset`
-	var c := -1 # Rinominato `col`
+	var current_x := -_h_scroll_position
+	var col := -1
+
 	for i in range(_total_columns):
-		if i >= _column_widths.size(): continue
+		if i >= _column_widths.size():
+			continue
+
 		if mouse_pos.x >= current_x and mouse_pos.x < current_x + _column_widths[i]:
-			c = i; break
+			col = i
+			break
+
 		current_x += _column_widths[i]
 	
-	if c >= 0 and _is_checkbox_column(c):
-		# Se si clicca su una checkbox, la riga diventa la selezione singola corrente (se non lo è già)
-		if _focused_row != r or _focused_col != c:
-			_focused_row = r
-			_focused_col = c
-			if not _selected_rows.has(r) or _selected_rows.size() > 1: # Se non è l'unica riga selezionata
-				_selected_rows.clear()
-				_selected_rows.append(r)
-				_anchor_row = r
-			cell_selected.emit(_focused_row, _focused_col) # Emetti il segnale per il focus
-			# Non chiamare queue_redraw() qui, verrà fatto dopo update_cell
+	if col >= 0 and _is_checkbox_column(col):
+		# When clicking a checkbox, the row becomes the current single selection (if not already)
+		if _focused_row != row or _focused_col != col:
+			_focused_row = row
+			_focused_col = col
 
-		var old_val: Variant = get_cell_value(r, c) # Rinominato `old_value`
-		var new_val := not bool(old_val) # Rinominato `new_value`
-		update_cell(r, c, new_val) # update_cell chiama queue_redraw()
-		cell_edited.emit(r, c, old_val, new_val)
+			# If it is not the only selected row
+			if not _selected_rows.has(row) or _selected_rows.size() > 1:
+				_selected_rows.clear()
+				_selected_rows.append(row)
+				_anchor_row = row
+
+			cell_selected.emit(_focused_row, _focused_col) # Emit focus signal
+			# Do not call queue_redraw() here; it will be done after update_cell
+
+		var old_val: Variant = get_cell_value(row, col)
+		var new_val := not bool(old_val)
+
+		update_cell(row, col, new_val) # update_cell calls queue_redraw()
+		cell_edited.emit(row, col, old_val, new_val)
 		return true
+
 	return false
 
 func _ensure_row_visible(row_idx: int) -> void:
-	if _total_rows == 0 or row_height == 0 or not _v_scroll.visible: return
+	if _total_rows == 0 or row_height == 0 or not _v_scroll.visible:
+		return
 
 	var visible_area_height = size.y - header_height - (_h_scroll.size.y if _h_scroll.visible else 0)
 	var num_visible_rows_in_page = floor(visible_area_height / row_height)
 	
-	# _visible_rows_range[0] è la prima riga visibile (indice base 0)
-	# _visible_rows_range[1] è l'indice della prima riga NON visibile in basso
-	# Quindi le righe visibili vanno da _visible_rows_range[0] a _visible_rows_range[1] - 1
+	# _visible_rows_range[0] is the first visible row (0-based index)
+	# _visible_rows_range[1] is the index of the first row that is NOT visible at the bottom
+	# Therefore, visible rows go from _visible_rows_range[0] to _visible_rows_range[1] - 1
 	
 	var first_fully_visible_row = _visible_rows_range[0]
-	# L'ultima riga completamente visibile è circa first_fully_visible_row + num_visible_rows_in_page - 1
-	# Tuttavia, _visible_rows_range[1] è più preciso per il limite superiore delle righe parzialmente/totalmente visibili.
+	# The last fully visible row is approximately:
+	# first_fully_visible_row + num_visible_rows_in_page - 1
+	# However, _visible_rows_range[1] gives a more accurate upper bound
+	# including partially visible rows.
 	
-	if row_idx < first_fully_visible_row: # La riga è sopra la vista corrente
+	if row_idx < first_fully_visible_row:
+		# The row is above the current viewport
 		_v_scroll.value = row_idx * row_height
-	elif row_idx >= first_fully_visible_row + num_visible_rows_in_page: # La riga è sotto la vista corrente
-		# Scroll in modo che row_idx sia l'ultima riga (o quasi) nella vista
+	elif row_idx >= first_fully_visible_row + num_visible_rows_in_page:
+		# The row is below the current viewport
+		# Scroll so that row_idx becomes the last (or nearly last) visible row
 		_v_scroll.value = (row_idx - num_visible_rows_in_page + 1) * row_height
 	
 	_v_scroll.value = clamp(_v_scroll.value, 0, _v_scroll.max_value)
-	# _on_v_scroll_changed sarà chiamato, aggiornando _visible_rows_range e facendo queue_redraw()
+	# _on_v_scroll_changed will be called, updating _visible_rows_range
+	# and triggering queue_redraw()
+
 func _handle_key_input(event: InputEventKey) -> void:
-	if _edit_line_edit.visible: # Lascia che LineEdit gestisca l'input durante l'editing
-		if event.keycode == KEY_ESCAPE: # Tranne ESC per cancellare
+	if _edit_line_edit.visible: # Let the LineEdit handle input during editing
+		if event.keycode == KEY_ESCAPE: # Except ESC to cancel
 			_finish_editing(false)
 			get_viewport().set_input_as_handled()
 		return
@@ -1134,8 +1260,8 @@ func _handle_key_input(event: InputEventKey) -> void:
 	var keycode := event.keycode
 	var is_shift := event.is_shift_pressed()
 	var is_ctrl := event.is_ctrl_pressed()
-	var is_meta := event.is_meta_pressed() # Cmd su Mac
-	var is_ctrl_cmd := is_ctrl or is_meta # Per azioni tipo Ctrl+A/Cmd+A
+	var is_meta := event.is_meta_pressed() # Cmd on Mac
+	var is_ctrl_cmd := is_ctrl or is_meta # For actions like Ctrl+A / Cmd+A
 
 	var current_focused_r := _focused_row
 	var current_focused_c := _focused_col
@@ -1143,8 +1269,8 @@ func _handle_key_input(event: InputEventKey) -> void:
 	var new_focused_r := current_focused_r
 	var new_focused_c := current_focused_c
 	
-	var key_operation_performed := false # Flag per tracciare se un'operazione chiave ha modificato lo stato
-	var event_consumed := true # Assume che l'evento sarà consumato a meno che non sia specificato diversamente
+	var key_operation_performed := false # Flag to track whether a key operation modified the state
+	var event_consumed := true # Assume the event will be consumed unless stated otherwise
 	var emit_multiple_selection_signal := false
 	
 	if is_ctrl_cmd and keycode == KEY_A:
@@ -1154,16 +1280,16 @@ func _handle_key_input(event: InputEventKey) -> void:
 				_selected_rows.append(i)
 			emit_multiple_selection_signal = true
 			
-			# Imposta o mantiene il focus e l'ancora
-			if current_focused_r == -1: # Se non c'è focus, vai alla prima riga
+			# Set or keep focus and anchor
+			if current_focused_r == -1: # If there is no focus, go to the first row
 				_focused_row = 0
 				_focused_col = 0 if _total_columns > 0 else -1
 				_anchor_row = 0
-			else: # Altrimenti, mantieni il focus corrente come ancora
+			else: # Otherwise, keep the current focus as anchor
 				_anchor_row = _focused_row
 			
 			_ensure_row_visible(_focused_row)
-			# Considera _ensure_col_visible(_focused_col) se implementato
+			# Consider _ensure_col_visible(_focused_col) if implemented
 		key_operation_performed = true
 
 	elif keycode == KEY_HOME:
@@ -1172,7 +1298,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 			new_focused_c = 0 if _total_columns > 0 else -1
 			key_operation_performed = true
 		else:
-			event_consumed = false # Nessuna riga, nessuna azione
+			event_consumed = false # No rows, no action
 
 	elif keycode == KEY_END:
 		if _total_rows > 0:
@@ -1180,9 +1306,9 @@ func _handle_key_input(event: InputEventKey) -> void:
 			new_focused_c = (_total_columns - 1) if _total_columns > 0 else -1
 			key_operation_performed = true
 		else:
-			event_consumed = false # Nessuna riga, nessuna azione
+			event_consumed = false # No rows, no action
 			
-	# Altri tasti di navigazione (generalmente richiedono un focus iniziale)
+	# Other navigation keys (generally require an initial focus)
 	elif current_focused_r != -1 and current_focused_c != -1:
 		match keycode:
 			KEY_UP:
@@ -1199,7 +1325,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 				key_operation_performed = true
 			KEY_PAGEUP:
 				var page_row_count = floor((size.y - header_height) / row_height) if row_height > 0 else 10
-				page_row_count = max(1, page_row_count) # Assicura scorrimento di almeno 1 riga
+				page_row_count = max(1, page_row_count) # Ensure scrolling of at least 1 row
 				new_focused_r = max(0, current_focused_r - page_row_count)
 				key_operation_performed = true
 			KEY_PAGEDOWN:
@@ -1217,7 +1343,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 					key_operation_performed = true
 				else: event_consumed = false
 			KEY_ESCAPE:
-				if _selected_rows.size() > 0 or _focused_row != -1: # Agisci solo se c'è una selezione o un focus
+				if _selected_rows.size() > 0 or _focused_row != -1: # Act only if there is a selection or focus
 					_selected_rows.clear()
 					_previous_sort_selected_rows.clear()
 					_anchor_row = -1
@@ -1226,71 +1352,71 @@ func _handle_key_input(event: InputEventKey) -> void:
 					key_operation_performed = true
 					set_selected_cell(-1, -1)
 				else:
-					event_consumed = false # Nessuna selezione/focus da annullare
+					event_consumed = false # No selection/focus to cancel
 		
-	else: # Nessun focus iniziale per la maggior parte dei tasti di navigazione, o tasto non gestito sopra
+	else: # No initial focus for most navigation keys, or unhandled key above
 		event_consumed = false
 
-	# Se il focus è cambiato o un'operazione chiave ha modificato lo stato della selezione
+	# If the focus changed or a key operation modified the selection state
 	if key_operation_performed and (new_focused_r != current_focused_r or new_focused_c != current_focused_c or keycode in [KEY_HOME, KEY_END, KEY_SPACE, KEY_A]):
-		var old_focused_r := _focused_row # Salva il focus precedente per l'ancora
+		var old_focused_r := _focused_row # Save previous focus for anchor
 		
 		_focused_row = new_focused_r
 		_focused_col = new_focused_c
 
-		# Logica di aggiornamento della selezione
-		if not (is_ctrl_cmd and keycode == KEY_A): # Ctrl+A gestisce la sua selezione
+		# Selection update logic
+		if not (is_ctrl_cmd and keycode == KEY_A): # Ctrl+A handles its own selection
 			#var emit_multiple_selection_signal = false
 			if is_shift:
-				# Imposta l'ancora se non è definita, usando il focus precedente o 0 come fallback
+				# Set anchor if not defined, using previous focus or 0 as fallback
 				if _anchor_row == -1:
 					_anchor_row = old_focused_r if old_focused_r != -1 else 0
 				
-				if _focused_row != -1: # Solo se il nuovo focus sulla riga è valido
+				if _focused_row != -1: # Only if the new focused row is valid
 					_selected_rows.clear()
 					var start_r: int = min(_anchor_row, _focused_row)
 					var end_r: int = max(_anchor_row, _focused_row)
 					for i in range(start_r, end_r + 1):
-						if i >= 0 and i < _total_rows: # Verifica validità indice
+						if i >= 0 and i < _total_rows: # Check index validity
 							if not _selected_rows.has(i):
 								_selected_rows.append(i)
 								emit_multiple_selection_signal = true
-				# Se _focused_row è -1 (es. tabella vuota), _selected_rows rimane vuoto o viene svuotato
+				# If _focused_row is -1 (e.g. empty table), _selected_rows stays empty or cleared
 				#if emit_multiple_selection_signal:
-					# L'array _selected_rows contiene già gli indici corretti
+					# The _selected_rows array already contains the correct indices
 					#multiple_rows_selected.emit(_selected_rows)
 			
 			elif is_ctrl_cmd and not (keycode == KEY_SPACE):
-				# Ctrl + Frecce/Pg/Home/End: sposta solo il focus, non cambia la selezione.
-				# L'ancora non cambia per permettere future selezioni con Shift.
+				# Ctrl + Arrows/Pg/Home/End: move focus only, do not change selection.
+				# The anchor does not change to allow future Shift selections.
 				pass
 			elif not (keycode == KEY_SPACE and is_ctrl_cmd):
-				# Nessun modificatore (o Ctrl non per navigazione pura): seleziona solo la riga focus
-				if _focused_row != -1: # Solo se il nuovo focus sulla riga è valido
+				# No modifier (or Ctrl not for pure navigation): select only the focused row
+				if _focused_row != -1: # Only if the new focused row is valid
 					_selected_rows.clear()
 					_selected_rows.append(_focused_row)
 					_anchor_row = _focused_row
 					#emit_multiple_selection_signal = true
-				else: # Il nuovo focus sulla riga non è valido (es. tabella vuota)
+				else: # The new focused row is not valid (e.g. empty table)
 					_selected_rows.clear()
 					_anchor_row = -1
 				
 					
 		if _focused_row != -1:
 			_ensure_row_visible(_focused_row)
-			# Qui potresti aggiungere: _ensure_col_visible(_focused_col) se vuoi scorrimento orizzontale automatico
+			# You could add here: _ensure_col_visible(_focused_col) if you want automatic horizontal scrolling
 		
 		if current_focused_r != _focused_row or current_focused_c != _focused_col or (keycode == KEY_SPACE and is_ctrl_cmd):
-			# Emetti il segnale solo se il focus è effettivamente cambiato o se Ctrl+Spazio ha modificato la selezione
+			# Emit the signal only if the focus actually changed or if Ctrl+Space modified the selection
 			#cell_selected.emit(_focused_row, _focused_col)
 			pass
 		
 		if emit_multiple_selection_signal:
-			# L'array _selected_rows contiene già gli indici corretti
+			# The _selected_rows array already contains the correct indices
 			multiple_rows_selected.emit(_selected_rows)
 		
 	if key_operation_performed:
 		queue_redraw()
 		get_viewport().set_input_as_handled()
-	elif event_consumed: # Consuma l'evento se è stato gestito parzialmente (es. tasto riconosciuto ma nessuna azione)
+	elif event_consumed: # Consume the event if it was partially handled (e.g. key recognized but no action)
 		get_viewport().set_input_as_handled()
