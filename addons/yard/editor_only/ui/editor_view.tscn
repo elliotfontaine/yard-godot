@@ -1,11 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://dsg55mejcqgyb"]
+[gd_scene load_steps=3 format=3 uid="uid://dsg55mejcqgyb"]
 
 [ext_resource type="Script" uid="uid://pbm1netkyiqy" path="res://addons/yard/editor_only/ui/editor_view.gd" id="1_7nv21"]
 [ext_resource type="PackedScene" uid="uid://crnac01bnyk3" path="res://addons/yard/editor_only/ui/registry_view.tscn" id="2_6v8me"]
-
-[sub_resource type="DPITexture" id="DPITexture_6v8me"]
-_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#ff5d5d\" d=\"M2 1v8.586l1.293-1.293a1 1 0 0 1 1.414 0L7 10.587l2.293-2.293a1 1 0 0 1 1.414 0L13 10.586l1-1V6H9V1H2zm8 0v4h4zm-6 9.414-2 2V15h12v-2.586l-.293.293a1 1 0 0 1-1.414 0L10 10.414l-2.293 2.293a1 1 0 0 1-1.414 0L4 10.414z\"/></svg>
-"
 
 [node name="EditorView" type="MarginContainer"]
 anchors_preset = 15
@@ -86,8 +82,8 @@ size_flags_horizontal = 3
 [node name="RegistriesFilter" type="LineEdit" parent="VBoxContainer/HSplitContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-placeholder_text = "Filter Registries"
-right_icon = SubResource("DPITexture_6v8me")
+placeholder_text = "Filter Registries "
+expand_to_text_length = true
 
 [node name="RegistriesList" type="ItemList" parent="VBoxContainer/HSplitContainer/VBoxContainer"]
 unique_name_in_owner = true

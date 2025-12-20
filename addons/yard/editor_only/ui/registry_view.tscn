@@ -21,10 +21,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 focus_mode = 2
 script = ExtResource("2_wsykm")
-headers = Array[String](["ID|C", "Name", "Lastname", "Age|r", "Job", "City", "Date", "Task|p", "Completed|check", "Icon|image"])
 header_color = Color(0.15294118, 0.1764706, 0.21176471, 1)
 grid_color = Color(0.15294118, 0.1764706, 0.21176471, 1)
-row_color = Color(0.21176471, 0.23921569, 0.2901961, 1)
 alternate_row_color = Color(0.1764706, 0.2, 0.24313726, 1)
 
 [node name="PopupMenu" type="PopupMenu" parent="."]

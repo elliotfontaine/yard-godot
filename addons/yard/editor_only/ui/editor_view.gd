@@ -14,12 +14,21 @@ func _ready() -> void:
 	var recent := PopupMenu.new()
 	recent.add_item("previously_used.reg")
 	database_menu_button.get_popup().set_item_submenu_node(2, recent)
-	registries_filter.right_icon = get_theme_icon("Search", "EditorIcons")
+	registries_filter.right_icon = get_theme_icon(&"Search", &"EditorIcons")
 	
-	var dyntable = registry_view.find_child("DynamicTable")
+	var dyntable := registry_view.find_child("DynamicTable")
 	if dyntable:
+		var root := EditorInterface.get_base_control()
+		var settings := EditorInterface.get_editor_settings()
+
 		dyntable.header_height = registries_filter.size.y
 		dyntable.row_height = registries_filter.size.y
+		dyntable.default_font_color = root.get_theme_color(&"font_color", &"Label")
+		#dyntable.font_size = settings.get_setting("interface/editor/main_font_size") * 2
+
+		dyntable.row_color = root.get_theme_color(&"base_color", &"Editor")
+		dyntable.header_filter_active_font_color = root.get_theme_color(&"accent_color", &"Editor")
+
 
 func open_registry(registry: Registry) -> void:
 	var filepath := registry.resource_path
@@ -34,6 +43,7 @@ func open_registry(registry: Registry) -> void:
 func select_registry(uid: int) -> void:
 	pass
 	print("hello there")
+	registry_view.show_placeholder()
 
 
 ## Updates the script list on the left
