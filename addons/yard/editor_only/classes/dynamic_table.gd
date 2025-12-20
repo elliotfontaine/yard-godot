@@ -14,7 +14,7 @@ signal column_resized(column: int, new_width: float)
 signal progress_changed(row: int, column: int, new_value: float)
 signal cell_edited(row: int, column: int, old_value: Variant, new_value: Variant)
 
-# Table properties
+# Theming properties
 @export_group("Default color")
 @export var default_font_color: Color = Color(1.0, 1.0, 1.0)
 @export_group("Header")
@@ -30,14 +30,10 @@ signal cell_edited(row: int, column: int, old_value: Variant, new_value: Variant
 @export var selected_back_color: Color = Color(0.0, 0.0, 1.0, 0.5)
 @export var row_color: Color = Color(0.55, 0.55, 0.55, 1.0)
 @export var alternate_row_color: Color = Color(0.45, 0.45, 0.45, 1.0)
-
-# Checkbox properties
 @export_group("Checkbox")
 @export var checkbox_checked_color: Color = Color(0.0, 0.8, 0.0)
 @export var checkbox_unchecked_color: Color = Color(0.8, 0.0, 0.0)
 @export var checkbox_border_color: Color = Color(0.8, 0.8, 0.8)
-
-# Progress bar properties
 @export_group("Progress bar")
 @export var progress_bar_start_color: Color = Color.RED
 @export var progress_bar_middle_color: Color = Color.ORANGE

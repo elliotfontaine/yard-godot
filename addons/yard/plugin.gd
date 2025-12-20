@@ -5,8 +5,10 @@ var editor_view: Control
 
 
 func _enter_tree() -> void:
+	if not Engine.is_editor_hint():
+		return
 	print("YARD - Yet Another Resource Database")
-	editor_view = load(get_script().resource_path.get_base_dir() + "/editor_view.tscn").instantiate()
+	editor_view = load(get_script().resource_path.get_base_dir() + "/editor_only/ui/editor_view.tscn").instantiate()
 	EditorInterface.get_editor_main_screen().add_child(editor_view)
 	_make_visible(false)
 

@@ -1,9 +1,9 @@
 [gd_scene load_steps=5 format=3 uid="uid://crnac01bnyk3"]
 
-[ext_resource type="Script" uid="uid://tahli441tq7q" path="res://addons/yard/dynamictable/main.gd" id="1_isv8r"]
-[ext_resource type="Script" uid="uid://d25c0lxjdxouk" path="res://addons/yard/classes/dynamic_table.gd" id="2_wsykm"]
-[ext_resource type="Texture2D" uid="uid://cjfdp8ebhgoe4" path="res://addons/yard/dynamictable/add.png" id="3_d0p6g"]
-[ext_resource type="Texture2D" uid="uid://bfrj3arrri1q8" path="res://addons/yard/dynamictable/remove.png" id="4_8lxdp"]
+[ext_resource type="Script" uid="uid://tahli441tq7q" path="res://addons/yard/editor_only/ui/registry_view.gd" id="1_isv8r"]
+[ext_resource type="Script" uid="uid://d25c0lxjdxouk" path="res://addons/yard/editor_only/classes/dynamic_table.gd" id="2_wsykm"]
+[ext_resource type="Texture2D" uid="uid://cjfdp8ebhgoe4" path="res://addons/yard/editor_only/assets/add.png" id="3_d0p6g"]
+[ext_resource type="Texture2D" uid="uid://bfrj3arrri1q8" path="res://addons/yard/editor_only/assets/remove.png" id="4_8lxdp"]
 
 [node name="RegistryView" type="Panel"]
 clip_children = 1
