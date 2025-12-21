@@ -15,6 +15,8 @@ signal progress_changed(row: int, col: int, new_value: float)
 signal cell_edited(row: int, col: int, old_value: Variant, new_value: Variant)
 
 # Theming properties
+@export_group("Custom YARD Properties")
+@export var base_height_from_line_edit: bool = false
 @export_group("Default color")
 @export var default_font_color: Color = Color(1.0, 1.0, 1.0)
 @export_group("Header")
@@ -97,6 +99,10 @@ var _v_scroll: VScrollBar
 
 
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		EditorInterface.get_editor_settings().settings_changed.connect(_on_editor_settings_changed)
+		set_native_theming()
+	
 	self.focus_mode = Control.FOCUS_ALL # For input from keyboard
 	
 	_setup_editing_components()
@@ -210,6 +216,24 @@ func _draw() -> void:
 
 
 #region PUBLIC METHODS
+
+func set_native_theming(delay: int = 0) -> void:
+	if delay != 0 and is_inside_tree():
+		# Useful because the editor theme isn't instantly changed
+		await get_tree().create_timer(delay).timeout
+	
+	var root := EditorInterface.get_base_control()
+	header_color = root.get_theme_color(&"dark_color_2", &"Editor")
+	row_color = root.get_theme_color(&"base_color", &"Editor")
+	alternate_row_color = root.get_theme_color(&"dark_color_3", &"Editor")
+	selected_back_color = root.get_theme_color(&"disabled_font_color", &"Editor")
+	header_filter_active_font_color = root.get_theme_color(&"accent_color", &"Editor")
+	grid_color = root.get_theme_color(&"disabled_border_color", &"Editor")
+	font = root.get_theme_font(&"main", &"EditorFonts")
+	default_font_color = root.get_theme_color(&"font_color", &"Editor")
+	font_size = root.get_theme_font_size(&"main_size", &"EditorFonts")
+	queue_redraw()
+
 
 func set_headers(new_headers: Array) -> void:
 	var typed_headers: Array[String] = []
@@ -411,6 +435,9 @@ func _setup_editing_components() -> void:
 	_edit_line_edit.text_submitted.connect(_on_edit_text_submitted)
 	_edit_line_edit.focus_exited.connect(_on_edit_focus_exited)
 	add_child(_edit_line_edit)
+	if base_height_from_line_edit:
+		header_height = _edit_line_edit.size.y
+		row_height = _edit_line_edit.size.y
 	
 	_double_click_timer = Timer.new()
 	_double_click_timer.wait_time = _double_click_threshold / 1000.0
@@ -1481,5 +1508,10 @@ func _on_gui_input(event: InputEvent) -> void:
 		_handle_key_input(event as InputEventKey) # Call the dedicated handler
 		# accept_event() or get_viewport().set_input_as_handled()
 		# will be called inside _handle_key_input
+
+
+func _on_editor_settings_changed() -> void:
+	if EditorInterface.get_editor_settings().check_changed_settings_in_group("interface/theme"):
+		set_native_theming(3)
 
 #endregion

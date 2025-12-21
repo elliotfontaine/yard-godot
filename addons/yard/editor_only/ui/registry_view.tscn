@@ -21,9 +21,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 focus_mode = 2
 script = ExtResource("2_wsykm")
-header_color = Color(0.15294118, 0.1764706, 0.21176471, 1)
-grid_color = Color(0.15294118, 0.1764706, 0.21176471, 1)
-alternate_row_color = Color(0.1764706, 0.2, 0.24313726, 1)
 
 [node name="PopupMenu" type="PopupMenu" parent="."]
 size = Vector2i(130, 65)

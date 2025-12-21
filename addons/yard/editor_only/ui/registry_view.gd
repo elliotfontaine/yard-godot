@@ -6,7 +6,6 @@ extends Panel
 # Popups
 @onready var popup := $PopupMenu
 @onready var confirm_popup := $ConfirmationDialog
-@onready var ico := load("res://icon.svg")
 
 var headers: Array # array of columns header
 var data: Array # array of data, rows and columns
@@ -16,9 +15,9 @@ var multiple_selected_rows: Array # array of selected rows
 
 var _placeholder_headers := ["ID|C", "Name", "Lastname", "Age|r", "Job", "City", "Date", "Task|p", "Completed|check", "Icon|image"]
 var _placeholder_data := [
-		[1, "Michael", "Smith", 34, "Engineer", "London", "10/12/2005", 0.5, 1, ico],
-		[2, "Louis", "Johnson", 28, "Doctor", "New York", "05/11/2023", 0],
-		[3, "Ann", "Williams", 42, "Lawyer", "Tokyo", "18/03/2025", 0, 0],
+		[1, "Michael", "Smith", 34, "Engineer", "London", "10/12/2005", 0.5, 1, preload("res://icon.svg")],
+		[2, "Louis", "Johnson", 28, "Doctor", "New York", "05/11/2023", 0, 1],
+		[3, "Ann", "Williams", 42, "Lawyer", "Tokyo", "18/03/2025", 0, 0, preload("res://icon.svg")],
 		[4, "John", "Brown", 31, "Teacher", "Sydney", "02/07/2024", 0, 0],
 		[5, "Frances", "Jones", 25, "Designer", "Paris", "29/09/2023", 0, 0],
 		[6, "Robert", "", 39, "Architect", "Berlin", "14/01/2026", 0, 0],

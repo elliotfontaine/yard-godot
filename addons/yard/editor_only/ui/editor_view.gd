@@ -15,19 +15,6 @@ func _ready() -> void:
 	recent.add_item("previously_used.reg")
 	database_menu_button.get_popup().set_item_submenu_node(2, recent)
 	registries_filter.right_icon = get_theme_icon(&"Search", &"EditorIcons")
-	
-	var dyntable := registry_view.find_child("DynamicTable")
-	if dyntable:
-		var root := EditorInterface.get_base_control()
-		var settings := EditorInterface.get_editor_settings()
-
-		dyntable.header_height = registries_filter.size.y
-		dyntable.row_height = registries_filter.size.y
-		dyntable.default_font_color = root.get_theme_color(&"font_color", &"Label")
-		#dyntable.font_size = settings.get_setting("interface/editor/main_font_size") * 2
-
-		dyntable.row_color = root.get_theme_color(&"base_color", &"Editor")
-		dyntable.header_filter_active_font_color = root.get_theme_color(&"accent_color", &"Editor")
 
 
 func open_registry(registry: Registry) -> void:
@@ -42,7 +29,7 @@ func open_registry(registry: Registry) -> void:
 ## Select a registry on the list and open its content view on the right
 func select_registry(uid: int) -> void:
 	pass
-	print("hello there")
+	print("registry selected")
 	registry_view.show_placeholder()
 
 
@@ -57,13 +44,13 @@ func _update_registry_names() -> void:
 		add_registry_to_list(_opened_registries[uid])
 
 
-## 
 func add_registry_to_list(filename: String, icon: Texture2D = null) -> int:
 	if not icon:
 		icon = get_theme_icon("FileList", "EditorIcons")
 	var idx := registries_list.add_item(filename.get_file(), icon, true)
 	registries_list.set_item_tooltip(idx, filename)
 	return idx
+
 
 func _on_registries_filter_text_changed(_new_text: String) -> void:
 	_update_registry_names()
