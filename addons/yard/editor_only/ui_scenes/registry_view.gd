@@ -1,8 +1,11 @@
 @tool
 extends Panel
 
+const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const DynamicTable := Namespace.DynamicTable
+
 # Reference to dynamic table
-@onready var dynamic_table := $DynamicTable
+@onready var dynamic_table: DynamicTable = $DynamicTable
 # Popups
 @onready var popup := $PopupMenu
 @onready var confirm_popup := $ConfirmationDialog

@@ -1,21 +1,26 @@
 @tool
 extends EditorPlugin
 
-var editor_view: Control
+const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const MainView := Namespace.MainView
+const MAIN_VIEW_SCENE = Namespace.MAIN_VIEW_SCENE
+
+var _main_view: MainView
 
 
 func _enter_tree() -> void:
 	if not Engine.is_editor_hint():
 		return
+	
 	print("YARD - Yet Another Resource Database")
-	editor_view = load(get_script().resource_path.get_base_dir() + "/editor_only/ui/editor_view.tscn").instantiate()
-	EditorInterface.get_editor_main_screen().add_child(editor_view)
+	_main_view = MAIN_VIEW_SCENE.instantiate()
+	EditorInterface.get_editor_main_screen().add_child(_main_view)
 	_make_visible(false)
 
 
 func _exit_tree() -> void:
-	if is_instance_valid(editor_view):
-		editor_view.queue_free()
+	if is_instance_valid(_main_view):
+		_main_view.queue_free()
 
 
 func _has_main_screen() -> bool:
@@ -23,8 +28,8 @@ func _has_main_screen() -> bool:
 
 
 func _make_visible(visible: bool) -> void:
-	if is_instance_valid(editor_view):
-		editor_view.visible = visible
+	if is_instance_valid(_main_view):
+		_main_view.visible = visible
 
 
 func _handles(object: Object) -> bool:
@@ -35,7 +40,7 @@ func _edit(object: Object) -> void:
 	if not object:
 		return
 	var edited_registry := object as Registry
-	editor_view.open_registry(edited_registry)
+	_main_view.open_registry(edited_registry)
 
 
 func _get_plugin_name() -> String:
@@ -44,4 +49,6 @@ func _get_plugin_name() -> String:
 
 func _get_plugin_icon() -> Texture2D:
 	# will do for now
-	return EditorInterface.get_editor_theme().get_icon("ResourcePreloader", "EditorIcons")
+	return EditorInterface.get_editor_theme().get_icon(
+		"ResourcePreloader", "EditorIcons"
+	)
