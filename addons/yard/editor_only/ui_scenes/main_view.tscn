@@ -57,7 +57,7 @@ size_flags_horizontal = 3
 [node name="RegistriesFilter" type="LineEdit" parent="VBoxContainer/HSplitContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-placeholder_text = "Filter Registries "
+placeholder_text = "Filter Registries"
 right_icon = SubResource("DPITexture_2b5h5")
 
 [node name="RegistriesList" type="ItemList" parent="VBoxContainer/HSplitContainer/VBoxContainer"]
