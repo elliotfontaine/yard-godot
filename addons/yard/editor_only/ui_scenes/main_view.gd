@@ -2,6 +2,7 @@
 extends Container
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const RegistriesItemList := Namespace.RegistriesItemList
 const RegistryView := Namespace.RegistryView
 const FuzzySearch := Namespace.FuzzySearch
 const FuzzySearchResult := Namespace.FuzzySearchResult
@@ -10,6 +11,8 @@ const _SAVED_STATE_PATH := "res://addons/yard/editor_only/state.cfg"
 
 # To be used for PopupMenus items (context menu or the "File" MenuButton)
 enum MenuAction {
+	NONE = -1,
+	
 	NEW = 0,
 	OPEN = 1,
 	REOPEN_CLOSED = 2,
@@ -32,19 +35,28 @@ enum MenuAction {
 	SORT = 32
 }
 
-var _opened_registries: Dictionary[String, Registry] = {} # [uid, loaded resource]
-var _fuz := FuzzySearch.new()
-
+var _opened_registries: Dictionary[String, Registry] = {} # Dict[uid, Registry]
+var _session_closed_uids: Array[String] = [] # Array[uid]
+var _file_dialog: EditorFileDialog
+var _file_dialog_option: MenuAction = MenuAction.NONE
 var _registries_context_menu: PopupMenu
 var _current_registry_uid: String = ""
+var _fuz := FuzzySearch.new()
 
 @onready var file_menu_button: MenuButton = %FileMenuButton
-@onready var registry_view: RegistryView = %RegistryView
 @onready var registries_filter: LineEdit = %RegistriesFilter
-@onready var registries_itemlist: ItemList = %RegistriesList
+@onready var registries_itemlist: RegistriesItemList = %RegistriesItemList
+@onready var registry_view: RegistryView = %RegistryView
 
 
 func _ready() -> void:
+	_file_dialog = EditorFileDialog.new()
+	_file_dialog.access = EditorFileDialog.ACCESS_RESOURCES
+	_file_dialog.file_selected.connect(_on_file_dialog_action)
+	add_child(_file_dialog)
+	
+	registries_itemlist.registries_dropped.connect(_on_itemlist_registries_dropped)
+
 	registries_filter.right_icon = get_theme_icon(&"Search", &"EditorIcons")
 	
 	_populate_file_menu()
@@ -53,6 +65,7 @@ func _ready() -> void:
 	_registries_context_menu = PopupMenu.new()
 	_populate_context_menu()
 	add_child(_registries_context_menu)
+	_registries_context_menu.about_to_popup.connect(_on_registry_context_menu_about_to_popup)
 	_registries_context_menu.id_pressed.connect(_on_registry_context_menu_id_pressed)
 	
 	# Fuzzy Search settings
@@ -71,6 +84,28 @@ func open_registry(registry: Registry) -> void:
 		_opened_registries[uid] = registry
 	_update_registries_itemlist()
 	select_registry(uid)
+
+
+## Close a registry, ask for save if not saved, and remove it from the list
+func close_registry(uid: String) -> void:
+	assert(_opened_registries.has(uid))
+	_opened_registries.erase(uid)
+	
+	# TODO: save accept dialog if unsaved changes to resource
+	if _opened_registries.is_empty():
+		unselect_registry()
+	elif _current_registry_uid == uid:
+		select_registry(_opened_registries.keys()[0])
+	
+	_session_closed_uids.append(uid)
+	_update_registries_itemlist()
+
+
+func close_all() -> void:
+	var safe_iter := _opened_registries.keys()
+	safe_iter.reverse()
+	for uid: String in safe_iter:
+		close_registry(uid)
 
 
 ## Select a registry on the list and view its content on the right
@@ -97,6 +132,25 @@ func select_registry(uid: String) -> void:
 		
 	print("registry selected:  ", registry.resource_path, " (", uid, ")")
 	registry_view.show_placeholder()
+
+
+func unselect_registry() -> void:
+	_current_registry_uid = ""
+	registries_itemlist.deselect_all()
+
+
+func is_any_registry_selected() -> bool:
+	#return registries_itemlist.is_anything_selected()
+	return _current_registry_uid.is_empty()
+	
+
+## Returns the index in the ItemList of the specified registry (by uid)
+## -1 if not found
+func _get_registry_list_index(uid: String) -> int:
+	for idx in registries_itemlist.item_count:
+		if registries_itemlist.get_item_metadata(idx) == uid:
+			return idx
+	return -1
 
 
 ## Update the ItemList of opened registries, based on the filter and avoid
@@ -294,41 +348,150 @@ func _toggle_selection_related_menu_items(disabled: bool) -> void:
 	file_menu.set_item_disabled(file_menu.get_item_index(MenuAction.CLOSE_TABS_BELOW), disabled)
 
 
+func _toggle_move_up_down_items() -> void:
+	var idx := _get_registry_list_index(_current_registry_uid)
+	var is_first := idx == 0
+	var is_last := idx == registries_itemlist.item_count - 1
+	_registries_context_menu.set_item_disabled(
+		_registries_context_menu.get_item_index(MenuAction.MOVE_UP),
+		is_first
+	)
+	_registries_context_menu.set_item_disabled(
+		_registries_context_menu.get_item_index(MenuAction.MOVE_DOWN),
+		is_last
+	)
+
+
 func _do_menu_action(action_id: int) -> void:
 	# TODO: implement actions logic
 	match action_id:
 		MenuAction.NEW:
 			_warn_unimplemented()
+		
 		MenuAction.OPEN:
-			_warn_unimplemented()
+			_file_dialog_option = MenuAction.OPEN
+			_file_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
+			_file_dialog.title = tr("Open Registry")
+			_file_dialog.popup_file_dialog()
+		
 		MenuAction.REOPEN_CLOSED:
-			_warn_unimplemented()
+			assert(not _session_closed_uids.is_empty())
+			for i in _session_closed_uids.size():
+				var rev_iter := -i - 1
+				var uid := _session_closed_uids[rev_iter]
+				if ResourceLoader.exists(uid):
+					_session_closed_uids.remove_at(rev_iter)
+					open_registry(load(uid))
+					return
+				else:
+					_session_closed_uids.erase(rev_iter)
+			push_warning(tr("None of the closed resources exist anymore"))
+		
 		MenuAction.SAVE:
 			_warn_unimplemented()
+		
 		MenuAction.SAVE_AS:
-			_warn_unimplemented()
+			_file_dialog_option = MenuAction.SAVE_AS
+			_file_dialog.file_mode = EditorFileDialog.FILE_MODE_SAVE_FILE
+			_file_dialog.title = tr("Save Registry As...")
+			_file_dialog.popup_file_dialog()
+		
 		MenuAction.SAVE_ALL:
 			_warn_unimplemented()
+		
 		MenuAction.CLOSE:
-			_warn_unimplemented()
+			close_registry(_current_registry_uid)
+		
 		MenuAction.CLOSE_OTHER_TABS:
-			_warn_unimplemented()
+			_close_other_tabs(_current_registry_uid)
+		
 		MenuAction.CLOSE_TABS_BELOW:
-			_warn_unimplemented()
+			_close_tabs_below(_current_registry_uid)
+		
 		MenuAction.CLOSE_ALL:
-			_warn_unimplemented()
+			close_all()
+		
 		MenuAction.COPY_PATH:
-			_warn_unimplemented()
+			var path := ResourceUID.uid_to_path(_current_registry_uid)
+			if path:
+				DisplayServer.clipboard_set(path)
+		
 		MenuAction.COPY_UID:
-			_warn_unimplemented()
+			DisplayServer.clipboard_set(_current_registry_uid)
+		
 		MenuAction.SHOW_IN_FILESYSTEM:
 			_show_in_filesystem(_current_registry_uid)
+		
 		MenuAction.MOVE_UP:
-			_warn_unimplemented()
+			_reorder_opened_registries_move(_current_registry_uid, -1)
+			_update_registries_itemlist()
+		
 		MenuAction.MOVE_DOWN:
-			_warn_unimplemented()
+			_reorder_opened_registries_move(_current_registry_uid, +1)
+			_update_registries_itemlist()
+		
 		MenuAction.SORT:
-			_warn_unimplemented()
+			_sort_opened_registries_by_filename()
+			_update_registries_itemlist()
+
+
+func _reorder_opened_registries_move(uid: String, delta: int) -> bool:
+	# delta = -1 -> move one up,
+	# delta = +1 -> move one down
+	if not _opened_registries.has(uid):
+		return false
+
+	var keys: Array[String] = _opened_registries.keys()
+	var i := keys.find(uid)
+	if i == -1:
+		return false
+
+	var j := i + delta
+	if j < 0 or j >= keys.size():
+		return false # can't move
+
+	var tmp := keys[i]
+	keys[i] = keys[j]
+	keys[j] = tmp
+
+	var reordered: Dictionary[String, Registry] = {}
+	for k in keys:
+		reordered[k] = _opened_registries[k]
+	_opened_registries = reordered
+	return true
+
+
+func _sort_opened_registries_by_filename() -> void:
+	var keys: Array[String] = _opened_registries.keys()
+	var sorted: Dictionary[String, Registry] = {}
+	keys.sort_custom(func(a: String, b: String) -> bool:
+		return _opened_registries[a].resource_path.get_file().to_lower() \
+			< _opened_registries[b].resource_path.get_file().to_lower()
+	)
+	for uid in keys:
+		sorted[uid] = _opened_registries[uid]
+	_opened_registries = sorted
+
+
+func _close_other_tabs(uid: String) -> void:
+	var other_uids := _opened_registries.keys()
+	other_uids.erase(uid)
+	other_uids.reverse()
+	for o_uid: String in other_uids:
+		close_registry(o_uid)
+
+
+func _close_tabs_below(uid: String) -> void:
+	var idx := _get_registry_list_index(uid)
+	var tabs_below_uids := []
+	for i in registries_itemlist.item_count:
+		if i <= idx:
+			continue
+		tabs_below_uids.append(registries_itemlist.get_item_metadata(i))
+	
+	tabs_below_uids.reverse()
+	for below_uid: String in tabs_below_uids:
+		close_registry(below_uid)
 
 
 func _show_in_filesystem(uid: String) -> void:
@@ -339,10 +502,6 @@ func _show_in_filesystem(uid: String) -> void:
 
 func _warn_unimplemented() -> void:
 	push_warning("This feature is not implemented yet. Demand to see my manager !")
-
-
-# TODO: implement drag-and-drop
-# https://forum.godotengine.org/t/how-to-drag-and-drop-data-in-editor/50337
 
 
 func _on_registries_filter_text_changed(_new_text: String) -> void:
@@ -366,7 +525,17 @@ func _on_registries_list_item_clicked(index: int, _at_position: Vector2, mouse_b
 
 
 func _on_file_menu_button_about_to_popup() -> void:
-	_toggle_selection_related_menu_items(_current_registry_uid.is_empty())
+	_toggle_selection_related_menu_items(is_any_registry_selected())
+	var file_menu := file_menu_button.get_popup()
+	var no_closed_uids := _session_closed_uids.is_empty()
+	file_menu.set_item_disabled(
+		file_menu.get_item_index(MenuAction.REOPEN_CLOSED),
+		no_closed_uids
+	)
+
+
+func _on_registry_context_menu_about_to_popup() -> void:
+	_toggle_move_up_down_items()
 
 
 func _on_file_menu_id_pressed(id: int) -> void:
@@ -375,3 +544,21 @@ func _on_file_menu_id_pressed(id: int) -> void:
 
 func _on_registry_context_menu_id_pressed(id: int) -> void:
 	_do_menu_action(id)
+
+
+func _on_itemlist_registries_dropped(registries: Array[Registry]) -> void:
+	print(registries)
+	for registry in registries:
+		open_registry(registry)
+
+
+func _on_file_dialog_action(path: String) -> void:
+	match _file_dialog_option:
+		MenuAction.NEW:
+			_warn_unimplemented()
+		MenuAction.OPEN:
+			_warn_unimplemented()
+		MenuAction.SAVE_AS:
+			_warn_unimplemented()
+
+	print("Path selected: ", path)

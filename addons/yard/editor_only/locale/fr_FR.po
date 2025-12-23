@@ -2,7 +2,7 @@
 # res://addons/yard/editor_only/ui_scenes/main_view.gd
 # res://addons/yard/editor_only/ui_scenes/main_view.tscn
 #
-# # ELLIOT FONTAINE <elliot.fontaine@gmail.com>, 2026.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
@@ -93,6 +93,18 @@ msgstr "Déplacer vers le bas"
 #: addons/yard/editor_only/ui_scenes/main_view.gd
 msgid "Sort"
 msgstr "Trier"
+
+#: addons/yard/editor_only/ui_scenes/main_view.gd
+msgid "Open Registry"
+msgstr "Ouvrir le registre"
+
+#: addons/yard/editor_only/ui_scenes/main_view.gd
+msgid "None of the closed resources exist anymore"
+msgstr "Aucune des resources fermées n’a pu être trouvée"
+
+#: addons/yard/editor_only/ui_scenes/main_view.gd
+msgid "Save Registry As..."
+msgstr "Enregistrer le registre sous…"
 
 #: addons/yard/editor_only/ui_scenes/main_view.tscn
 msgid "File"

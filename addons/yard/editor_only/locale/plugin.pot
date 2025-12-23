@@ -92,6 +92,14 @@ msgstr ""
 msgid "Open Registry"
 msgstr ""
 
+#: addons/yard/editor_only/ui_scenes/main_view.gd
+msgid "None of the closed resources exist anymore"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/main_view.gd
+msgid "Save Registry As..."
+msgstr ""
+
 #: addons/yard/editor_only/ui_scenes/main_view.tscn
 msgid "File"
 msgstr ""
