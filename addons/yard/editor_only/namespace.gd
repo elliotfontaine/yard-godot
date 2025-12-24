@@ -11,5 +11,5 @@ const REGISTRY_VIEW_SCENE := preload("res://addons/yard/editor_only/ui_scenes/re
 
 const TRANSLATION_DOMAIN := "com.elliotfontaine.yard"
 const TRANSLATIONS := {
-	"fr_FR": "res://addons/yard/editor_only/locale/fr_FR.po"
+	"fr_FR": "res://addons/yard/editor_only/locale/fr_FR.po",
 }

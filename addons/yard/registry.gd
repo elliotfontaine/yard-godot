@@ -1,5 +1,6 @@
 @tool
-class_name Registry extends Resource
+class_name Registry
+extends Resource
 
 ## Invalid resources are not fetched and don't push errors.
 const INVALID_RESOURCE_ID := &"<invalid>"
@@ -35,7 +36,7 @@ func load_entry(id: StringName) -> Resource:
 func get_uid(id: StringName) -> StringName:
 	if id == INVALID_RESOURCE_ID:
 		return &""
-	
+
 	if id.is_empty():
 		return &""
 
@@ -53,16 +54,16 @@ func _add_entry(uid: StringName, string_id: String = "") -> bool:
 	var cache_id: int = ResourceUID.text_to_id(uid)
 	if not ResourceUID.has_id(cache_id):
 		return false
-	
+
 	if not string_id:
 		string_id = ResourceUID.get_id_path(cache_id).get_file().get_basename()
-	
+
 	if string_id in _string_ids_to_uids:
 		string_id = _make_string_unique(string_id)
-	
+
 	if uid in _uids_to_string_ids:
 		return false
-	
+
 	_uids_to_string_ids[uid] = string_id as StringName
 	_string_ids_to_uids[string_id] = uid
 	return true
@@ -71,7 +72,7 @@ func _add_entry(uid: StringName, string_id: String = "") -> bool:
 func _make_string_unique(string_id: String) -> String:
 	if not string_id in _string_ids_to_uids:
 		return string_id
-	
+
 	var id_to_try := string_id
 	var n := 2
 	while id_to_try + "_" + str(n) in _string_ids_to_uids:
@@ -80,7 +81,7 @@ func _make_string_unique(string_id: String) -> String:
 
 
 func _validate_uids() -> Dictionary[StringName, bool]:
-	var ret: Dictionary[StringName, bool] = {}
+	var ret: Dictionary[StringName, bool] = { }
 	for uid in _uids_to_string_ids:
 		ret[uid] = _is_uid_valid(uid)
 	return ret
@@ -112,17 +113,17 @@ func _validate_resource_classes() -> void:
 func _is_resource_class_valid(res: Resource) -> bool:
 	if valid_classes.is_empty():
 		return true
-	
+
 	var res_script: Script = res.get_script()
 	if res_script == null:
 		return false
-	
+
 	var global_name := res_script.get_global_name()
 	if global_name.is_empty():
 		return false
-	
+
 	for valid_class in valid_classes:
 		if global_name == valid_class or ClassDB.is_parent_class(global_name, valid_class):
 			return true
-	
+
 	return false

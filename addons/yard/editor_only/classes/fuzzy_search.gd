@@ -3,7 +3,6 @@
 ## Reproduced API:  FuzzySearch, FuzzySearchToken, FuzzyTokenMatch, FuzzySearchResult.
 extends RefCounted
 
-
 ## Note: If `class_name FuzzySearch` is enabled, inner classes can access static
 ## helpers directly and the external namespace indirection can be removed.
 #class_name FuzzySearch
@@ -64,10 +63,11 @@ func set_query(p_query: String, p_case_sensitive: bool = (not _is_lowercase(p_qu
 		tokens.append(t)
 
 	# Prioritize matching longer tokens before shorter ones since match overlaps are not accepted.
-	tokens.sort_custom(func(a: FuzzySearchToken, b: FuzzySearchToken) -> bool:
-		if a.string.length() == b.string.length():
-			return a.idx < b.idx
-		return a.string.length() > b.string.length()
+	tokens.sort_custom(
+		func(a: FuzzySearchToken, b: FuzzySearchToken) -> bool:
+			if a.string.length() == b.string.length():
+				return a.idx < b.idx
+			return a.string.length() > b.string.length()
 	)
 
 
@@ -161,12 +161,13 @@ func _sort_and_filter(p_results: Array) -> void:
 	_remove_low_scores(p_results, cull_score)
 
 	# Sort on (score desc, length asc, alphanumeric asc) for consistent ordering.
-	p_results.sort_custom(func(a: FuzzySearchResult, b: FuzzySearchResult) -> bool:
-		if a.score == b.score:
-			if a.target.length() == b.target.length():
-				return a.target < b.target
-			return a.target.length() < b.target.length()
-		return a.score > b.score
+	p_results.sort_custom(
+		func(a: FuzzySearchResult, b: FuzzySearchResult) -> bool:
+			if a.score == b.score:
+				if a.target.length() == b.target.length():
+					return a.target < b.target
+				return a.target.length() < b.target.length()
+			return a.score > b.score
 	)
 
 	# En C++: partial_sort si > max_results. Ici: tri complet puis resize (même résultat, perf différente).
@@ -181,9 +182,10 @@ func _is_lowercase(s: String) -> bool:
 class FuzzySearchToken:
 	const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 	const FuzzySearch := Namespace.FuzzySearch
-	
+
 	var idx: int = -1
 	var string: String = ""
+
 
 	func try_exact_match(p_match: FuzzyTokenMatch, p_target: String, p_offset: int) -> bool:
 		p_match._reset(idx, string.length())
@@ -193,21 +195,22 @@ class FuzzySearchToken:
 		p_match.add_substring(match_idx, string.length())
 		return true
 
+
 	func try_fuzzy_match(p_match: FuzzyTokenMatch, p_target: String, p_offset: int, p_miss_budget: int) -> bool:
 		p_match._reset(idx, string.length())
-		
+
 		var run_start := -1
 		var run_len := 0
-		
+
 		# Search for the subsequence token in target starting from p_offset.
 		# Record each substring for later scoring and display.
 		var offset := p_offset
 		var miss_budget := p_miss_budget
-		
+
 		for i in range(string.length()):
 			var cp := string.unicode_at(i)
 			var new_offset := FuzzySearch._find_codepoint(p_target, cp, offset)
-			
+
 			if new_offset < 0:
 				miss_budget -= 1
 				if miss_budget < 0:
@@ -221,17 +224,17 @@ class FuzzySearchToken:
 				else:
 					run_len += 1
 				offset = new_offset + 1
-		
+
 		if run_start != -1:
 			p_match.add_substring(run_start, run_len)
-		
+
 		return true
 
 
 class FuzzyTokenMatch:
 	const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 	const FuzzySearch := Namespace.FuzzySearch
-	
+
 	var score: int = 0
 	var substrings: Array[Vector2i] = [] # x: start index, y: length
 
@@ -239,6 +242,7 @@ class FuzzyTokenMatch:
 	var token_length: int = 0
 	var token_idx: int = -1
 	var interval: Vector2i = Vector2i(-1, -1) # inclusive indices
+
 
 	func _reset(p_token_idx: int, p_token_length: int) -> void:
 		score = 0
@@ -248,19 +252,23 @@ class FuzzyTokenMatch:
 		token_idx = p_token_idx
 		interval = Vector2i(-1, -1)
 
+
 	func add_substring(p_substring_start: int, p_substring_length: int) -> void:
 		substrings.append(Vector2i(p_substring_start, p_substring_length))
 		matched_length += p_substring_length
 		var substring_interval := Vector2i(p_substring_start, p_substring_start + p_substring_length - 1)
 		interval = FuzzySearch._extend_interval(interval, substring_interval)
 
+
 	func get_miss_count() -> int:
 		return token_length - matched_length
+
 
 	func intersects(p_other_interval: Vector2i) -> bool:
 		if not FuzzySearch._is_valid_interval(interval) or not FuzzySearch._is_valid_interval(p_other_interval):
 			return false
 		return interval.y >= p_other_interval.x and interval.x <= p_other_interval.y
+
 
 	func is_case_insensitive(p_original: String, p_adjusted: String) -> bool:
 		for substr in substrings:
@@ -274,7 +282,7 @@ class FuzzyTokenMatch:
 class FuzzySearchResult:
 	const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 	const FuzzySearch := Namespace.FuzzySearch
-	
+
 	var target: String = ""
 	var score: int = 0
 	var original_index: int = -1
@@ -284,6 +292,7 @@ class FuzzySearchResult:
 	var miss_budget: int = 0
 	var match_interval: Vector2i = Vector2i(-1, -1)
 
+
 	func _reset_for_search(p_target: String, p_dir_index: int, p_max_misses: int) -> void:
 		target = p_target
 		dir_index = p_dir_index
@@ -291,6 +300,7 @@ class FuzzySearchResult:
 		score = 0
 		match_interval = Vector2i(-1, -1)
 		token_matches.clear()
+
 
 	func can_add_token_match(p_match: FuzzyTokenMatch) -> bool:
 		if p_match.get_miss_count() > miss_budget:
@@ -304,6 +314,7 @@ class FuzzySearchResult:
 					return false
 
 		return true
+
 
 	func score_token_match(p_match: FuzzyTokenMatch, p_case_insensitive: bool) -> void:
 		# Exact matches should almost always be prioritized over broken up matches.
@@ -328,11 +339,13 @@ class FuzzySearchResult:
 
 			p_match.score += substring_score
 
+
 	func add_token_match(p_match: FuzzyTokenMatch) -> void:
 		score += p_match.score
 		match_interval = FuzzySearch._extend_interval(match_interval, p_match.interval)
 		miss_budget -= p_match.get_miss_count()
 		token_matches.append(p_match)
+
 
 	func maybe_apply_score_bonus() -> void:
 		# Adds a small bonus to results which match tokens in the same order they appear in the query.
