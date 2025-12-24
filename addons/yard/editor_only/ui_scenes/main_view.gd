@@ -376,16 +376,17 @@ func _do_menu_action(action_id: int) -> void:
 		
 		MenuAction.REOPEN_CLOSED:
 			assert(not _session_closed_uids.is_empty())
-			for i in _session_closed_uids.size():
-				var rev_iter := -i - 1
-				var uid := _session_closed_uids[rev_iter]
-				if ResourceLoader.exists(uid):
-					_session_closed_uids.remove_at(rev_iter)
+			for idx in range(_session_closed_uids.size() - 1, -1, -1):
+				var uid := _session_closed_uids[idx]
+				if ResourceUID.has_id(ResourceUID.text_to_id(uid)):
+					_session_closed_uids.remove_at(idx)
 					open_registry(load(uid))
 					return
 				else:
-					_session_closed_uids.erase(rev_iter)
+					_session_closed_uids.remove_at(idx)
+
 			push_warning(tr("None of the closed resources exist anymore"))
+
 		
 		MenuAction.SAVE:
 			_warn_unimplemented()
