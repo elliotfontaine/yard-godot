@@ -75,6 +75,11 @@ func _ready() -> void:
 	_fuz.start_offset = 0
 
 
+func _shortcut_input(event: InputEvent) -> void:
+	if is_visible_in_tree() and event.is_pressed():
+		_registries_context_menu.activate_item_by_event(event)
+
+
 ## Open a registry from the filesystem and add it to the list of opened ones
 func open_registry(registry: Registry) -> void:
 	var filepath := registry.resource_path
@@ -141,7 +146,7 @@ func unselect_registry() -> void:
 
 func is_any_registry_selected() -> bool:
 	#return registries_itemlist.is_anything_selected()
-	return _current_registry_uid.is_empty()
+	return not _current_registry_uid.is_empty()
 	
 
 ## Returns the index in the ItemList of the specified registry (by uid)
@@ -284,24 +289,33 @@ func _build_registry_display_names(uids: Array[String]) -> Dictionary:
 				
 	return result
 
+@warning_ignore_start("int_as_enum_without_cast")
+@warning_ignore_start("int_as_enum_without_match")
 
 func _populate_file_menu() -> void:
+	# TODO: when Godot 4.6 is out, register editor shortcuts
+	# and reuse already registered ones using `EditorSettings.get_shortcut()`
+	# https://github.com/godotengine/godot/pull/102889
 	var file_menu := file_menu_button.get_popup()
 	file_menu.name = "FileMenu"
-	file_menu.add_item("New Registry...", MenuAction.NEW)
+	file_menu.add_item("New Registry...", MenuAction.NEW,
+		KEY_MASK_META | KEY_N
+	)
 	file_menu.add_item("Open...", MenuAction.OPEN)
-	file_menu.add_item("Reopen Closed Registry", MenuAction.REOPEN_CLOSED)
+	file_menu.add_item("Reopen Closed Registry", MenuAction.REOPEN_CLOSED,
+	KEY_MASK_SHIFT | KEY_MASK_META | KEY_T
+	)
 	file_menu.add_item("Open Recent", MenuAction.OPEN_RECENT)
 	file_menu.add_separator()
-	file_menu.add_item("Save", MenuAction.SAVE)
+	file_menu.add_item("Save", MenuAction.SAVE, KEY_MASK_ALT | KEY_MASK_META | KEY_S)
 	file_menu.add_item("Save as...", MenuAction.SAVE_AS)
-	file_menu.add_item("Save all", MenuAction.SAVE_ALL)
+	file_menu.add_item("Save all", MenuAction.SAVE_ALL, KEY_MASK_CTRL | KEY_MASK_META | KEY_S)
 	file_menu.add_separator()
 	file_menu.add_item("Copy Registry Path", MenuAction.COPY_PATH)
 	file_menu.add_item("Copy Registry UID", MenuAction.COPY_UID)
 	file_menu.add_item("Show in FileSystem", MenuAction.SHOW_IN_FILESYSTEM)
 	file_menu.add_separator()
-	file_menu.add_item("Close", MenuAction.CLOSE)
+	file_menu.add_item("Close", MenuAction.CLOSE, KEY_MASK_META | KEY_W)
 	file_menu.add_item("Close All", MenuAction.CLOSE_ALL)
 	file_menu.add_item("Close Other Tabs", MenuAction.CLOSE_OTHER_TABS)
 	file_menu.add_item("Close Tabs Below", MenuAction.CLOSE_TABS_BELOW)
@@ -317,9 +331,13 @@ func _populate_file_menu() -> void:
 
 func _populate_context_menu() -> void:
 	_registries_context_menu.name = "RegistriesContextMenu"
-	_registries_context_menu.add_item("Save", MenuAction.SAVE)
+	_registries_context_menu.add_item("Save", MenuAction.SAVE,
+		KEY_MASK_ALT | KEY_MASK_META | KEY_S
+	)
 	_registries_context_menu.add_item("Save as...", MenuAction.SAVE_AS)
-	_registries_context_menu.add_item("Close", MenuAction.CLOSE)
+	_registries_context_menu.add_item("Close", MenuAction.CLOSE,
+		KEY_MASK_META | KEY_W
+	)
 	_registries_context_menu.add_item("Close Other Tabs", MenuAction.CLOSE_OTHER_TABS)
 	_registries_context_menu.add_item("Close Tabs Below", MenuAction.CLOSE_TABS_BELOW)
 	_registries_context_menu.add_item("Close All", MenuAction.CLOSE_ALL)
@@ -328,12 +346,20 @@ func _populate_context_menu() -> void:
 	_registries_context_menu.add_item("Copy Registry UID", MenuAction.COPY_UID)
 	_registries_context_menu.add_item("Show in FileSystem", MenuAction.SHOW_IN_FILESYSTEM)
 	_registries_context_menu.add_separator()
-	_registries_context_menu.add_item("Move Up", MenuAction.MOVE_UP)
-	_registries_context_menu.add_item("Move Down", MenuAction.MOVE_DOWN)
+	_registries_context_menu.add_item("Move Up", MenuAction.MOVE_UP,
+		KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP
+	)
+	_registries_context_menu.add_item("Move Down", MenuAction.MOVE_DOWN,
+		KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN
+	)
 	_registries_context_menu.add_item("Sort", MenuAction.SORT)
 
+@warning_ignore_restore("int_as_enum_without_cast")
+@warning_ignore_restore("int_as_enum_without_match")
 
-func _toggle_selection_related_menu_items(disabled: bool) -> void:
+
+func _toggle_selection_related_menu_items(enable: bool) -> void:
+	var disabled := !enable
 	var file_menu := file_menu_button.get_popup()
 	file_menu.set_item_disabled(file_menu.get_item_index(MenuAction.SAVE), disabled)
 	file_menu.set_item_disabled(file_menu.get_item_index(MenuAction.SAVE_AS), disabled)
@@ -375,7 +401,8 @@ func _do_menu_action(action_id: int) -> void:
 			_file_dialog.popup_file_dialog()
 		
 		MenuAction.REOPEN_CLOSED:
-			assert(not _session_closed_uids.is_empty())
+			if _session_closed_uids.is_empty(): # check because of shortcut
+				return
 			for idx in range(_session_closed_uids.size() - 1, -1, -1):
 				var uid := _session_closed_uids[idx]
 				if ResourceUID.has_id(ResourceUID.text_to_id(uid)):
@@ -384,11 +411,11 @@ func _do_menu_action(action_id: int) -> void:
 					return
 				else:
 					_session_closed_uids.remove_at(idx)
-
 			push_warning(tr("None of the closed resources exist anymore"))
-
 		
 		MenuAction.SAVE:
+			if not is_any_registry_selected(): # check because of shortcut
+				return
 			_warn_unimplemented()
 		
 		MenuAction.SAVE_AS:
@@ -401,7 +428,8 @@ func _do_menu_action(action_id: int) -> void:
 			_warn_unimplemented()
 		
 		MenuAction.CLOSE:
-			close_registry(_current_registry_uid)
+			if is_any_registry_selected(): # check because of shortcut
+				close_registry(_current_registry_uid)
 		
 		MenuAction.CLOSE_OTHER_TABS:
 			_close_other_tabs(_current_registry_uid)
