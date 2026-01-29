@@ -293,31 +293,14 @@ func _populate_file_menu() -> void:
 	# https://github.com/godotengine/godot/pull/102889
 	var file_menu := file_menu_button.get_popup()
 	file_menu.name = "FileMenu"
-	file_menu.add_item(
-		"New Registry...",
-		MenuAction.NEW,
-		KEY_MASK_META | KEY_N,
-	)
-	file_menu.add_item("Open...", MenuAction.OPEN)
-	file_menu.add_item(
-		"Reopen Closed Registry",
-		MenuAction.REOPEN_CLOSED,
+	file_menu.set_item_accelerator(file_menu.get_item_index(MenuAction.NEW), KEY_MASK_META | KEY_N)
+	file_menu.set_item_accelerator(
+		file_menu.get_item_index(MenuAction.REOPEN_CLOSED),
 		KEY_MASK_SHIFT | KEY_MASK_META | KEY_T,
 	)
-	file_menu.add_item("Open Recent", MenuAction.OPEN_RECENT)
-	file_menu.add_separator()
-	file_menu.add_item("Save", MenuAction.SAVE, KEY_MASK_ALT | KEY_MASK_META | KEY_S)
-	file_menu.add_item("Save as...", MenuAction.SAVE_AS)
-	file_menu.add_item("Save all", MenuAction.SAVE_ALL, KEY_MASK_CTRL | KEY_MASK_META | KEY_S)
-	file_menu.add_separator()
-	file_menu.add_item("Copy Registry Path", MenuAction.COPY_PATH)
-	file_menu.add_item("Copy Registry UID", MenuAction.COPY_UID)
-	file_menu.add_item("Show in FileSystem", MenuAction.SHOW_IN_FILESYSTEM)
-	file_menu.add_separator()
-	file_menu.add_item("Close", MenuAction.CLOSE, KEY_MASK_META | KEY_W)
-	file_menu.add_item("Close All", MenuAction.CLOSE_ALL)
-	file_menu.add_item("Close Other Tabs", MenuAction.CLOSE_OTHER_TABS)
-	file_menu.add_item("Close Tabs Below", MenuAction.CLOSE_TABS_BELOW)
+	file_menu.set_item_accelerator(file_menu.get_item_index(MenuAction.SAVE), KEY_MASK_ALT | KEY_MASK_META | KEY_S)
+	file_menu.set_item_accelerator(file_menu.get_item_index(MenuAction.SAVE_ALL), KEY_MASK_CTRL | KEY_MASK_META | KEY_S)
+	file_menu.set_item_accelerator(file_menu.get_item_index(MenuAction.CLOSE), KEY_MASK_META | KEY_W)
 
 	# TODO: implement "previous" logic
 	var recent := PopupMenu.new()
