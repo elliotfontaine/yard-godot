@@ -3,6 +3,8 @@ const RegistriesItemList = preload("res://addons/yard/editor_only/ui_scenes/regi
 const FuzzySearch = preload("res://addons/yard/editor_only/classes/fuzzy_search.gd")
 const FuzzySearchResult = FuzzySearch.FuzzySearchResult
 
+const FILESYSTEM_CREATE_CONTEXT_MENU_PLUGIN = preload("res://addons/yard/editor_only/editor_context_menu_plugin.gd")
+
 const MainView := preload("res://addons/yard/editor_only/ui_scenes/main_view.gd")
 const MAIN_VIEW_SCENE := preload("res://addons/yard/editor_only/ui_scenes/main_view.tscn")
 

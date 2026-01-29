@@ -144,6 +144,11 @@ func is_any_registry_selected() -> bool:
 	return not _current_registry_uid.is_empty()
 
 
+func popup_new_registry_window(current_directory: String) -> void:
+	print_debug("This should pop a custom window to create new registry")
+	pass
+
+
 ## Returns the index in the ItemList of the specified registry (by uid)
 ## -1 if not found
 func _get_registry_list_index(uid: String) -> int:
