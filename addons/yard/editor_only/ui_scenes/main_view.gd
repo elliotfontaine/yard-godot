@@ -34,7 +34,6 @@ var _opened_registries: Dictionary[String, Registry] = { } # Dict[uid, Registry]
 var _session_closed_uids: Array[String] = [] # Array[uid]
 var _file_dialog: EditorFileDialog
 var _file_dialog_option: MenuAction = MenuAction.NONE
-var _registries_context_menu: PopupMenu
 var _current_registry_uid: String = ""
 var _fuz := FuzzySearch.new()
 
@@ -42,6 +41,7 @@ var _fuz := FuzzySearch.new()
 @onready var registries_filter: LineEdit = %RegistriesFilter
 @onready var registries_itemlist: RegistriesItemList = %RegistriesItemList
 @onready var registry_view: RegistryView = %RegistryView
+@onready var registry_context_menu: PopupMenu = $RegistryContextMenu
 
 
 func _ready() -> void:
@@ -54,14 +54,9 @@ func _ready() -> void:
 
 	registries_filter.right_icon = get_theme_icon(&"Search", &"EditorIcons")
 
+	_populate_context_menu()
 	_populate_file_menu()
 	file_menu_button.get_popup().id_pressed.connect(_on_file_menu_id_pressed)
-
-	_registries_context_menu = PopupMenu.new()
-	_populate_context_menu()
-	add_child(_registries_context_menu)
-	_registries_context_menu.about_to_popup.connect(_on_registry_context_menu_about_to_popup)
-	_registries_context_menu.id_pressed.connect(_on_registry_context_menu_id_pressed)
 
 	# Fuzzy Search settings
 	_fuz.max_results = 20
@@ -72,7 +67,7 @@ func _ready() -> void:
 
 func _shortcut_input(event: InputEvent) -> void:
 	if is_visible_in_tree() and event.is_pressed():
-		_registries_context_menu.activate_item_by_event(event)
+		registry_context_menu.activate_item_by_event(event)
 
 
 ## Open a registry from the filesystem and add it to the list of opened ones
@@ -131,7 +126,8 @@ func select_registry(uid: String) -> void:
 		EditorInterface.inspect_object(registry, "", true)
 
 	print("registry selected:  ", registry.resource_path, " (", uid, ")")
-	registry_view.show_placeholder()
+	#registry_view.show_placeholder()
+	registry_view.show_registry_data(registry)
 
 
 func unselect_registry() -> void:
@@ -318,37 +314,36 @@ func _populate_file_menu() -> void:
 
 
 func _populate_context_menu() -> void:
-	_registries_context_menu.name = "RegistriesContextMenu"
-	_registries_context_menu.add_item(
+	registry_context_menu.add_item(
 		"Save",
 		MenuAction.SAVE,
 		KEY_MASK_ALT | KEY_MASK_META | KEY_S,
 	)
-	_registries_context_menu.add_item("Save as...", MenuAction.SAVE_AS)
-	_registries_context_menu.add_item(
+	registry_context_menu.add_item("Save as...", MenuAction.SAVE_AS)
+	registry_context_menu.add_item(
 		"Close",
 		MenuAction.CLOSE,
 		KEY_MASK_META | KEY_W,
 	)
-	_registries_context_menu.add_item("Close Other Tabs", MenuAction.CLOSE_OTHER_TABS)
-	_registries_context_menu.add_item("Close Tabs Below", MenuAction.CLOSE_TABS_BELOW)
-	_registries_context_menu.add_item("Close All", MenuAction.CLOSE_ALL)
-	_registries_context_menu.add_separator()
-	_registries_context_menu.add_item("Copy Registry Path", MenuAction.COPY_PATH)
-	_registries_context_menu.add_item("Copy Registry UID", MenuAction.COPY_UID)
-	_registries_context_menu.add_item("Show in FileSystem", MenuAction.SHOW_IN_FILESYSTEM)
-	_registries_context_menu.add_separator()
-	_registries_context_menu.add_item(
+	registry_context_menu.add_item("Close Other Tabs", MenuAction.CLOSE_OTHER_TABS)
+	registry_context_menu.add_item("Close Tabs Below", MenuAction.CLOSE_TABS_BELOW)
+	registry_context_menu.add_item("Close All", MenuAction.CLOSE_ALL)
+	registry_context_menu.add_separator()
+	registry_context_menu.add_item("Copy Registry Path", MenuAction.COPY_PATH)
+	registry_context_menu.add_item("Copy Registry UID", MenuAction.COPY_UID)
+	registry_context_menu.add_item("Show in FileSystem", MenuAction.SHOW_IN_FILESYSTEM)
+	registry_context_menu.add_separator()
+	registry_context_menu.add_item(
 		"Move Up",
 		MenuAction.MOVE_UP,
 		KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP,
 	)
-	_registries_context_menu.add_item(
+	registry_context_menu.add_item(
 		"Move Down",
 		MenuAction.MOVE_DOWN,
 		KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN,
 	)
-	_registries_context_menu.add_item("Sort", MenuAction.SORT)
+	registry_context_menu.add_item("Sort", MenuAction.SORT)
 
 
 @warning_ignore_restore("int_as_enum_without_cast")
@@ -373,12 +368,12 @@ func _toggle_move_up_down_items() -> void:
 	var idx := _get_registry_list_index(_current_registry_uid)
 	var is_first := idx == 0
 	var is_last := idx == registries_itemlist.item_count - 1
-	_registries_context_menu.set_item_disabled(
-		_registries_context_menu.get_item_index(MenuAction.MOVE_UP),
+	registry_context_menu.set_item_disabled(
+		registry_context_menu.get_item_index(MenuAction.MOVE_UP),
 		is_first,
 	)
-	_registries_context_menu.set_item_disabled(
-		_registries_context_menu.get_item_index(MenuAction.MOVE_DOWN),
+	registry_context_menu.set_item_disabled(
+		registry_context_menu.get_item_index(MenuAction.MOVE_DOWN),
 		is_last,
 	)
 
@@ -387,10 +382,11 @@ func _do_menu_action(action_id: int) -> void:
 	# TODO: implement actions logic
 	match action_id:
 		MenuAction.NEW:
-			_warn_unimplemented()
+			popup_new_registry_window("res://")
 		MenuAction.OPEN:
 			_file_dialog_option = MenuAction.OPEN
 			_file_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
+			_file_dialog.add_filter("*.reg", "Registries")
 			_file_dialog.title = tr("Open Registry")
 			_file_dialog.popup_file_dialog()
 		MenuAction.REOPEN_CLOSED:
@@ -530,7 +526,7 @@ func _on_registries_list_item_clicked(idx: int, _at: Vector2, mouse_button_index
 	select_registry(clicked_registry_uid)
 
 	var pos := DisplayServer.mouse_get_position()
-	_registries_context_menu.popup(Rect2i(Vector2i(pos), Vector2i.ZERO))
+	registry_context_menu.popup(Rect2i(Vector2i(pos), Vector2i.ZERO))
 
 
 func _on_file_menu_button_about_to_popup() -> void:
@@ -566,8 +562,12 @@ func _on_file_dialog_action(path: String) -> void:
 		MenuAction.NEW:
 			_warn_unimplemented()
 		MenuAction.OPEN:
-			_warn_unimplemented()
+			var res := load(path)
+			if res is Registry:
+				open_registry(res)
+			elif res.get_script():
+				push_error("Tried to open %s as a Registry" % res.get_script().get_global_name())
+			else:
+				push_error("Tried to open %s as a Registry" % res.get_class())
 		MenuAction.SAVE_AS:
 			_warn_unimplemented()
-
-	print("Path selected: ", path)

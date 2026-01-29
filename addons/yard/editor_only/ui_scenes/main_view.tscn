@@ -109,7 +109,11 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_stretch_ratio = 6.0
 
+[node name="RegistryContextMenu" type="PopupMenu" parent="."]
+
 [connection signal="about_to_popup" from="VBoxContainer/HBoxContainer/FileMenuButton" to="." method="_on_file_menu_button_about_to_popup"]
 [connection signal="text_changed" from="VBoxContainer/HSplitContainer/VBoxContainer/RegistriesFilter" to="." method="_on_registries_filter_text_changed"]
 [connection signal="item_clicked" from="VBoxContainer/HSplitContainer/VBoxContainer/RegistriesItemList" to="." method="_on_registries_list_item_clicked"]
 [connection signal="item_selected" from="VBoxContainer/HSplitContainer/VBoxContainer/RegistriesItemList" to="." method="_on_registries_list_item_selected"]
+[connection signal="about_to_popup" from="RegistryContextMenu" to="." method="_on_registry_context_menu_about_to_popup"]
+[connection signal="id_pressed" from="RegistryContextMenu" to="." method="_on_registry_context_menu_id_pressed"]
