@@ -1,10 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://dsg55mejcqgyb"]
+[gd_scene load_steps=6 format=3 uid="uid://dsg55mejcqgyb"]
 
 [ext_resource type="Script" uid="uid://pbm1netkyiqy" path="res://addons/yard/editor_only/ui_scenes/main_view.gd" id="1_2b5h5"]
 [ext_resource type="PackedScene" uid="uid://crnac01bnyk3" path="res://addons/yard/editor_only/ui_scenes/registry_view.tscn" id="2_2enek"]
 [ext_resource type="Script" uid="uid://cfbh7d7n20geh" path="res://addons/yard/editor_only/ui_scenes/registries_itemlist.gd" id="2_qv183"]
+[ext_resource type="PackedScene" uid="uid://b3g3e36v7g6kr" path="res://addons/yard/editor_only/ui_scenes/new_registry_dialog.tscn" id="4_qv183"]
 
-[sub_resource type="DPITexture" id="DPITexture_2enek"]
+[sub_resource type="DPITexture" id="DPITexture_qv183"]
 _source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#ff5d5d\" d=\"M2 1v8.586l1.293-1.293a1 1 0 0 1 1.414 0L7 10.587l2.293-2.293a1 1 0 0 1 1.414 0L13 10.586l1-1V6H9V1H2zm8 0v4h4zm-6 9.414-2 2V15h12v-2.586l-.293.293a1 1 0 0 1-1.414 0L10 10.414l-2.293 2.293a1 1 0 0 1-1.414 0L4 10.414z\"/></svg>
 "
 
@@ -94,7 +95,7 @@ size_flags_horizontal = 3
 unique_name_in_owner = true
 layout_mode = 2
 placeholder_text = "Filter Registries"
-right_icon = SubResource("DPITexture_2enek")
+right_icon = SubResource("DPITexture_qv183")
 
 [node name="RegistriesItemList" type="ItemList" parent="VBoxContainer/HSplitContainer/VBoxContainer"]
 unique_name_in_owner = true
@@ -110,6 +111,40 @@ layout_mode = 2
 size_flags_stretch_ratio = 6.0
 
 [node name="RegistryContextMenu" type="PopupMenu" parent="."]
+unique_name_in_owner = true
+item_count = 14
+item_0/text = "Save"
+item_0/id = 10
+item_1/text = "Save as..."
+item_1/id = 11
+item_2/text = "Close"
+item_2/id = 13
+item_3/text = "Close Other Tabs"
+item_3/id = 14
+item_4/text = "Close Tabs Below"
+item_4/id = 15
+item_5/text = "Close All"
+item_5/id = 16
+item_6/id = -1
+item_6/separator = true
+item_7/text = "Copy Registry Path"
+item_7/id = 20
+item_8/text = "Copy Registry UID"
+item_8/id = 21
+item_9/text = "Show in FileSystem"
+item_9/id = 22
+item_10/id = -1
+item_10/separator = true
+item_11/text = "Move Up"
+item_11/id = 30
+item_12/text = "Move Down"
+item_12/id = 31
+item_13/text = "Sort"
+item_13/id = 32
+
+[node name="NewRegistryDialog" parent="." instance=ExtResource("4_qv183")]
+unique_name_in_owner = true
+visible = false
 
 [connection signal="about_to_popup" from="VBoxContainer/HBoxContainer/FileMenuButton" to="." method="_on_file_menu_button_about_to_popup"]
 [connection signal="text_changed" from="VBoxContainer/HSplitContainer/VBoxContainer/RegistriesFilter" to="." method="_on_registries_filter_text_changed"]

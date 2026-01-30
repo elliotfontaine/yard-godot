@@ -26,6 +26,7 @@ enum MenuAction {
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const RegistriesItemList := Namespace.RegistriesItemList
 const RegistryView := Namespace.RegistryView
+const NewRegistryDialog := Namespace.NewRegistryDialog
 const FuzzySearch := Namespace.FuzzySearch
 const FuzzySearchResult := Namespace.FuzzySearchResult
 const _SAVED_STATE_PATH := "res://addons/yard/editor_only/state.cfg"
@@ -41,7 +42,8 @@ var _fuz := FuzzySearch.new()
 @onready var registries_filter: LineEdit = %RegistriesFilter
 @onready var registries_itemlist: RegistriesItemList = %RegistriesItemList
 @onready var registry_view: RegistryView = %RegistryView
-@onready var registry_context_menu: PopupMenu = $RegistryContextMenu
+@onready var registry_context_menu: PopupMenu = %RegistryContextMenu
+@onready var new_registry_dialog: NewRegistryDialog = %NewRegistryDialog
 
 
 func _ready() -> void:
@@ -54,7 +56,7 @@ func _ready() -> void:
 
 	registries_filter.right_icon = get_theme_icon(&"Search", &"EditorIcons")
 
-	_populate_context_menu()
+	_set_context_menu_accelerators()
 	_populate_file_menu()
 	file_menu_button.get_popup().id_pressed.connect(_on_file_menu_id_pressed)
 
@@ -140,9 +142,9 @@ func is_any_registry_selected() -> bool:
 	return not _current_registry_uid.is_empty()
 
 
-func popup_new_registry_window(current_directory: String) -> void:
-	print_debug("This should pop a custom window to create new registry")
-	pass
+func popup_new_registry_dialog(current_directory: String) -> void:
+	new_registry_dialog.path_line_edit.text = current_directory.path_join("new_registry.reg")
+	new_registry_dialog.popup()
 
 
 ## Returns the index in the ItemList of the specified registry (by uid)
@@ -313,37 +315,11 @@ func _populate_file_menu() -> void:
 	)
 
 
-func _populate_context_menu() -> void:
-	registry_context_menu.add_item(
-		"Save",
-		MenuAction.SAVE,
-		KEY_MASK_ALT | KEY_MASK_META | KEY_S,
-	)
-	registry_context_menu.add_item("Save as...", MenuAction.SAVE_AS)
-	registry_context_menu.add_item(
-		"Close",
-		MenuAction.CLOSE,
-		KEY_MASK_META | KEY_W,
-	)
-	registry_context_menu.add_item("Close Other Tabs", MenuAction.CLOSE_OTHER_TABS)
-	registry_context_menu.add_item("Close Tabs Below", MenuAction.CLOSE_TABS_BELOW)
-	registry_context_menu.add_item("Close All", MenuAction.CLOSE_ALL)
-	registry_context_menu.add_separator()
-	registry_context_menu.add_item("Copy Registry Path", MenuAction.COPY_PATH)
-	registry_context_menu.add_item("Copy Registry UID", MenuAction.COPY_UID)
-	registry_context_menu.add_item("Show in FileSystem", MenuAction.SHOW_IN_FILESYSTEM)
-	registry_context_menu.add_separator()
-	registry_context_menu.add_item(
-		"Move Up",
-		MenuAction.MOVE_UP,
-		KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP,
-	)
-	registry_context_menu.add_item(
-		"Move Down",
-		MenuAction.MOVE_DOWN,
-		KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN,
-	)
-	registry_context_menu.add_item("Sort", MenuAction.SORT)
+func _set_context_menu_accelerators() -> void:
+	registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(MenuAction.SAVE), KEY_MASK_ALT | KEY_MASK_META | KEY_S)
+	registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(MenuAction.CLOSE), KEY_MASK_META | KEY_W)
+	registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(MenuAction.MOVE_UP), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP)
+	registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(MenuAction.MOVE_DOWN), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN)
 
 
 @warning_ignore_restore("int_as_enum_without_cast")
@@ -382,7 +358,7 @@ func _do_menu_action(action_id: int) -> void:
 	# TODO: implement actions logic
 	match action_id:
 		MenuAction.NEW:
-			popup_new_registry_window("res://")
+			popup_new_registry_dialog("res://")
 		MenuAction.OPEN:
 			_file_dialog_option = MenuAction.OPEN
 			_file_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE

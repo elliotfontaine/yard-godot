@@ -1,0 +1,107 @@
+[gd_scene load_steps=2 format=3 uid="uid://b3g3e36v7g6kr"]
+
+[ext_resource type="Script" uid="uid://ci6vvg34c6b6o" path="res://addons/yard/editor_only/ui_scenes/new_registry_dialog.gd" id="1_uots1"]
+
+[node name="NewRegistryDialog" type="ConfirmationDialog"]
+oversampling_override = 1.0
+title = "Create Registry"
+initial_position = 1
+size = Vector2i(516, 278)
+visible = true
+ok_button_text = "Create"
+script = ExtResource("1_uots1")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -49.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+columns = 2
+
+[node name="ClassRestrictionLabel" type="Label" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Class Restriction:"
+
+[node name="ClassRestriction" type="HBoxContainer" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ClassRestrictionLineEdit" type="LineEdit" parent="VBoxContainer/GridContainer/ClassRestriction"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Item"
+
+[node name="ClassListDialogButton" type="Button" parent="VBoxContainer/GridContainer/ClassRestriction"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ClassFilesystemButton" type="Button" parent="VBoxContainer/GridContainer/ClassRestriction"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="PathLabel" type="Label" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Path:"
+
+[node name="Path" type="HBoxContainer" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="PathLineEdit" type="LineEdit" parent="VBoxContainer/GridContainer/Path"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "item_registry.reg"
+
+[node name="PathFilesystemButton" type="Button" parent="VBoxContainer/GridContainer/Path"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ScanDirectoryLabel" type="Label" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Scan Directory:"
+
+[node name="ScanDirectory" type="HBoxContainer" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="ScanDirectoryLineEdit" type="LineEdit" parent="VBoxContainer/GridContainer/ScanDirectory"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "res://data/items/"
+
+[node name="ScanDirectoryFilesystemButton" type="Button" parent="VBoxContainer/GridContainer/ScanDirectory"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="RecursiveScanLabel" type="Label" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Recursive Scan:"
+
+[node name="CheckBox" type="CheckBox" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "On"
+
+[node name="InfoLabel" type="RichTextLabel" parent="VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(500, 20)
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
+[connection signal="canceled" from="." to="." method="_on_canceled"]
+[connection signal="close_requested" from="." to="." method="_on_close_requested"]
+[connection signal="confirmed" from="." to="." method="_on_confirmed"]
