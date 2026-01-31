@@ -111,19 +111,28 @@ func _validate_resource_classes() -> void:
 
 
 func _is_resource_class_valid(res: Resource) -> bool:
+	if res == null:
+		return false
 	if valid_classes.is_empty():
 		return true
 
+	var class_stringname: StringName
 	var res_script: Script = res.get_script()
-	if res_script == null:
-		return false
-
-	var global_name := res_script.get_global_name()
-	if global_name.is_empty():
-		return false
+	if res_script != null:
+		var global_name := StringName(res_script.get_global_name())
+		if not global_name.is_empty():
+			class_stringname = global_name
+		else:
+			class_stringname = StringName(res.get_class())
+	else:
+		class_stringname = StringName(res.get_class())
 
 	for valid_class in valid_classes:
-		if global_name == valid_class or ClassDB.is_parent_class(global_name, valid_class):
+		if class_stringname == valid_class:
+			return true
+		if res.is_class(String(valid_class)):
+			return true
+		if ClassDB.is_parent_class(String(class_stringname), String(valid_class)):
 			return true
 
 	return false
