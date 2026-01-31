@@ -129,7 +129,7 @@ func select_registry(uid: String) -> void:
 
 	print("registry selected:  ", registry.resource_path, " (", uid, ")")
 	#registry_view.show_placeholder()
-	registry_view.show_registry_data(registry)
+	registry_view.current_registry = registry
 
 
 func unselect_registry() -> void:

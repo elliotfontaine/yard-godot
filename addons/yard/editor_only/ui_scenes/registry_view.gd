@@ -5,16 +5,21 @@ const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const DynamicTable := Namespace.DynamicTable
 
 # Reference to dynamic table
-@onready var dynamic_table: DynamicTable = $DynamicTable
+@onready var dynamic_table: DynamicTable = %DynamicTable
 # Popups
-@onready var popup := $PopupMenu
-@onready var confirm_popup := $ConfirmationDialog
+@onready var popup := %PopupMenu
+@onready var confirm_popup := %ConfirmationDialog
 
 var headers: Array # array of columns header
-var data: Array # array of data, rows and columns
+var table_data: Array # array of data, rows and columns
 var current_selected_row := -1
 var current_multiple_selected_rows := -1 # current multiple selected_rows
 var multiple_selected_rows: Array # array of selected rows
+
+var current_registry: Registry:
+	set(value):
+		current_registry = value
+		update_view()
 
 var _placeholder_headers := ["ID|C", "Name", "Lastname", "Age|r", "Job", "City", "Date", "Task|p", "Completed|check", "Icon|image"]
 var _placeholder_data := [
@@ -68,14 +73,46 @@ func _process(_delta: float) -> void:
 		_confirm_delete_rows()
 
 
+func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
+	if not typeof(data) == TYPE_DICTIONARY and data.has("files"):
+		return false
+	
+	for path in data.files:
+		if not ResourceLoader.exists(path):
+			return false
+	
+	for path in data.files:
+		if not current_registry._is_resource_class_valid(load(path)):
+			return false
+	
+	return true
+
+
+func _drop_data(_at_position: Vector2, data: Variant) -> void:
+	for path: String in data.files:
+		print(path)
+		print(ResourceUID.path_to_uid(path))
+		current_registry._add_entry(ResourceUID.path_to_uid(path))
+		update_view()
+
+
 func show_placeholder() -> void:
 	headers = _placeholder_headers
-	data = _placeholder_data
+	table_data = _placeholder_data
 	dynamic_table.set_headers(headers)
-	dynamic_table.set_data(data)
+	dynamic_table.set_data(table_data)
 
 	# Default sorted column
 	dynamic_table.ordering_data(0, true) # 0 -> ID column and true -> ascending order
+
+
+func update_view() -> void:
+	headers = ["UID", "StringID"]
+	table_data = []
+	for uid in current_registry._uids_to_string_ids:
+		table_data.append([uid, current_registry._uids_to_string_ids[uid]])
+	dynamic_table.set_headers(headers)
+	dynamic_table.set_data(table_data)
 
 
 func _confirm_delete_rows() -> void:
@@ -98,7 +135,7 @@ func _on_cell_right_selected(row: int, column: int, mouse_pos: Vector2) -> void:
 	if (row >= 0): # ignore header cells
 		current_selected_row = row
 		popup.position = mouse_pos
-		if (data.size() == 0 or row == data.size()):
+		if (table_data.size() == 0 or row == table_data.size()):
 			popup.set("item_1/disabled", true)
 			current_multiple_selected_rows = -1
 		else:
