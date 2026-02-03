@@ -3,6 +3,15 @@ extends Panel
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const DynamicTable := Namespace.DynamicTable
+const REGISTRY_ENTRY_COLUMNS = [&"UID", &"StringID"]
+const UID_COLUMN := 0
+const STRINGID_COLUMN := 1
+const PROPERTY_BLACKLIST := [
+	&"script",
+	&"resource_local_to_scene",
+	&"resource_path",
+	&"resource_name",
+]
 
 # Reference to dynamic table
 @onready var dynamic_table: DynamicTable = %DynamicTable
@@ -10,50 +19,17 @@ const DynamicTable := Namespace.DynamicTable
 @onready var popup := %PopupMenu
 @onready var confirm_popup := %ConfirmationDialog
 
-var headers: Array # array of columns header
-var table_data: Array # array of data, rows and columns
-var current_selected_row := -1
-var current_multiple_selected_rows := -1 # current multiple selected_rows
-var multiple_selected_rows: Array # array of selected rows
-
 var current_registry: Registry:
 	set(value):
 		current_registry = value
 		update_view()
 
-var _placeholder_headers := ["ID|C", "Name", "Lastname", "Age|r", "Job", "City", "Date", "Task|p", "Completed|check", "Icon|image"]
-var _placeholder_data := [
-	[1, "Michael", "Smith", 34, "Engineer", "London", "10/12/2005", 0.5, 1, preload("res://icon.svg")],
-	[2, "Louis", "Johnson", 28, "Doctor", "New York", "05/11/2023", 0, 1],
-	[3, "Ann", "Williams", 42, "Lawyer", "Tokyo", "18/03/2025", 0, 0, preload("res://icon.svg")],
-	[4, "John", "Brown", 31, "Teacher", "Sydney", "02/07/2024", 0, 0],
-	[5, "Frances", "Jones", 25, "Designer", "Paris", "29/09/2023", 0, 0],
-	[6, "Robert", "", 39, "Architect", "Berlin", "14/01/2026", 0, 0],
-	[7, "Lucy", "Davis", 36, "Accountant", "Madrid", "07/04/2024", 0, 0],
-	[8, "Mark", "Miller", 44, "Entrepreneur", "Toronto", "21/08/2025", 0, 0],
-	[9, "Paula", "Wilson", 29, "Journalist", "Rio de Janeiro", "10/12/2023", 0, 0],
-	[10, "Stephen", "Moore", 33, "Programmer", "Dubai", "30/11/2024", 0, 0],
-	[11, "Mark", "Jefferson", 31, "Dentist", "Lisbona", "10/02/2018", 0.47, 1],
-	[12, "James", "Taylor", 28, "Doctor", "Chicago", "03/06/2026", 0, 0],
-	[13, "Carmen", "Anderson", 42, "Lawyer", "Hong Kong", "25/02/2024", 0, 0],
-	[14, "John", "Thomas", 39, "Architect", "Amsterdam", "17/10/2025", 0, 0],
-	[15, "Paul", "Jackson", 44, "Entrepreneur", "Singapore", "09/05/2023", 0, 0],
-	[16, "Jennifer", "White", 29, "Journalist", "Cape Town", "01/03/2023", 0, 0],
-	[17, "Luke", "Harris", 33, "Programmer", "Seoul", "28/04/2023", 0, 0],
-	[18, "Peter", "Martin", 25, "Designer", "Mexico City", "11/08/2024", 0, 0],
-	[19, "Matthew", "Thompson", 39, "Architect", "Moscow", "13/09/2024", 0, 0],
-	[20, "Louise", "Garcia", 36, "Accountant", "Istanbul", "04/12/2025", 0, 0],
-	[21, "Matthew", "Martinez", 44, "Entrepreneur", "Buenos Aires", "06/01/2025", 0, 0],
-	[22, "Stephanie", "Robinson", 29, "Journalist", "Cairo", "22/07/2023", 0, 0],
-	[23, "Christopher", "Clark", 51, "Architect", "Tokyo", "12/05/2021", 0, 0],
-	[24, "Amanda", "Rodriguez", 33, "Graphic Designer", "Sydney", "11/03/2020", 0, 0],
-	[25, "Daniel", "Lewis", 47, "Software Engineer", "Berlin", "03/04/2023", 0, 0],
-	[26, "Victoria", "Lee", 28, "Marketing Specialist", "Toronto", "04/05/2021", 0, 0],
-	[27, "Joseph", "Walker", 55, "Professor", "London", "12/05/2021", 0, 0],
-	[28, "Ashley", "Young", 39, "Chef", "Paris", "22/05/2024", 0, 0],
-	[29, "Kevin", "Allen", 42, "Financial Analyst", "Mexico City", "08/02/2025", 0, 0],
-	[30, "Elizabeth", "King", 31, "Photographer", "Rome", "11/09/2020", 0, 0],
-]
+var properties_column_info: Array[Dictionary]
+var entries_data: Array[Array] # inner arrays are rows, their content is columns
+
+var current_selected_row := -1
+var current_multiple_selected_rows := -1 # current multiple selected_rows
+var multiple_selected_rows: Array # array of selected rows
 
 
 func _ready() -> void:
@@ -76,15 +52,15 @@ func _process(_delta: float) -> void:
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 	if not typeof(data) == TYPE_DICTIONARY and data.has("files"):
 		return false
-	
-	for path in data.files:
+
+	for path: String in data.files:
 		if not ResourceLoader.exists(path):
 			return false
-	
-	for path in data.files:
+
+	for path: String in data.files:
 		if not current_registry._is_resource_class_valid(load(path)):
 			return false
-	
+
 	return true
 
 
@@ -96,23 +72,74 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 		update_view()
 
 
-func show_placeholder() -> void:
-	headers = _placeholder_headers
-	table_data = _placeholder_data
-	dynamic_table.set_headers(headers)
-	dynamic_table.set_data(table_data)
-
-	# Default sorted column
-	dynamic_table.ordering_data(0, true) # 0 -> ID column and true -> ascending order
-
-
 func update_view() -> void:
-	headers = ["UID", "StringID"]
-	table_data = []
+	var resources: Dictionary[StringName, Resource] = current_registry.load_all()
+	set_columns_data(resources.values())
+	entries_data.clear()
+
 	for uid in current_registry._uids_to_string_ids:
-		table_data.append([uid, current_registry._uids_to_string_ids[uid]])
-	dynamic_table.set_headers(headers)
-	dynamic_table.set_data(table_data)
+		var entry_data := [uid, current_registry.get_stringid(uid)]
+		entry_data.append_array(get_res_row_data(current_registry.load_entry(uid)))
+		entries_data.append(entry_data)
+
+	dynamic_table.set_headers(_build_headers())
+	dynamic_table.set_data(entries_data)
+	dynamic_table.ordering_data(1, true)
+
+
+func can_display_property(property_info: Dictionary) -> bool:
+	return (
+		property_info[&"type"] not in [TYPE_CALLABLE, TYPE_SIGNAL]
+		and property_info[&"usage"] & PROPERTY_USAGE_EDITOR != 0
+		and property_info[&"name"] not in PROPERTY_BLACKLIST
+	)
+
+
+func set_columns_data(resources: Array[Resource]) -> void:
+	properties_column_info.clear()
+	var found_props := { }
+	for res: Resource in resources:
+		if res == null:
+			continue
+
+		for prop: Dictionary in res.get_property_list():
+			found_props[prop[&"name"]] = prop
+			prop[&"owner_object"] = res
+
+	for prop: Dictionary in found_props.values():
+		if can_display_property(prop):
+			properties_column_info.append(
+				{
+					&"name": prop[&"name"],
+					&"type": prop[&"type"],
+					&"hint": prop[&"hint"],
+					&"hint_string": prop[&"hint_string"].split(","),
+				},
+			)
+
+
+func get_res_row_data(res: Resource) -> Array[Variant]:
+	if properties_column_info.is_empty():
+		return []
+
+	var row: Array[Variant] = []
+	for prop: Dictionary in properties_column_info:
+		if prop[&"name"] in res:
+			row.append(res.get(prop[&"name"]))
+	return row
+
+
+func get_row_resource_uid(row: int) -> StringName:
+	var uid: StringName = dynamic_table.get_cell_value(row, UID_COLUMN)
+	return uid
+
+
+func _build_headers() -> Array:
+	var headers := []
+	headers.append_array(REGISTRY_ENTRY_COLUMNS)
+	for prop in properties_column_info:
+		headers.append(prop[&"name"])
+	return headers
 
 
 func _confirm_delete_rows() -> void:
@@ -128,6 +155,12 @@ func _on_cell_selected(row: int, column: int) -> void:
 	print("Cell selected on row ", row, ", column ", column, " Cell value: ", dynamic_table.get_cell_value(row, column), " Row value: ", dynamic_table.get_row_value(row))
 	current_selected_row = row
 	current_multiple_selected_rows = -1
+	var uid: StringName = get_row_resource_uid(row)
+	if column in [UID_COLUMN, STRINGID_COLUMN]:
+		EditorInterface.inspect_object(load(uid), "", true)
+	else:
+		var prop_name: String = properties_column_info[column - 2][&"name"]
+		EditorInterface.inspect_object(load(uid), prop_name, true)
 
 
 func _on_cell_right_selected(row: int, column: int, mouse_pos: Vector2) -> void:
@@ -135,7 +168,7 @@ func _on_cell_right_selected(row: int, column: int, mouse_pos: Vector2) -> void:
 	if (row >= 0): # ignore header cells
 		current_selected_row = row
 		popup.position = mouse_pos
-		if (table_data.size() == 0 or row == table_data.size()):
+		if (entries_data.size() == 0 or row == entries_data.size()):
 			popup.set("item_1/disabled", true)
 			current_multiple_selected_rows = -1
 		else:

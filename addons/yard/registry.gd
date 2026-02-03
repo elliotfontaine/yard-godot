@@ -30,6 +30,16 @@ func load_entry(id: StringName) -> Resource:
 		return load(uid)
 
 
+func load_all() -> Dictionary[StringName, Resource]:
+	var dict: Dictionary[StringName, Resource] = { }
+
+	for uid in _uids_to_string_ids:
+		if not uid == &"":
+			dict[_uids_to_string_ids[uid]] = load(uid)
+
+	return dict
+
+
 ## Given an [param id] (either StringID or UID),
 ## always returns the UID text ("uid://..."), or "" if [param id] is invalid
 ## (i.e. not in the registry).
@@ -45,6 +55,13 @@ func get_uid(id: StringName) -> StringName:
 
 	var string_id := StringName(id)
 	return _string_ids_to_uids.get(string_id, &"")
+
+
+func get_stringid(uid: StringName) -> StringName:
+	if _uids_to_string_ids.has(uid):
+		return _uids_to_string_ids[uid]
+	else:
+		return &""
 
 
 ## add a new Resource to the Registry from a UID.
