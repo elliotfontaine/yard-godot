@@ -342,6 +342,9 @@ func ordering_data(column_index: int, ascending: bool = true) -> int:
 					return ascending
 				if b_val == null:
 					return not ascending
+				if typeof(a_val) == TYPE_STRING_NAME:
+					a_val = str(a_val)
+					b_val = str(b_val)
 				_restore_selected_rows()
 				return a_val < b_val if ascending else a_val > b_val
 		)
