@@ -1,9 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://crnac01bnyk3"]
+[gd_scene load_steps=3 format=3 uid="uid://crnac01bnyk3"]
 
 [ext_resource type="Script" uid="uid://tahli441tq7q" path="res://addons/yard/editor_only/ui_scenes/registry_view.gd" id="1_isv8r"]
 [ext_resource type="Script" uid="uid://d25c0lxjdxouk" path="res://addons/yard/editor_only/classes/dynamic_table.gd" id="2_wsykm"]
-[ext_resource type="Texture2D" uid="uid://cjfdp8ebhgoe4" path="res://addons/yard/editor_only/assets/add.png" id="3_d0p6g"]
-[ext_resource type="Texture2D" uid="uid://bfrj3arrri1q8" path="res://addons/yard/editor_only/assets/remove.png" id="4_8lxdp"]
 
 [node name="RegistryView" type="Panel"]
 clip_children = 1
@@ -20,10 +18,8 @@ unique_name_in_owner = true
 size = Vector2i(130, 65)
 item_count = 2
 item_0/text = "Insert row"
-item_0/icon = ExtResource("3_d0p6g")
 item_0/id = 0
 item_1/text = "Delete row(s)"
-item_1/icon = ExtResource("4_8lxdp")
 item_1/id = 1
 
 [node name="ConfirmationDialog" type="ConfirmationDialog" parent="."]
@@ -50,8 +46,10 @@ focus_mode = 2
 mouse_filter = 1
 script = ExtResource("2_wsykm")
 default_font_color = Color(0.8, 0.8075, 0.8275, 1)
+header_height = 40.0
 header_color = Color(0, 0, 0, 0.3)
 header_filter_active_font_color = Color(0.3372549, 0.61960787, 1, 1)
+row_height = 40.0
 grid_color = Color(0.14, 0.161, 0.217, 1)
 selected_back_color = Color(1, 1, 1, 0.35)
 row_color = Color(0.2, 0.23, 0.31, 1)

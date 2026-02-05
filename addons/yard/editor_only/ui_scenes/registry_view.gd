@@ -138,8 +138,30 @@ func _build_headers() -> Array:
 	var headers := []
 	headers.append_array(REGISTRY_ENTRY_COLUMNS)
 	for prop in properties_column_info:
-		headers.append(prop[&"name"])
+		var prop_header: String = prop[&"name"]
+		if _is_resource_property(prop):
+			prop_header += "|resource"
+		elif _is_color_property(prop):
+			prop_header += "|color"
+		elif _is_boolean_property(prop):
+			prop_header += "|check"
+		headers.append(prop_header)
 	return headers
+
+
+func _is_resource_property(prop: Dictionary) -> bool:
+	return (
+		prop[&"type"] == TYPE_OBJECT
+		and prop[&"hint"] == PROPERTY_HINT_RESOURCE_TYPE
+	)
+
+
+func _is_color_property(prop: Dictionary) -> bool:
+	return prop[&"type"] == TYPE_COLOR
+
+
+func _is_boolean_property(prop: Dictionary) -> bool:
+	return prop[&"type"] == TYPE_BOOL
 
 
 func _confirm_delete_rows() -> void:

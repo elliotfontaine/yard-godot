@@ -70,6 +70,10 @@ var _dragging_progress := false
 var _progress_drag_row := -1
 var _progress_drag_col := -1
 
+# Resource previews cache management
+var _resource_thumb_cache: Dictionary = { } # key -> Texture2D (or null if failed)
+var _resource_thumb_pending: Dictionary = { } # key -> bool
+
 # Selection and focus variables
 var _selected_rows: Array = [] # Indices of the selected rows
 var _previous_sort_selected_rows: Array = [] # Array containing the selected rows before sorting
@@ -101,6 +105,7 @@ var _v_scroll: VScrollBar
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		EditorInterface.get_editor_settings().settings_changed.connect(_on_editor_settings_changed)
+		EditorInterface.get_resource_previewer().preview_invalidated.connect(_on_resource_previewer_preview_invalidated)
 		set_native_theming()
 
 	self.focus_mode = Control.FOCUS_ALL # For input from keyboard
@@ -210,6 +215,10 @@ func _draw() -> void:
 						_draw_checkbox(cell_x_pos, row_y_pos, col, row)
 					elif _is_image_column(col):
 						_draw_image_cell(cell_x_pos, row_y_pos, col, row)
+					elif _is_color_column(col):
+						_draw_color_cell(cell_x_pos, row_y_pos, col, row)
+					elif _is_resource_column(col):
+						_draw_resource_cell(cell_x_pos, row_y_pos, col, row)
 					else:
 						_draw_cell_text(cell_x_pos, row_y_pos, col, row)
 			cell_x_pos += current_col_width
@@ -258,6 +267,8 @@ func set_data(new_data: Array) -> void:
 	_visible_rows_range = [0, min(_total_rows, floor(self.size.y / row_height) if row_height > 0 else 0)]
 
 	_selected_rows.clear()
+	_resource_thumb_cache.clear()
+	_resource_thumb_pending.clear()
 	_anchor_row = -1
 	_focused_row = -1
 	_focused_col = -1
@@ -534,11 +545,25 @@ func _is_checkbox_column(column_index: int) -> bool:
 	return header_parts.size() > 1 and (header_parts[1].to_lower().contains("check") or header_parts[1].to_lower().contains("checkbox"))
 
 
+func _is_color_column(column_index: int) -> bool:
+	if column_index >= headers.size():
+		return false
+	var header_parts := headers[column_index].split("|")
+	return header_parts.size() > 1 and header_parts[1].to_lower().contains("color")
+
+
 func _is_image_column(column_index: int) -> bool:
 	if column_index >= headers.size():
 		return false
 	var header_parts := headers[column_index].split("|")
 	return header_parts.size() > 1 and header_parts[1].to_lower().contains("image")
+
+
+func _is_resource_column(column_index: int) -> bool:
+	if column_index >= headers.size():
+		return false
+	var header_parts := headers[column_index].split("|")
+	return header_parts.size() > 1 and header_parts[1].to_lower().contains("resource")
 
 
 func _is_numeric_value(value: Variant) -> bool:
@@ -666,28 +691,78 @@ func _draw_progress_bar(cell_x: float, row_y: float, col: int, row: int) -> void
 
 
 func _draw_checkbox(cell_x: float, row_y: float, col: int, row: int) -> void:
-	var cell_value := false
-	if row < _data.size() and col < _data[row].size():
-		cell_value = bool(_data[row][col])
+	if not row < _data.size() and col < _data[row].size():
+		return
 
-	var checkbox_size = min(row_height, _column_widths[col]) * 0.6
-	var x_offset_centered = cell_x + (_column_widths[col] - checkbox_size) / 2.0
-	var y_offset_centered = row_y + (row_height - checkbox_size) / 2.0
+	var cell_value := bool(_data[row][col])
+	var icon_name := &"checked" if cell_value else &"unchecked"
+	var icon: Texture2D = get_theme_icon(icon_name, &"CheckBox")
+	if icon == null:
+		return
 
-	var checkbox_rect := Rect2(x_offset_centered, y_offset_centered, checkbox_size, checkbox_size)
+	var margin := 2.0
+	var tex_size := icon.get_size()
+	var cell_inner_width: float = _column_widths[col] - margin * 2
+	var cell_inner_height: float = row_height - margin * 2
+	var pos := Vector2(
+		cell_x + margin + (cell_inner_width - tex_size.x) / 2.0,
+		row_y + margin + (cell_inner_height - tex_size.y) / 2.0,
+	)
 
-	draw_rect(checkbox_rect, checkbox_border_color, false, 1.0) # Border
+	draw_texture(icon, pos)
 
-	var fill_rect := checkbox_rect.grow(-checkbox_size * 0.15)
-	if cell_value:
-		draw_rect(fill_rect, checkbox_checked_color)
-	else:
-		draw_rect(fill_rect, checkbox_unchecked_color)
+
+func _draw_color_cell(cell_x: float, row_y: float, col: int, row: int) -> void:
+	var value: Variant = get_cell_value(row, col)
+	if not value is Color:
+		_draw_cell_text(cell_x, row_y, col, row)
+		return
+
+	var color: Color = value
+	var margin := 2.0
+	var cell_inner_width: float = _column_widths[col] - margin * 2
+	var cell_inner_height: float = row_height - margin * 2
+	if cell_inner_width <= 0.0 or cell_inner_height <= 0.0:
+		return
+
+	var rect := Rect2(
+		Vector2(cell_x + margin, row_y + margin),
+		Vector2(cell_inner_width, cell_inner_height),
+	)
+	var border_alpha := 0.65 if color.a < 0.25 else 0.35
+
+	# Checkerboard background to visualize transparency
+	if color.a < 1.0:
+		var tile := 6.0
+		var x0 := rect.position.x
+		var y0 := rect.position.y
+		var x1 := rect.position.x + rect.size.x
+		var y1 := rect.position.y + rect.size.y
+
+		var y := y0
+		var row_i := 0
+		while y < y1:
+			var x := x0
+			var col_i := 0
+			while x < x1:
+				var w := min(tile, x1 - x)
+				var h := min(tile, y1 - y)
+				var is_dark := ((row_i + col_i) % 2) == 0
+				var bg := Color(0, 0, 0, 0.10) if is_dark else Color(1, 1, 1, 0.10)
+				draw_rect(Rect2(Vector2(x, y), Vector2(w, h)), bg, true)
+				x += tile
+				col_i += 1
+			y += tile
+			row_i += 1
+
+	draw_rect(rect, color, true)
+	draw_rect(rect, Color(1, 1, 1, border_alpha), false, 1.0)
 
 
 func _draw_image_cell(cell_x: float, row_y: float, col: int, row: int) -> void:
 	var value: Variant = get_cell_value(row, col)
 	if not value is Texture2D:
+		_draw_cell_text(cell_x, row_y, col, row)
 		return # Draw only if the value is a texture
 
 	var texture: Texture2D = value
@@ -717,6 +792,88 @@ func _draw_image_cell(cell_x: float, row_y: float, col: int, row: int) -> void:
 		drawn_rect.position.x = cell_x + margin + (cell_inner_width - drawn_rect.size.x) / 2
 
 	draw_texture_rect(texture, drawn_rect, false)
+
+
+func _draw_resource_cell(cell_x: float, row_y: float, col: int, row: int) -> void:
+	var value: Variant = get_cell_value(row, col)
+	if not value is Resource:
+		_draw_cell_text(cell_x, row_y, col, row)
+		return
+
+	var res: Resource = value
+
+	var key: String = res.resource_path
+	if key.is_empty():
+		key = "iid:%d" % res.get_instance_id()
+
+	var margin := 2.0
+	var cell_inner_width: float = _column_widths[col] - margin * 2
+	var cell_inner_height: float = row_height - margin * 2
+	if cell_inner_width <= 0.0 or cell_inner_height <= 0.0:
+		return
+
+	var inner_pos := Vector2(cell_x + margin, row_y + margin)
+
+	# Cached thumbnail? draw it
+	if _resource_thumb_cache.has(key):
+		var texture: Texture2D = _resource_thumb_cache[key]
+		if texture == null:
+			return
+
+		var tex_size := texture.get_size()
+		if tex_size.x <= 0.0 or tex_size.y <= 0.0:
+			return
+
+		var tex_aspect := tex_size.x / tex_size.y
+		var cell_aspect := cell_inner_width / cell_inner_height
+
+		var drawn_rect := Rect2()
+		if tex_aspect > cell_aspect:
+			drawn_rect.size.x = cell_inner_width
+			drawn_rect.size.y = cell_inner_width / tex_aspect
+			drawn_rect.position.x = inner_pos.x
+			drawn_rect.position.y = inner_pos.y + (cell_inner_height - drawn_rect.size.y) / 2.0
+		else:
+			drawn_rect.size.y = cell_inner_height
+			drawn_rect.size.x = cell_inner_height * tex_aspect
+			drawn_rect.position.y = inner_pos.y
+			drawn_rect.position.x = inner_pos.x + (cell_inner_width - drawn_rect.size.x) / 2.0
+
+		draw_texture_rect(texture, drawn_rect, false)
+		return
+
+	# Not cached yet and no pending request: request once
+	if not _resource_thumb_pending.has(key):
+		_resource_thumb_pending[key] = true
+
+		var previewer := EditorInterface.get_resource_previewer()
+		previewer.queue_edited_resource_preview(
+			res,
+			self,
+			"_on_resource_cell_thumb_ready",
+			{ "key": key },
+		)
+
+	# Placeholder
+	draw_rect(Rect2(inner_pos, Vector2(cell_inner_width, cell_inner_height)), Color(1, 1, 1, 0.06), true)
+	draw_rect(Rect2(inner_pos, Vector2(cell_inner_width, cell_inner_height)), Color(1, 1, 1, 0.18), false, 1.0)
+
+
+func _on_resource_cell_thumb_ready(path: String, preview: Texture2D, thumbnail_preview: Texture2D, userdata: Variant) -> void:
+	if typeof(userdata) != TYPE_DICTIONARY:
+		return
+
+	var key: String = userdata.get("key", "")
+	if key.is_empty():
+		return
+
+	# Prefer thumbnail; fallback to preview if thumbnail missing
+	var tex: Texture2D = thumbnail_preview if thumbnail_preview != null else preview
+
+	_resource_thumb_cache[key] = tex # can be null if both are null
+	_resource_thumb_pending.erase(key)
+
+	queue_redraw()
 
 
 func _get_interpolated_three_colors(start_c: Color, mid_c: Color, end_c: Color, t_val: float) -> Color:
@@ -758,10 +915,9 @@ func _align_text_in_cell(col: int) -> Array:
 	var header_parts = headers[col].split("|")
 	var h_alignment_character = ""
 	if header_parts.size() > 1:
-		for char_code in header_parts[1].to_lower():
-			if char_code in ["l", "c", "r"]:
-				h_alignment_character = char_code
-				break
+		var char_code: String = header_parts[1].to_lower()
+		if char_code in ["l", "c", "r"]:
+			h_alignment_character = char_code
 
 	var header_text_content = header_parts[0]
 	var h_align_enum = HORIZONTAL_ALIGNMENT_LEFT
@@ -1557,5 +1713,11 @@ func _on_gui_input(event: InputEvent) -> void:
 func _on_editor_settings_changed() -> void:
 	if EditorInterface.get_editor_settings().check_changed_settings_in_group("interface/theme"):
 		set_native_theming(3)
+
+
+func _on_resource_previewer_preview_invalidated(path: String) -> void:
+	push_warning("RESOURCE PREVIEW INVALIDATED: %s" % path)
+	if _resource_thumb_cache.has(path):
+		_resource_thumb_cache.erase(path)
 
 #endregion
