@@ -289,6 +289,10 @@ func set_data(new_data: Array) -> void:
 				data_s = Vector2(default_minimum_column_width - 50, font_size)
 			elif _is_image_column(col):
 				data_s = Vector2(row_height, row_height)
+			elif _is_color_column(col):
+				data_s = Vector2(row_height, row_height)
+			elif _is_resource_column(col):
+				data_s = Vector2(row_height * 2, row_height)
 			else:
 				if r < _data.size() and col < _data[r].size():
 					data_s = font.get_string_size(str(_data[r][col]), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
@@ -477,7 +481,8 @@ func _update_column_widths() -> void:
 	_column_widths.resize(headers.size())
 	_min_column_widths.resize(headers.size())
 	for i in range(headers.size()):
-		if i >= _column_widths.size() or _column_widths[i] == 0 or _column_widths[i] == null:
+		# TODO: Refactor so that users can keep their custom column widths
+		if true: #i >= _column_widths.size() or _column_widths[i] == 0 or _column_widths[i] == null:
 			_column_widths[i] = default_minimum_column_width
 			_min_column_widths[i] = default_minimum_column_width
 	_total_columns = headers.size()
@@ -776,8 +781,8 @@ func _draw_image_cell(cell_x: float, row_y: float, col: int, row: int) -> void:
 	var tex_size := texture.get_size()
 	var tex_aspect := tex_size.x / tex_size.y
 	var cell_aspect := cell_inner_width / cell_inner_height
-
 	var drawn_rect := Rect2()
+
 	if tex_aspect > cell_aspect:
 		# The texture is wider than the cell, fit to width
 		drawn_rect.size.x = cell_inner_width
