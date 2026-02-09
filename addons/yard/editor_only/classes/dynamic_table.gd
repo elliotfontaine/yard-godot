@@ -1022,7 +1022,7 @@ func _apply_filter(search_key: String) -> void:
 		_data = _full_data.duplicate(false)
 		_filtering_column = -1
 	else:
-		var filtered_data = []
+		var filtered_data: Array[Array] = []
 		var key_lower = search_key.to_lower()
 		for row_data in _full_data:
 			if _filtering_column < row_data.size() and row_data[_filtering_column] != null:

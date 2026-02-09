@@ -172,8 +172,9 @@ func _on_cell_selected(row: int, column: int) -> void:
 	print("Cell selected on row ", row, ", column ", column, " Cell value: ", dynamic_table.get_cell_value(row, column), " Row value: ", dynamic_table.get_row_value(row))
 	current_selected_row = row
 	current_multiple_selected_rows = -1
-	var uid: StringName = get_row_resource_uid(row)
-	EditorInterface.edit_resource(load(uid))
+	if row != -1 and column != -1:
+		var uid: StringName = get_row_resource_uid(row)
+		EditorInterface.edit_resource(load(uid))
 
 
 func _on_cell_right_selected(row: int, column: int, mouse_pos: Vector2) -> void:
