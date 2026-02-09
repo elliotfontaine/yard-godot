@@ -53,10 +53,9 @@ func _process(_delta: float) -> void:
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 	if not typeof(data) == TYPE_DICTIONARY and data.has("files"):
 		return false
-
-	for path: String in data.files:
-		if not ResourceLoader.exists(path):
-			return false
+	
+	if not current_registry:
+		return false
 
 	for path: String in data.files:
 		if not current_registry._is_resource_class_valid(load(path)):
