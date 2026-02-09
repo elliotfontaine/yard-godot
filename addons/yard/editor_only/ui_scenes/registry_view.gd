@@ -3,7 +3,8 @@ extends Panel
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const DynamicTable := Namespace.DynamicTable
-const REGISTRY_ENTRY_COLUMNS = [&"UID", &"StringID"]
+const UID_COLUMN_CONFIG := ["uid", "UID", TYPE_STRING]
+const STRINGID_COLUMN_CONFIG := ["string_id", "String ID", TYPE_STRING]
 const UID_COLUMN := 0
 const STRINGID_COLUMN := 1
 const PROPERTY_BLACKLIST := [
@@ -82,7 +83,7 @@ func update_view() -> void:
 		entry_data.append_array(get_res_row_data(current_registry.load_entry(uid)))
 		entries_data.append(entry_data)
 
-	dynamic_table.set_headers(_build_headers())
+	dynamic_table.set_columns(_build_columns())
 	dynamic_table.set_data(entries_data)
 	dynamic_table.ordering_data(1, true)
 
@@ -134,34 +135,28 @@ func get_row_resource_uid(row: int) -> StringName:
 	return uid
 
 
-func _build_headers() -> Array:
-	var headers := []
-	headers.append_array(REGISTRY_ENTRY_COLUMNS)
+func _build_columns() -> Array[DynamicTable.ColumnConfig]:
+	var columns: Array[DynamicTable.ColumnConfig] = []
+	columns.append(DynamicTable.ColumnConfig.new.callv(UID_COLUMN_CONFIG))
+	columns.append(DynamicTable.ColumnConfig.new.callv(STRINGID_COLUMN_CONFIG))
+
 	for prop in properties_column_info:
-		var prop_header: String = prop[&"name"]
-		if _is_resource_property(prop):
-			prop_header += "|resource"
-		elif _is_color_property(prop):
-			prop_header += "|color"
-		elif _is_boolean_property(prop):
-			prop_header += "|check"
-		headers.append(prop_header)
-	return headers
+		var prop_name: String = prop[&"name"]
+		var prop_header := prop_name.capitalize()
+		var prop_type: Variant.Type = prop[&"type"]
+		var hint: PropertyHint = prop[&"hint"]
+		var column := DynamicTable.ColumnConfig.new(
+			prop[&"name"],
+			prop_header,
+			prop_type
+		)
 
+		if hint:
+			column.property_hint = hint
+		
+		columns.append(column)
+	return columns
 
-func _is_resource_property(prop: Dictionary) -> bool:
-	return (
-		prop[&"type"] == TYPE_OBJECT
-		and prop[&"hint"] == PROPERTY_HINT_RESOURCE_TYPE
-	)
-
-
-func _is_color_property(prop: Dictionary) -> bool:
-	return prop[&"type"] == TYPE_COLOR
-
-
-func _is_boolean_property(prop: Dictionary) -> bool:
-	return prop[&"type"] == TYPE_BOOL
 
 
 func _confirm_delete_rows() -> void:
@@ -178,11 +173,7 @@ func _on_cell_selected(row: int, column: int) -> void:
 	current_selected_row = row
 	current_multiple_selected_rows = -1
 	var uid: StringName = get_row_resource_uid(row)
-	if column in [UID_COLUMN, STRINGID_COLUMN]:
-		EditorInterface.inspect_object(load(uid), "", true)
-	else:
-		var prop_name: String = properties_column_info[column - 2][&"name"]
-		EditorInterface.inspect_object(load(uid), prop_name, true)
+	EditorInterface.edit_resource(load(uid))
 
 
 func _on_cell_right_selected(row: int, column: int, mouse_pos: Vector2) -> void:

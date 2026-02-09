@@ -14,13 +14,19 @@ signal column_resized(column: int, new_width: float)
 signal progress_changed(row: int, col: int, new_value: float)
 signal cell_edited(row: int, col: int, old_value: Variant, new_value: Variant)
 
+const H_ALIGNMENT_MARGINS = {
+	HORIZONTAL_ALIGNMENT_LEFT: 5,
+	HORIZONTAL_ALIGNMENT_CENTER: 0,
+	HORIZONTAL_ALIGNMENT_RIGHT: -5,
+}
+
 # Theming properties
 @export_group("Custom YARD Properties")
 @export var base_height_from_line_edit: bool = false
 @export_group("Default color")
 @export var default_font_color: Color = Color(1.0, 1.0, 1.0)
 @export_group("Header")
-@export var headers: Array[String] = []
+#@export var headers: Array[String] = []
 @export var header_height: float = 35.0
 @export var header_color: Color = Color(0.2, 0.2, 0.2)
 @export var header_filter_active_font_color: Color = Color(1.0, 1.0, 0.0)
@@ -49,12 +55,13 @@ var font := get_theme_default_font()
 var font_size := get_theme_default_font_size()
 
 # Internal variables
-var _data: Array = []
+var _columns: Array[ColumnConfig]
+var _data: Array[Array] = []
 var _full_data: Array = []
-var _column_widths: Array = []
-var _min_column_widths: Array = []
+#var _column_widths: Array = []
+#var _min_column_widths: Array = []
 var _total_rows := 0
-var _total_columns := 0
+#var _total_columns := 0
 var _visible_rows_range := [0, 0]
 var _h_scroll_position := 0
 var _v_scroll_position := 0
@@ -128,7 +135,7 @@ func _ready() -> void:
 	add_child(_h_scroll)
 	add_child(_v_scroll)
 
-	_update_column_widths()
+	_reset_column_widths()
 
 	resized.connect(_on_resized)
 	gui_input.connect(_on_gui_input) # Manage input from keyboard whwn has focus control
@@ -147,51 +154,47 @@ func _draw() -> void:
 
 	var current_x_offset := -_h_scroll_position
 	var current_y_offset := header_height
-	var visible_drawing_width = size.x - (_v_scroll.size.x if _v_scroll.visible else 0)
+	var visible_drawing_width := size.x - (_v_scroll.size.x if _v_scroll.visible else 0.0)
 	var header_font_color := default_font_color
 
 	draw_rect(Rect2(0, 0, size.x, header_height), header_color)
 
 	var header_cell_x := current_x_offset
-	for col in range(_total_columns):
-		if col >= _column_widths.size():
-			continue # Safety check
-		var col_width = _column_widths[col]
-		if header_cell_x + col_width > 0 and header_cell_x < visible_drawing_width:
+	for col_idx in _columns.size():
+		var column: ColumnConfig = _columns[col_idx]
+		if header_cell_x + column.current_width > 0 and header_cell_x < visible_drawing_width:
 			draw_line(Vector2(header_cell_x, 0), Vector2(header_cell_x, header_height), grid_color)
-			var rect_width = min(header_cell_x + col_width, visible_drawing_width)
+			var rect_width: float = min(header_cell_x + column.current_width, visible_drawing_width)
 			draw_line(Vector2(header_cell_x, header_height), Vector2(rect_width, header_height), grid_color)
 
-			if col < headers.size():
-				var align_info = _align_text_in_cell(col) # Array [text, h_align, x_margin]
-				var header_text_content = align_info[0]
-				var h_align_val = align_info[1]
-				var x_margin_val = align_info[2]
-				if (col == _filtering_column):
+			if col_idx < _columns.size():
+				var header_text_content := column.header
+				var x_margin_val: int = H_ALIGNMENT_MARGINS.get(column.h_alignment)
+				if (col_idx == _filtering_column):
 					header_font_color = header_filter_active_font_color
 					header_text_content += " (" + str(_data.size()) + ")"
 				else:
 					header_font_color = default_font_color
-				var text_size = font.get_string_size(header_text_content, h_align_val, col_width, font_size)
-				draw_string(font, Vector2(header_cell_x + x_margin_val, header_height / 2.0 + text_size.y / 2.0 - (font_size / 2.0 - 2.0)), header_text_content, h_align_val, col_width - abs(x_margin_val), font_size, header_font_color)
-				if (col == _last_column_sorted):
-					var icon_h_align = HORIZONTAL_ALIGNMENT_LEFT
-					if (h_align_val == HORIZONTAL_ALIGNMENT_LEFT or h_align_val == HORIZONTAL_ALIGNMENT_CENTER):
+				var text_size := font.get_string_size(header_text_content, column.h_alignment, column.current_width, font_size)
+				draw_string(font, Vector2(header_cell_x + x_margin_val, header_height / 2.0 + text_size.y / 2.0 - (font_size / 2.0 - 2.0)), header_text_content, column.h_alignment, column.current_width - abs(x_margin_val), font_size, header_font_color)
+				if (col_idx == _last_column_sorted):
+					var icon_h_align := HORIZONTAL_ALIGNMENT_LEFT
+					if column.h_alignment in [HORIZONTAL_ALIGNMENT_LEFT, HORIZONTAL_ALIGNMENT_CENTER]:
 						icon_h_align = HORIZONTAL_ALIGNMENT_RIGHT
-					draw_string(font, Vector2(header_cell_x, header_height / 2.0 + text_size.y / 2.0 - (font_size / 2.0 - 1.0)), _icon_sort, icon_h_align, col_width, font_size / 1.3, header_font_color)
+					draw_string(font, Vector2(header_cell_x, header_height / 2.0 + text_size.y / 2.0 - (font_size / 2.0 - 1.0)), _icon_sort, icon_h_align, column.current_width, font_size / 1.3, header_font_color)
 
-			var divider_x_pos = header_cell_x + col_width
-			if (divider_x_pos < visible_drawing_width and col <= _total_columns - 1): # Do not draw for the last column
-				draw_line(Vector2(divider_x_pos, 0), Vector2(divider_x_pos, header_height), grid_color, 2.0 if _mouse_over_divider == col else 1.0)
-		header_cell_x += col_width
+			var divider_x_pos := header_cell_x + column.current_width
+			if (divider_x_pos < visible_drawing_width and col_idx <= _columns.size() - 1): # Do not draw for the last column
+				draw_line(Vector2(divider_x_pos, 0), Vector2(divider_x_pos, header_height), grid_color, 2.0 if _mouse_over_divider == col_idx else 1.0)
+		header_cell_x += column.current_width
 
 	# Draw data rows
 	for row in range(_visible_rows_range[0], _visible_rows_range[1]):
 		if row >= _total_rows:
 			continue # Safety break
-		var row_y_pos = current_y_offset + (row - _visible_rows_range[0]) * row_height
+		var row_y_pos: float = current_y_offset + (row - _visible_rows_range[0]) * row_height
 
-		var current_bg_color = alternate_row_color if row % 2 == 1 else row_color
+		var current_bg_color := alternate_row_color if row % 2 == 1 else row_color
 		draw_rect(Rect2(0, row_y_pos, visible_drawing_width, row_height), current_bg_color)
 
 		if _selected_rows.has(row):
@@ -199,29 +202,24 @@ func _draw() -> void:
 
 		draw_line(Vector2(0, row_y_pos + row_height), Vector2(visible_drawing_width, row_y_pos + row_height), grid_color)
 
-		var cell_x_pos = current_x_offset # Relative to -_h_scroll_position
-		for col in range(_total_columns):
-			if col >= _column_widths.size():
-				continue
-			var current_col_width = _column_widths[col]
-
-			if cell_x_pos < visible_drawing_width and cell_x_pos + current_col_width > 0:
+		var cell_x_pos := current_x_offset # Relative to -_h_scroll_position
+		for col_idx in _columns.size():
+			var col := _columns[col_idx]
+			if cell_x_pos < visible_drawing_width and cell_x_pos + col.current_width > 0:
 				draw_line(Vector2(cell_x_pos, row_y_pos), Vector2(cell_x_pos, row_y_pos + row_height), grid_color)
 
-				if not (_editing_cell[0] == row and _editing_cell[1] == col):
-					if _is_progress_column(col):
-						_draw_progress_bar(cell_x_pos, row_y_pos, col, row)
-					elif _is_checkbox_column(col):
-						_draw_checkbox(cell_x_pos, row_y_pos, col, row)
-					elif _is_image_column(col):
-						_draw_image_cell(cell_x_pos, row_y_pos, col, row)
-					elif _is_color_column(col):
-						_draw_color_cell(cell_x_pos, row_y_pos, col, row)
-					elif _is_resource_column(col):
-						_draw_resource_cell(cell_x_pos, row_y_pos, col, row)
+				if not (_editing_cell[0] == row and _editing_cell[1] == col_idx):
+					if col.is_progress_column():
+						_draw_progress_bar(cell_x_pos, row_y_pos, col_idx, row)
+					elif col.is_boolean_column():
+						_draw_checkbox(cell_x_pos, row_y_pos, col_idx, row)
+					elif col.is_color_column():
+						_draw_color_cell(cell_x_pos, row_y_pos, col_idx, row)
+					elif col.is_resource_column():
+						_draw_resource_cell(cell_x_pos, row_y_pos, col_idx, row)
 					else:
-						_draw_cell_text(cell_x_pos, row_y_pos, col, row)
-			cell_x_pos += current_col_width
+						_draw_cell_text(cell_x_pos, row_y_pos, col_idx, row)
+			cell_x_pos += col.current_width
 
 		# Draw the final right vertical line of the table (right border of the last column)
 		if cell_x_pos <= visible_drawing_width and cell_x_pos > -_h_scroll_position:
@@ -247,12 +245,9 @@ func set_native_theming(delay: int = 0) -> void:
 	queue_redraw()
 
 
-func set_headers(new_headers: Array) -> void:
-	var typed_headers: Array[String] = []
-	for header in new_headers:
-		typed_headers.append(String(header))
-	headers = typed_headers
-	_update_column_widths()
+func set_columns(columns: Array[ColumnConfig]) -> void:
+	_columns = columns
+	_reset_column_widths()
 	_update_scrollbars()
 	queue_redraw()
 
@@ -273,33 +268,31 @@ func set_data(new_data: Array) -> void:
 	_focused_row = -1
 	_focused_col = -1
 
-	var blank := false
-	for row_data_item in _data:
-		while row_data_item.size() < _total_columns:
+	var blank := false # TODO: manage undefined cells differently
+	for row_data_item: Array in _data:
+		while row_data_item.size() < _columns.size():
 			row_data_item.append(blank)
 
-	for r in range(_total_rows):
-		for col in range(_total_columns):
-			var header_size := font.get_string_size(str(_get_header_text(col)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+	for row in range(_total_rows):
+		for col_idx in _columns.size():
+			var column := _columns[col_idx]
+			var header_size := font.get_string_size(column.header, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
 			var data_s := Vector2.ZERO
 
-			if _is_progress_column(col):
+			if column.is_progress_column():
 				data_s = Vector2(default_minimum_column_width + 20, font_size)
-			elif _is_checkbox_column(col):
+			elif column.is_boolean_column():
 				data_s = Vector2(default_minimum_column_width - 50, font_size)
-			elif _is_image_column(col):
+			elif column.is_color_column():
 				data_s = Vector2(row_height, row_height)
-			elif _is_color_column(col):
-				data_s = Vector2(row_height, row_height)
-			elif _is_resource_column(col):
+			elif column.is_resource_column():
 				data_s = Vector2(row_height * 2, row_height)
 			else:
-				if r < _data.size() and col < _data[r].size():
-					data_s = font.get_string_size(str(_data[r][col]), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+				if row < _data.size() and col_idx < _data[row].size():
+					data_s = font.get_string_size(str(_data[row][col_idx]), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
 
-			if (_column_widths[col] < max(header_size.x, data_s.x)):
-				_column_widths[col] = max(header_size.x, data_s.x) + font_size * 4
-				_min_column_widths[col] = _column_widths[col]
+			if (column.current_width < max(header_size.x, data_s.x)):
+				column.minimum_width = max(header_size.x, data_s.x) + font_size * 4
 
 	_update_scrollbars()
 	queue_redraw()
@@ -309,39 +302,50 @@ func ordering_data(column_index: int, ascending: bool = true) -> int:
 	_finish_editing(false)
 	_last_column_sorted = column_index
 	_store_selected_rows()
-	if _is_date_column(column_index):
-		_data.sort_custom(
-			func(a: Array, b: Array) -> bool:
-				var a_val := _parse_date(str(a[column_index]))
-				var b_val := _parse_date(str(b[column_index]))
-				_set_icon_down() if ascending else _set_icon_up()
-				_restore_selected_rows()
-				return a_val < b_val if ascending else a_val > b_val
-		)
-	elif _is_progress_column(column_index):
+	var column := _columns[column_index]
+	_icon_sort = " ▼ " if ascending else " ▲ "
+
+	if column.is_progress_column():
 		_data.sort_custom(
 			func(a: Array, b: Array) -> bool:
 				var a_val := _get_progress_value(a[column_index])
 				var b_val := _get_progress_value(b[column_index])
-				_set_icon_down() if ascending else _set_icon_up()
 				_restore_selected_rows()
 				return a_val < b_val if ascending else a_val > b_val
 		)
-	elif _is_checkbox_column(column_index):
+	elif column.is_boolean_column():
 		_data.sort_custom(
 			func(a: Array, b: Array) -> bool:
 				var a_val := bool(a[column_index])
 				var b_val := bool(b[column_index])
-				_set_icon_down() if ascending else _set_icon_up()
 				_restore_selected_rows()
 				return (a_val and not b_val) if ascending else (not a_val and b_val)
+		)
+	elif column.is_color_column():
+		_data.sort_custom(
+			func(a: Array, b: Array) -> bool:
+				var ca := Color(a[column_index])
+				var cb := Color(b[column_index])
+
+				# HSV ordering: H, then S, then V, then A (tie-break)
+				if ca.h != cb.h:
+					_restore_selected_rows()
+					return ca.h < cb.h if ascending else ca.h > cb.h
+				if ca.s != cb.s:
+					_restore_selected_rows()
+					return ca.s < cb.s if ascending else ca.s > cb.s
+				if ca.v != cb.v:
+					_restore_selected_rows()
+					return ca.v < cb.v if ascending else ca.v > cb.v
+
+				_restore_selected_rows()
+				return ca.a < cb.a if ascending else ca.a > cb.a
 		)
 	else:
 		_data.sort_custom(
 			func(a: Array, b: Array) -> bool:
 				var a_val: Variant = a[column_index]
 				var b_val: Variant = b[column_index]
-				_set_icon_down() if ascending else _set_icon_up()
 				# Robust handling for mixed types or null values
 				if typeof(a_val) != typeof(b_val):
 					if a_val == null:
@@ -368,7 +372,7 @@ func ordering_data(column_index: int, ascending: bool = true) -> int:
 
 
 func insert_row(index: int, row_data: Array) -> void:
-	while row_data.size() < _total_columns: # Ensure column consistency
+	while row_data.size() < _columns.size(): # Ensure column consistency
 		row_data.append(null) # or a default value
 	_data.insert(index, row_data)
 	_total_rows += 1
@@ -387,7 +391,7 @@ func delete_row(index: int) -> void:
 
 
 func update_cell(row: int, col: int, value: Variant) -> void:
-	if row >= 0 and row < _data.size() and col >= 0 and col < _total_columns:
+	if row >= 0 and row < _data.size() and col >= 0 and col < _columns.size():
 		while _data[row].size() <= col:
 			_data[row].append("")
 		_data[row][col] = value
@@ -408,13 +412,13 @@ func get_row_value(row: int) -> Variant:
 
 func get_progress_value(row_idx: int, col: int) -> float:
 	if row_idx >= 0 and row_idx < _data.size() and col >= 0 and col < _data[row_idx].size():
-		if _is_progress_column(col):
+		if _columns[col].is_progress_column():
 			return _get_progress_value(_data[row_idx][col]) # Use the internal function for the logic
 	return 0.0
 
 
 func set_selected_cell(row: int, col: int) -> void:
-	if row >= 0 and row < _total_rows and col >= 0 and col < _total_columns:
+	if row >= 0 and row < _total_rows and col >= 0 and col < _columns.size():
 		_focused_row = row
 		_focused_col = col
 		_selected_rows.clear()
@@ -432,8 +436,8 @@ func set_selected_cell(row: int, col: int) -> void:
 
 
 func set_progress_value(row: int, col: int, value: float) -> void:
-	if row >= 0 and row < _data.size() and col >= 0 and col < _total_columns:
-		if _is_progress_column(col):
+	if row >= 0 and row < _data.size() and col >= 0 and col < _columns.size():
+		if _columns[col].is_progress_column():
 			_data[row][col] = clamp(value, 0.0, 1.0)
 			queue_redraw()
 
@@ -477,15 +481,10 @@ func _setup_editing_components() -> void:
 	add_child(_double_click_timer)
 
 
-func _update_column_widths() -> void:
-	_column_widths.resize(headers.size())
-	_min_column_widths.resize(headers.size())
-	for i in range(headers.size()):
-		# TODO: Refactor so that users can keep their custom column widths
-		if true: #i >= _column_widths.size() or _column_widths[i] == 0 or _column_widths[i] == null:
-			_column_widths[i] = default_minimum_column_width
-			_min_column_widths[i] = default_minimum_column_width
-	_total_columns = headers.size()
+func _reset_column_widths() -> void:
+	for column in _columns:
+		column.minimum_width = default_minimum_column_width
+		column.current_width = default_minimum_column_width
 
 
 func _update_scrollbars() -> void:
@@ -499,9 +498,9 @@ func _update_scrollbars() -> void:
 	var visible_height = size.y - (_h_scroll.size.y if _h_scroll.visible else 0) - header_height
 
 	var total_content_width := 0
-	for width in _column_widths:
-		if width != null:
-			total_content_width += width
+	for column in _columns:
+		if column.current_width != null:
+			total_content_width += column.current_width
 
 	_h_scroll.visible = total_content_width > visible_width
 	if _h_scroll.visible:
@@ -515,60 +514,6 @@ func _update_scrollbars() -> void:
 		_v_scroll.max_value = total_content_height
 		_v_scroll.page = visible_height
 		_v_scroll.step = row_height
-
-
-func _is_date_string(value: String) -> bool:
-	var date_regex := RegEx.new()
-	date_regex.compile("^\\d{2}/\\d{2}/\\d{4}$")
-	return date_regex.search(value) != null
-
-
-func _is_date_column(column_index: int) -> bool:
-	var match_count := 0
-	var total := 0
-	for row_data_item in _data:
-		if column_index >= row_data_item.size():
-			continue
-		var value := str(row_data_item[column_index])
-		total += 1
-		if _is_date_string(value):
-			match_count += 1
-	return (total > 0 and match_count > total / 2)
-
-
-func _is_progress_column(column_index: int) -> bool:
-	if column_index >= headers.size():
-		return false
-	var header_parts := headers[column_index].split("|")
-	return header_parts.size() > 1 and (header_parts[1].to_lower().contains("p") or header_parts[1].to_lower().contains("progress"))
-
-
-func _is_checkbox_column(column_index: int) -> bool:
-	if column_index >= headers.size():
-		return false
-	var header_parts := headers[column_index].split("|")
-	return header_parts.size() > 1 and (header_parts[1].to_lower().contains("check") or header_parts[1].to_lower().contains("checkbox"))
-
-
-func _is_color_column(column_index: int) -> bool:
-	if column_index >= headers.size():
-		return false
-	var header_parts := headers[column_index].split("|")
-	return header_parts.size() > 1 and header_parts[1].to_lower().contains("color")
-
-
-func _is_image_column(column_index: int) -> bool:
-	if column_index >= headers.size():
-		return false
-	var header_parts := headers[column_index].split("|")
-	return header_parts.size() > 1 and header_parts[1].to_lower().contains("image")
-
-
-func _is_resource_column(column_index: int) -> bool:
-	if column_index >= headers.size():
-		return false
-	var header_parts := headers[column_index].split("|")
-	return header_parts.size() > 1 and header_parts[1].to_lower().contains("resource")
 
 
 func _is_numeric_value(value: Variant) -> bool:
@@ -618,7 +563,8 @@ func _restore_selected_rows() -> void:
 
 
 func _start_cell_editing(row: int, col: int) -> void:
-	if _is_checkbox_column(col):
+	var column := _columns[col]
+	if column.is_boolean_column():
 		return # or _is_progress_column(col)  enable also for progress bar column
 	_editing_cell = [row, col]
 	var cell_rect := _get_cell_rect(row, col)
@@ -653,23 +599,18 @@ func _finish_editing(save_changes: bool = true) -> void:
 
 
 func _get_cell_rect(row: int, col: int) -> Rect2:
-	if row < _visible_rows_range[0] or row >= _visible_rows_range[1]:
+	var column := _columns[col]
+	if row < _visible_rows_range[0] or row >= _visible_rows_range[1] or col >= _columns.size():
 		return Rect2()
 	var x_offset := -_h_scroll_position
 	var cell_x := x_offset
 	for c in range(col):
-		cell_x += _column_widths[c]
-	var visible_w = size.x - (_v_scroll.size.x if _v_scroll.visible else 0)
-	if col >= _column_widths.size() or cell_x + _column_widths[col] <= 0 or cell_x >= visible_w:
+		cell_x += _columns[c].current_width
+	var visible_width = size.x - (_v_scroll.size.x if _v_scroll.visible else 0)
+	if cell_x + column.current_width <= 0 or cell_x >= visible_width:
 		return Rect2()
 	var row_y_pos = header_height + (row - _visible_rows_range[0]) * row_height
-	return Rect2(cell_x, row_y_pos, _column_widths[col], row_height)
-
-
-func _get_header_text(col: int) -> String:
-	if col >= headers.size():
-		return ""
-	return headers[col].split("|")[0]
+	return Rect2(cell_x, row_y_pos, column.current_width, row_height)
 
 
 func _draw_progress_bar(cell_x: float, row_y: float, col: int, row: int) -> void:
@@ -680,13 +621,13 @@ func _draw_progress_bar(cell_x: float, row_y: float, col: int, row: int) -> void
 	var margin := 4.0
 	var bar_x_pos := cell_x + margin
 	var bar_y_pos := row_y + margin
-	var bar_width = _column_widths[col] - (margin * 2.0)
+	var bar_width := _columns[col].current_width - (margin * 2.0)
 	var bar_h := row_height - (margin * 2.0)
 
 	draw_rect(Rect2(bar_x_pos, bar_y_pos, bar_width, bar_h), progress_background_color)
 	draw_rect(Rect2(bar_x_pos, bar_y_pos, bar_width, bar_h), progress_border_color, false, 1.0)
 
-	var progress_w = bar_width * cell_value
+	var progress_w: float = bar_width * cell_value
 	if progress_w > 0:
 		draw_rect(Rect2(bar_x_pos, bar_y_pos, progress_w, bar_h), _get_interpolated_three_colors(progress_bar_start_color, progress_bar_middle_color, progress_bar_end_color, cell_value))
 
@@ -707,7 +648,7 @@ func _draw_checkbox(cell_x: float, row_y: float, col: int, row: int) -> void:
 
 	var margin := 2.0
 	var tex_size := icon.get_size()
-	var cell_inner_width: float = _column_widths[col] - margin * 2
+	var cell_inner_width: float = _columns[col].current_width - margin * 2
 	var cell_inner_height: float = row_height - margin * 2
 	var pos := Vector2(
 		cell_x + margin + (cell_inner_width - tex_size.x) / 2.0,
@@ -725,7 +666,7 @@ func _draw_color_cell(cell_x: float, row_y: float, col: int, row: int) -> void:
 
 	var color: Color = value
 	var margin := 2.0
-	var cell_inner_width: float = _column_widths[col] - margin * 2
+	var cell_inner_width: float = _columns[col].current_width - margin * 2
 	var cell_inner_height: float = row_height - margin * 2
 	if cell_inner_width <= 0.0 or cell_inner_height <= 0.0:
 		return
@@ -764,41 +705,6 @@ func _draw_color_cell(cell_x: float, row_y: float, col: int, row: int) -> void:
 	draw_rect(rect, Color(1, 1, 1, border_alpha), false, 1.0)
 
 
-func _draw_image_cell(cell_x: float, row_y: float, col: int, row: int) -> void:
-	var value: Variant = get_cell_value(row, col)
-	if not value is Texture2D:
-		_draw_cell_text(cell_x, row_y, col, row)
-		return # Draw only if the value is a texture
-
-	var texture: Texture2D = value
-	var margin := 2.0
-	var cell_inner_width: float = _column_widths[col] - margin * 2
-	var cell_inner_height: float = row_height - margin * 2
-
-	if cell_inner_width <= 0 or cell_inner_height <= 0:
-		return
-
-	var tex_size := texture.get_size()
-	var tex_aspect := tex_size.x / tex_size.y
-	var cell_aspect := cell_inner_width / cell_inner_height
-	var drawn_rect := Rect2()
-
-	if tex_aspect > cell_aspect:
-		# The texture is wider than the cell, fit to width
-		drawn_rect.size.x = cell_inner_width
-		drawn_rect.size.y = cell_inner_width / tex_aspect
-		drawn_rect.position.x = cell_x + margin
-		drawn_rect.position.y = row_y + margin + (cell_inner_height - drawn_rect.size.y) / 2
-	else:
-		# The texture is taller or equal, fit to height
-		drawn_rect.size.y = cell_inner_height
-		drawn_rect.size.x = cell_inner_height * tex_aspect
-		drawn_rect.position.y = row_y + margin
-		drawn_rect.position.x = cell_x + margin + (cell_inner_width - drawn_rect.size.x) / 2
-
-	draw_texture_rect(texture, drawn_rect, false)
-
-
 func _draw_resource_cell(cell_x: float, row_y: float, col: int, row: int) -> void:
 	var value: Variant = get_cell_value(row, col)
 	if not value is Resource:
@@ -812,7 +718,7 @@ func _draw_resource_cell(cell_x: float, row_y: float, col: int, row: int) -> voi
 		key = "iid:%d" % res.get_instance_id()
 
 	var margin := 2.0
-	var cell_inner_width: float = _column_widths[col] - margin * 2
+	var cell_inner_width: float = _columns[col].current_width - margin * 2
 	var cell_inner_height: float = row_height - margin * 2
 	if cell_inner_width <= 0.0 or cell_inner_height <= 0.0:
 		return
@@ -890,56 +796,35 @@ func _get_interpolated_three_colors(start_c: Color, mid_c: Color, end_c: Color, 
 
 
 func _draw_cell_text(cell_x: float, row_y: float, col: int, row: int) -> void:
-	var cell_value = ""
+	var cell_value := ""
+	var column := _columns[col]
 	if row >= 0 and row < _data.size() and col >= 0 and col < _data[row].size(): # bounds check
 		cell_value = str(_data[row][col])
 
-	var align_info = _align_text_in_cell(col)
-	var h_align_val = align_info[1]
-	var x_margin_val = align_info[2]
-
-	var text_size = font.get_string_size(
+	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(column.h_alignment)
+	var text_size := font.get_string_size(
 		cell_value,
-		h_align_val,
-		_column_widths[col] - abs(x_margin_val) * 2,
+		column.h_alignment,
+		_columns[col].current_width - abs(x_margin_val) * 2,
 		font_size,
 	)
-	var text_y_pos = row_y + row_height / 2.0 + text_size.y / 2.0 - (font_size / 2.0 - 2.0) # Y calculation to better center text
+	var text_y_pos := row_y + row_height / 2.0 + text_size.y / 2.0 - (font_size / 2.0 - 2.0) # Y calculation to better center text
 	draw_string(
 		font,
 		Vector2(cell_x + x_margin_val, text_y_pos),
 		cell_value,
-		h_align_val,
-		_column_widths[col] - abs(x_margin_val),
+		column.h_alignment,
+		_columns[col].current_width - abs(x_margin_val),
 		font_size,
 		default_font_color,
 	)
 
 
-func _align_text_in_cell(col: int) -> Array:
-	var header_parts = headers[col].split("|")
-	var h_alignment_character = ""
-	if header_parts.size() > 1:
-		var char_code: String = header_parts[1].to_lower()
-		if char_code in ["l", "c", "r"]:
-			h_alignment_character = char_code
-
-	var header_text_content = header_parts[0]
-	var h_align_enum = HORIZONTAL_ALIGNMENT_LEFT
-	var x_margin = 5
-	if (h_alignment_character == "c"):
-		h_align_enum = HORIZONTAL_ALIGNMENT_CENTER
-		x_margin = 0
-	elif (h_alignment_character == "r"):
-		h_align_enum = HORIZONTAL_ALIGNMENT_RIGHT
-		x_margin = -5 # Negative for right margin
-	return [header_text_content, h_align_enum, x_margin]
-
-
 func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> void:
+	# TODO: clean / refactor method
 	_finish_editing(true)
 
-	var clicked_row = -1
+	var clicked_row := -1
 	if row_height > 0: # Avoid division by zero
 		clicked_row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
 
@@ -952,15 +837,14 @@ func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> voi
 		# queue_redraw()
 		return
 
-	var current_x_pos = -_h_scroll_position
-	var clicked_col = -1
-	for c in range(_total_columns):
-		if c >= _column_widths.size():
-			continue
-		if mouse_pos.x >= current_x_pos && mouse_pos.x < current_x_pos + _column_widths[c]:
-			clicked_col = c
+	var current_x_pos := -_h_scroll_position
+	var clicked_col := -1
+	for col_idx in _columns.size():
+		var column := _columns[col_idx]
+		if mouse_pos.x >= current_x_pos && mouse_pos.x < current_x_pos + column.current_width:
+			clicked_col = col_idx
 			break
-		current_x_pos += _column_widths[c]
+		current_x_pos += column.current_width
 
 	if clicked_col == -1:
 		return # Click outside column area
@@ -968,16 +852,16 @@ func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> voi
 	_focused_row = clicked_row
 	_focused_col = clicked_col
 
-	var is_shift = event.is_shift_pressed()
-	var is_ctrl_cmd = event.is_ctrl_pressed() or event.is_meta_pressed() # Ctrl or Cmd
+	var is_shift := event.is_shift_pressed()
+	var is_ctrl_cmd := event.is_ctrl_pressed() or event.is_meta_pressed() # Ctrl or Cmd
 
-	var selection_was_multiple = _selected_rows.size() > 1 # State before the change
-	var emit_multiple_selection_signal = false
+	var selection_was_multiple := _selected_rows.size() > 1 # State before the change
+	var emit_multiple_selection_signal := false
 
 	if is_shift and _anchor_row != -1:
 		_selected_rows.clear()
-		var start_range = min(_anchor_row, _focused_row)
-		var end_range = max(_anchor_row, _focused_row)
+		var start_range: int = min(_anchor_row, _focused_row)
+		var end_range: int = max(_anchor_row, _focused_row)
 		for i in range(start_range, end_range + 1):
 			_selected_rows.append(i)
 		# After a Shift selection, if more than one row is selected, prepare to emit.
@@ -1019,100 +903,98 @@ func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> voi
 
 
 func _handle_right_click(mouse_pos: Vector2) -> void:
-	var row = -1
-	var col = -1
-	if mouse_pos.y >= header_height: # Non su header
+	var clicked_row := -1
+	var clicked_col := -1
+	if mouse_pos.y >= header_height: # Not on the header
 		if row_height > 0:
-			row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
-		if row >= 0 and row < _total_rows:
+			clicked_row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
+		if clicked_row >= 0 and clicked_row < _total_rows:
 			var current_x = -_h_scroll_position
-			for i in range(_total_columns):
-				if i >= _column_widths.size():
-					continue
-				if mouse_pos.x >= current_x and mouse_pos.x < current_x + _column_widths[i]:
-					col = i
+			for col_idx in _columns.size():
+				var column := _columns[col_idx]
+				if mouse_pos.x >= current_x and mouse_pos.x < current_x + column.current_width:
+					clicked_col = col_idx
 					break
-				current_x += _column_widths[i]
+				current_x += column.current_width
 	if (_selected_rows.size() <= 1):
-		set_selected_cell(row, col)
-		cell_right_selected.emit(row, col, get_global_mouse_position())
-	if (_total_rows > 0 and row <= _total_rows):
-		cell_right_selected.emit(row, col, get_global_mouse_position())
-	elif (row > _total_rows):
-		cell_right_selected.emit(_total_rows, col, get_global_mouse_position())
+		set_selected_cell(clicked_row, clicked_col)
+		cell_right_selected.emit(clicked_row, clicked_col, get_global_mouse_position())
+	if (_total_rows > 0 and clicked_row <= _total_rows):
+		cell_right_selected.emit(clicked_row, clicked_col, get_global_mouse_position())
+	elif (clicked_row > _total_rows):
+		cell_right_selected.emit(_total_rows, clicked_col, get_global_mouse_position())
 
 
 func _handle_double_click(mouse_pos: Vector2) -> void:
-	if mouse_pos.y >= header_height: # Not on the header
-		var row = -1
-		if row_height > 0:
-			row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
+	if mouse_pos.y < header_height: # Clicked on header
+		return
 
-		if row >= 0 and row < _total_rows:
-			var current_x = -_h_scroll_position
-			var col = -1
-			for i in range(_total_columns):
-				if i >= _column_widths.size():
-					continue
-				if mouse_pos.x >= current_x and mouse_pos.x < current_x + _column_widths[i]:
-					col = i
-					break
-				current_x += _column_widths[i]
+	var row = -1
+	if row_height > 0:
+		row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
 
-			if col != -1:
-				# If the clicked cell is not the currently focused/selected one,
-				# update the selection as a single click before starting editing.
-				if not (_selected_rows.size() == 1 and _selected_rows[0] == row and _focused_row == row and _focused_col == col):
-					_focused_row = row
-					_focused_col = col
-					_selected_rows.clear()
-					_selected_rows.append(row)
-					_anchor_row = row
-					cell_selected.emit(row, col) # Emit selection signal
-					queue_redraw() # Update the selection view
+	if row >= 0 and row < _total_rows:
+		var current_x = -_h_scroll_position
+		var col = -1
 
-				_start_cell_editing(row, col)
+		for col_idx in _columns.size():
+			var column := _columns[col_idx]
+			if mouse_pos.x >= current_x and mouse_pos.x < current_x + column.current_width:
+				col = col_idx
+				break
+			current_x += column.current_width
+
+		if col != -1:
+			# If the clicked cell is not the currently focused/selected one,
+			# update the selection as a single click before starting editing.
+			if not (_selected_rows.size() == 1 and _selected_rows[0] == row and _focused_row == row and _focused_col == col):
+				_focused_row = row
+				_focused_col = col
+				_selected_rows.clear()
+				_selected_rows.append(row)
+				_anchor_row = row
+				cell_selected.emit(row, col) # Emit selection signal
+				queue_redraw() # Update the selection view
+
+			_start_cell_editing(row, col)
 
 
 func _handle_header_click(mouse_pos: Vector2) -> void:
-	var current_x = -_h_scroll_position
-	for col in range(_total_columns):
-		if col >= _column_widths.size():
-			continue
+	var current_x := -_h_scroll_position
 
+	for col_idx in _columns.size():
+		var column := _columns[col_idx]
 		if (
 			mouse_pos.x >= current_x + _divider_width / 2
-			and mouse_pos.x < current_x + _column_widths[col] - _divider_width / 2
+			and mouse_pos.x < current_x + column.current_width - _divider_width / 2
 		):
 			# Finish editing if active
 			_finish_editing(false)
 
-			if _last_column_sorted == col:
+			if _last_column_sorted == col_idx:
 				_ascending = not _ascending
 			else:
 				_ascending = true
 
-			ordering_data(col, _ascending)
-			header_clicked.emit(col)
+			ordering_data(col_idx, _ascending)
+			header_clicked.emit(col_idx)
 			break
 
-		current_x += _column_widths[col]
+		current_x += column.current_width
 
 
 func _handle_header_double_click(mouse_pos: Vector2) -> void:
 	_finish_editing(false) # Finish cell editing, if active
-	var current_x = -_h_scroll_position
-	for col in range(_total_columns):
-		if col >= _column_widths.size():
-			continue
+	var current_x := -_h_scroll_position
 
-		var col_width = _column_widths[col]
-		if mouse_pos.x >= current_x and mouse_pos.x < current_x + col_width:
-			var header_rect = Rect2(current_x, 0, col_width, header_height)
-			_start_filtering(col, header_rect)
+	for col_idx in _columns.size():
+		var column := _columns[col_idx]
+		if mouse_pos.x >= current_x and mouse_pos.x < current_x + column.current_width:
+			var header_rect := Rect2(current_x, 0, column.current_width, header_height)
+			_start_filtering(col_idx, header_rect)
 			break
 
-		current_x += col_width
+		current_x += column.current_width
 
 
 func _start_filtering(col: int, header_rect: Rect2) -> void:
@@ -1167,13 +1049,12 @@ func _check_mouse_over_divider(mouse_pos: Vector2) -> void:
 	mouse_default_cursor_shape = CURSOR_ARROW
 
 	if mouse_pos.y < header_height:
-		var current_x = -_h_scroll_position
-		for col in range(_total_columns - 1): # Not for the last column
-			if col >= _column_widths.size():
-				continue
+		var current_x := -_h_scroll_position
 
-			current_x += _column_widths[col]
-			var divider_rect = Rect2(
+		for col_idx in range(_columns.size() - 1): # Not for the last column
+			var column := _columns[col_idx]
+			current_x += column.current_width
+			var divider_rect := Rect2(
 				current_x - _divider_width / 2,
 				0,
 				_divider_width,
@@ -1181,45 +1062,38 @@ func _check_mouse_over_divider(mouse_pos: Vector2) -> void:
 			)
 
 			if divider_rect.has_point(mouse_pos):
-				_mouse_over_divider = col
+				_mouse_over_divider = col_idx
 				mouse_default_cursor_shape = CURSOR_HSIZE
 
 	queue_redraw() # Refresh to show the highlighted divider
 
 
 func _update_tooltip(mouse_pos: Vector2) -> void:
-	var current_cell = [-1, -1]
-	var new_tooltip = ""
+	var current_cell := [-1, -1]
+	var new_tooltip := ""
 
 	if mouse_pos.y < header_height:
 		var current_x = -_h_scroll_position
-		for col in range(_total_columns):
-			if col >= _column_widths.size():
-				continue
-			var col_width = _column_widths[col]
-			if mouse_pos.x >= current_x and mouse_pos.x < current_x + col_width:
-				var header_text = _get_header_text(col)
-				var text_width = font.get_string_size(header_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-				new_tooltip = header_text
-				current_cell = [-2, col]
+		for col_idx in _columns.size():
+			var column := _columns[col_idx]
+			if mouse_pos.x >= current_x and mouse_pos.x < current_x + column.current_width:
+				new_tooltip = column.header
+				current_cell = [-2, col_idx]
 				break
-			current_x += col_width
+			current_x += column.current_width
 	else:
-		var row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
-		if row >= 0 and row < _total_rows:
-			var current_x = -_h_scroll_position
-			for col in range(_total_columns):
-				if col >= _column_widths.size():
-					continue
-				var col_width = _column_widths[col]
-				if mouse_pos.x >= current_x and mouse_pos.x < current_x + col_width:
-					if not _is_image_column(col) and not _is_progress_column(col) and not _is_checkbox_column(col):
-						var cell_text = str(get_cell_value(row, col))
-						var text_width = font.get_string_size(cell_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		var row_idx = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
+		if row_idx >= 0 and row_idx < _total_rows:
+			var current_x := -_h_scroll_position
+			for col_idx in _columns.size():
+				var column := _columns[col_idx]
+				if mouse_pos.x >= current_x and mouse_pos.x < current_x + column.current_width:
+					if not column.is_progress_column() and not column.is_boolean_column():
+						var cell_text := str(get_cell_value(row_idx, col_idx))
 						new_tooltip = cell_text
-					current_cell = [row, col]
+					current_cell = [row_idx, col_idx]
 					break
-				current_x += col_width
+				current_x += column.current_width
 
 	if current_cell != _tooltip_cell:
 		_tooltip_cell = current_cell
@@ -1238,22 +1112,23 @@ func _is_clicking_progress_bar(mouse_pos: Vector2) -> bool:
 		return false
 
 	var current_x := -_h_scroll_position # Renamed from `x_offset`
-	var col := -1
+	var clicked_col_idx := -1
 
-	for i in range(_total_columns):
-		if i >= _column_widths.size():
-			continue
-		if mouse_pos.x >= current_x and mouse_pos.x < current_x + _column_widths[i]:
-			col = i
+	for col_idx in _columns.size():
+		var column := _columns[col_idx]
+		if mouse_pos.x >= current_x and mouse_pos.x < current_x + column.current_width:
+			clicked_col_idx = col_idx
 			break
-		current_x += _column_widths[i]
+		current_x += column.current_width
 
-	if col >= 0 and _is_progress_column(col):
+	# TODO: WHAT THE HELL IS THAT SIDE EFFECT ?! Method is a predicate goddamnit. REFACTOR ASAP
+	var column := _columns[clicked_col_idx]
+	if column.is_progress_column():
 		# Set _focused_row and _focused_col when clicking on a progress bar
 		# This ensures the row becomes "active"
-		if _focused_row != row or _focused_col != col:
+		if _focused_row != row or _focused_col != clicked_col_idx:
 			_focused_row = row
-			_focused_col = col
+			_focused_col = clicked_col_idx
 			# If not already selected, select it as a single row
 			if not _selected_rows.has(row):
 				_selected_rows.clear()
@@ -1262,7 +1137,7 @@ func _is_clicking_progress_bar(mouse_pos: Vector2) -> bool:
 			cell_selected.emit(_focused_row, _focused_col) # Emit signal
 			queue_redraw()
 		_progress_drag_row = row
-		_progress_drag_col = col
+		_progress_drag_col = clicked_col_idx
 		return true
 
 	return false
@@ -1272,17 +1147,17 @@ func _handle_progress_drag(mouse_pos: Vector2) -> void:
 	if (
 		_progress_drag_row < 0
 		or _progress_drag_col < 0
-		or _progress_drag_col >= _column_widths.size()
+		or _progress_drag_col >= _columns.size()
 	):
 		return
 
 	var current_x := -_h_scroll_position
 	for col_loop in range(_progress_drag_col):
-		current_x += _column_widths[col_loop]
+		current_x += _columns[col_loop].current_width
 
 	var margin := 4.0
 	var bar_x_pos := current_x + margin
-	var bar_width = _column_widths[_progress_drag_col] - (margin * 2.0)
+	var bar_width = _columns[_progress_drag_col].current_width - (margin * 2.0)
 
 	if bar_width <= 0:
 		return # Avoid division by zero
@@ -1311,23 +1186,23 @@ func _handle_checkbox_click(mouse_pos: Vector2) -> bool:
 		return false
 
 	var current_x := -_h_scroll_position
-	var col := -1
+	var clicked_col_idx := -1
 
-	for i in range(_total_columns):
-		if i >= _column_widths.size():
-			continue
-
-		if mouse_pos.x >= current_x and mouse_pos.x < current_x + _column_widths[i]:
-			col = i
+	for col_idx in _columns.size():
+		var column := _columns[col_idx]
+		if mouse_pos.x >= current_x and mouse_pos.x < current_x + column.current_width:
+			clicked_col_idx = col_idx
 			break
+		current_x += column.current_width
 
-		current_x += _column_widths[i]
-
-	if col >= 0 and _is_checkbox_column(col):
+	# TODO: WHAT THE HELL IS THAT SIDE EFFECT ?! Method is a predicate goddamnit. REFACTOR ASAP
+	# TODO: same code as progress above, refactor for that too
+	var column := _columns[clicked_col_idx]
+	if column.is_boolean_column():
 		# When clicking a checkbox, the row becomes the current single selection (if not already)
-		if _focused_row != row or _focused_col != col:
+		if _focused_row != row or _focused_col != clicked_col_idx:
 			_focused_row = row
-			_focused_col = col
+			_focused_col = clicked_col_idx
 
 			# If it is not the only selected row
 			if not _selected_rows.has(row) or _selected_rows.size() > 1:
@@ -1338,11 +1213,11 @@ func _handle_checkbox_click(mouse_pos: Vector2) -> bool:
 			cell_selected.emit(_focused_row, _focused_col) # Emit focus signal
 			# Do not call queue_redraw() here; it will be done after update_cell
 
-		var old_val: Variant = get_cell_value(row, col)
+		var old_val: Variant = get_cell_value(row, clicked_col_idx)
 		var new_val := not bool(old_val)
 
-		update_cell(row, col, new_val) # update_cell calls queue_redraw()
-		cell_edited.emit(row, col, old_val, new_val)
+		update_cell(row, clicked_col_idx, new_val) # update_cell calls queue_redraw()
+		cell_edited.emit(row, clicked_col_idx, old_val, new_val)
 		return true
 
 	return false
@@ -1411,7 +1286,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 			# Set or keep focus and anchor
 			if current_focused_r == -1: # If there is no focus, go to the first row
 				_focused_row = 0
-				_focused_col = 0 if _total_columns > 0 else -1
+				_focused_col = 0 if _columns.size() > 0 else -1
 				_anchor_row = 0
 			else: # Otherwise, keep the current focus as anchor
 				_anchor_row = _focused_row
@@ -1423,7 +1298,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 	elif keycode == KEY_HOME:
 		if _total_rows > 0:
 			new_focused_r = 0
-			new_focused_c = 0 if _total_columns > 0 else -1
+			new_focused_c = 0 if _columns.size() > 0 else -1
 			key_operation_performed = true
 		else:
 			event_consumed = false # No rows, no action
@@ -1431,7 +1306,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 	elif keycode == KEY_END:
 		if _total_rows > 0:
 			new_focused_r = _total_rows - 1
-			new_focused_c = (_total_columns - 1) if _total_columns > 0 else -1
+			new_focused_c = (_columns.size() - 1) if _columns.size() > 0 else -1
 			key_operation_performed = true
 		else:
 			event_consumed = false # No rows, no action
@@ -1449,7 +1324,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 				new_focused_c = max(0, current_focused_c - 1)
 				key_operation_performed = true
 			KEY_RIGHT:
-				new_focused_c = min(_total_columns - 1, current_focused_c + 1)
+				new_focused_c = min(_columns.size() - 1, current_focused_c + 1)
 				key_operation_performed = true
 			KEY_PAGEUP:
 				var page_row_count = floor((size.y - header_height) / row_height) if row_height > 0 else 10
@@ -1550,14 +1425,6 @@ func _handle_key_input(event: InputEventKey) -> void:
 	elif event_consumed: # Consume the event if it was partially handled (e.g. key recognized but no action)
 		get_viewport().set_input_as_handled()
 
-
-func _set_icon_down() -> void:
-	_icon_sort = " ▼ "
-
-
-func _set_icon_up() -> void:
-	_icon_sort = " ▲ "
-
 #endregion
 
 #region SIGNAL CALLBACKS
@@ -1647,7 +1514,7 @@ func _on_gui_input(event: InputEvent) -> void:
 					if _mouse_over_divider >= 0:
 						_resizing_column = _mouse_over_divider
 						_resizing_start_pos = m_pos.x
-						_resizing_start_width = _column_widths[_resizing_column]
+						_resizing_start_width = _columns[_resizing_column].current_width
 
 			else:
 				# Mouse button released
@@ -1686,16 +1553,16 @@ func _on_gui_input(event: InputEvent) -> void:
 
 		elif (
 			_resizing_column >= 0
-			and _resizing_column < _total_columns - 1
+			and _resizing_column < _columns.size() - 1
 		):
 			# Changed from headers.size() to _total_columns
 			var delta_x = m_pos.x - _resizing_start_pos
 			var new_width = max(
 				_resizing_start_width + delta_x,
-				_min_column_widths[_resizing_column],
+				_columns[_resizing_column].minimum_width,
 			)
 
-			_column_widths[_resizing_column] = new_width
+			_columns[_resizing_column].current_width = new_width
 			_update_scrollbars()
 			column_resized.emit(_resizing_column, new_width)
 			queue_redraw()
@@ -1726,3 +1593,39 @@ func _on_resource_previewer_preview_invalidated(path: String) -> void:
 		_resource_thumb_cache.erase(path)
 
 #endregion
+
+class ColumnConfig:
+	var identifier: String
+	var header: String
+	var type: Variant.Type
+	var property_hint: PropertyHint
+	var h_alignment: HorizontalAlignment
+	var minimum_width: float:
+		set(value):
+			minimum_width = value
+			current_width = current_width
+	var current_width: float:
+		set(value):
+			current_width = max(value, minimum_width)
+
+
+	func _init(p_identifier: String, p_header: String, p_type: Variant.Type, p_alignment: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT) -> void:
+		identifier = p_identifier
+		header = p_header
+		type = p_type
+
+
+	func is_progress_column() -> bool:
+		return type in [TYPE_FLOAT, TYPE_INT] and property_hint == PROPERTY_HINT_RANGE
+
+
+	func is_boolean_column() -> bool:
+		return type == TYPE_BOOL
+
+
+	func is_color_column() -> bool:
+		return type == TYPE_COLOR
+
+
+	func is_resource_column() -> bool:
+		return type == TYPE_OBJECT and property_hint == PROPERTY_HINT_RESOURCE_TYPE
