@@ -58,18 +58,19 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 		return false
 
 	for path: String in data.files:
-		if not current_registry._is_resource_class_valid(load(path)):
-			return false
+		if ResourceLoader.exists(path):
+			if current_registry._is_resource_class_valid(load(path)):
+				return true
 
-	return true
+	return false
 
 
 func _drop_data(_at_position: Vector2, data: Variant) -> void:
 	for path: String in data.files:
-		print(path)
-		print(ResourceUID.path_to_uid(path))
-		current_registry._add_entry(ResourceUID.path_to_uid(path))
-		update_view()
+		if ResourceLoader.exists(path):
+			if current_registry._is_resource_class_valid(load(path)):
+				current_registry._add_entry(ResourceUID.path_to_uid(path))
+	update_view()
 
 
 func update_view() -> void:
