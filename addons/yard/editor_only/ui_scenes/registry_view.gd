@@ -51,7 +51,7 @@ func _process(_delta: float) -> void:
 
 
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
-	if not typeof(data) == TYPE_DICTIONARY and data.has("files"):
+	if typeof(data) != TYPE_DICTIONARY or not data.has("files"):
 		return false
 	
 	if not current_registry:
@@ -183,10 +183,10 @@ func _on_cell_right_selected(row: int, column: int, mouse_pos: Vector2) -> void:
 		current_selected_row = row
 		popup.position = mouse_pos
 		if (entries_data.size() == 0 or row == entries_data.size()):
-			popup.set("item_1/disabled", true)
+			popup.set(&"item_1/disabled", true)
 			current_multiple_selected_rows = -1
 		else:
-			popup.set("item_1/disabled", false)
+			popup.set(&"item_1/disabled", false)
 		popup.show()
 
 

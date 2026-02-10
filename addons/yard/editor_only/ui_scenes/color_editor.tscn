@@ -1,0 +1,47 @@
+[gd_scene load_steps=3 format=3 uid="uid://cuhed17jgms48"]
+
+[ext_resource type="Script" uid="uid://2xver6rxjvvu" path="res://addons/yard/editor_only/ui_scenes/color_editor.gd" id="1_4lnk3"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4lnk3"]
+bg_color = Color(0.152, 0.1748, 0.2356, 1)
+
+[node name="ColorEditor" type="PanelContainer"]
+offset_right = 298.0
+offset_bottom = 572.0
+focus_mode = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_4lnk3")
+script = ExtResource("1_4lnk3")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="ColorPicker" type="ColorPicker" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+deferred_mode = true
+presets_visible = false
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="CancelButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "  Cancel  "
+
+[node name="SelectButton" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 10
+text = " Select →  "
+
+[connection signal="pressed" from="MarginContainer/VBoxContainer/HBoxContainer/CancelButton" to="." method="_on_cancel_button_pressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/HBoxContainer/SelectButton" to="." method="_on_select_button_pressed"]

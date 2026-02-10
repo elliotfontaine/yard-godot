@@ -90,7 +90,8 @@ var _focused_col: int = -1 # Currently focused column
 
 # Editing variables
 var _editing_cell := [-1, -1]
-var _edit_line_edit: LineEdit
+var _text_editor_line_edit: LineEdit
+var _color_editor: Control
 var _double_click_timer: Timer
 var _click_count := 0
 var _last_click_pos := Vector2.ZERO
@@ -465,14 +466,21 @@ func _setup_filtering_components() -> void:
 
 
 func _setup_editing_components() -> void:
-	_edit_line_edit = LineEdit.new()
-	_edit_line_edit.visible = false
-	_edit_line_edit.text_submitted.connect(_on_edit_text_submitted)
-	_edit_line_edit.focus_exited.connect(_on_edit_focus_exited)
-	add_child(_edit_line_edit)
+	_text_editor_line_edit = LineEdit.new()
+	_text_editor_line_edit.text_submitted.connect(_on_text_editor_text_submitted)
+	_text_editor_line_edit.focus_exited.connect(_on_text_editor_focus_exited)
+	_text_editor_line_edit.hide()
+	add_child(_text_editor_line_edit)
+
 	if base_height_from_line_edit:
-		header_height = _edit_line_edit.size.y
-		row_height = _edit_line_edit.size.y
+		header_height = _text_editor_line_edit.size.y
+		row_height = _text_editor_line_edit.size.y
+
+	_color_editor = preload("uid://cuhed17jgms48").instantiate()
+	_color_editor.color_selected.connect(_on_color_editor_color_selected)
+	_color_editor.canceled.connect(_on_color_editor_canceled)
+	_color_editor.hide()
+	add_child(_color_editor)
 
 	_double_click_timer = Timer.new()
 	_double_click_timer.wait_time = _double_click_threshold / 1000.0
@@ -564,38 +572,84 @@ func _restore_selected_rows() -> void:
 
 func _start_cell_editing(row: int, col: int) -> void:
 	var column := _columns[col]
-	if column.is_boolean_column():
-		return # or _is_progress_column(col)  enable also for progress bar column
-	_editing_cell = [row, col]
+
+	if column.is_color_column():
+		_open_color_editor(row, col)
+	elif column.is_resource_column():
+		_open_resource_editor(row, col)
+	elif column.is_numeric_column():
+		_open_text_editor(row, col)
+	elif column.is_string_column():
+		_open_text_editor(row, col)
+	else:
+		push_warning("You can't edit this cell")
+	# NB: boolean cells are toggled using single click
+
+
+func _open_text_editor(row: int, col: int) -> void:
 	var cell_rect := _get_cell_rect(row, col)
-	if cell_rect == Rect2():
+	if not cell_rect:
 		return
-	_edit_line_edit.position = cell_rect.position
-	_edit_line_edit.size = cell_rect.size
-	var cell_value := get_cell_value(row, col)
-	if cell_value is float:
-		cell_value = snapped(cell_value, 0.01)
-	_edit_line_edit.text = str(cell_value) if get_cell_value(row, col) != null else ""
-	_edit_line_edit.visible = true
-	_edit_line_edit.grab_focus()
-	_edit_line_edit.select_all()
+
+	var cell_value: Variant = get_cell_value(row, col)
+	_editing_cell = [row, col]
+	_text_editor_line_edit.position = cell_rect.position
+	_text_editor_line_edit.size = cell_rect.size
+	_text_editor_line_edit.text = str(cell_value) if get_cell_value(row, col) != null else ""
+	_text_editor_line_edit.show()
+	_text_editor_line_edit.grab_focus()
+	_text_editor_line_edit.select_all()
+
+
+func _open_color_editor(row: int, col: int) -> void:
+	var cell_rect := _get_cell_rect(row, col)
+	if not cell_rect:
+		return
+
+	var cell_value: Color = get_cell_value(row, col)
+	_editing_cell = [row, col]
+	_color_editor.position = cell_rect.get_center()
+	_color_editor.color = cell_value
+	_color_editor.show()
+	_color_editor.grab_focus()
+
+
+func _open_resource_editor(row: int, col: int) -> void:
+	pass
 
 
 func _finish_editing(save_changes: bool = true) -> void:
-	if _editing_cell[0] >= 0 and _editing_cell[1] >= 0:
-		if save_changes and _edit_line_edit.visible:
-			var old_value: Variant = get_cell_value(_editing_cell[0], _editing_cell[1])
-			var new_value_text := _edit_line_edit.text
-			var new_value: Variant = new_value_text # # Default to string
-			if new_value_text.is_valid_int():
-				new_value = int(new_value_text)
-			elif new_value_text.is_valid_float():
-				new_value = float(new_value_text)
+	if not _editing_cell[0] >= 0 and _editing_cell[1] >= 0:
+		return
+
+	if save_changes:
+		var column := _columns[_editing_cell[1]]
+		var old_value: Variant = get_cell_value.callv(_editing_cell)
+		var new_value: Variant = _get_editor_value_for_column(column)
+
+		if new_value and typeof(new_value) == column.type:
 			update_cell(_editing_cell[0], _editing_cell[1], new_value)
 			cell_edited.emit(_editing_cell[0], _editing_cell[1], old_value, new_value)
-		_editing_cell = [-1, -1]
-		_edit_line_edit.visible = false
-		queue_redraw()
+
+	_editing_cell = [-1, -1]
+	_text_editor_line_edit.hide()
+	_color_editor.hide()
+	queue_redraw()
+
+
+func _get_editor_value_for_column(column: ColumnConfig) -> Variant:
+	if column.is_color_column():
+		return _color_editor.color
+
+	var text := _text_editor_line_edit.text
+	if column.is_string_column():
+		return text
+	elif column.is_integer_column() and text.is_valid_int():
+		return int(text)
+	elif column.is_float_column() and text.is_valid_float():
+		return float(text)
+
+	return null
 
 
 func _get_cell_rect(row: int, col: int) -> Rect2:
@@ -1254,7 +1308,7 @@ func _ensure_row_visible(row_idx: int) -> void:
 
 
 func _handle_key_input(event: InputEventKey) -> void:
-	if _edit_line_edit.visible: # Let the LineEdit handle input during editing
+	if _text_editor_line_edit.visible: # Let the LineEdit handle input during editing
 		if event.keycode == KEY_ESCAPE: # Except ESC to cancel
 			_finish_editing(false)
 			get_viewport().set_input_as_handled()
@@ -1434,12 +1488,20 @@ func _on_resized() -> void:
 	queue_redraw()
 
 
-func _on_edit_text_submitted(text: String) -> void:
+func _on_text_editor_text_submitted(_text: String) -> void:
 	_finish_editing(true)
 
 
-func _on_edit_focus_exited() -> void:
+func _on_text_editor_focus_exited() -> void:
 	_finish_editing(true)
+
+
+func _on_color_editor_color_selected(_color: Color) -> void:
+	_finish_editing(true)
+
+
+func _on_color_editor_canceled() -> void:
+	_finish_editing(false)
 
 
 func _on_double_click_timeout() -> void:
@@ -1448,7 +1510,7 @@ func _on_double_click_timeout() -> void:
 
 func _on_h_scroll_changed(value) -> void:
 	_h_scroll_position = value
-	if _edit_line_edit.visible:
+	if _text_editor_line_edit.visible:
 		_finish_editing(false)
 	queue_redraw()
 
@@ -1462,7 +1524,7 @@ func _on_v_scroll_changed(value) -> void:
 	else: # Fallback if row_height is not valid
 		_visible_rows_range = [0, _total_rows]
 
-	if _edit_line_edit.visible:
+	if _text_editor_line_edit.visible:
 		_finish_editing(false)
 	queue_redraw()
 
@@ -1621,6 +1683,22 @@ class ColumnConfig:
 
 	func is_boolean_column() -> bool:
 		return type == TYPE_BOOL
+
+
+	func is_string_column() -> bool:
+		return type == TYPE_STRING
+
+
+	func is_numeric_column() -> bool:
+		return type in [TYPE_INT, TYPE_FLOAT]
+
+
+	func is_integer_column() -> bool:
+		return type == TYPE_INT
+
+
+	func is_float_column() -> bool:
+		return type == TYPE_FLOAT
 
 
 	func is_color_column() -> bool:
