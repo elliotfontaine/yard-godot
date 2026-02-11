@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=3 uid="uid://dsg55mejcqgyb"]
+[gd_scene load_steps=8 format=3 uid="uid://dsg55mejcqgyb"]
 
 [ext_resource type="Script" uid="uid://pbm1netkyiqy" path="res://addons/yard/editor_only/ui_scenes/main_view.gd" id="1_2b5h5"]
 [ext_resource type="PackedScene" uid="uid://crnac01bnyk3" path="res://addons/yard/editor_only/ui_scenes/registry_view.tscn" id="2_2enek"]
 [ext_resource type="Script" uid="uid://dyxdmrhopt5i0" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="2_mepag"]
 [ext_resource type="Script" uid="uid://cfbh7d7n20geh" path="res://addons/yard/editor_only/ui_scenes/registries_itemlist.gd" id="2_qv183"]
+[ext_resource type="Texture2D" uid="uid://73a38p2r8hos" path="res://addons/yard/editor_only/assets/github_icon.svg" id="3_1eqxg"]
 [ext_resource type="PackedScene" uid="uid://b3g3e36v7g6kr" path="res://addons/yard/editor_only/ui_scenes/new_registry_dialog.tscn" id="4_qv183"]
 
 [sub_resource type="DPITexture" id="DPITexture_qv183"]
@@ -40,7 +41,9 @@ layout_mode = 2
 [node name="FileMenuButton" type="MenuButton" parent="VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_type_variation = &"FlatMenuButton"
 text = "File"
+flat = false
 switch_on_hover = true
 item_count = 13
 popup/item_0/text = "New Registry..."
@@ -71,6 +74,7 @@ popup/item_12/text = "Close Tabs Below"
 popup/item_12/id = 15
 
 [node name="Button" type="Button" parent="VBoxContainer/HBoxContainer"]
+visible = false
 layout_mode = 2
 focus_mode = 0
 text = "Settings"
@@ -79,11 +83,18 @@ flat = true
 [node name="RefreshViewButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 10
-tooltip_text = "Refresh table view from the underlying registry"
+tooltip_text = "Refresh table view from the underlying registry."
+theme_type_variation = &"FlatButton"
 text = "Refresh View"
-flat = true
 script = ExtResource("2_mepag")
 icon_name = "Loop"
+
+[node name="ReportIssueButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+tooltip_text = "Open project's issues in your browser."
+theme_type_variation = &"FlatButton"
+text = "Report Issue"
+icon = ExtResource("3_1eqxg")
 
 [node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -146,6 +157,7 @@ visible = false
 
 [connection signal="about_to_popup" from="VBoxContainer/HBoxContainer/FileMenuButton" to="." method="_on_file_menu_button_about_to_popup"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/RefreshViewButton" to="." method="_on_refresh_view_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/ReportIssueButton" to="." method="_on_report_issue_button_pressed"]
 [connection signal="text_changed" from="VBoxContainer/HSplitContainer/VBoxContainer/RegistriesFilter" to="." method="_on_registries_filter_text_changed"]
 [connection signal="item_clicked" from="VBoxContainer/HSplitContainer/VBoxContainer/RegistriesItemList" to="." method="_on_registries_list_item_clicked"]
 [connection signal="item_selected" from="VBoxContainer/HSplitContainer/VBoxContainer/RegistriesItemList" to="." method="_on_registries_list_item_selected"]

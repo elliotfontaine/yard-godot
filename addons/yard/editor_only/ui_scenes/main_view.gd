@@ -21,6 +21,7 @@ enum MenuAction {
 }
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const PluginCFG := Namespace.PluginCFG
 const RegistriesItemList := Namespace.RegistriesItemList
 const RegistryView := Namespace.RegistryView
 const NewRegistryDialog := Namespace.NewRegistryDialog
@@ -530,3 +531,11 @@ func _on_file_dialog_action(path: String) -> void:
 func _on_refresh_view_button_pressed() -> void:
 	if registry_view.current_registry:
 		registry_view.update_view()
+
+
+func _on_report_issue_button_pressed() -> void:
+	var cfg := ConfigFile.new()
+	cfg.load(PluginCFG)
+	var repo: String = cfg.get_value("plugin", "repository", "")
+	if repo:
+		OS.shell_open(repo + "/issues/new")
