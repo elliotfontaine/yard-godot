@@ -8,9 +8,6 @@ enum MenuAction {
 	OPEN = 1,
 	REOPEN_CLOSED = 2,
 	OPEN_RECENT = 3,
-	SAVE = 10,
-	SAVE_AS = 11,
-	SAVE_ALL = 12,
 	CLOSE = 13,
 	CLOSE_OTHER_TABS = 14,
 	CLOSE_TABS_BELOW = 15,
@@ -301,8 +298,6 @@ func _populate_file_menu() -> void:
 		file_menu.get_item_index(MenuAction.REOPEN_CLOSED),
 		KEY_MASK_SHIFT | KEY_MASK_META | KEY_T,
 	)
-	file_menu.set_item_accelerator(file_menu.get_item_index(MenuAction.SAVE), KEY_MASK_ALT | KEY_MASK_META | KEY_S)
-	file_menu.set_item_accelerator(file_menu.get_item_index(MenuAction.SAVE_ALL), KEY_MASK_CTRL | KEY_MASK_META | KEY_S)
 	file_menu.set_item_accelerator(file_menu.get_item_index(MenuAction.CLOSE), KEY_MASK_META | KEY_W)
 
 	# TODO: implement "previous" logic
@@ -316,7 +311,6 @@ func _populate_file_menu() -> void:
 
 
 func _set_context_menu_accelerators() -> void:
-	registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(MenuAction.SAVE), KEY_MASK_ALT | KEY_MASK_META | KEY_S)
 	registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(MenuAction.CLOSE), KEY_MASK_META | KEY_W)
 	registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(MenuAction.MOVE_UP), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP)
 	registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(MenuAction.MOVE_DOWN), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN)
@@ -327,9 +321,6 @@ func _set_context_menu_accelerators() -> void:
 func _toggle_selection_related_menu_items(enable: bool) -> void:
 	var disabled := !enable
 	var file_menu := file_menu_button.get_popup()
-	file_menu.set_item_disabled(file_menu.get_item_index(MenuAction.SAVE), disabled)
-	file_menu.set_item_disabled(file_menu.get_item_index(MenuAction.SAVE_AS), disabled)
-	file_menu.set_item_disabled(file_menu.get_item_index(MenuAction.SAVE_ALL), disabled)
 	file_menu.set_item_disabled(file_menu.get_item_index(MenuAction.COPY_PATH), disabled)
 	file_menu.set_item_disabled(file_menu.get_item_index(MenuAction.COPY_UID), disabled)
 	file_menu.set_item_disabled(file_menu.get_item_index(MenuAction.SHOW_IN_FILESYSTEM), disabled)
@@ -376,17 +367,6 @@ func _do_menu_action(action_id: int) -> void:
 					return
 				_session_closed_uids.remove_at(idx)
 			push_warning(tr("None of the closed resources exist anymore"))
-		MenuAction.SAVE:
-			if not is_any_registry_selected(): # check because of shortcut
-				return
-			_warn_unimplemented()
-		MenuAction.SAVE_AS:
-			_file_dialog_option = MenuAction.SAVE_AS
-			_file_dialog.file_mode = EditorFileDialog.FILE_MODE_SAVE_FILE
-			_file_dialog.title = tr("Save Registry As...")
-			_file_dialog.popup_file_dialog()
-		MenuAction.SAVE_ALL:
-			_warn_unimplemented()
 		MenuAction.CLOSE:
 			if is_any_registry_selected(): # check because of shortcut
 				close_registry(_current_registry_uid)
@@ -545,5 +525,3 @@ func _on_file_dialog_action(path: String) -> void:
 				push_error("Tried to open %s as a Registry" % res.get_script().get_global_name())
 			else:
 				push_error("Tried to open %s as a Registry" % res.get_class())
-		MenuAction.SAVE_AS:
-			_warn_unimplemented()
