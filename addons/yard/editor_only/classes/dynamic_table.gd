@@ -150,7 +150,7 @@ func _ready() -> void:
 
 
 func _draw() -> void:
-	if not is_inside_tree():
+	if not is_inside_tree() or _columns.is_empty():
 		return
 
 	var current_x_offset := -_h_scroll_position
