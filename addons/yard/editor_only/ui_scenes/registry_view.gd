@@ -5,6 +5,7 @@ const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const DynamicTable := Namespace.DynamicTable
 const UID_COLUMN_CONFIG := ["uid", "UID", TYPE_STRING]
 const STRINGID_COLUMN_CONFIG := ["string_id", "String ID", TYPE_STRING]
+const NON_PROP_COLUMNS_COUNT := 2
 const UID_COLUMN := 0
 const STRINGID_COLUMN := 1
 const PROPERTY_BLACKLIST := [
@@ -34,6 +35,11 @@ var multiple_selected_rows: Array # array of selected rows
 
 
 func _ready() -> void:
+	if Engine.is_editor_hint():
+		EditorInterface.get_inspector().property_edited.connect(
+			_on_inspector_property_edited,
+		)
+
 	grow_horizontal = Control.GROW_DIRECTION_END
 	grow_vertical = Control.GROW_DIRECTION_END
 
@@ -53,7 +59,7 @@ func _process(_delta: float) -> void:
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 	if typeof(data) != TYPE_DICTIONARY or not data.has("files"):
 		return false
-	
+
 	if not current_registry:
 		return false
 
@@ -148,15 +154,32 @@ func _build_columns() -> Array[DynamicTable.ColumnConfig]:
 		var column := DynamicTable.ColumnConfig.new(
 			prop[&"name"],
 			prop_header,
-			prop_type
+			prop_type,
 		)
 
 		if hint:
 			column.property_hint = hint
-		
+
 		columns.append(column)
 	return columns
 
+
+func _edit_entry_property(entry: StringName, property: StringName, old_value: Variant, new_value: Variant) -> void:
+	var res := load(entry)
+	if property in res:
+		res.set(property, new_value)
+		print_rich(
+			"[color=lightslategray]Set %s from %s to %s[/color]" % [
+				property,
+				old_value,
+				new_value,
+			],
+		)
+	else:
+		print_rich(
+			"[color=orangered]●[/color] [color=salmon][b]ERROR:[/b] ",
+			"Property %s not in resource[/color]" % property,
+		)
 
 
 func _confirm_delete_rows() -> void:
@@ -169,7 +192,7 @@ func _confirm_delete_rows() -> void:
 
 
 func _on_cell_selected(row: int, column: int) -> void:
-	print("Cell selected on row ", row, ", column ", column, " Cell value: ", dynamic_table.get_cell_value(row, column), " Row value: ", dynamic_table.get_row_value(row))
+	#print("Cell selected on row ", row, ", column ", column, " Cell value: ", dynamic_table.get_cell_value(row, column), " Row value: ", dynamic_table.get_row_value(row))
 	current_selected_row = row
 	current_multiple_selected_rows = -1
 	if row != -1 and column != -1:
@@ -178,7 +201,7 @@ func _on_cell_selected(row: int, column: int) -> void:
 
 
 func _on_cell_right_selected(row: int, column: int, mouse_pos: Vector2) -> void:
-	print("Cell right selected on row ", row, ", column ", column, " Mouse position x: ", mouse_pos.x, " y: ", mouse_pos.y)
+	#print("Cell right selected on row ", row, ", column ", column, " Mouse position x: ", mouse_pos.x, " y: ", mouse_pos.y)
 	if (row >= 0): # ignore header cells
 		current_selected_row = row
 		popup.position = mouse_pos
@@ -196,15 +219,32 @@ func _on_multiple_rows_selected(rows: Array) -> void:
 
 
 func _on_cell_edited(row: int, column: int, old_value: Variant, new_value: Variant) -> void:
-	print("Cell edited on row ", row, ", column ", column, " Old value: ", old_value, " New value: ", new_value)
+	#print("Cell edited on row ", row, ", column ", column, " Old value: ", old_value, " New value: ", new_value)
+	if column not in [UID_COLUMN, STRINGID_COLUMN]:
+		var entry := get_row_resource_uid(row)
+		var prop: StringName = properties_column_info[column - NON_PROP_COLUMNS_COUNT][&"name"]
+		_edit_entry_property(entry, prop, old_value, new_value)
 
 
 func _on_header_clicked(column: int) -> void:
-	print("Header clicked on column ", column)
+	pass
+	#print("Header clicked on column ", column)
 
 
 func _on_column_resized(column: int, new_width: float) -> void:
-	print("Column ", column, " resized at width ", new_width)
+	pass
+	#print("Column ", column, " resized at width ", new_width)
+
+
+func _on_inspector_property_edited(property: StringName) -> void:
+	var object := EditorInterface.get_inspector().get_edited_object()
+	if object is not Resource:
+		return
+
+	var res: Resource = object
+	var uid := ResourceUID.path_to_uid(res.resource_path)
+	if uid.begins_with("uid://") and current_registry.has_uid(uid):
+		update_view()
 
 
 func _on_popup_menu_id_pressed(id: int) -> void:

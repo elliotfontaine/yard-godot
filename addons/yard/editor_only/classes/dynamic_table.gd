@@ -1650,7 +1650,7 @@ func _on_editor_settings_changed() -> void:
 
 
 func _on_resource_previewer_preview_invalidated(path: String) -> void:
-	push_warning("RESOURCE PREVIEW INVALIDATED: %s" % path)
+	#push_warning("RESOURCE PREVIEW INVALIDATED: %s" % path)
 	if _resource_thumb_cache.has(path):
 		_resource_thumb_cache.erase(path)
 

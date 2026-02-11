@@ -64,6 +64,14 @@ func get_stringid(uid: StringName) -> StringName:
 		return &""
 
 
+func has_uid(uid: StringName) -> bool:
+	return _uids_to_string_ids.has(uid)
+
+
+func has_stringid(id: StringName) -> bool:
+	return _string_ids_to_uids.has(id)
+
+
 ## add a new Resource to the Registry from a UID.
 ## If no string_id is given, it will use the file basename.
 ## If the string_id is already used in the Registry, it will append a number to it.
