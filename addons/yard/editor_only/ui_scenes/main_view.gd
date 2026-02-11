@@ -539,3 +539,7 @@ func _on_report_issue_button_pressed() -> void:
 	var repo: String = cfg.get_value("plugin", "repository", "")
 	if repo:
 		OS.shell_open(repo + "/issues/new")
+
+
+func _on_make_floating_button_pressed() -> void:
+	_warn_unimplemented()

@@ -96,6 +96,16 @@ theme_type_variation = &"FlatButton"
 text = "Report Issue"
 icon = ExtResource("3_1eqxg")
 
+[node name="VSeparator" type="VSeparator" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="MakeFloatingButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+tooltip_text = "Make the registry editor floating."
+theme_type_variation = &"FlatButton"
+script = ExtResource("2_mepag")
+icon_name = "MakeFloating"
+
 [node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -158,6 +168,7 @@ visible = false
 [connection signal="about_to_popup" from="VBoxContainer/HBoxContainer/FileMenuButton" to="." method="_on_file_menu_button_about_to_popup"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/RefreshViewButton" to="." method="_on_refresh_view_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/ReportIssueButton" to="." method="_on_report_issue_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/MakeFloatingButton" to="." method="_on_make_floating_button_pressed"]
 [connection signal="text_changed" from="VBoxContainer/HSplitContainer/VBoxContainer/RegistriesFilter" to="." method="_on_registries_filter_text_changed"]
 [connection signal="item_clicked" from="VBoxContainer/HSplitContainer/VBoxContainer/RegistriesItemList" to="." method="_on_registries_list_item_clicked"]
 [connection signal="item_selected" from="VBoxContainer/HSplitContainer/VBoxContainer/RegistriesItemList" to="." method="_on_registries_list_item_selected"]
