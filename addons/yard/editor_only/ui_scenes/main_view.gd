@@ -525,3 +525,8 @@ func _on_file_dialog_action(path: String) -> void:
 				push_error("Tried to open %s as a Registry" % res.get_script().get_global_name())
 			else:
 				push_error("Tried to open %s as a Registry" % res.get_class())
+
+
+func _on_refresh_view_button_pressed() -> void:
+	if registry_view.current_registry:
+		registry_view.update_view()

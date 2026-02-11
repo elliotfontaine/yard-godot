@@ -2,6 +2,7 @@ const DynamicTable = preload("res://addons/yard/editor_only/classes/dynamic_tabl
 const RegistriesItemList = preload("res://addons/yard/editor_only/ui_scenes/registries_itemlist.gd")
 const NewRegistryDialog = preload("res://addons/yard/editor_only/ui_scenes/new_registry_dialog.gd")
 const EditorThemeUtils = preload("res://addons/yard/editor_only/classes/editor_theme_utils.gd")
+const EditorIconButton = preload("res://addons/yard/editor_only/classes/editor_icon_button.gd")
 const FuzzySearch = preload("res://addons/yard/editor_only/classes/fuzzy_search.gd")
 const FuzzySearchResult = FuzzySearch.FuzzySearchResult
 
