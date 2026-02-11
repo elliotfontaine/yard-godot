@@ -619,7 +619,7 @@ func _open_resource_editor(row: int, col: int) -> void:
 
 
 func _finish_editing(save_changes: bool = true) -> void:
-	if not _editing_cell[0] >= 0 and _editing_cell[1] >= 0:
+	if _editing_cell[0] == -1 and _editing_cell[1] == -1:
 		return
 
 	if save_changes:
