@@ -5,6 +5,7 @@ enum FileDialogState { CLASS_RESTRICTION, SCAN_DIRECTORY, REGISTRY_PATH }
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const RegistryIO := Namespace.RegistryIO
+const AnyIcon := Namespace.AnyIcon
 const DEFAULT_COLOR = Color(0.71, 0.722, 0.745, 1.0)
 const SUCCESS_COLOR = Color(0.45, 0.95, 0.5)
 const WARNING_COLOR = Color(0.83, 0.78, 0.62)
@@ -62,11 +63,19 @@ func _validate_fields() -> void:
 	var class_string := class_restriction_line_edit.text.strip_edges()
 	var is_class_valid: bool = RegistryIO.is_resource_class_string(class_string)
 	if class_string == "":
+		class_restriction_line_edit.right_icon = AnyIcon.get_class_icon(&"Resource")
 		info_messages.append(INFO_MESSAGES.class_empty)
 	elif is_class_valid:
+		if RegistryIO.is_quoted_string(class_string): # meaning it's a script path
+			class_restriction_line_edit.right_icon = AnyIcon.get_script_icon(
+				load(class_string.remove_chars("'\"")),
+			)
+		else:
+			class_restriction_line_edit.right_icon = AnyIcon.get_class_icon(class_string)
 		info_messages.append(INFO_MESSAGES.class_valid)
 	else:
 		get_ok_button().disabled = true
+		class_restriction_line_edit.right_icon = AnyIcon.get_icon(&"MissingResource")
 		info_messages.append(INFO_MESSAGES.class_invalid)
 
 	# Scan directory
