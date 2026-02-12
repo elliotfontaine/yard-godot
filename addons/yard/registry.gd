@@ -6,11 +6,12 @@ extends Resource
 const INVALID_RESOURCE_ID := &"<invalid>"
 const REGISTRY_FILE_EXTENSION := "reg"
 
-@export var valid_classes: Array[StringName]
-@export_dir var source_folder: String
+@export var _class_restriction: StringName = &""
+@export var _scan_directory: String = ""
+@export var _recursive_scan: bool = false
 
-var _uids_to_string_ids: Dictionary[StringName, StringName]
-var _string_ids_to_uids: Dictionary[StringName, StringName]
+@export var _uids_to_string_ids: Dictionary[StringName, StringName]
+@export var _string_ids_to_uids: Dictionary[StringName, StringName]
 
 
 func is_empty() -> bool:
@@ -138,7 +139,9 @@ func _validate_resource_classes() -> void:
 func _is_resource_class_valid(res: Resource) -> bool:
 	if res == null:
 		return false
-	if valid_classes.is_empty():
+	#if valid_classes.is_empty():
+	#return true
+	if not _class_restriction:
 		return true
 
 	var class_stringname: StringName
@@ -152,12 +155,12 @@ func _is_resource_class_valid(res: Resource) -> bool:
 	else:
 		class_stringname = StringName(res.get_class())
 
-	for valid_class in valid_classes:
-		if class_stringname == valid_class:
-			return true
-		if res.is_class(String(valid_class)):
-			return true
-		if ClassDB.is_parent_class(String(class_stringname), String(valid_class)):
-			return true
+	#for valid_class in valid_classes:
+	if class_stringname == _class_restriction:
+		return true
+	if res.is_class(String(_class_restriction)):
+		return true
+	if ClassDB.is_parent_class(String(class_stringname), String(_class_restriction)):
+		return true
 
 	return false

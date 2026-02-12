@@ -1,13 +1,13 @@
-[gd_scene load_steps=2 format=3 uid="uid://b3g3e36v7g6kr"]
+[gd_scene load_steps=3 format=3 uid="uid://b3g3e36v7g6kr"]
 
 [ext_resource type="Script" uid="uid://ci6vvg34c6b6o" path="res://addons/yard/editor_only/ui_scenes/new_registry_dialog.gd" id="1_uots1"]
+[ext_resource type="Script" uid="uid://dyxdmrhopt5i0" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="2_8x47h"]
 
 [node name="NewRegistryDialog" type="ConfirmationDialog"]
 oversampling_override = 1.0
 title = "Create Registry"
 initial_position = 1
-size = Vector2i(516, 278)
-visible = true
+size = Vector2i(666, 278)
 ok_button_text = "Create"
 script = ExtResource("1_uots1")
 
@@ -17,8 +17,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 8.0
 offset_top = 8.0
-offset_right = -8.0
-offset_bottom = -49.0
+offset_right = 658.0
+offset_bottom = 229.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 16
@@ -41,32 +41,20 @@ size_flags_horizontal = 3
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Item"
+text = "Resource"
+placeholder_text = "Resource"
 
 [node name="ClassListDialogButton" type="Button" parent="VBoxContainer/GridContainer/ClassRestriction"]
 unique_name_in_owner = true
 layout_mode = 2
+script = ExtResource("2_8x47h")
+icon_name = "ClassList"
 
 [node name="ClassFilesystemButton" type="Button" parent="VBoxContainer/GridContainer/ClassRestriction"]
 unique_name_in_owner = true
 layout_mode = 2
-
-[node name="PathLabel" type="Label" parent="VBoxContainer/GridContainer"]
-layout_mode = 2
-text = "Path:"
-
-[node name="Path" type="HBoxContainer" parent="VBoxContainer/GridContainer"]
-layout_mode = 2
-
-[node name="PathLineEdit" type="LineEdit" parent="VBoxContainer/GridContainer/Path"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "item_registry.reg"
-
-[node name="PathFilesystemButton" type="Button" parent="VBoxContainer/GridContainer/Path"]
-unique_name_in_owner = true
-layout_mode = 2
+script = ExtResource("2_8x47h")
+icon_name = "Folder"
 
 [node name="ScanDirectoryLabel" type="Label" parent="VBoxContainer/GridContainer"]
 layout_mode = 2
@@ -79,23 +67,44 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "res://data/items/"
 
 [node name="ScanDirectoryFilesystemButton" type="Button" parent="VBoxContainer/GridContainer/ScanDirectory"]
 unique_name_in_owner = true
 layout_mode = 2
+script = ExtResource("2_8x47h")
+icon_name = "Folder"
 
 [node name="RecursiveScanLabel" type="Label" parent="VBoxContainer/GridContainer"]
 layout_mode = 2
 text = "Recursive Scan:"
 
-[node name="CheckBox" type="CheckBox" parent="VBoxContainer/GridContainer"]
+[node name="RecursiveScanCheckBox" type="CheckBox" parent="VBoxContainer/GridContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "On"
 
+[node name="PathLabel" type="Label" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Path:"
+
+[node name="RegistryPath" type="HBoxContainer" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="RegistryPathLineEdit" type="LineEdit" parent="VBoxContainer/GridContainer/RegistryPath"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "new_registry.tres"
+
+[node name="RegistryPathFilesystemButton" type="Button" parent="VBoxContainer/GridContainer/RegistryPath"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("2_8x47h")
+icon_name = "Folder"
+
 [node name="InfoLabel" type="RichTextLabel" parent="VBoxContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(500, 20)
+custom_minimum_size = Vector2(650, 0)
 layout_mode = 2
 size_flags_vertical = 3
 bbcode_enabled = true
@@ -105,3 +114,11 @@ scroll_active = false
 [connection signal="canceled" from="." to="." method="_on_canceled"]
 [connection signal="close_requested" from="." to="." method="_on_close_requested"]
 [connection signal="confirmed" from="." to="." method="_on_confirmed"]
+[connection signal="text_changed" from="VBoxContainer/GridContainer/ClassRestriction/ClassRestrictionLineEdit" to="." method="_on_class_restriction_line_edit_text_changed"]
+[connection signal="pressed" from="VBoxContainer/GridContainer/ClassRestriction/ClassListDialogButton" to="." method="_on_class_list_dialog_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/GridContainer/ClassRestriction/ClassFilesystemButton" to="." method="_on_class_filesystem_button_pressed"]
+[connection signal="text_changed" from="VBoxContainer/GridContainer/ScanDirectory/ScanDirectoryLineEdit" to="." method="_on_scan_directory_line_edit_text_changed"]
+[connection signal="pressed" from="VBoxContainer/GridContainer/ScanDirectory/ScanDirectoryFilesystemButton" to="." method="_on_scan_directory_filesystem_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/GridContainer/RecursiveScanCheckBox" to="." method="_on_recursive_scan_check_box_pressed"]
+[connection signal="text_changed" from="VBoxContainer/GridContainer/RegistryPath/RegistryPathLineEdit" to="." method="_on_registry_path_line_edit_text_changed"]
+[connection signal="pressed" from="VBoxContainer/GridContainer/RegistryPath/RegistryPathFilesystemButton" to="." method="_on_registry_path_filesystem_button_pressed"]

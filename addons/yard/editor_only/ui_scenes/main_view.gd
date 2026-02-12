@@ -141,7 +141,7 @@ func is_any_registry_selected() -> bool:
 
 
 func popup_new_registry_dialog(current_directory: String) -> void:
-	new_registry_dialog.path_line_edit.text = current_directory.path_join("new_registry.reg")
+	#new_registry_dialog.path_line_edit.text = current_directory.path_join("new_registry.reg")
 	new_registry_dialog.popup()
 
 

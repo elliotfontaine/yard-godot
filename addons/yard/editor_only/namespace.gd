@@ -1,4 +1,5 @@
 const PluginCFG := "res://addons/yard/plugin.cfg"
+const RegistryIO := preload("res://addons/yard/editor_only/registry_io.gd")
 const DynamicTable := preload("res://addons/yard/editor_only/classes/dynamic_table.gd")
 const RegistriesItemList := preload("res://addons/yard/editor_only/ui_scenes/registries_itemlist.gd")
 const NewRegistryDialog := preload("res://addons/yard/editor_only/ui_scenes/new_registry_dialog.gd")
