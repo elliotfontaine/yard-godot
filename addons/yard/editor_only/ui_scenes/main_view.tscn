@@ -1,15 +1,13 @@
-[gd_scene load_steps=8 format=3 uid="uid://dsg55mejcqgyb"]
+[gd_scene load_steps=9 format=3 uid="uid://dsg55mejcqgyb"]
 
 [ext_resource type="Script" uid="uid://pbm1netkyiqy" path="res://addons/yard/editor_only/ui_scenes/main_view.gd" id="1_2b5h5"]
 [ext_resource type="PackedScene" uid="uid://crnac01bnyk3" path="res://addons/yard/editor_only/ui_scenes/registry_view.tscn" id="2_2enek"]
+[ext_resource type="Script" uid="uid://caby6h435lr2g" path="res://addons/yard/editor_only/classes/editor_icon_menu_button.gd" id="2_g3f7o"]
 [ext_resource type="Script" uid="uid://dyxdmrhopt5i0" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="2_mepag"]
 [ext_resource type="Script" uid="uid://cfbh7d7n20geh" path="res://addons/yard/editor_only/ui_scenes/registries_itemlist.gd" id="2_qv183"]
 [ext_resource type="Texture2D" uid="uid://73a38p2r8hos" path="res://addons/yard/editor_only/assets/github_icon.svg" id="3_1eqxg"]
 [ext_resource type="PackedScene" uid="uid://b3g3e36v7g6kr" path="res://addons/yard/editor_only/ui_scenes/new_registry_dialog.tscn" id="4_qv183"]
-
-[sub_resource type="DPITexture" id="DPITexture_qv183"]
-_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#ff5d5d\" d=\"M2 1v8.586l1.293-1.293a1 1 0 0 1 1.414 0L7 10.587l2.293-2.293a1 1 0 0 1 1.414 0L13 10.586l1-1V6H9V1H2zm8 0v4h4zm-6 9.414-2 2V15h12v-2.586l-.293.293a1 1 0 0 1-1.414 0L10 10.414l-2.293 2.293a1 1 0 0 1-1.414 0L4 10.414z\"/></svg>
-"
+[ext_resource type="Script" uid="uid://bk8fqxqrmwbc0" path="res://addons/yard/editor_only/classes/editor_icon_line_edit.gd" id="4_x5voa"]
 
 [node name="MainView" type="MarginContainer"]
 anchors_preset = 15
@@ -73,16 +71,60 @@ popup/item_11/id = 14
 popup/item_12/text = "Close Tabs Below"
 popup/item_12/id = 15
 
-[node name="Button" type="Button" parent="VBoxContainer/HBoxContainer"]
-visible = false
+[node name="EditMenuButton" type="MenuButton" parent="VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
-focus_mode = 0
-text = "Settings"
-flat = true
+theme_type_variation = &"FlatMenuButton"
+text = "Edit"
+flat = false
+switch_on_hover = true
+item_count = 10
+popup/item_0/text = "Undo"
+popup/item_0/id = 3
+popup/item_0/disabled = true
+popup/item_1/text = "Redo"
+popup/item_1/id = 4
+popup/item_1/disabled = true
+popup/item_2/id = 8
+popup/item_2/separator = true
+popup/item_3/text = "Cut"
+popup/item_3/id = 5
+popup/item_4/text = "Copy"
+popup/item_4/id = 6
+popup/item_5/text = "Paste"
+popup/item_5/id = 7
+popup/item_6/id = 9
+popup/item_6/separator = true
+popup/item_7/text = "Select All"
+popup/item_7/id = 0
+popup/item_8/text = "Invert Selection"
+popup/item_8/id = 1
+popup/item_9/text = "Unselect"
+popup/item_9/id = 2
+
+[node name="VSeparator2" type="VSeparator" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="ColumnsMenuButton" type="MenuButton" parent="VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Select shown columns."
+theme_type_variation = &"FlatMenuButton"
+text = "Columns"
+flat = false
+switch_on_hover = true
+script = ExtResource("2_g3f7o")
+icon_name = "Panels2Alt"
+
+[node name="RegistrySettingsButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"FlatButton"
+text = "Registry Settings"
+script = ExtResource("2_mepag")
+icon_name = "GDScript"
 
 [node name="RefreshViewButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 10
 tooltip_text = "Refresh table view from the underlying registry."
 theme_type_variation = &"FlatButton"
 text = "Refresh View"
@@ -91,6 +133,7 @@ icon_name = "Loop"
 
 [node name="ReportIssueButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 10
 tooltip_text = "Open project's issues in your browser."
 theme_type_variation = &"FlatButton"
 text = "Report Issue"
@@ -118,7 +161,8 @@ size_flags_horizontal = 3
 unique_name_in_owner = true
 layout_mode = 2
 placeholder_text = "Filter Registries"
-right_icon = SubResource("DPITexture_qv183")
+script = ExtResource("4_x5voa")
+icon_name = "Search"
 
 [node name="RegistriesItemList" type="ItemList" parent="VBoxContainer/HSplitContainer/VBoxContainer"]
 unique_name_in_owner = true
@@ -163,9 +207,9 @@ item_11/id = 32
 
 [node name="NewRegistryDialog" parent="." instance=ExtResource("4_qv183")]
 unique_name_in_owner = true
-visible = false
 
 [connection signal="about_to_popup" from="VBoxContainer/HBoxContainer/FileMenuButton" to="." method="_on_file_menu_button_about_to_popup"]
+[connection signal="about_to_popup" from="VBoxContainer/HBoxContainer/ColumnsMenuButton" to="." method="_on_columns_menu_button_about_to_popup"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/RefreshViewButton" to="." method="_on_refresh_view_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/ReportIssueButton" to="." method="_on_report_issue_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/MakeFloatingButton" to="." method="_on_make_floating_button_pressed"]

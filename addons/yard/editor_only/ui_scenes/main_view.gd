@@ -38,6 +38,8 @@ var _current_registry_uid: String = ""
 var _fuz := FuzzySearch.new()
 
 @onready var file_menu_button: MenuButton = %FileMenuButton
+@onready var edit_menu_button: MenuButton = %EditMenuButton
+@onready var columns_menu_button: MenuButton = %ColumnsMenuButton
 @onready var registries_filter: LineEdit = %RegistriesFilter
 @onready var registries_itemlist: RegistriesItemList = %RegistriesItemList
 @onready var registry_view: RegistryView = %RegistryView
@@ -543,3 +545,19 @@ func _on_report_issue_button_pressed() -> void:
 
 func _on_make_floating_button_pressed() -> void:
 	_warn_unimplemented()
+
+
+func _on_columns_menu_button_about_to_popup() -> void:
+	var popup := columns_menu_button.get_popup()
+	var registry := registry_view.current_registry
+	popup.clear()
+
+	if not registry:
+		popup.add_separator("Select a registry first")
+		return
+
+	for prop: Dictionary in registry_view.properties_column_info:
+		var prop_name: String = prop[&"name"]
+		popup.add_check_item(prop_name.capitalize())
+		popup.set_item_icon(popup.item_count - 1, AnyIcon.get_property_icon_from_dict(prop))
+		popup.set_item_checked(popup.item_count - 1, true)

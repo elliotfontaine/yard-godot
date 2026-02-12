@@ -115,14 +115,7 @@ func set_columns_data(resources: Array[Resource]) -> void:
 
 	for prop: Dictionary in found_props.values():
 		if can_display_property(prop):
-			properties_column_info.append(
-				{
-					&"name": prop[&"name"],
-					&"type": prop[&"type"],
-					&"hint": prop[&"hint"],
-					&"hint_string": prop[&"hint_string"].split(","),
-				},
-			)
+			properties_column_info.append(prop)
 
 
 func get_res_row_data(res: Resource) -> Array[Variant]:
@@ -238,7 +231,7 @@ func _on_column_resized(column: int, new_width: float) -> void:
 
 func _on_inspector_property_edited(property: StringName) -> void:
 	var object := EditorInterface.get_inspector().get_edited_object()
-	if object is not Resource:
+	if object is not Resource or not current_registry:
 		return
 
 	var res: Resource = object
