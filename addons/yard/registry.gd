@@ -1,4 +1,5 @@
 @tool
+@icon("res://addons/yard/editor_only/assets/FileList.svg")
 class_name Registry
 extends Resource
 

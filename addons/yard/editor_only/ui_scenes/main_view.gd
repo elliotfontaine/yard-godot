@@ -25,6 +25,7 @@ const PluginCFG := Namespace.PluginCFG
 const RegistriesItemList := Namespace.RegistriesItemList
 const RegistryView := Namespace.RegistryView
 const NewRegistryDialog := Namespace.NewRegistryDialog
+const AnyIcon := Namespace.AnyIcon
 const FuzzySearch := Namespace.FuzzySearch
 const FuzzySearchResult := Namespace.FuzzySearchResult
 const _SAVED_STATE_PATH := "res://addons/yard/editor_only/state.cfg"
@@ -199,11 +200,10 @@ func _update_registries_itemlist() -> void:
 	registries_itemlist.set_block_signals(false)
 
 
-func _add_registry_to_itemlist(uid: String, display_name: String, icon: Texture2D = null) -> int:
+func _add_registry_to_itemlist(uid: String, display_name: String) -> int:
 	var registry := _opened_registries[uid]
 	var path := registry.resource_path
-	if icon == null:
-		icon = get_theme_icon(&"FileList", &"EditorIcons")
+	var icon := AnyIcon.get_variant_icon(load(uid), &"ClassList")
 
 	var idx := registries_itemlist.add_item(display_name, icon, true)
 	registries_itemlist.set_item_tooltip(idx, path)
