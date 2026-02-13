@@ -80,6 +80,12 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 
 
 func update_view() -> void:
+	if not current_registry:
+		dynamic_table.set_columns([])
+		var empty_data: Array[Array] = [[]]
+		dynamic_table.set_data(empty_data)
+		return
+
 	var resources: Dictionary[StringName, Resource] = current_registry.load_all()
 	set_columns_data(resources.values())
 	entries_data.clear()

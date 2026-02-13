@@ -1,6 +1,10 @@
 @tool
 extends ConfirmationDialog
 
+# Used both for the 'New Registry' menu item
+# and for the 'Registry Settings' button
+
+enum RegistryDialogState { NEW_REGISTRY, REGISTRY_SETTINGS }
 enum FileDialogState { CLASS_RESTRICTION, SCAN_DIRECTORY, REGISTRY_PATH }
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
@@ -19,7 +23,7 @@ const INFO_MESSAGES: Dictionary[StringName, Array] = {
 	# --- Scan directory ---
 	&"scan_valid": ["Scan directory valid. Will watch for new Resources…", SUCCESS_COLOR],
 	&"scan_invalid": ["Scan directory invalid. Pick an existing directory.", ERROR_COLOR],
-	&"scan_empty": ["Scan directory not set. Auto-discovery is disabled.", DEFAULT_COLOR],
+	&"scan_empty": ["No scan directory, resources auto-discovery is disabled.", DEFAULT_COLOR],
 
 	# --- Registry path ---
 	&"path_available": ["Will create a new registry file.", SUCCESS_COLOR],
@@ -29,6 +33,9 @@ const INFO_MESSAGES: Dictionary[StringName, Array] = {
 	&"path_already_used": ["Registry file already exists.", ERROR_COLOR],
 }
 
+var edited_registry: Registry
+
+var _state: RegistryDialogState
 var _file_dialog: EditorFileDialog
 var _file_dialog_state: FileDialogState
 
@@ -53,6 +60,30 @@ func _ready() -> void:
 	_file_dialog.dir_selected.connect(_on_file_dialog_dir_selected)
 	add_child(_file_dialog)
 	hide()
+
+
+func popup_with_state(state: RegistryDialogState) -> void:
+	_state = state
+	if state == RegistryDialogState.NEW_REGISTRY:
+		title = "Create Registry"
+		ok_button_text = "Create"
+		registry_path_line_edit.editable = true
+		registry_path_filesystem_button.icon = AnyIcon.get_icon(&"Folder")
+		registry_path_filesystem_button.tooltip_text = ""
+	elif edited_registry and state == RegistryDialogState.REGISTRY_SETTINGS:
+		title = "Edit Registry Settings"
+		ok_button_text = "Save"
+		class_restriction_line_edit.text = edited_registry._class_restriction
+		scan_directory_line_edit.text = edited_registry._scan_directory
+		recursive_scan_check_box.button_pressed = edited_registry._recursive_scan
+		registry_path_line_edit.text = edited_registry.resource_path
+		registry_path_line_edit.editable = false
+		registry_path_filesystem_button.icon = AnyIcon.get_icon(&"ShowInFileSystem")
+		registry_path_filesystem_button.tooltip_text = "Show in filesystem."
+	else:
+		return
+
+	popup()
 
 
 func _validate_fields() -> void:
@@ -88,6 +119,11 @@ func _validate_fields() -> void:
 	else:
 		get_ok_button().disabled = true
 		info_messages.append(INFO_MESSAGES.scan_invalid)
+
+	if _state == RegistryDialogState.REGISTRY_SETTINGS:
+		# flush messages and return early, don't validate registry path
+		_fill_info_label(info_messages)
+		return
 
 	# Registry file path
 	var file_path := registry_path_line_edit.text.strip_edges()
@@ -203,7 +239,12 @@ func _on_registry_path_line_edit_text_changed(new_text: String) -> void:
 
 
 func _on_registry_path_filesystem_button_pressed() -> void:
-	_open_file_dialog_as_registry_path()
+	match _state:
+		RegistryDialogState.NEW_REGISTRY:
+			_open_file_dialog_as_registry_path()
+		RegistryDialogState.REGISTRY_SETTINGS:
+			var fs := EditorInterface.get_file_system_dock()
+			fs.navigate_to_path(registry_path_line_edit.text)
 
 
 func _on_file_dialog_file_selected() -> void:

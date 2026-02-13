@@ -39,7 +39,10 @@ var _fuz := FuzzySearch.new()
 
 @onready var file_menu_button: MenuButton = %FileMenuButton
 @onready var edit_menu_button: MenuButton = %EditMenuButton
+@onready var registry_buttons_v_separator: VSeparator = %RegistryButtonsVSeparator
 @onready var columns_menu_button: MenuButton = %ColumnsMenuButton
+@onready var registry_settings_button: Button = %RegistrySettingsButton
+@onready var refresh_view_button: Button = %RefreshViewButton
 @onready var registries_filter: LineEdit = %RegistriesFilter
 @onready var registries_itemlist: RegistriesItemList = %RegistriesItemList
 @onready var registry_view: RegistryView = %RegistryView
@@ -53,13 +56,12 @@ func _ready() -> void:
 	_file_dialog.file_selected.connect(_on_file_dialog_action)
 	add_child(_file_dialog)
 
-	registries_itemlist.registries_dropped.connect(_on_itemlist_registries_dropped)
-
-	registries_filter.right_icon = get_theme_icon(&"Search", &"EditorIcons")
+	_toggle_visibility_registry_buttons(false)
 
 	_set_context_menu_accelerators()
 	_populate_file_menu()
 	file_menu_button.get_popup().id_pressed.connect(_on_file_menu_id_pressed)
+	registries_itemlist.registries_dropped.connect(_on_itemlist_registries_dropped)
 
 	# Fuzzy Search settings
 	_fuz.max_results = 20
@@ -123,29 +125,26 @@ func select_registry(uid: String) -> void:
 				break
 
 	_current_registry_uid = uid
+	_toggle_visibility_registry_buttons(true)
 
 	var registry: Registry = _opened_registries[uid]
 	if EditorInterface.get_inspector().get_edited_object() != registry:
 		EditorInterface.inspect_object(registry, "", true)
 
-	print("registry selected:  ", registry.resource_path, " (", uid, ")")
-	#registry_view.show_placeholder()
+	#print("registry selected:  ", registry.resource_path, " (", uid, ")")
 	registry_view.current_registry = registry
 
 
 func unselect_registry() -> void:
 	_current_registry_uid = ""
+	registry_view.current_registry = null
+	_toggle_visibility_registry_buttons(false)
 	registries_itemlist.deselect_all()
 
 
 func is_any_registry_selected() -> bool:
 	#return registries_itemlist.is_anything_selected()
 	return not _current_registry_uid.is_empty()
-
-
-func popup_new_registry_dialog(current_directory: String) -> void:
-	#new_registry_dialog.path_line_edit.text = current_directory.path_join("new_registry.reg")
-	new_registry_dialog.popup()
 
 
 ## Returns the index in the ItemList of the specified registry (by uid)
@@ -218,6 +217,13 @@ func _restore_selection(uid: String) -> void:
 		if str(registries_itemlist.get_item_metadata(i)) == uid:
 			registries_itemlist.select(i)
 			return
+
+
+func _toggle_visibility_registry_buttons(p_visible: bool) -> void:
+	registry_buttons_v_separator.visible = p_visible
+	registry_settings_button.visible = p_visible
+	columns_menu_button.visible = p_visible
+	refresh_view_button.visible = p_visible
 
 
 ## Returns: uid -> display name in list.
@@ -352,7 +358,9 @@ func _do_menu_action(action_id: int) -> void:
 	# TODO: implement actions logic
 	match action_id:
 		MenuAction.NEW:
-			popup_new_registry_dialog("res://")
+			new_registry_dialog.popup_with_state(
+				new_registry_dialog.RegistryDialogState.NEW_REGISTRY,
+			)
 		MenuAction.OPEN:
 			_file_dialog_option = MenuAction.OPEN
 			_file_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
@@ -561,3 +569,10 @@ func _on_columns_menu_button_about_to_popup() -> void:
 		popup.add_check_item(prop_name.capitalize())
 		popup.set_item_icon(popup.item_count - 1, AnyIcon.get_property_icon_from_dict(prop))
 		popup.set_item_checked(popup.item_count - 1, true)
+
+
+func _on_registry_settings_button_pressed() -> void:
+	new_registry_dialog.edited_registry = registry_view.current_registry
+	new_registry_dialog.popup_with_state(
+		new_registry_dialog.RegistryDialogState.REGISTRY_SETTINGS,
+	)
