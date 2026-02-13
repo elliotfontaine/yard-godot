@@ -219,7 +219,6 @@ item_11/id = 32
 
 [node name="NewRegistryDialog" parent="." instance=ExtResource("4_qv183")]
 unique_name_in_owner = true
-visible = false
 
 [connection signal="about_to_popup" from="VBoxContainer/HBoxContainer/FileMenuButton" to="." method="_on_file_menu_button_about_to_popup"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/RegistrySettingsButton" to="." method="_on_registry_settings_button_pressed"]

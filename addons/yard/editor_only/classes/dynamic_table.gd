@@ -253,6 +253,10 @@ func set_columns(columns: Array[ColumnConfig]) -> void:
 	queue_redraw()
 
 
+func get_column(index: int) -> ColumnConfig:
+	return _columns[index]
+
+
 func set_data(new_data: Array) -> void:
 	# Store a full copy of the data as the master list
 	_full_data = new_data.duplicate(true)

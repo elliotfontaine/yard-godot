@@ -8,30 +8,29 @@ const STRINGID_COLUMN_CONFIG := ["string_id", "String ID", TYPE_STRING]
 const NON_PROP_COLUMNS_COUNT := 2
 const UID_COLUMN := 0
 const STRINGID_COLUMN := 1
-const PROPERTY_BLACKLIST := [
+const DISABLED_BY_DEFAULT_PROPERTIES: Array[StringName] = [
 	&"script",
 	&"resource_local_to_scene",
 	&"resource_path",
 	&"resource_name",
 ]
 
-# Reference to dynamic table
-@onready var dynamic_table: DynamicTable = %DynamicTable
-# Popups
-@onready var popup := %PopupMenu
-@onready var confirm_popup := %ConfirmationDialog
-
 var current_registry: Registry:
 	set(value):
 		current_registry = value
 		update_view()
 
+var disabled_property_columns: Array[StringName] = DISABLED_BY_DEFAULT_PROPERTIES.duplicate()
 var properties_column_info: Array[Dictionary]
 var entries_data: Array[Array] # inner arrays are rows, their content is columns
 
 var current_selected_row := -1
-var current_multiple_selected_rows := -1 # current multiple selected_rows
-var multiple_selected_rows: Array # array of selected rows
+var current_multiple_selected_rows := -1
+var multiple_selected_rows: Array
+
+@onready var dynamic_table: DynamicTable = %DynamicTable
+@onready var popup := %PopupMenu
+@onready var confirm_popup := %ConfirmationDialog
 
 
 func _ready() -> void:
@@ -104,8 +103,11 @@ func can_display_property(property_info: Dictionary) -> bool:
 	return (
 		property_info[&"type"] not in [TYPE_CALLABLE, TYPE_SIGNAL]
 		and property_info[&"usage"] & PROPERTY_USAGE_EDITOR != 0
-		and property_info[&"name"] not in PROPERTY_BLACKLIST
 	)
+
+
+func is_property_disabled(property_info: Dictionary) -> bool:
+	return property_info[&"name"] in disabled_property_columns
 
 
 func set_columns_data(resources: Array[Resource]) -> void:
@@ -130,7 +132,7 @@ func get_res_row_data(res: Resource) -> Array[Variant]:
 
 	var row: Array[Variant] = []
 	for prop: Dictionary in properties_column_info:
-		if prop[&"name"] in res:
+		if prop[&"name"] in res and not is_property_disabled(prop):
 			row.append(res.get(prop[&"name"]))
 	return row
 
@@ -146,6 +148,9 @@ func _build_columns() -> Array[DynamicTable.ColumnConfig]:
 	columns.append(DynamicTable.ColumnConfig.new.callv(STRINGID_COLUMN_CONFIG))
 
 	for prop in properties_column_info:
+		if not can_display_property(prop) or is_property_disabled(prop):
+			continue
+
 		var prop_name: String = prop[&"name"]
 		var prop_header := prop_name.capitalize()
 		var prop_type: Variant.Type = prop[&"type"]
@@ -160,6 +165,7 @@ func _build_columns() -> Array[DynamicTable.ColumnConfig]:
 			column.property_hint = hint
 
 		columns.append(column)
+
 	return columns
 
 
@@ -221,8 +227,9 @@ func _on_cell_edited(row: int, column: int, old_value: Variant, new_value: Varia
 	#print("Cell edited on row ", row, ", column ", column, " Old value: ", old_value, " New value: ", new_value)
 	if column not in [UID_COLUMN, STRINGID_COLUMN]:
 		var entry := get_row_resource_uid(row)
-		var prop: StringName = properties_column_info[column - NON_PROP_COLUMNS_COUNT][&"name"]
-		_edit_entry_property(entry, prop, old_value, new_value)
+		var col_config: DynamicTable.ColumnConfig = dynamic_table.get_column(column)
+		var prop_name: StringName = col_config.identifier
+		_edit_entry_property(entry, prop_name, old_value, new_value)
 
 
 func _on_header_clicked(column: int) -> void:

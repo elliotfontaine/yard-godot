@@ -56,11 +56,13 @@ func _ready() -> void:
 	_file_dialog.file_selected.connect(_on_file_dialog_action)
 	add_child(_file_dialog)
 
-	_toggle_visibility_registry_buttons(false)
+	_toggle_visibility_topbar_buttons(false)
 
 	_set_context_menu_accelerators()
 	_populate_file_menu()
 	file_menu_button.get_popup().id_pressed.connect(_on_file_menu_id_pressed)
+	columns_menu_button.get_popup().id_pressed.connect(_on_columns_menu_id_pressed)
+	columns_menu_button.get_popup().hide_on_checkable_item_selection = false
 	registries_itemlist.registries_dropped.connect(_on_itemlist_registries_dropped)
 
 	# Fuzzy Search settings
@@ -125,7 +127,7 @@ func select_registry(uid: String) -> void:
 				break
 
 	_current_registry_uid = uid
-	_toggle_visibility_registry_buttons(true)
+	_toggle_visibility_topbar_buttons(true)
 
 	var registry: Registry = _opened_registries[uid]
 	if EditorInterface.get_inspector().get_edited_object() != registry:
@@ -138,7 +140,7 @@ func select_registry(uid: String) -> void:
 func unselect_registry() -> void:
 	_current_registry_uid = ""
 	registry_view.current_registry = null
-	_toggle_visibility_registry_buttons(false)
+	_toggle_visibility_topbar_buttons(false)
 	registries_itemlist.deselect_all()
 
 
@@ -219,7 +221,7 @@ func _restore_selection(uid: String) -> void:
 			return
 
 
-func _toggle_visibility_registry_buttons(p_visible: bool) -> void:
+func _toggle_visibility_topbar_buttons(p_visible: bool) -> void:
 	registry_buttons_v_separator.visible = p_visible
 	registry_settings_button.visible = p_visible
 	columns_menu_button.visible = p_visible
@@ -518,6 +520,20 @@ func _on_registry_context_menu_id_pressed(id: int) -> void:
 	_do_menu_action(id)
 
 
+func _on_columns_menu_id_pressed(id: int) -> void:
+	var popup := columns_menu_button.get_popup()
+	var prop_name: StringName = popup.get_item_tooltip(id)
+	popup.toggle_item_checked(id)
+
+	if popup.is_item_checked(id):
+		registry_view.disabled_property_columns.erase(prop_name)
+	else:
+		if not prop_name in registry_view.disabled_property_columns:
+			registry_view.disabled_property_columns.append(prop_name)
+
+	registry_view.update_view()
+
+
 func _on_itemlist_registries_dropped(registries: Array[Registry]) -> void:
 	print(registries)
 	for registry in registries:
@@ -566,9 +582,21 @@ func _on_columns_menu_button_about_to_popup() -> void:
 
 	for prop: Dictionary in registry_view.properties_column_info:
 		var prop_name: String = prop[&"name"]
-		popup.add_check_item(prop_name.capitalize())
-		popup.set_item_icon(popup.item_count - 1, AnyIcon.get_property_icon_from_dict(prop))
-		popup.set_item_checked(popup.item_count - 1, true)
+		if prop_name not in registry_view.DISABLED_BY_DEFAULT_PROPERTIES:
+			popup.add_check_item(prop_name.capitalize())
+			popup.set_item_tooltip(popup.item_count - 1, prop_name)
+			popup.set_item_icon(popup.item_count - 1, AnyIcon.get_property_icon_from_dict(prop))
+			popup.set_item_checked(popup.item_count - 1, prop_name not in registry_view.disabled_property_columns)
+
+	popup.add_separator()
+
+	for prop: Dictionary in registry_view.properties_column_info:
+		var prop_name: String = prop[&"name"]
+		if prop_name in registry_view.DISABLED_BY_DEFAULT_PROPERTIES:
+			popup.add_check_item(prop_name.capitalize())
+			popup.set_item_tooltip(popup.item_count - 1, prop_name)
+			popup.set_item_icon(popup.item_count - 1, AnyIcon.get_property_icon_from_dict(prop))
+			popup.set_item_checked(popup.item_count - 1, prop_name not in registry_view.disabled_property_columns)
 
 
 func _on_registry_settings_button_pressed() -> void:
