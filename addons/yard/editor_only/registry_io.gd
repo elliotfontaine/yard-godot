@@ -18,16 +18,14 @@ static func create_registry_file(
 
 	var registry := Registry.new()
 
-	if not class_restriction or is_resource_class_string(class_restriction):
-		registry._class_restriction = class_restriction
-	else:
+	if class_restriction and not is_resource_class_string(class_restriction):
 		return ERR_DOES_NOT_EXIST
 
-	if not scan_dir or DirAccess.dir_exists_absolute(scan_dir):
-		registry._scan_directory = scan_dir
-	else:
+	if scan_dir and not DirAccess.dir_exists_absolute(scan_dir):
 		return ERR_DOES_NOT_EXIST
 
+	registry._class_restriction = class_restriction
+	registry._scan_directory = scan_dir
 	registry._recursive_scan = recursive
 
 	var save_err := ResourceSaver.save(registry, path, ResourceSaver.FLAG_CHANGE_PATH)
@@ -36,6 +34,25 @@ static func create_registry_file(
 
 	EditorInterface.get_resource_filesystem().scan()
 	return save_err
+
+
+static func edit_registry_settings(
+		registry: Registry,
+		class_restriction: String,
+		scan_dir: String,
+		recursive: bool,
+) -> Error:
+	if class_restriction and not is_resource_class_string(class_restriction):
+		return ERR_DOES_NOT_EXIST
+
+	if scan_dir and not DirAccess.dir_exists_absolute(scan_dir):
+		return ERR_DOES_NOT_EXIST
+
+	registry._class_restriction = class_restriction
+	registry._scan_directory = scan_dir
+	registry._recursive_scan = recursive
+
+	return OK
 
 
 static func is_valid_registry_output_path(path: String) -> bool:

@@ -199,15 +199,26 @@ func _on_canceled() -> void:
 
 
 func _on_confirmed() -> void:
-	var err := RegistryIO.create_registry_file(
-		registry_path_line_edit.text.strip_edges(),
-		class_restriction_line_edit.text.strip_edges(),
-		scan_directory_line_edit.text.strip_edges(),
-		recursive_scan_check_box.button_pressed,
-		true,
-	)
-	if err != OK:
-		print_debug(err)
+	match _state:
+		RegistryDialogState.NEW_REGISTRY:
+			var err := RegistryIO.create_registry_file(
+				registry_path_line_edit.text.strip_edges(),
+				class_restriction_line_edit.text.strip_edges(),
+				scan_directory_line_edit.text.strip_edges(),
+				recursive_scan_check_box.button_pressed,
+				true,
+			)
+			if err != OK:
+				print_debug(error_string(err))
+		RegistryDialogState.REGISTRY_SETTINGS:
+			var err := RegistryIO.edit_registry_settings(
+				edited_registry,
+				class_restriction_line_edit.text.strip_edges(),
+				scan_directory_line_edit.text.strip_edges(),
+				recursive_scan_check_box.button_pressed,
+			)
+			if err != OK:
+				print_debug(error_string(err))
 
 
 func _on_class_restriction_line_edit_text_changed(new_text: String) -> void:

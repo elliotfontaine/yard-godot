@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://dsg55mejcqgyb"]
+[gd_scene load_steps=9 format=3 uid="uid://dsg55mejcqgyb"]
 
 [ext_resource type="Script" uid="uid://pbm1netkyiqy" path="res://addons/yard/editor_only/ui_scenes/main_view.gd" id="1_2b5h5"]
 [ext_resource type="PackedScene" uid="uid://crnac01bnyk3" path="res://addons/yard/editor_only/ui_scenes/registry_view.tscn" id="2_2enek"]
@@ -8,10 +8,6 @@
 [ext_resource type="Texture2D" uid="uid://73a38p2r8hos" path="res://addons/yard/editor_only/assets/github_icon.svg" id="3_1eqxg"]
 [ext_resource type="PackedScene" uid="uid://b3g3e36v7g6kr" path="res://addons/yard/editor_only/ui_scenes/new_registry_dialog.tscn" id="4_qv183"]
 [ext_resource type="Script" uid="uid://bk8fqxqrmwbc0" path="res://addons/yard/editor_only/classes/editor_icon_line_edit.gd" id="4_x5voa"]
-
-[sub_resource type="DPITexture" id="DPITexture_1eqxg"]
-_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#ff5d5d\" d=\"M2 1v8.586l1.293-1.293a1 1 0 0 1 1.414 0L7 10.587l2.293-2.293a1 1 0 0 1 1.414 0L13 10.586l1-1V6H9V1H2zm8 0v4h4zm-6 9.414-2 2V15h12v-2.586l-.293.293a1 1 0 0 1-1.414 0L10 10.414l-2.293 2.293a1 1 0 0 1-1.414 0L4 10.414z\"/></svg>
-"
 
 [node name="MainView" type="MarginContainer"]
 anchors_preset = 15
@@ -25,13 +21,6 @@ theme_override_constants/margin_left = 6
 theme_override_constants/margin_right = 6
 theme_override_constants/margin_bottom = 6
 script = ExtResource("1_2b5h5")
-
-[node name="PanelContainer" type="PanelContainer" parent="."]
-visible = false
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-size_flags_stretch_ratio = 6.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -172,7 +161,6 @@ size_flags_horizontal = 3
 unique_name_in_owner = true
 layout_mode = 2
 placeholder_text = "Filter Registries"
-right_icon = SubResource("DPITexture_1eqxg")
 script = ExtResource("4_x5voa")
 icon_name = "Search"
 
