@@ -1,6 +1,9 @@
 @tool
 extends Object
 
+const REGISTRY_FILE_EXTENSIONS := ["tres"]
+
+
 static func create_registry_file(
 		path: String,
 		class_restriction: String = "",
@@ -110,3 +113,100 @@ static func is_quoted_string(string: String) -> bool:
 	var last := string[-1]
 
 	return (first == "\"" and last == "\"") or (first == "'" and last == "'")
+
+
+## add a new Resource to the Registry from a UID.
+## If no string_id is given, it will use the file basename.
+## If the string_id is already used in the Registry, it will append a number to it.
+static func _add_entry(registry: Registry, uid: StringName, string_id: String = "") -> bool:
+	var cache_id: int = ResourceUID.text_to_id(uid)
+	if not ResourceUID.has_id(cache_id):
+		return false
+
+	if string_id.begins_with(("uid://")):
+		return false
+
+	if not string_id:
+		string_id = ResourceUID.get_id_path(cache_id).get_file().get_basename()
+
+	if string_id in registry._string_ids_to_uids:
+		string_id = _make_string_unique(registry, string_id)
+
+	if uid in registry._uids_to_string_ids:
+		return false
+
+	registry._uids_to_string_ids[uid] = string_id as StringName
+	registry._string_ids_to_uids[string_id] = uid
+	return true
+
+
+static func _make_string_unique(registry: Registry, string_id: String) -> String:
+	if not string_id in registry._string_ids_to_uids:
+		return string_id
+
+	var id_to_try := string_id
+	var n := 2
+	while id_to_try + "_" + str(n) in registry._string_ids_to_uids:
+		n += 1
+	return id_to_try + "_" + str(n)
+
+
+static func _validate_uids(registry: Registry) -> Dictionary[StringName, bool]:
+	var ret: Dictionary[StringName, bool] = { }
+	for uid in registry._uids_to_string_ids:
+		ret[uid] = _is_uid_valid(uid)
+	return ret
+
+
+static func _is_uid_valid(uid: StringName) -> bool:
+	if uid == &"" or uid == Registry.INVALID_RESOURCE_ID:
+		return false
+
+	var uid_str := String(uid)
+	if not uid_str.begins_with("uid://"):
+		return false
+
+	var cache_id: int = ResourceUID.text_to_id(uid_str)
+	return ResourceUID.has_id(cache_id)
+
+
+static func _validate_resource_classes(registry: Registry) -> void:
+	for uid: StringName in registry._uids_to_string_ids:
+		if not ResourceLoader.exists(uid):
+			continue
+		var is_valid := _is_resource_class_valid(registry, load(uid))
+		if not is_valid:
+			pass
+			#set_invalid_resource(uid)
+	#_emit_registry_entries_changed()
+
+
+static func _is_resource_class_valid(registry: Registry, res: Resource) -> bool:
+	if res == null:
+		return false
+	#if valid_classes.is_empty():
+	#return true
+	if not registry._class_restriction:
+		return true
+
+	var class_restriction: StringName = registry._class_restriction
+	var class_stringname: StringName
+	var res_script: Script = res.get_script()
+	if res_script != null:
+		var global_name := StringName(res_script.get_global_name())
+		if not global_name.is_empty():
+			class_stringname = global_name
+		else:
+			class_stringname = StringName(res.get_class())
+	else:
+		class_stringname = StringName(res.get_class())
+
+	#for valid_class in valid_classes:
+	if class_stringname == class_restriction:
+		return true
+	if res.is_class(String(class_restriction)):
+		return true
+	if ClassDB.is_parent_class(String(class_stringname), String(class_restriction)):
+		return true
+
+	return false

@@ -75,11 +75,11 @@ msgid "Close Tabs Below"
 msgstr "Fermer les onglets en dessous"
 
 #: addons/yard/editor_only/ui_scenes/main_view.gd
-msgid "previously_used.reg"
+msgid "previously_used.tres"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/main_view.gd
-msgid "placeholder.reg"
+msgid "placeholder.tres"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/main_view.gd

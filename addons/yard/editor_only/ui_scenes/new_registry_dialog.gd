@@ -132,7 +132,7 @@ func _validate_fields() -> void:
 		info_messages.append(INFO_MESSAGES.filename_empty)
 	else:
 		var ext := file_path.get_extension().to_lower()
-		if ext not in ["tres"]: #["tres", "res"]:
+		if ext not in [RegistryIO.REGISTRY_FILE_EXTENSIONS]: #["tres", "res"]:
 			get_ok_button().disabled = true
 			info_messages.append(INFO_MESSAGES.extension_invalid)
 		elif not RegistryIO.is_valid_registry_output_path(file_path):

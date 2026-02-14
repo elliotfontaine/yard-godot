@@ -2,6 +2,7 @@
 extends Panel
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const RegistryIO := Namespace.RegistryIO
 const DynamicTable := Namespace.DynamicTable
 const UID_COLUMN_CONFIG := ["uid", "UID", TYPE_STRING]
 const STRINGID_COLUMN_CONFIG := ["string_id", "String ID", TYPE_STRING]
@@ -64,7 +65,7 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 
 	for path: String in data.files:
 		if ResourceLoader.exists(path):
-			if current_registry._is_resource_class_valid(load(path)):
+			if RegistryIO._is_resource_class_valid(current_registry, load(path)):
 				return true
 
 	return false
@@ -73,8 +74,8 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 func _drop_data(_at_position: Vector2, data: Variant) -> void:
 	for path: String in data.files:
 		if ResourceLoader.exists(path):
-			if current_registry._is_resource_class_valid(load(path)):
-				current_registry._add_entry(ResourceUID.path_to_uid(path))
+			if RegistryIO._is_resource_class_valid(current_registry, load(path)):
+				RegistryIO._add_entry(current_registry, ResourceUID.path_to_uid(path))
 	update_view()
 
 
@@ -85,12 +86,12 @@ func update_view() -> void:
 		dynamic_table.set_data(empty_data)
 		return
 
-	var resources: Dictionary[StringName, Resource] = current_registry.load_all()
+	var resources: Dictionary[StringName, Resource] = current_registry.load_all_blocking()
 	set_columns_data(resources.values())
 	entries_data.clear()
 
-	for uid in current_registry._uids_to_string_ids:
-		var entry_data := [uid, current_registry.get_stringid(uid)]
+	for uid in current_registry.get_all_uids():
+		var entry_data := [uid, current_registry.get_string_id(uid)]
 		entry_data.append_array(get_res_row_data(current_registry.load_entry(uid)))
 		entries_data.append(entry_data)
 

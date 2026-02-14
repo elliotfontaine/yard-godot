@@ -22,6 +22,7 @@ enum MenuAction {
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const PluginCFG := Namespace.PluginCFG
+const RegistryIO := Namespace.RegistryIO
 const RegistriesItemList := Namespace.RegistriesItemList
 const RegistryView := Namespace.RegistryView
 const NewRegistryDialog := Namespace.NewRegistryDialog
@@ -313,8 +314,8 @@ func _populate_file_menu() -> void:
 
 	# TODO: implement "previous" logic
 	var recent := PopupMenu.new()
-	recent.add_item("previously_used.reg")
-	recent.add_item("placeholder.reg")
+	recent.add_item("previously_used.tres")
+	recent.add_item("placeholder.tres")
 	file_menu.set_item_submenu_node(
 		file_menu.get_item_index(MenuAction.OPEN_RECENT),
 		recent,
@@ -366,8 +367,11 @@ func _do_menu_action(action_id: int) -> void:
 		MenuAction.OPEN:
 			_file_dialog_option = MenuAction.OPEN
 			_file_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
-			_file_dialog.add_filter("*.reg", "Registries")
 			_file_dialog.title = tr("Open Registry")
+			var filter := ""
+			for ext: String in RegistryIO.REGISTRY_FILE_EXTENSIONS:
+				filter += "%s*.%s" % ["" if filter == "" else ", ", ext]
+			_file_dialog.add_filter(filter, "Registries")
 			_file_dialog.popup_file_dialog()
 		MenuAction.REOPEN_CLOSED:
 			if _session_closed_uids.is_empty(): # check because of shortcut
