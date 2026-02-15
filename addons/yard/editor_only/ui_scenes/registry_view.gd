@@ -237,6 +237,9 @@ func _on_cell_edited(row: int, column: int, old_value: Variant, new_value: Varia
 		var col_config: DynamicTable.ColumnConfig = dynamic_table.get_column(column)
 		var prop_name: StringName = col_config.identifier
 		_edit_entry_property(entry, prop_name, old_value, new_value)
+	elif column == STRINGID_COLUMN:
+		RegistryIO.rename_entry(current_registry, old_value, new_value)
+		update_view()
 
 
 func _on_header_clicked(column: int) -> void:

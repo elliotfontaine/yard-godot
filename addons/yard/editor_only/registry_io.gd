@@ -58,6 +58,21 @@ static func edit_registry_settings(
 	return OK
 
 
+static func rename_entry(
+		registry: Registry,
+		old_string_id: StringName,
+		new_string_id: StringName,
+) -> void:
+	if not registry.has_string_id(old_string_id):
+		return
+
+	var uid := registry.get_uid(old_string_id)
+	registry._string_ids_to_uids.erase(old_string_id)
+	var unique_new_string_id := _make_string_unique(registry, new_string_id)
+	registry._string_ids_to_uids[unique_new_string_id] = uid
+	registry._uids_to_string_ids[uid] = unique_new_string_id
+
+
 static func is_valid_registry_output_path(path: String) -> bool:
 	path = path.strip_edges()
 	if path.is_empty():
@@ -143,6 +158,10 @@ static func _add_entry(registry: Registry, uid: StringName, string_id: String = 
 static func _make_string_unique(registry: Registry, string_id: String) -> String:
 	if not string_id in registry._string_ids_to_uids:
 		return string_id
+
+	var regex := RegEx.new()
+	regex.compile("(_\\d+)$")
+	string_id = regex.sub(string_id, "", true)
 
 	var id_to_try := string_id
 	var n := 2
