@@ -79,7 +79,7 @@ func load_entry(
 		cache_mode: ResourceLoader.CacheMode = CACHE_MODE_REUSE,
 ) -> Resource:
 	var uid := get_uid(id)
-	if uid == &"":
+	if uid == &"" or not ResourceLoader.exists(uid):
 		return null
 	else:
 		return ResourceLoader.load(uid, type_hint, cache_mode)
@@ -121,7 +121,7 @@ func load_all_blocking(
 	var dict: Dictionary[StringName, Resource] = { }
 
 	for uid in get_all_uids():
-		if not uid == &"":
+		if not uid == &"" and ResourceLoader.exists(uid):
 			dict[_uids_to_string_ids[uid]] = ResourceLoader.load(
 				uid,
 				type_hint,

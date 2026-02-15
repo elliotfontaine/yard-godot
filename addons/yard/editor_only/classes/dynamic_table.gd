@@ -275,7 +275,7 @@ func set_data(new_data: Array) -> void:
 	_focused_row = -1
 	_focused_col = -1
 
-	var blank := false # TODO: manage undefined cells differently
+	var blank: Variant = null # TODO: manage undefined cells differently
 	for row_data_item: Array in _data:
 		while row_data_item.size() < _columns.size():
 			row_data_item.append(blank)
@@ -872,6 +872,8 @@ func _draw_cell_text(cell_x: float, row_y: float, col: int, row: int) -> void:
 	)
 	var text_y_pos := row_y + row_height / 2.0 + text_size.y / 2.0 - (font_size / 2.0 - 2.0) # Y calculation to better center text
 	var text_color := column.custom_font_color if column.custom_font_color else default_font_color
+	# TODO: the following line is registry-specific. Refactor outside.
+	text_color = get_theme_color("error_color", "Editor") if cell_value.begins_with("(!) ") else text_color
 	draw_string(
 		text_font,
 		Vector2(cell_x + x_margin_val, text_y_pos),

@@ -85,13 +85,13 @@ func update_view() -> void:
 		var empty_data: Array[Array] = [[]]
 		dynamic_table.set_data(empty_data)
 		return
-
-	var resources: Dictionary[StringName, Resource] = current_registry.load_all_blocking()
+	var resources: Dictionary[StringName, Resource] = current_registry.load_all_blocking() #ERROR
 	set_columns_data(resources.values())
 	entries_data.clear()
-
 	for uid in current_registry.get_all_uids():
 		var entry_data := [current_registry.get_string_id(uid), uid]
+		if not ResourceLoader.exists(uid): # WARN: Will throw error in console... Which is dumb.
+			entry_data[UID_COLUMN] = "(!) " + uid
 		entry_data.append_array(get_res_row_data(current_registry.load_entry(uid)))
 		entries_data.append(entry_data)
 
@@ -115,7 +115,7 @@ func set_columns_data(resources: Array[Resource]) -> void:
 	properties_column_info.clear()
 	var found_props := { }
 	for res: Resource in resources:
-		if res == null:
+		if not res:
 			continue
 
 		for prop: Dictionary in res.get_property_list():
@@ -128,7 +128,7 @@ func set_columns_data(resources: Array[Resource]) -> void:
 
 
 func get_res_row_data(res: Resource) -> Array[Variant]:
-	if properties_column_info.is_empty():
+	if properties_column_info.is_empty() or not res:
 		return []
 
 	var row: Array[Variant] = []
@@ -177,6 +177,9 @@ func _build_columns() -> Array[DynamicTable.ColumnConfig]:
 
 
 func _edit_entry_property(entry: StringName, property: StringName, old_value: Variant, new_value: Variant) -> void:
+	var uid := current_registry.get_uid(entry)
+	if not uid or not ResourceLoader.exists(uid):
+		return
 	var res := load(entry)
 	if property in res:
 		res.set(property, new_value)
@@ -209,7 +212,8 @@ func _on_cell_selected(row: int, column: int) -> void:
 	current_multiple_selected_rows = -1
 	if row != -1 and column != -1:
 		var uid: StringName = get_row_resource_uid(row)
-		EditorInterface.edit_resource(load(uid))
+		if ResourceLoader.exists(uid):
+			EditorInterface.edit_resource(load(uid))
 
 
 func _on_cell_right_selected(row: int, column: int, mouse_pos: Vector2) -> void:
@@ -236,10 +240,11 @@ func _on_cell_edited(row: int, column: int, old_value: Variant, new_value: Varia
 		var entry := get_row_resource_uid(row)
 		var col_config: DynamicTable.ColumnConfig = dynamic_table.get_column(column)
 		var prop_name: StringName = col_config.identifier
-		_edit_entry_property(entry, prop_name, old_value, new_value)
+		if ResourceLoader.exists(entry):
+			_edit_entry_property(entry, prop_name, old_value, new_value)
 	elif column == STRINGID_COLUMN:
 		RegistryIO.rename_entry(current_registry, old_value, new_value)
-		update_view()
+	update_view()
 
 
 func _on_header_clicked(column: int) -> void:
