@@ -7,8 +7,8 @@ const DynamicTable := Namespace.DynamicTable
 const UID_COLUMN_CONFIG := ["uid", "UID", TYPE_STRING]
 const STRINGID_COLUMN_CONFIG := ["string_id", "String ID", TYPE_STRING]
 const NON_PROP_COLUMNS_COUNT := 2
-const UID_COLUMN := 0
-const STRINGID_COLUMN := 1
+const STRINGID_COLUMN := 0
+const UID_COLUMN := 1
 const DISABLED_BY_DEFAULT_PROPERTIES: Array[StringName] = [
 	&"script",
 	&"resource_local_to_scene",
@@ -91,13 +91,13 @@ func update_view() -> void:
 	entries_data.clear()
 
 	for uid in current_registry.get_all_uids():
-		var entry_data := [uid, current_registry.get_string_id(uid)]
+		var entry_data := [current_registry.get_string_id(uid), uid]
 		entry_data.append_array(get_res_row_data(current_registry.load_entry(uid)))
 		entries_data.append(entry_data)
 
 	dynamic_table.set_columns(_build_columns())
 	dynamic_table.set_data(entries_data)
-	dynamic_table.ordering_data(1, true)
+	dynamic_table.ordering_data(STRINGID_COLUMN, true)
 
 
 func can_display_property(property_info: Dictionary) -> bool:
@@ -145,8 +145,14 @@ func get_row_resource_uid(row: int) -> StringName:
 
 func _build_columns() -> Array[DynamicTable.ColumnConfig]:
 	var columns: Array[DynamicTable.ColumnConfig] = []
-	columns.append(DynamicTable.ColumnConfig.new.callv(UID_COLUMN_CONFIG))
-	columns.append(DynamicTable.ColumnConfig.new.callv(STRINGID_COLUMN_CONFIG))
+	var uid_column: DynamicTable.ColumnConfig = DynamicTable.ColumnConfig.new.callv(UID_COLUMN_CONFIG)
+	var string_id_column: DynamicTable.ColumnConfig = DynamicTable.ColumnConfig.new.callv(STRINGID_COLUMN_CONFIG)
+	uid_column.custom_font_color = get_theme_color("disabled_font_color", "Editor")
+	uid_column.custom_font = get_theme_font("font", "CodeEdit")
+	string_id_column.custom_font_color = get_theme_color("font_hover_pressed_color", "Editor")
+	string_id_column.h_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	columns.append(string_id_column) #0
+	columns.append(uid_column) #1
 
 	for prop in properties_column_info:
 		if not can_display_property(prop) or is_property_disabled(prop):

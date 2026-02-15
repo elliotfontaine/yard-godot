@@ -174,6 +174,8 @@ func _draw() -> void:
 				if (col_idx == _filtering_column):
 					header_font_color = header_filter_active_font_color
 					header_text_content += " (" + str(_data.size()) + ")"
+				#elif column.custom_font_color:
+				#	header_font_color = column.custom_font_color
 				else:
 					header_font_color = default_font_color
 				var text_size := font.get_string_size(header_text_content, column.h_alignment, column.current_width, font_size)
@@ -294,10 +296,11 @@ func set_data(new_data: Array) -> void:
 				data_s = Vector2(row_height * 2, row_height)
 			else:
 				if row < _data.size() and col_idx < _data[row].size():
-					data_s = font.get_string_size(str(_data[row][col_idx]), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+					var data_font := column.custom_font if column.custom_font else font
+					data_s = data_font.get_string_size(str(_data[row][col_idx]), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
 
 			if (column.current_width < max(header_size.x, data_s.x)):
-				column.minimum_width = max(header_size.x, data_s.x) + font_size * 4
+				column.minimum_width = max(header_size.x, data_s.x) + font_size * 3
 
 	_update_scrollbars()
 	queue_redraw()
@@ -856,25 +859,27 @@ func _get_interpolated_three_colors(start_c: Color, mid_c: Color, end_c: Color, 
 func _draw_cell_text(cell_x: float, row_y: float, col: int, row: int) -> void:
 	var cell_value := ""
 	var column := _columns[col]
+	var text_font := column.custom_font if column.custom_font else font
 	if row >= 0 and row < _data.size() and col >= 0 and col < _data[row].size(): # bounds check
 		cell_value = str(_data[row][col])
 
 	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(column.h_alignment)
-	var text_size := font.get_string_size(
+	var text_size := text_font.get_string_size(
 		cell_value,
 		column.h_alignment,
 		_columns[col].current_width - abs(x_margin_val) * 2,
 		font_size,
 	)
 	var text_y_pos := row_y + row_height / 2.0 + text_size.y / 2.0 - (font_size / 2.0 - 2.0) # Y calculation to better center text
+	var text_color := column.custom_font_color if column.custom_font_color else default_font_color
 	draw_string(
-		font,
+		text_font,
 		Vector2(cell_x + x_margin_val, text_y_pos),
 		cell_value,
 		column.h_alignment,
 		_columns[col].current_width - abs(x_margin_val),
 		font_size,
-		default_font_color,
+		text_color,
 	)
 
 
@@ -1666,6 +1671,8 @@ class ColumnConfig:
 	var type: Variant.Type
 	var property_hint: PropertyHint
 	var h_alignment: HorizontalAlignment
+	var custom_font_color: Color
+	var custom_font: Font
 	var minimum_width: float:
 		set(value):
 			minimum_width = value
