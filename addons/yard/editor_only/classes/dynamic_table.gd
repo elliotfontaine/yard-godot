@@ -56,6 +56,7 @@ const H_ALIGNMENT_MARGINS = {
 
 # Fonts
 var font := get_theme_default_font()
+var mono_font: Font = EditorInterface.get_editor_theme().get_font("font", "CodeEdit")
 var font_size := get_theme_default_font_size()
 
 # Internal variables
@@ -93,10 +94,11 @@ var _focused_row: int = -1 # Currently focused row
 var _focused_col: int = -1 # Currently focused column
 
 # Editing variables
-var _editing_cell := [-1, -1]
+var _editing_cell := [-1, -1] # row, column
 var _text_editor_line_edit: LineEdit
 var _color_editor: Control
 var _resource_editor: EditorResourcePicker
+var _path_editor: EditorFileDialog
 var _double_click_timer: Timer
 var _click_count := 0
 var _last_click_pos := Vector2.ZERO
@@ -301,7 +303,11 @@ func set_data(new_data: Array) -> void:
 				data_s = Vector2(row_height * 2, row_height)
 			else:
 				if row < _data.size() and col_idx < _data[row].size():
-					var data_font := column.custom_font if column.custom_font else font
+					var data_font := font
+					if column.custom_font:
+						data_font = column.custom_font
+					elif column.is_path_column():
+						data_font = mono_font
 					data_s = data_font.get_string_size(str(_data[row][col_idx]), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
 
 			if (column.current_width < max(header_size.x, data_s.x)):
@@ -500,6 +506,11 @@ func _setup_editing_components() -> void:
 	_resource_editor.hide()
 	add_child(_resource_editor)
 
+	_path_editor = EditorFileDialog.new()
+	_path_editor.dir_selected.connect(_on_path_editor_path_selected)
+	_path_editor.file_selected.connect(_on_path_editor_path_selected)
+	add_child(_path_editor)
+
 	_double_click_timer = Timer.new()
 	_double_click_timer.wait_time = _double_click_threshold / 1000.0
 	_double_click_timer.one_shot = true
@@ -595,6 +606,8 @@ func _start_cell_editing(row: int, col: int) -> void:
 		_open_color_editor(row, col)
 	elif column.is_resource_column():
 		_open_resource_editor(row, col)
+	elif column.is_path_column():
+		_open_path_editor(row, col)
 	elif column.is_numeric_column():
 		_open_text_editor(row, col)
 	elif column.is_string_column():
@@ -645,6 +658,16 @@ func _open_resource_editor(row: int, col: int) -> void:
 		quick_load.pressed.emit()
 
 
+func _open_path_editor(row: int, col: int) -> void:
+	_editing_cell = [row, col]
+	var column := get_column(col)
+	if column.property_hint in [PROPERTY_HINT_FILE, PROPERTY_HINT_FILE_PATH]:
+		_path_editor.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
+	if column.property_hint in [PROPERTY_HINT_DIR]:
+		_path_editor.file_mode = EditorFileDialog.FILE_MODE_OPEN_DIR
+	_path_editor.popup_centered_ratio(0.55)
+
+
 func _finish_editing(save_changes: bool = true) -> void:
 	if _editing_cell[0] == -1 and _editing_cell[1] == -1:
 		return
@@ -653,7 +676,9 @@ func _finish_editing(save_changes: bool = true) -> void:
 		var column := _columns[_editing_cell[1]]
 		var old_value: Variant = get_cell_value.callv(_editing_cell)
 		var new_value: Variant = _get_editor_value_for_column(column)
-		if new_value and typeof(new_value) == column.type:
+		if typeof(new_value) == column.type:
+			if column.is_path_column() and column.property_hint == PROPERTY_HINT_FILE:
+				new_value = ResourceUID.path_to_uid(new_value)
 			update_cell(_editing_cell[0], _editing_cell[1], new_value)
 			cell_edited.emit(_editing_cell[0], _editing_cell[1], old_value, new_value)
 
@@ -668,6 +693,8 @@ func _get_editor_value_for_column(column: ColumnConfig) -> Variant:
 		return _color_editor.color
 	elif column.is_resource_column():
 		return _resource_editor.edited_resource
+	elif column.is_path_column():
+		return _path_editor.current_path
 
 	var text := _text_editor_line_edit.text
 	if column.is_string_column():
@@ -887,7 +914,11 @@ func _get_interpolated_three_colors(start_c: Color, mid_c: Color, end_c: Color, 
 func _draw_cell_text(cell_x: float, row_y: float, col: int, row: int) -> void:
 	var cell_value := ""
 	var column := _columns[col]
-	var text_font := column.custom_font if column.custom_font else font
+	var text_font: Font = font
+	if column.custom_font:
+		text_font = column.custom_font
+	elif get_column(col).is_path_column():
+		text_font = mono_font
 	if row >= 0 and row < _data.size() and col >= 0 and col < _data[row].size(): # bounds check
 		cell_value = str(_data[row][col])
 
@@ -915,7 +946,13 @@ func _draw_cell_text(cell_x: float, row_y: float, col: int, row: int) -> void:
 
 func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> void:
 	# TODO: clean / refactor method
-	_finish_editing(true)
+	if _editing_cell[1] >= 0:
+		var column := get_column(_editing_cell[1])
+		if column.is_resource_column() or column.is_path_column():
+			# When focus is lost (after an editor window was closed) do NOT save changes
+			_finish_editing(false)
+		else:
+			_finish_editing(true)
 
 	var clicked_row := -1
 	if row_height > 0: # Avoid division by zero
@@ -1547,6 +1584,10 @@ func _on_resource_editor_resource_changed(res: Resource) -> void:
 	_finish_editing(true)
 
 
+func _on_path_editor_path_selected(path: String) -> void:
+	_finish_editing(true)
+
+
 func _on_double_click_timeout() -> void:
 	_click_count = 0
 
@@ -1722,6 +1763,15 @@ class ColumnConfig:
 		identifier = p_identifier
 		header = p_header
 		type = p_type
+
+
+	func is_path_column() -> bool:
+		var is_filesystem_hint := property_hint in [
+			PROPERTY_HINT_FILE,
+			PROPERTY_HINT_FILE_PATH,
+			PROPERTY_HINT_DIR,
+		]
+		return type == TYPE_STRING and is_filesystem_hint
 
 
 	func is_progress_column() -> bool:

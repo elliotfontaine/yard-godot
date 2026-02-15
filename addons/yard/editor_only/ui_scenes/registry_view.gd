@@ -147,13 +147,15 @@ func get_row_resource_uid(row: int) -> StringName:
 
 func _build_columns() -> Array[DynamicTable.ColumnConfig]:
 	var columns: Array[DynamicTable.ColumnConfig] = []
-	var uid_column: DynamicTable.ColumnConfig = DynamicTable.ColumnConfig.new.callv(UID_COLUMN_CONFIG)
+
 	var string_id_column: DynamicTable.ColumnConfig = DynamicTable.ColumnConfig.new.callv(STRINGID_COLUMN_CONFIG)
-	uid_column.custom_font_color = get_theme_color("disabled_font_color", "Editor")
-	uid_column.custom_font = get_theme_font("font", "CodeEdit")
 	string_id_column.custom_font_color = get_theme_color("font_hover_pressed_color", "Editor")
 	string_id_column.h_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	columns.append(string_id_column) #0
+
+	var uid_column: DynamicTable.ColumnConfig = DynamicTable.ColumnConfig.new.callv(UID_COLUMN_CONFIG)
+	uid_column.custom_font_color = get_theme_color("disabled_font_color", "Editor")
+	uid_column.property_hint = PROPERTY_HINT_FILE
 	columns.append(uid_column) #1
 
 	for prop in properties_column_info:
@@ -191,7 +193,10 @@ func _edit_entry_property(entry: StringName, property: StringName, old_value: Va
 	var res := load(entry)
 	if property in res:
 		var prop_type := ClassUtils.get_property_declared_type(res, property)
-		if ClassUtils.is_class_of(new_value, prop_type):
+		if (
+			ClassUtils.is_type_builtin(typeof(new_value)) and type_string(typeof(new_value)) == prop_type
+			or ClassUtils.is_class_of(new_value, prop_type)
+		):
 			res.set(property, new_value)
 			print_rich(
 				"[color=lightslategray]Set %s from %s to %s[/color]" % [
@@ -267,6 +272,8 @@ func _on_cell_edited(row: int, column: int, old_value: Variant, new_value: Varia
 			_edit_entry_property(entry, prop_name, old_value, new_value)
 	elif column == STRINGID_COLUMN:
 		RegistryIO.rename_entry(current_registry, old_value, new_value)
+	elif column == UID_COLUMN:
+		print("tried changing uid to ", new_value)
 	update_view()
 
 
