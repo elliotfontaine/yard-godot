@@ -14,6 +14,10 @@ signal column_resized(column: int, new_width: float)
 signal progress_changed(row: int, col: int, new_value: float)
 signal cell_edited(row: int, col: int, old_value: Variant, new_value: Variant)
 
+const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const ClassUtils := Namespace.ClassUtils
+const AnyIcon := Namespace.AnyIcon
+
 const H_ALIGNMENT_MARGINS = {
 	HORIZONTAL_ALIGNMENT_LEFT: 5,
 	HORIZONTAL_ALIGNMENT_CENTER: 0,
@@ -92,6 +96,7 @@ var _focused_col: int = -1 # Currently focused column
 var _editing_cell := [-1, -1]
 var _text_editor_line_edit: LineEdit
 var _color_editor: Control
+var _resource_editor: EditorResourcePicker
 var _double_click_timer: Timer
 var _click_count := 0
 var _last_click_pos := Vector2.ZERO
@@ -483,11 +488,17 @@ func _setup_editing_components() -> void:
 		header_height = _text_editor_line_edit.size.y
 		row_height = _text_editor_line_edit.size.y
 
+	# TODO: Make Inner class instead of packed scene, for portability
 	_color_editor = preload("uid://cuhed17jgms48").instantiate()
 	_color_editor.color_selected.connect(_on_color_editor_color_selected)
 	_color_editor.canceled.connect(_on_color_editor_canceled)
 	_color_editor.hide()
 	add_child(_color_editor)
+
+	_resource_editor = EditorResourcePicker.new()
+	_resource_editor.resource_changed.connect(_on_resource_editor_resource_changed)
+	_resource_editor.hide()
+	add_child(_resource_editor)
 
 	_double_click_timer = Timer.new()
 	_double_click_timer.wait_time = _double_click_threshold / 1000.0
@@ -622,7 +633,16 @@ func _open_color_editor(row: int, col: int) -> void:
 
 
 func _open_resource_editor(row: int, col: int) -> void:
-	pass
+	_editing_cell = [row, col]
+	var columnn := get_column(col)
+	_resource_editor.edited_resource = null
+	if ClassUtils.is_valid(columnn.hint_string):
+		_resource_editor.base_type = columnn.hint_string
+	else:
+		_resource_editor.base_type = "Resource"
+	var quick_load: Button = _resource_editor.get_child(1, true)
+	if quick_load:
+		quick_load.pressed.emit()
 
 
 func _finish_editing(save_changes: bool = true) -> void:
@@ -633,7 +653,6 @@ func _finish_editing(save_changes: bool = true) -> void:
 		var column := _columns[_editing_cell[1]]
 		var old_value: Variant = get_cell_value.callv(_editing_cell)
 		var new_value: Variant = _get_editor_value_for_column(column)
-
 		if new_value and typeof(new_value) == column.type:
 			update_cell(_editing_cell[0], _editing_cell[1], new_value)
 			cell_edited.emit(_editing_cell[0], _editing_cell[1], old_value, new_value)
@@ -647,6 +666,8 @@ func _finish_editing(save_changes: bool = true) -> void:
 func _get_editor_value_for_column(column: ColumnConfig) -> Variant:
 	if column.is_color_column():
 		return _color_editor.color
+	elif column.is_resource_column():
+		return _resource_editor.edited_resource
 
 	var text := _text_editor_line_edit.text
 	if column.is_string_column():
@@ -823,7 +844,10 @@ func _draw_resource_cell(cell_x: float, row_y: float, col: int, row: int) -> voi
 			res,
 			self,
 			"_on_resource_cell_thumb_ready",
-			{ "key": key },
+			{
+				"key": key,
+				"class": ClassUtils.get_type_name(res),
+			},
 		)
 
 	# Placeholder
@@ -841,6 +865,10 @@ func _on_resource_cell_thumb_ready(path: String, preview: Texture2D, thumbnail_p
 
 	# Prefer thumbnail; fallback to preview if thumbnail missing
 	var tex: Texture2D = thumbnail_preview if thumbnail_preview != null else preview
+
+	# Fallback to resource class icon
+	if not tex:
+		tex = AnyIcon.get_class_icon(userdata.get("class", "Resource"))
 
 	_resource_thumb_cache[key] = tex # can be null if both are null
 	_resource_thumb_pending.erase(key)
@@ -1515,6 +1543,10 @@ func _on_color_editor_canceled() -> void:
 	_finish_editing(false)
 
 
+func _on_resource_editor_resource_changed(res: Resource) -> void:
+	_finish_editing(true)
+
+
 func _on_double_click_timeout() -> void:
 	_click_count = 0
 
@@ -1672,6 +1704,8 @@ class ColumnConfig:
 	var header: String
 	var type: Variant.Type
 	var property_hint: PropertyHint
+	var hint_string: String
+	var class_string: String
 	var h_alignment: HorizontalAlignment
 	var custom_font_color: Color
 	var custom_font: Font

@@ -3,6 +3,8 @@ extends Panel
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const RegistryIO := Namespace.RegistryIO
+const ClassUtils := Namespace.ClassUtils
+const EditorThemeUtils := Namespace.EditorThemeUtils
 const DynamicTable := Namespace.DynamicTable
 const UID_COLUMN_CONFIG := ["uid", "UID", TYPE_STRING]
 const STRINGID_COLUMN_CONFIG := ["string_id", "String ID", TYPE_STRING]
@@ -162,6 +164,8 @@ func _build_columns() -> Array[DynamicTable.ColumnConfig]:
 		var prop_header := prop_name.capitalize()
 		var prop_type: Variant.Type = prop[&"type"]
 		var hint: PropertyHint = prop[&"hint"]
+		var hint_string: String = prop[&"hint_string"]
+		var class_string: String = prop[&"class_name"]
 		var column := DynamicTable.ColumnConfig.new(
 			prop[&"name"],
 			prop_header,
@@ -170,6 +174,10 @@ func _build_columns() -> Array[DynamicTable.ColumnConfig]:
 
 		if hint:
 			column.property_hint = hint
+		if hint_string:
+			column.hint_string = hint_string
+		if class_string:
+			column.class_string = class_string
 
 		columns.append(column)
 
@@ -182,18 +190,33 @@ func _edit_entry_property(entry: StringName, property: StringName, old_value: Va
 		return
 	var res := load(entry)
 	if property in res:
-		res.set(property, new_value)
-		print_rich(
-			"[color=lightslategray]Set %s from %s to %s[/color]" % [
-				property,
-				old_value,
-				new_value,
-			],
-		)
+		var prop_type := ClassUtils.get_property_declared_type(res, property)
+		if ClassUtils.is_class_of(new_value, prop_type):
+			res.set(property, new_value)
+			print_rich(
+				"[color=lightslategray]Set %s from %s to %s[/color]" % [
+					property,
+					old_value,
+					new_value,
+				],
+			)
+		else:
+			print_rich(
+				"[color=%s]● [b]ERROR:[/b] Invalid type. Couldn't set %s (%s) to %s (%s)[/color]" % [
+					EditorThemeUtils.color_error.to_html(false),
+					property,
+					prop_type,
+					new_value,
+					ClassUtils.get_type_name(new_value),
+				],
+			)
+
 	else:
 		print_rich(
-			"[color=orangered]●[/color] [color=salmon][b]ERROR:[/b] ",
-			"Property %s not in resource[/color]" % property,
+			"[color=%s]● [b]ERROR:[/b] Property %s not in resource[/color]" % [
+				EditorThemeUtils.color_error.to_html(false),
+				property,
+			],
 		)
 
 

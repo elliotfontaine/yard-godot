@@ -201,6 +201,7 @@ static func _validate_resource_classes(registry: Registry) -> void:
 
 
 static func _is_resource_class_valid(registry: Registry, res: Resource) -> bool:
+	# TODO: refactor using the new Class Utils script
 	if res == null:
 		return false
 	#if valid_classes.is_empty():
