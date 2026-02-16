@@ -39,7 +39,8 @@ const H_ALIGNMENT_MARGINS = {
 @export var row_height: float = 30.0
 @export var grid_color: Color = Color(0.8, 0.8, 0.8)
 @export_group("Rows")
-@export var selected_back_color: Color = Color(0.0, 0.0, 1.0, 0.5)
+@export var selected_row_back_color: Color = Color(0.0, 0.0, 1.0, 0.5)
+@export var selected_cell_back_color: Color = Color(0.0, 0.0, 1.0, 0.5)
 @export var row_color: Color = Color(0.55, 0.55, 0.55, 1.0)
 @export var alternate_row_color: Color = Color(0.45, 0.45, 0.45, 1.0)
 @export_group("Checkbox")
@@ -208,7 +209,7 @@ func _draw() -> void:
 		draw_rect(Rect2(0, row_y_pos, visible_drawing_width, row_height), current_bg_color)
 
 		if _selected_rows.has(row):
-			draw_rect(Rect2(0, row_y_pos, visible_drawing_width, row_height - 1), selected_back_color)
+			draw_rect(Rect2(0, row_y_pos, visible_drawing_width, row_height - 1), selected_row_back_color)
 
 		draw_line(Vector2(0, row_y_pos + row_height), Vector2(visible_drawing_width, row_y_pos + row_height), grid_color)
 
@@ -218,17 +219,19 @@ func _draw() -> void:
 			if cell_x_pos < visible_drawing_width and cell_x_pos + col.current_width > 0:
 				draw_line(Vector2(cell_x_pos, row_y_pos), Vector2(cell_x_pos, row_y_pos + row_height), grid_color)
 
-				if not (_editing_cell[0] == row and _editing_cell[1] == col_idx):
-					if col.is_progress_column():
-						_draw_progress_bar(cell_x_pos, row_y_pos, col_idx, row)
-					elif col.is_boolean_column():
-						_draw_checkbox(cell_x_pos, row_y_pos, col_idx, row)
-					elif col.is_color_column():
-						_draw_color_cell(cell_x_pos, row_y_pos, col_idx, row)
-					elif col.is_resource_column():
-						_draw_resource_cell(cell_x_pos, row_y_pos, col_idx, row)
-					else:
-						_draw_cell_text(cell_x_pos, row_y_pos, col_idx, row)
+				if row == _focused_row and col_idx == _focused_col:
+					draw_rect(Rect2(cell_x_pos + 1, row_y_pos + 1, col.current_width - 3, row_height - 3), selected_cell_back_color, false, 2.0)
+				#if not (_editing_cell[0] == row and _editing_cell[1] == col_idx):
+				if col.is_progress_column():
+					_draw_progress_bar(cell_x_pos, row_y_pos, col_idx, row)
+				elif col.is_boolean_column():
+					_draw_checkbox(cell_x_pos, row_y_pos, col_idx, row)
+				elif col.is_color_column():
+					_draw_color_cell(cell_x_pos, row_y_pos, col_idx, row)
+				elif col.is_resource_column():
+					_draw_resource_cell(cell_x_pos, row_y_pos, col_idx, row)
+				else:
+					_draw_cell_text(cell_x_pos, row_y_pos, col_idx, row)
 			cell_x_pos += col.current_width
 
 		# Draw the final right vertical line of the table (right border of the last column)
@@ -246,7 +249,9 @@ func set_native_theming(delay: int = 0) -> void:
 	header_color = root.get_theme_color(&"dark_color_2", &"Editor")
 	row_color = root.get_theme_color(&"base_color", &"Editor")
 	alternate_row_color = root.get_theme_color(&"dark_color_3", &"Editor")
-	selected_back_color = root.get_theme_color(&"box_selection_fill_color", &"Editor")
+	#selected_row_back_color = root.get_theme_color(&"box_selection_fill_color", &"Editor")
+	selected_row_back_color = Color(1, 1, 1, 0.20)
+	selected_cell_back_color = root.get_theme_color(&"accent_color", &"Editor")
 	header_filter_active_font_color = root.get_theme_color(&"accent_color", &"Editor")
 	grid_color = root.get_theme_color(&"disabled_border_color", &"Editor")
 	font = root.get_theme_font(&"main", &"EditorFonts")
