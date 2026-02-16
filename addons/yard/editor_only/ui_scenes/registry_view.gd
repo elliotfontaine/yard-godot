@@ -19,8 +19,12 @@ const DISABLED_BY_DEFAULT_PROPERTIES: Array[StringName] = [
 ]
 
 var current_registry: Registry:
-	set(value):
-		current_registry = value
+	set(new):
+		current_registry = new
+		if current_registry:
+			_setup_add_entry()
+		add_entry_container.visible = new != null
+
 		update_view()
 
 var disabled_property_columns: Array[StringName] = DISABLED_BY_DEFAULT_PROPERTIES.duplicate()
@@ -31,7 +35,22 @@ var current_selected_row := -1
 var current_multiple_selected_rows := -1
 var multiple_selected_rows: Array
 
+var toggle_button_forward := false:
+	set(value):
+		if value:
+			toggle_registry_panel_button.icon = get_theme_icon("Forward", "EditorIcons")
+		else:
+			toggle_registry_panel_button.icon = get_theme_icon("Back", "EditorIcons")
+
+var _texture_rect_parent: Button
+var _res_picker: EditorResourcePicker
+
 @onready var dynamic_table: DynamicTable = %DynamicTable
+@onready var toggle_registry_panel_button: Button = %ToggleRegistryPanelButton
+@onready var add_entry_container: HBoxContainer = %AddEntryContainer
+@onready var resource_picker_container: PanelContainer = %ResourcePickerContainer
+@onready var entry_name_line_edit: LineEdit = %EntryNameLineEdit
+@onready var add_entry_button: Button = %AddEntryButton
 @onready var popup := %PopupMenu
 @onready var confirm_popup := %ConfirmationDialog
 
@@ -42,9 +61,6 @@ func _ready() -> void:
 			_on_inspector_property_edited,
 		)
 
-	grow_horizontal = Control.GROW_DIRECTION_END
-	grow_vertical = Control.GROW_DIRECTION_END
-
 	dynamic_table.cell_selected.connect(_on_cell_selected)
 	dynamic_table.cell_right_selected.connect(_on_cell_right_selected)
 	dynamic_table.cell_edited.connect(_on_cell_edited)
@@ -52,10 +68,27 @@ func _ready() -> void:
 	dynamic_table.column_resized.connect(_on_column_resized)
 	dynamic_table.multiple_rows_selected.connect(_on_multiple_rows_selected)
 
+	# Resource Picker Theming
+	resource_picker_container.add_theme_stylebox_override(
+		&"panel",
+		get_theme_stylebox("normal", "LineEdit").duplicate(),
+	)
+	resource_picker_container.get_theme_stylebox(&"panel").content_margin_bottom = 0
+	resource_picker_container.get_theme_stylebox(&"panel").content_margin_top = 0
+	resource_picker_container.get_theme_stylebox(&"panel").content_margin_left = 0
+	resource_picker_container.get_theme_stylebox(&"panel").content_margin_right = 0
+	grow_horizontal = Control.GROW_DIRECTION_END
+	grow_vertical = Control.GROW_DIRECTION_END
+
 
 func _process(_delta: float) -> void:
 	if (Input.is_key_pressed(KEY_DELETE) and (current_selected_row >= 0 or current_multiple_selected_rows > 0)): # add support deleting items from keyboard
 		_confirm_delete_rows()
+
+	if _texture_rect_parent:
+		_texture_rect_parent.custom_minimum_size = Vector2(1, 1)
+		# It's set by C++ code to enlarge the resource preview in the inspector.
+		# Since we want the bottom bar height to remain constant, we have to reset it.
 
 
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
@@ -87,7 +120,7 @@ func update_view() -> void:
 		var empty_data: Array[Array] = [[]]
 		dynamic_table.set_data(empty_data)
 		return
-	var resources: Dictionary[StringName, Resource] = current_registry.load_all_blocking() #ERROR
+	var resources: Dictionary[StringName, Resource] = current_registry.load_all_blocking() # WARNING: Blocking!
 	set_columns_data(resources.values())
 	entries_data.clear()
 	for uid in current_registry.get_all_uids():
@@ -234,6 +267,28 @@ func _confirm_delete_rows() -> void:
 	confirm_popup.show()
 
 
+func _setup_add_entry() -> void:
+	if _res_picker:
+		_res_picker.queue_free()
+	_res_picker = EditorResourcePicker.new()
+	_res_picker.custom_minimum_size = Vector2(240, 0)
+	if current_registry._class_restriction:
+		_res_picker.base_type = current_registry._class_restriction
+	else:
+		_res_picker.base_type = "Resource"
+	resource_picker_container.add_child(_res_picker)
+	_texture_rect_parent = _res_picker.get_child(0)
+	_res_picker.resource_changed.connect(_on_res_picker_resource_changed)
+	_toggle_add_entry_button()
+	entry_name_line_edit.text = ""
+
+
+func _toggle_add_entry_button() -> void:
+	add_entry_button.disabled = !(
+		_res_picker and _res_picker.edited_resource and entry_name_line_edit.text
+	)
+
+
 func _on_cell_selected(row: int, column: int) -> void:
 	#print("Cell selected on row ", row, ", column ", column, " Cell value: ", dynamic_table.get_cell_value(row, column), " Row value: ", dynamic_table.get_row_value(row))
 	current_selected_row = row
@@ -314,3 +369,35 @@ func _on_confirmation_dialog_confirmed() -> void:
 	else:
 		dynamic_table.delete_row(current_selected_row) # single row
 	dynamic_table.set_selected_cell(-1, -1) # cancel current selection
+
+
+func _on_entry_name_line_edit_text_changed(_new_text: String) -> void:
+	_toggle_add_entry_button()
+
+
+func _on_res_picker_resource_changed(_new_resource: Resource) -> void:
+	_toggle_add_entry_button()
+
+
+func _on_add_entry_button_pressed() -> void:
+	_toggle_add_entry_button()
+	if add_entry_button.disabled:
+		return
+
+	var res: Resource = _res_picker.edited_resource
+	var string_id: StringName = StringName(entry_name_line_edit.text)
+	var path := res.resource_path
+	var uid := ResourceUID.path_to_uid(path)
+
+	var success := RegistryIO._add_entry(current_registry, uid, string_id)
+	if success:
+		_res_picker.edited_resource = null
+		entry_name_line_edit.text = ""
+		_toggle_add_entry_button()
+		update_view()
+	else:
+		print_rich(
+			"[color=%s]● [b]ERROR:[/b] Invalid Resource Error: are you sure it is saved as a file ?[/color]" % [
+				EditorThemeUtils.color_error.to_html(false),
+			],
+		)

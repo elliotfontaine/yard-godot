@@ -45,6 +45,7 @@ var _fuz := FuzzySearch.new()
 @onready var registry_settings_button: Button = %RegistrySettingsButton
 @onready var refresh_view_button: Button = %RefreshViewButton
 @onready var registries_filter: LineEdit = %RegistriesFilter
+@onready var registries_container: VBoxContainer = %RegistriesContainer
 @onready var registries_itemlist: RegistriesItemList = %RegistriesItemList
 @onready var registry_view: RegistryView = %RegistryView
 @onready var registry_context_menu: PopupMenu = %RegistryContextMenu
@@ -65,6 +66,8 @@ func _ready() -> void:
 	columns_menu_button.get_popup().id_pressed.connect(_on_columns_menu_id_pressed)
 	columns_menu_button.get_popup().hide_on_checkable_item_selection = false
 	registries_itemlist.registries_dropped.connect(_on_itemlist_registries_dropped)
+
+	registry_view.toggle_registry_panel_button.pressed.connect(_on_toggle_registries_pressed)
 
 	# Fuzzy Search settings
 	_fuz.max_results = 20
@@ -608,3 +611,8 @@ func _on_registry_settings_button_pressed() -> void:
 	new_registry_dialog.popup_with_state(
 		new_registry_dialog.RegistryDialogState.REGISTRY_SETTINGS,
 	)
+
+
+func _on_toggle_registries_pressed() -> void:
+	registries_container.visible = !registries_container.visible
+	registry_view.toggle_button_forward = !registries_container.visible

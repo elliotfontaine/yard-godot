@@ -1,16 +1,35 @@
-[gd_scene load_steps=3 format=3 uid="uid://crnac01bnyk3"]
+[gd_scene load_steps=7 format=3 uid="uid://crnac01bnyk3"]
 
 [ext_resource type="Script" uid="uid://tahli441tq7q" path="res://addons/yard/editor_only/ui_scenes/registry_view.gd" id="1_isv8r"]
 [ext_resource type="Script" uid="uid://d25c0lxjdxouk" path="res://addons/yard/editor_only/classes/dynamic_table.gd" id="2_wsykm"]
+[ext_resource type="Script" uid="uid://dyxdmrhopt5i0" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="3_5vsn3"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5vsn3"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8g0vx"]
+draw_center = false
+border_color = Color(0.14117648, 0.16078432, 0.21568628, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5vsn3"]
+content_margin_right = 3.0
+content_margin_bottom = 3.0
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [node name="RegistryView" type="Panel"]
-clip_children = 1
 clip_contents = true
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_5vsn3")
 script = ExtResource("1_isv8r")
 
 [node name="PopupMenu" type="PopupMenu" parent="."]
@@ -36,9 +55,20 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 8
+alignment = 2
 
-[node name="DynamicTable" type="Control" parent="VBoxContainer"]
+[node name="Border" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_8g0vx")
+
+[node name="ClipChildren" type="PanelContainer" parent="VBoxContainer/Border"]
+clip_children = 1
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_5vsn3")
+
+[node name="DynamicTable" type="Control" parent="VBoxContainer/Border/ClipChildren"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
@@ -51,27 +81,50 @@ header_color = Color(0, 0, 0, 0.3)
 header_filter_active_font_color = Color(0.3372549, 0.61960787, 1, 1)
 row_height = 40.0
 grid_color = Color(0.14, 0.161, 0.217, 1)
-selected_back_color = Color(1, 1, 1, 0.35)
+selected_back_color = Color(1, 1, 1, 0.12)
 row_color = Color(0.2, 0.23, 0.31, 1)
 alternate_row_color = Color(0.164, 0.1886, 0.2542, 1)
 
 [node name="PanelContainer" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/PanelContainer"]
+layout_mode = 2
+
+[node name="ToggleRegistryPanelButton" type="Button" parent="VBoxContainer/PanelContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"FlatButton"
+script = ExtResource("3_5vsn3")
+icon_name = "Back"
+
+[node name="AddEntryContainer" type="HBoxContainer" parent="VBoxContainer/PanelContainer/HBoxContainer"]
+unique_name_in_owner = true
 visible = false
 layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+alignment = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/PanelContainer"]
-layout_mode = 2
-theme_override_constants/margin_left = 4
-theme_override_constants/margin_top = 4
-theme_override_constants/margin_right = 4
-theme_override_constants/margin_bottom = 4
-
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/PanelContainer/MarginContainer"]
+[node name="ResourcePickerContainer" type="PanelContainer" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 
-[node name="Button" type="Button" parent="VBoxContainer/PanelContainer/MarginContainer/HBoxContainer"]
+[node name="EntryNameLineEdit" type="LineEdit" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
-text = "Text"
+placeholder_text = "String ID"
+
+[node name="AddEntryButton" type="Button" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Add Entry"
+icon_alignment = 2
+script = ExtResource("3_5vsn3")
+icon_name = "Add"
 
 [connection signal="id_pressed" from="PopupMenu" to="." method="_on_popup_menu_id_pressed"]
 [connection signal="confirmed" from="ConfirmationDialog" to="." method="_on_confirmation_dialog_confirmed"]
+[connection signal="text_changed" from="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer/EntryNameLineEdit" to="." method="_on_entry_name_line_edit_text_changed"]
+[connection signal="pressed" from="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer/AddEntryButton" to="." method="_on_add_entry_button_pressed"]
