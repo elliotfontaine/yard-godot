@@ -273,7 +273,7 @@ func _on_cell_edited(row: int, column: int, old_value: Variant, new_value: Varia
 	elif column == STRINGID_COLUMN:
 		RegistryIO.rename_entry(current_registry, old_value, new_value)
 	elif column == UID_COLUMN:
-		print("tried changing uid to ", new_value)
+		RegistryIO.change_entry_uid(current_registry, old_value, new_value)
 	update_view()
 
 

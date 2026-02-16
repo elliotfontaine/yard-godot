@@ -63,14 +63,45 @@ static func rename_entry(
 		old_string_id: StringName,
 		new_string_id: StringName,
 ) -> void:
-	if not registry.has_string_id(old_string_id):
+	var uid := registry.get_uid(old_string_id)
+	if uid:
+		registry._string_ids_to_uids.erase(old_string_id)
+		var unique_new_string_id := _make_string_unique(registry, new_string_id)
+		registry._string_ids_to_uids[unique_new_string_id] = uid
+		registry._uids_to_string_ids[uid] = unique_new_string_id
+
+
+static func change_entry_uid(registry: Registry, id: StringName, new_uid: StringName) -> void:
+	var old_uid := registry.get_uid(id)
+	if not old_uid:
 		return
 
-	var uid := registry.get_uid(old_string_id)
-	registry._string_ids_to_uids.erase(old_string_id)
-	var unique_new_string_id := _make_string_unique(registry, new_string_id)
-	registry._string_ids_to_uids[unique_new_string_id] = uid
-	registry._uids_to_string_ids[uid] = unique_new_string_id
+	var string_id := registry.get_string_id(old_uid)
+	if registry.has_uid(new_uid):
+		var already_there_string_id := registry.get_string_id(new_uid)
+		push_error(
+			"UID Change Error: You can't use %s for '%s', as it's already in the registry as '%s'" % [
+				new_uid,
+				string_id,
+				already_there_string_id,
+			],
+		)
+		return
+
+	if registry._class_restriction:
+		var res := load(new_uid)
+		if not _is_resource_class_valid(registry, res):
+			push_error(
+				"UID Change Error: The associated resource '%s' doesn't match the registry class restriction (%s)." % [
+					res.resource_path.get_file(),
+					registry._class_restriction,
+				],
+			)
+			return
+
+	registry._uids_to_string_ids.erase(old_uid)
+	registry._uids_to_string_ids[new_uid] = string_id
+	registry._string_ids_to_uids[string_id] = new_uid
 
 
 static func is_valid_registry_output_path(path: String) -> bool:
