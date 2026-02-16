@@ -1,5 +1,5 @@
 @tool
-extends Panel
+extends PanelContainer
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const RegistryIO := Namespace.RegistryIO

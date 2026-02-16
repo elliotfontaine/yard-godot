@@ -152,11 +152,11 @@ icon_name = "MakeFloating"
 [node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+split_offset = 230
 
 [node name="RegistriesContainer" type="VBoxContainer" parent="VBoxContainer/HSplitContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
 
 [node name="RegistriesFilter" type="LineEdit" parent="VBoxContainer/HSplitContainer/RegistriesContainer"]
 unique_name_in_owner = true
@@ -167,6 +167,7 @@ icon_name = "Search"
 
 [node name="RegistriesItemList" type="ItemList" parent="VBoxContainer/HSplitContainer/RegistriesContainer"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 size_flags_vertical = 3
 theme_type_variation = &"ItemListSecondary"
@@ -176,7 +177,6 @@ script = ExtResource("2_qv183")
 [node name="RegistryView" parent="VBoxContainer/HSplitContainer" instance=ExtResource("2_2enek")]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_stretch_ratio = 6.0
 
 [node name="RegistryContextMenu" type="PopupMenu" parent="."]
 unique_name_in_owner = true

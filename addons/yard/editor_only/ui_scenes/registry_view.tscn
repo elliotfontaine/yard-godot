@@ -22,7 +22,7 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
-[node name="RegistryView" type="Panel"]
+[node name="RegistryView" type="PanelContainer"]
 clip_contents = true
 anchors_preset = 15
 anchor_right = 1.0
@@ -49,12 +49,7 @@ size = Vector2i(400, 100)
 ok_button_text = "Yes"
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 alignment = 2
 
 [node name="Border" type="PanelContainer" parent="VBoxContainer"]
