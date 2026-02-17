@@ -32,11 +32,17 @@ static func create_registry_file(
 	registry._recursive_scan = recursive
 
 	var save_err := ResourceSaver.save(registry, path, ResourceSaver.FLAG_CHANGE_PATH)
-	if edit_on_creation and save_err == OK:
-		EditorInterface.edit_resource(load(path))
-
 	EditorInterface.get_resource_filesystem().scan()
+
+	if edit_on_creation and save_err == OK:
+		_edit_new_after_delay(path, 0.5)
+
 	return save_err
+
+
+static func _edit_new_after_delay(path: String, delay: float) -> void:
+	await Engine.get_main_loop().create_timer(delay).timeout
+	EditorInterface.edit_resource(load(path))
 
 
 static func edit_registry_settings(
