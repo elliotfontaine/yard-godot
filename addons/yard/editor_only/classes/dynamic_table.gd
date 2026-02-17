@@ -191,8 +191,18 @@ func _draw() -> void:
 				#	header_font_color = column.custom_font_color
 				else:
 					header_font_color = default_font_color
+
 				var text_size := font.get_string_size(header_text_content, column.h_alignment, column.current_width, font_size)
-				draw_string(font, Vector2(header_cell_x + x_margin_val, header_height / 2.0 + text_size.y / 2.0 - (font_size / 2.0 - 2.0)), header_text_content, column.h_alignment, column.current_width - abs(x_margin_val), font_size, header_font_color)
+				var baseline_y := (header_height / 2.0) + (font.get_height(font_size) / 2.0) - font.get_descent(font_size)
+				draw_string(
+					font,
+					Vector2(header_cell_x + x_margin_val, baseline_y),
+					header_text_content,
+					column.h_alignment,
+					column.current_width - abs(x_margin_val),
+					font_size,
+					header_font_color,
+				)
 				if (col_idx == _last_column_sorted):
 					var icon_h_align := HORIZONTAL_ALIGNMENT_LEFT
 					if column.h_alignment in [HORIZONTAL_ALIGNMENT_LEFT, HORIZONTAL_ALIGNMENT_CENTER]:
@@ -262,6 +272,9 @@ func set_native_theming(delay: int = 0) -> void:
 	font = root.get_theme_font(&"main", &"EditorFonts")
 	default_font_color = root.get_theme_color(&"font_color", &"Editor")
 	font_size = root.get_theme_font_size(&"main_size", &"EditorFonts")
+	row_height = font_size * 2
+	header_height = font_size * 2
+
 	queue_redraw()
 
 
@@ -943,13 +956,13 @@ func _draw_cell_text(cell_x: float, row_y: float, col: int, row: int) -> void:
 		_columns[col].current_width - abs(x_margin_val) * 2,
 		font_size,
 	)
-	var text_y_pos := row_y + row_height / 2.0 + text_size.y / 2.0 - (font_size / 2.0 - 2.0) # Y calculation to better center text
+	var baseline_y := row_y + (row_height / 2.0) + (font.get_height(font_size) / 2.0) - font.get_descent(font_size)
 	var text_color := column.custom_font_color if column.custom_font_color else default_font_color
 	# TODO: the following line is registry-specific. Refactor outside.
 	text_color = get_theme_color("error_color", "Editor") if cell_value.begins_with("(!) ") else text_color
 	draw_string(
 		text_font,
-		Vector2(cell_x + x_margin_val, text_y_pos),
+		Vector2(cell_x + x_margin_val, baseline_y),
 		cell_value,
 		column.h_alignment,
 		_columns[col].current_width - abs(x_margin_val),
@@ -1778,8 +1791,18 @@ func _on_gui_input(event: InputEvent) -> void:
 
 
 func _on_editor_settings_changed() -> void:
-	if EditorInterface.get_editor_settings().check_changed_settings_in_group("interface/theme"):
-		set_native_theming(3)
+	var changed_settings := EditorInterface.get_editor_settings().get_changed_settings()
+	for setting in changed_settings:
+		if (
+			setting in ["interface/editor/main_font_size", "interface/editor/display_scale"]
+			or setting.begins_with("interface/theme")
+		):
+			set_native_theming(3)
+	#if (
+	#EditorInterface.get_editor_settings().check_changed_settings_in_group("interface/theme")
+	#or EditorInterface.get_editor_settings().get_changed_settings()interface / editor / main_font_size
+	#):
+	#set_native_theming(3)
 
 
 func _on_resource_previewer_preview_invalidated(path: String) -> void:
