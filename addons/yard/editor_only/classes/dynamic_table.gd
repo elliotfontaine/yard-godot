@@ -97,6 +97,8 @@ var _anchor_row: int = -1 # Anchor row for Shift-based selection
 var _focused_row: int = -1 # Currently focused row
 var _focused_col: int = -1 # Currently focused column
 
+var _pan_delta_accumulation: Vector2 = Vector2.ZERO
+
 # Editing variables
 var _editing_cell := [-1, -1] # row, column
 var _text_editor_line_edit: LineEdit
@@ -1720,6 +1722,18 @@ func _on_gui_input(event: InputEvent) -> void:
 					_v_scroll.max_value,
 					_v_scroll.value + _v_scroll.step * 1,
 				)
+
+	elif event is InputEventPanGesture:
+		if _v_scroll.visible:
+			_pan_delta_accumulation.y += event.delta.y
+			if abs(_pan_delta_accumulation.y) >= 1:
+				_v_scroll.value += _v_scroll.step * 1 * sign(_pan_delta_accumulation.y)
+				_pan_delta_accumulation.y -= 1 * sign(_pan_delta_accumulation.y)
+		if _h_scroll.visible and abs(event.delta.x) > 0.05:
+			_pan_delta_accumulation.x += event.delta.x
+			if abs(_pan_delta_accumulation.x) >= 1:
+				_h_scroll.value += _v_scroll.step * 1 * sign(_pan_delta_accumulation.x)
+				_pan_delta_accumulation.x -= 1 * sign(_pan_delta_accumulation.x)
 
 	elif event is InputEventMouseMotion:
 		var mouse_mot_event = event as InputEventMouseMotion # Cast
