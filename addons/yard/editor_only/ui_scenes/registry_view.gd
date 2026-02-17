@@ -31,6 +31,7 @@ var disabled_property_columns: Array[StringName] = DISABLED_BY_DEFAULT_PROPERTIE
 var properties_column_info: Array[Dictionary]
 var entries_data: Array[Array] # inner arrays are rows, their content is columns
 
+var current_selected_cell := [-1, -1]
 var current_selected_row := -1
 var current_multiple_selected_rows := -1
 var multiple_selected_rows: Array
@@ -44,6 +45,7 @@ var toggle_button_forward := false:
 
 var _texture_rect_parent: Button
 var _res_picker: EditorResourcePicker
+var _uid_resource_to_inspect: String
 
 @onready var dynamic_table: DynamicTable = %DynamicTable
 @onready var toggle_registry_panel_button: Button = %ToggleRegistryPanelButton
@@ -85,10 +87,15 @@ func _process(_delta: float) -> void:
 	if (Input.is_key_pressed(KEY_DELETE) and (current_selected_row >= 0 or current_multiple_selected_rows > 0)): # add support deleting items from keyboard
 		_confirm_delete_rows()
 
-	if _texture_rect_parent:
-		_texture_rect_parent.custom_minimum_size = Vector2(1, 1)
+	# Too many load() and inspect requests might be the source of the 'Abort trap: 6' crashes
+	if _uid_resource_to_inspect and Engine.get_process_frames() % 30 == 0:
+		EditorInterface.edit_resource(load(_uid_resource_to_inspect))
+		_uid_resource_to_inspect = ""
+
+	if _texture_rect_parent and _texture_rect_parent.custom_minimum_size != Vector2(1, 1):
 		# It's set by C++ code to enlarge the resource preview in the inspector.
 		# Since we want the bottom bar height to remain constant, we have to reset it.
+		_texture_rect_parent.custom_minimum_size = Vector2(1, 1)
 
 
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
@@ -290,19 +297,24 @@ func _toggle_add_entry_button() -> void:
 
 
 func _on_cell_selected(row: int, column: int) -> void:
-	#print("Cell selected on row ", row, ", column ", column, " Cell value: ", dynamic_table.get_cell_value(row, column), " Row value: ", dynamic_table.get_row_value(row))
+	# WARNING: uncommenting it increases the chance of a crash occuring by a lot. Inexplicable,
+	# but supposedly related to switching selected cell with arrow keys. Only report: 'Abort trap: 6'
+	#print("Cell selected on row ", row, ", column ", column, " Cell value: ", dynamic_table.get_cell_value(row, column)) #, " Row value: ", dynamic_table.get_row_value(row))
 	current_selected_row = row
+	current_selected_cell = [row, column]
 	current_multiple_selected_rows = -1
+	Engine.get_process_frames()
 	if row != -1 and column != -1:
 		var uid: StringName = get_row_resource_uid(row)
 		if ResourceLoader.exists(uid):
-			EditorInterface.edit_resource(load(uid))
+			_uid_resource_to_inspect = uid
 
 
 func _on_cell_right_selected(row: int, column: int, mouse_pos: Vector2) -> void:
-	#print("Cell right selected on row ", row, ", column ", column, " Mouse position x: ", mouse_pos.x, " y: ", mouse_pos.y)
+	print("Cell right selected on row ", row, ", column ", column, " Mouse position x: ", mouse_pos.x, " y: ", mouse_pos.y)
 	if (row >= 0): # ignore header cells
 		current_selected_row = row
+		current_selected_cell = [row, column]
 		popup.position = mouse_pos
 		if (entries_data.size() == 0 or row == entries_data.size()):
 			popup.set(&"item_1/disabled", true)
@@ -313,6 +325,7 @@ func _on_cell_right_selected(row: int, column: int, mouse_pos: Vector2) -> void:
 
 
 func _on_multiple_rows_selected(rows: Array) -> void:
+	print("Multiple row selected : ", rows)
 	current_multiple_selected_rows = rows.size() # number of current multiple rows selected
 	multiple_selected_rows = rows # current multiple rows selected array
 

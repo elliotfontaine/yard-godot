@@ -2,6 +2,9 @@
 # Copyright (c) 2025 Giuseppe Pica (jospic)
 # https://github.com/jospic/dynamicdatatable
 
+# BEHOLD THE 1800-LINES BEAST.
+# Original was probably vibe-coded, but it does the job nonetheless
+
 @tool
 extends Control
 
@@ -449,6 +452,7 @@ func set_selected_cell(row: int, col: int) -> void:
 		_selected_rows.append(row)
 		_anchor_row = row
 		_ensure_row_visible(row)
+		_ensure_col_visible(col)
 		queue_redraw()
 	else: # Invalid selection, clear everything
 		_focused_row = -1
@@ -548,7 +552,7 @@ func _update_scrollbars() -> void:
 	if _h_scroll.visible:
 		_h_scroll.max_value = total_content_width
 		_h_scroll.page = visible_width
-		_h_scroll.step = default_minimum_column_width / 2.0 # Ensure float division
+		#_h_scroll.step = default_minimum_column_width / 2.0 # Ensure float division
 
 	var total_content_height := float(_total_rows) * row_height
 	_v_scroll.visible = total_content_height > visible_height
@@ -1024,6 +1028,7 @@ func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> voi
 		# we do not emit multiple_rows_selected because a multiple selection no longer exists.
 
 	cell_selected.emit(_focused_row, _focused_col) # Always emit for a valid cell click
+	_ensure_col_visible(_focused_col)
 
 	# Emit the new signal if a multiple selection was identified
 	if emit_multiple_selection_signal:
@@ -1083,13 +1088,7 @@ func _handle_double_click(mouse_pos: Vector2) -> void:
 			# If the clicked cell is not the currently focused/selected one,
 			# update the selection as a single click before starting editing.
 			if not (_selected_rows.size() == 1 and _selected_rows[0] == row and _focused_row == row and _focused_col == col):
-				_focused_row = row
-				_focused_col = col
-				_selected_rows.clear()
-				_selected_rows.append(row)
-				_anchor_row = row
-				cell_selected.emit(row, col) # Emit selection signal
-				queue_redraw() # Update the selection view
+				set_selected_cell(row, col)
 
 			_start_cell_editing(row, col)
 
@@ -1362,18 +1361,13 @@ func _ensure_row_visible(row_idx: int) -> void:
 	if _total_rows == 0 or row_height == 0 or not _v_scroll.visible:
 		return
 
-	var visible_area_height = size.y - header_height - (_h_scroll.size.y if _h_scroll.visible else 0)
-	var num_visible_rows_in_page = floor(visible_area_height / row_height)
+	var visible_area_height: float = size.y - header_height - (_h_scroll.size.y if _h_scroll.visible else 0.0)
+	var num_visible_rows_in_page := floori(visible_area_height / row_height)
 
 	# _visible_rows_range[0] is the first visible row (0-based index)
 	# _visible_rows_range[1] is the index of the first row that is NOT visible at the bottom
 	# Therefore, visible rows go from _visible_rows_range[0] to _visible_rows_range[1] - 1
-
-	var first_fully_visible_row = _visible_rows_range[0]
-	# The last fully visible row is approximately:
-	# first_fully_visible_row + num_visible_rows_in_page - 1
-	# However, _visible_rows_range[1] gives a more accurate upper bound
-	# including partially visible rows.
+	var first_fully_visible_row: int = _visible_rows_range[0]
 
 	if row_idx < first_fully_visible_row:
 		# The row is above the current viewport
@@ -1386,6 +1380,39 @@ func _ensure_row_visible(row_idx: int) -> void:
 	_v_scroll.value = clamp(_v_scroll.value, 0, _v_scroll.max_value)
 	# _on_v_scroll_changed will be called, updating _visible_rows_range
 	# and triggering queue_redraw()
+
+
+func _ensure_col_visible(col_idx: int) -> void:
+	if _columns.is_empty() or col_idx not in range(_columns.size()) or not _h_scroll.visible:
+		return
+
+	#print(Engine.get_process_frames())
+	#return
+	var column_start: float
+	var column_end: float
+	var visible_area_x := Vector2(
+		_h_scroll.value,
+		size.x + _h_scroll.value - _v_scroll.size.x,
+	)
+
+	var col_width: float
+	var iter_x_pos := 0.0
+	for i in _columns.size():
+		var column := _columns[i]
+		if i == col_idx:
+			col_width = column.current_width
+			column_start = iter_x_pos
+			column_end = iter_x_pos + col_width
+			break
+		iter_x_pos += column.current_width
+
+	if column_start < visible_area_x[0]:
+		_h_scroll.value = column_start
+	elif column_end > visible_area_x[1]:
+		if col_width > (visible_area_x[1] - visible_area_x[0]):
+			_h_scroll.value = column_start
+		else:
+			_h_scroll.value = column_end - (visible_area_x[1] - visible_area_x[0])
 
 
 func _handle_key_input(event: InputEventKey) -> void:
@@ -1427,7 +1454,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 				_anchor_row = _focused_row
 
 			_ensure_row_visible(_focused_row)
-			# Consider _ensure_col_visible(_focused_col) if implemented
+			_ensure_col_visible(_focused_col)
 		key_operation_performed = true
 
 	elif keycode == KEY_HOME:
@@ -1543,11 +1570,11 @@ func _handle_key_input(event: InputEventKey) -> void:
 
 		if _focused_row != -1:
 			_ensure_row_visible(_focused_row)
-			# You could add here: _ensure_col_visible(_focused_col) if you want automatic horizontal scrolling
+			_ensure_col_visible(_focused_col)
 
 		if current_focused_r != _focused_row or current_focused_c != _focused_col or (keycode == KEY_SPACE and is_ctrl_cmd):
 			# Emit the signal only if the focus actually changed or if Ctrl+Space modified the selection
-			#cell_selected.emit(_focused_row, _focused_col)
+			cell_selected.emit(_focused_row, _focused_col)
 			pass
 
 		if emit_multiple_selection_signal:
