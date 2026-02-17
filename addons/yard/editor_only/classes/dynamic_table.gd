@@ -142,7 +142,7 @@ func _ready() -> void:
 	_v_scroll.name = "VScrollBar"
 	_v_scroll.set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE)
 	_v_scroll.offset_left = -12
-	_v_scroll.value_changed.connect(_on_v_scroll_changed)
+	_v_scroll.value_changed.connect(_on_v_scroll_value_changed)
 
 	add_child(_h_scroll)
 	add_child(_v_scroll)
@@ -561,6 +561,8 @@ func _update_scrollbars() -> void:
 		_v_scroll.page = visible_height
 		_v_scroll.step = row_height
 
+	_on_v_scroll_value_changed(_v_scroll.value)
+
 
 func _is_numeric_value(value: Variant) -> bool:
 	if value == null:
@@ -909,6 +911,7 @@ func _on_resource_cell_thumb_ready(path: String, preview: Texture2D, thumbnail_p
 	_resource_thumb_cache[key] = tex # can be null if both are null
 	_resource_thumb_pending.erase(key)
 
+	await get_tree().create_timer(0.01).timeout
 	queue_redraw()
 
 
@@ -1378,7 +1381,7 @@ func _ensure_row_visible(row_idx: int) -> void:
 		_v_scroll.value = (row_idx - num_visible_rows_in_page + 1) * row_height
 
 	_v_scroll.value = clamp(_v_scroll.value, 0, _v_scroll.max_value)
-	# _on_v_scroll_changed will be called, updating _visible_rows_range
+	# _on_v_scroll_value_changed will be called, updating _visible_rows_range
 	# and triggering queue_redraw()
 
 
@@ -1631,7 +1634,7 @@ func _on_h_scroll_changed(value) -> void:
 	queue_redraw()
 
 
-func _on_v_scroll_changed(value) -> void:
+func _on_v_scroll_value_changed(value) -> void:
 	_v_scroll_position = value
 	if row_height > 0: # Avoid division by zero
 		_visible_rows_range[0] = floor(value / row_height)
