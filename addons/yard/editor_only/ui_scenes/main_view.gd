@@ -2,7 +2,7 @@
 extends Container
 
 # To be used for PopupMenus items (context menu or the "File" MenuButton)
-enum MenuAction {
+enum FileMenuAction {
 	NONE = -1,
 	NEW = 0,
 	OPEN = 1,
@@ -34,7 +34,7 @@ const _SAVED_STATE_PATH := "res://addons/yard/editor_only/state.cfg"
 var _opened_registries: Dictionary[String, Registry] = { } # Dict[uid, Registry]
 var _session_closed_uids: Array[String] = [] # Array[uid]
 var _file_dialog: EditorFileDialog # TODO: refactor as Node in packed scene
-var _file_dialog_option: MenuAction = MenuAction.NONE
+var _file_dialog_option: FileMenuAction = FileMenuAction.NONE
 var _current_registry_uid: String = ""
 var _fuz := FuzzySearch.new()
 
@@ -299,76 +299,122 @@ func _build_registry_display_names(uids: Array[String]) -> Dictionary:
 
 	return result
 
-
 @warning_ignore_start("int_as_enum_without_cast")
 @warning_ignore_start("int_as_enum_without_match")
+
+
 func _populate_file_menu() -> void:
 	# TODO: when Godot 4.6 is out, register editor shortcuts
 	# and reuse already registered ones using `EditorSettings.get_shortcut()`
 	# https://github.com/godotengine/godot/pull/102889
 	var file_menu := file_menu_button.get_popup()
 	file_menu.name = "FileMenu"
-	file_menu.set_item_accelerator(file_menu.get_item_index(MenuAction.NEW), KEY_MASK_META | KEY_N)
+	file_menu.set_item_accelerator(file_menu.get_item_index(FileMenuAction.NEW), KEY_MASK_META | KEY_N)
 	file_menu.set_item_accelerator(
-		file_menu.get_item_index(MenuAction.REOPEN_CLOSED),
+		file_menu.get_item_index(FileMenuAction.REOPEN_CLOSED),
 		KEY_MASK_SHIFT | KEY_MASK_META | KEY_T,
 	)
-	file_menu.set_item_accelerator(file_menu.get_item_index(MenuAction.CLOSE), KEY_MASK_META | KEY_W)
+	file_menu.set_item_accelerator(file_menu.get_item_index(FileMenuAction.CLOSE), KEY_MASK_META | KEY_W)
 
 	# TODO: implement "previous" logic
 	var recent := PopupMenu.new()
 	recent.add_item("previously_used.tres")
 	recent.add_item("placeholder.tres")
 	file_menu.set_item_submenu_node(
-		file_menu.get_item_index(MenuAction.OPEN_RECENT),
+		file_menu.get_item_index(FileMenuAction.OPEN_RECENT),
 		recent,
 	)
 
 
 func _set_context_menu_accelerators() -> void:
-	registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(MenuAction.CLOSE), KEY_MASK_META | KEY_W)
-	registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(MenuAction.MOVE_UP), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP)
-	registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(MenuAction.MOVE_DOWN), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN)
-
+	registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(FileMenuAction.CLOSE), KEY_MASK_META | KEY_W)
+	registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(FileMenuAction.MOVE_UP), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP)
+	registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(FileMenuAction.MOVE_DOWN), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN)
 
 @warning_ignore_restore("int_as_enum_without_cast")
 @warning_ignore_restore("int_as_enum_without_match")
-func _toggle_selection_related_menu_items(enable: bool) -> void:
-	var disabled := !enable
+
+
+func _toggle_file_menu_items() -> void:
 	var file_menu := file_menu_button.get_popup()
-	file_menu.set_item_disabled(file_menu.get_item_index(MenuAction.COPY_PATH), disabled)
-	file_menu.set_item_disabled(file_menu.get_item_index(MenuAction.COPY_UID), disabled)
-	file_menu.set_item_disabled(file_menu.get_item_index(MenuAction.SHOW_IN_FILESYSTEM), disabled)
-	file_menu.set_item_disabled(file_menu.get_item_index(MenuAction.COPY_UID), disabled)
-	file_menu.set_item_disabled(file_menu.get_item_index(MenuAction.CLOSE), disabled)
-	file_menu.set_item_disabled(file_menu.get_item_index(MenuAction.CLOSE_ALL), disabled)
-	file_menu.set_item_disabled(file_menu.get_item_index(MenuAction.CLOSE_OTHER_TABS), disabled)
-	file_menu.set_item_disabled(file_menu.get_item_index(MenuAction.CLOSE_TABS_BELOW), disabled)
+	var disabled := !is_any_registry_selected()
+	file_menu.set_item_disabled(file_menu.get_item_index(FileMenuAction.COPY_PATH), disabled)
+	file_menu.set_item_disabled(file_menu.get_item_index(FileMenuAction.COPY_UID), disabled)
+	file_menu.set_item_disabled(file_menu.get_item_index(FileMenuAction.SHOW_IN_FILESYSTEM), disabled)
+	file_menu.set_item_disabled(file_menu.get_item_index(FileMenuAction.COPY_UID), disabled)
+	file_menu.set_item_disabled(file_menu.get_item_index(FileMenuAction.CLOSE), disabled)
+	file_menu.set_item_disabled(file_menu.get_item_index(FileMenuAction.CLOSE_ALL), disabled)
+	file_menu.set_item_disabled(file_menu.get_item_index(FileMenuAction.CLOSE_OTHER_TABS), disabled)
+	file_menu.set_item_disabled(file_menu.get_item_index(FileMenuAction.CLOSE_TABS_BELOW), disabled)
+
+	var no_closed_uids := _session_closed_uids.is_empty()
+	file_menu.set_item_disabled(
+		file_menu.get_item_index(FileMenuAction.REOPEN_CLOSED),
+		no_closed_uids,
+	)
+
+	var idx := _get_registry_list_index(_current_registry_uid)
+	var is_last := idx == registries_itemlist.item_count - 1
+	var has_single_file := registries_itemlist.item_count == 1
+	var has_no_file := registries_itemlist.item_count == 0
+	file_menu.set_item_disabled(
+		file_menu.get_item_index(FileMenuAction.CLOSE_TABS_BELOW),
+		is_last,
+	)
+	file_menu.set_item_disabled(
+		file_menu.get_item_index(FileMenuAction.CLOSE_TABS_BELOW),
+		is_last,
+	)
+	file_menu.set_item_disabled(
+		file_menu.get_item_index(FileMenuAction.CLOSE_OTHER_TABS),
+		has_single_file or has_no_file,
+	)
+	file_menu.set_item_disabled(
+		file_menu.get_item_index(FileMenuAction.CLOSE_ALL),
+		has_no_file,
+	)
 
 
-func _toggle_move_up_down_items() -> void:
+func _toggle_registry_context_menu_items() -> void:
 	var idx := _get_registry_list_index(_current_registry_uid)
 	var is_first := idx == 0
 	var is_last := idx == registries_itemlist.item_count - 1
+	var has_single_file := registries_itemlist.item_count == 1
+	var has_no_file := registries_itemlist.item_count == 0
 	registry_context_menu.set_item_disabled(
-		registry_context_menu.get_item_index(MenuAction.MOVE_UP),
+		registry_context_menu.get_item_index(FileMenuAction.MOVE_UP),
 		is_first,
 	)
 	registry_context_menu.set_item_disabled(
-		registry_context_menu.get_item_index(MenuAction.MOVE_DOWN),
+		registry_context_menu.get_item_index(FileMenuAction.MOVE_DOWN),
 		is_last,
+	)
+	registry_context_menu.set_item_disabled(
+		registry_context_menu.get_item_index(FileMenuAction.CLOSE_TABS_BELOW),
+		is_last,
+	)
+	registry_context_menu.set_item_disabled(
+		registry_context_menu.get_item_index(FileMenuAction.CLOSE_TABS_BELOW),
+		is_last,
+	)
+	registry_context_menu.set_item_disabled(
+		registry_context_menu.get_item_index(FileMenuAction.CLOSE_OTHER_TABS),
+		has_single_file or has_no_file,
+	)
+	registry_context_menu.set_item_disabled(
+		registry_context_menu.get_item_index(FileMenuAction.CLOSE_ALL),
+		has_no_file,
 	)
 
 
 func _do_menu_action(action_id: int) -> void:
-	# TODO: implement actions logic
 	match action_id:
-		MenuAction.NEW:
+		FileMenuAction.NEW:
 			new_registry_dialog.popup_with_state(
 				new_registry_dialog.RegistryDialogState.NEW_REGISTRY,
 			)
-		MenuAction.OPEN:
-			_file_dialog_option = MenuAction.OPEN
+		FileMenuAction.OPEN:
+			_file_dialog_option = FileMenuAction.OPEN
 			_file_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
 			_file_dialog.title = tr("Open Registry")
 			var filter := ""
@@ -376,7 +422,7 @@ func _do_menu_action(action_id: int) -> void:
 				filter += "%s*.%s" % ["" if filter == "" else ", ", ext]
 			_file_dialog.add_filter(filter, "Registries")
 			_file_dialog.popup_file_dialog()
-		MenuAction.REOPEN_CLOSED:
+		FileMenuAction.REOPEN_CLOSED:
 			if _session_closed_uids.is_empty(): # check because of shortcut
 				return
 			for idx in range(_session_closed_uids.size() - 1, -1, -1):
@@ -387,30 +433,30 @@ func _do_menu_action(action_id: int) -> void:
 					return
 				_session_closed_uids.remove_at(idx)
 			push_warning(tr("None of the closed resources exist anymore"))
-		MenuAction.CLOSE:
+		FileMenuAction.CLOSE:
 			if is_any_registry_selected(): # check because of shortcut
 				close_registry(_current_registry_uid)
-		MenuAction.CLOSE_OTHER_TABS:
+		FileMenuAction.CLOSE_OTHER_TABS:
 			_close_other_tabs(_current_registry_uid)
-		MenuAction.CLOSE_TABS_BELOW:
+		FileMenuAction.CLOSE_TABS_BELOW:
 			_close_tabs_below(_current_registry_uid)
-		MenuAction.CLOSE_ALL:
+		FileMenuAction.CLOSE_ALL:
 			close_all()
-		MenuAction.COPY_PATH:
+		FileMenuAction.COPY_PATH:
 			var path := ResourceUID.uid_to_path(_current_registry_uid)
 			if path:
 				DisplayServer.clipboard_set(path)
-		MenuAction.COPY_UID:
+		FileMenuAction.COPY_UID:
 			DisplayServer.clipboard_set(_current_registry_uid)
-		MenuAction.SHOW_IN_FILESYSTEM:
+		FileMenuAction.SHOW_IN_FILESYSTEM:
 			_show_in_filesystem(_current_registry_uid)
-		MenuAction.MOVE_UP:
+		FileMenuAction.MOVE_UP:
 			_reorder_opened_registries_move(_current_registry_uid, -1)
 			_update_registries_itemlist()
-		MenuAction.MOVE_DOWN:
+		FileMenuAction.MOVE_DOWN:
 			_reorder_opened_registries_move(_current_registry_uid, +1)
 			_update_registries_itemlist()
-		MenuAction.SORT:
+		FileMenuAction.SORT:
 			_sort_opened_registries_by_filename()
 			_update_registries_itemlist()
 
@@ -506,17 +552,11 @@ func _on_registries_list_item_clicked(idx: int, _at: Vector2, mouse_button_index
 
 
 func _on_file_menu_button_about_to_popup() -> void:
-	_toggle_selection_related_menu_items(is_any_registry_selected())
-	var file_menu := file_menu_button.get_popup()
-	var no_closed_uids := _session_closed_uids.is_empty()
-	file_menu.set_item_disabled(
-		file_menu.get_item_index(MenuAction.REOPEN_CLOSED),
-		no_closed_uids,
-	)
+	_toggle_file_menu_items()
 
 
 func _on_registry_context_menu_about_to_popup() -> void:
-	_toggle_move_up_down_items()
+	_toggle_registry_context_menu_items()
 
 
 func _on_file_menu_id_pressed(id: int) -> void:
@@ -549,9 +589,9 @@ func _on_itemlist_registries_dropped(registries: Array[Registry]) -> void:
 
 func _on_file_dialog_action(path: String) -> void:
 	match _file_dialog_option:
-		MenuAction.NEW:
+		FileMenuAction.NEW:
 			_warn_unimplemented()
-		MenuAction.OPEN:
+		FileMenuAction.OPEN:
 			var res := load(path)
 			if res is Registry:
 				open_registry(res)
