@@ -72,4 +72,6 @@ func _get_plugin_icon() -> Texture2D:
 
 func _filesystem_create_context_menu_plugin_callback(context: Array) -> void:
 	var dir: String = context[0]
-	_main_view.popup_new_registry_dialog(dir)
+	var nrd := _main_view.new_registry_dialog
+
+	nrd.popup_with_state(nrd.RegistryDialogState.NEW_REGISTRY, dir)

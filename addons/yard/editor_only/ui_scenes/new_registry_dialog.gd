@@ -62,12 +62,13 @@ func _ready() -> void:
 	hide()
 
 
-func popup_with_state(state: RegistryDialogState) -> void:
+func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 	_state = state
 	if state == RegistryDialogState.NEW_REGISTRY:
 		title = "Create Registry"
 		ok_button_text = "Create"
 		registry_path_line_edit.editable = true
+		registry_path_line_edit.text = dir + "new_registry.tres"
 		registry_path_filesystem_button.icon = AnyIcon.get_icon(&"Folder")
 		registry_path_filesystem_button.tooltip_text = ""
 	elif edited_registry and state == RegistryDialogState.REGISTRY_SETTINGS:
