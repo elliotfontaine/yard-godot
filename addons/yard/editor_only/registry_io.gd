@@ -61,26 +61,29 @@ static func edit_registry_settings(
 	registry._scan_directory = scan_dir
 	registry._recursive_scan = recursive
 
-	return OK
+	return ResourceSaver.save(registry)
 
 
 static func rename_entry(
 		registry: Registry,
 		old_string_id: StringName,
 		new_string_id: StringName,
-) -> void:
+) -> Error:
 	var uid := registry.get_uid(old_string_id)
 	if uid:
 		registry._string_ids_to_uids.erase(old_string_id)
 		var unique_new_string_id := _make_string_unique(registry, new_string_id)
 		registry._string_ids_to_uids[unique_new_string_id] = uid
 		registry._uids_to_string_ids[uid] = unique_new_string_id
+		return ResourceSaver.save(registry)
+	else:
+		return ERR_INVALID_PARAMETER
 
 
-static func change_entry_uid(registry: Registry, id: StringName, new_uid: StringName) -> void:
+static func change_entry_uid(registry: Registry, id: StringName, new_uid: StringName) -> Error:
 	var old_uid := registry.get_uid(id)
 	if not old_uid:
-		return
+		return ERR_INVALID_PARAMETER
 
 	var string_id := registry.get_string_id(old_uid)
 	if registry.has_uid(new_uid):
@@ -92,7 +95,7 @@ static func change_entry_uid(registry: Registry, id: StringName, new_uid: String
 				already_there_string_id,
 			],
 		)
-		return
+		return ERR_INVALID_PARAMETER
 
 	if registry._class_restriction:
 		var res := load(new_uid)
@@ -103,11 +106,12 @@ static func change_entry_uid(registry: Registry, id: StringName, new_uid: String
 					registry._class_restriction,
 				],
 			)
-			return
+			return ERR_INVALID_PARAMETER
 
 	registry._uids_to_string_ids.erase(old_uid)
 	registry._uids_to_string_ids[new_uid] = string_id
 	registry._string_ids_to_uids[string_id] = new_uid
+	return ResourceSaver.save(registry)
 
 
 static func is_valid_registry_output_path(path: String) -> bool:
@@ -222,13 +226,13 @@ static func is_quoted_string(string: String) -> bool:
 ## add a new Resource to the Registry from a UID.
 ## If no string_id is given, it will use the file basename.
 ## If the string_id is already used in the Registry, it will append a number to it.
-static func _add_entry(registry: Registry, uid: StringName, string_id: String = "") -> bool:
+static func add_entry(registry: Registry, uid: StringName, string_id: String = "") -> Error:
 	var cache_id: int = ResourceUID.text_to_id(uid)
 	if not ResourceUID.has_id(cache_id):
-		return false
+		return ERR_CANT_ACQUIRE_RESOURCE
 
 	if string_id.begins_with(("uid://")):
-		return false
+		return ERR_INVALID_PARAMETER
 
 	if not string_id:
 		string_id = ResourceUID.get_id_path(cache_id).get_file().get_basename()
@@ -237,11 +241,12 @@ static func _add_entry(registry: Registry, uid: StringName, string_id: String = 
 		string_id = _make_string_unique(registry, string_id)
 
 	if uid in registry._uids_to_string_ids:
-		return false
+		return ERR_ALREADY_EXISTS
 
 	registry._uids_to_string_ids[uid] = string_id as StringName
 	registry._string_ids_to_uids[string_id] = uid
-	return true
+
+	return ResourceSaver.save(registry)
 
 
 static func _make_string_unique(registry: Registry, string_id: String) -> String:

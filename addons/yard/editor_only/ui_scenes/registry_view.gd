@@ -123,8 +123,8 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 	for path: String in data.files:
 		if ResourceLoader.exists(path):
 			if RegistryIO._is_resource_class_valid(current_registry, load(path)):
-				var added := RegistryIO._add_entry(current_registry, ResourceUID.path_to_uid(path))
-				n_added += int(added)
+				var status := RegistryIO.add_entry(current_registry, ResourceUID.path_to_uid(path))
+				n_added += int(status == OK)
 		elif path.ends_with("/"):
 			var matching_resources := RegistryIO.dir_get_matching_resources(
 				current_registry,
@@ -132,11 +132,11 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 				true,
 			)
 			for res in matching_resources:
-				var added := RegistryIO._add_entry(
+				var status := RegistryIO.add_entry(
 					current_registry,
 					ResourceUID.path_to_uid(res.resource_path),
 				)
-				n_added += int(added)
+				n_added += int(status == OK)
 
 	print_rich("[color=%s]Added %s new Resources to the registry.[/color]" % [LOGGING_INFO_COLOR, n_added])
 	update_view()
@@ -424,8 +424,8 @@ func _on_add_entry_button_pressed() -> void:
 	var path := res.resource_path
 	var uid := ResourceUID.path_to_uid(path)
 
-	var success := RegistryIO._add_entry(current_registry, uid, string_id)
-	if success:
+	var status := RegistryIO.add_entry(current_registry, uid, string_id)
+	if status == OK:
 		_res_picker.edited_resource = null
 		entry_name_line_edit.text = ""
 		_toggle_add_entry_button()
