@@ -1,6 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://crnac01bnyk3"]
+[gd_scene load_steps=9 format=3 uid="uid://crnac01bnyk3"]
 
 [ext_resource type="Script" uid="uid://tahli441tq7q" path="res://addons/yard/editor_only/ui_scenes/registry_view.gd" id="1_isv8r"]
+[ext_resource type="Script" uid="uid://0fmlvbrxn2lf" path="res://addons/yard/editor_only/classes/editor_icon_popup_menu.gd" id="2_8g0vx"]
 [ext_resource type="Script" uid="uid://d25c0lxjdxouk" path="res://addons/yard/editor_only/classes/dynamic_table.gd" id="2_wsykm"]
 [ext_resource type="Script" uid="uid://dyxdmrhopt5i0" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="3_5vsn3"]
 
@@ -22,6 +23,20 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dsmxi"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 0.6)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
 [node name="RegistryView" type="PanelContainer"]
 clip_contents = true
 anchors_preset = 15
@@ -32,16 +47,46 @@ size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxEmpty_5vsn3")
 script = ExtResource("1_isv8r")
 
-[node name="PopupMenu" type="PopupMenu" parent="."]
+[node name="EditContextMenu" type="PopupMenu" parent="."]
 unique_name_in_owner = true
 size = Vector2i(130, 65)
-item_count = 2
-item_0/text = "Insert row"
+item_count = 12
+item_0/text = "Delete Entry"
 item_0/id = 0
-item_1/text = "Delete row(s)"
+item_1/text = "Copy String ID"
 item_1/id = 1
+item_2/text = "Copy UID"
+item_2/id = 2
+item_3/text = "Show In Filesystem"
+item_3/id = 3
+item_4/id = 4
+item_4/separator = true
+item_5/text = "Cut Cell Value"
+item_5/id = 5
+item_6/text = "Copy Cell Value"
+item_6/id = 6
+item_7/text = "Paste to Cell"
+item_7/id = 7
+item_8/id = 8
+item_8/separator = true
+item_9/text = "Select All"
+item_9/id = 9
+item_10/text = "Invert Selection"
+item_10/id = 10
+item_11/text = "Unselect"
+item_11/id = 11
+script = ExtResource("2_8g0vx")
+icon_names = Dictionary[int, String]({
+0: "Remove",
+1: "ActionCopy",
+2: "Instance",
+3: "ShowInFileSystem",
+5: "ActionCut",
+6: "ActionCopy",
+7: "ActionPaste"
+})
 
-[node name="ConfirmationDialog" type="ConfirmationDialog" parent="."]
+[node name="DeleteEntriesConfirmationDialog" type="ConfirmationDialog" parent="."]
 unique_name_in_owner = true
 title = "Please Confirm deleting data"
 initial_position = 1
@@ -73,12 +118,13 @@ focus_mode = 2
 mouse_filter = 1
 script = ExtResource("2_wsykm")
 default_font_color = Color(0.8, 0.8075, 0.8275, 1)
-header_height = 40.0
+header_height = 42.0
 header_color = Color(0, 0, 0, 0.3)
 header_filter_active_font_color = Color(0.3372549, 0.61960787, 1, 1)
-row_height = 40.0
+row_height = 42.0
 grid_color = Color(0.14, 0.161, 0.217, 1)
-selected_back_color = Color(1, 1, 1, 0.12)
+selected_row_back_color = Color(1, 1, 1, 0.2)
+selected_cell_back_color = Color(0.3372549, 0.61960787, 1, 1)
 row_color = Color(0.2, 0.23, 0.31, 1)
 alternate_row_color = Color(0.164, 0.1886, 0.2542, 1)
 
@@ -106,6 +152,7 @@ alignment = 2
 [node name="ResourcePickerContainer" type="PanelContainer" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_dsmxi")
 
 [node name="EntryNameLineEdit" type="LineEdit" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer"]
 unique_name_in_owner = true
@@ -121,7 +168,8 @@ icon_alignment = 2
 script = ExtResource("3_5vsn3")
 icon_name = "Add"
 
-[connection signal="id_pressed" from="PopupMenu" to="." method="_on_popup_menu_id_pressed"]
-[connection signal="confirmed" from="ConfirmationDialog" to="." method="_on_confirmation_dialog_confirmed"]
+[connection signal="about_to_popup" from="EditContextMenu" to="." method="_on_edit_context_menu_about_to_popup"]
+[connection signal="id_pressed" from="EditContextMenu" to="." method="_on_edit_context_menu_id_pressed"]
+[connection signal="confirmed" from="DeleteEntriesConfirmationDialog" to="." method="_on_delete_entries_confirmation_dialog_confirmed"]
 [connection signal="text_changed" from="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer/EntryNameLineEdit" to="." method="_on_entry_name_line_edit_text_changed"]
 [connection signal="pressed" from="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer/AddEntryButton" to="." method="_on_add_entry_button_pressed"]

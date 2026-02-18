@@ -1063,24 +1063,27 @@ func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> voi
 func _handle_right_click(mouse_pos: Vector2) -> void:
 	var clicked_row := -1
 	var clicked_col := -1
-	if mouse_pos.y >= header_height: # Not on the header
-		if row_height > 0:
-			clicked_row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
-		if clicked_row >= 0 and clicked_row < _total_rows:
-			var current_x = -_h_scroll_position
-			for col_idx in _columns.size():
-				var column := _columns[col_idx]
-				if mouse_pos.x >= current_x and mouse_pos.x < current_x + column.current_width:
-					clicked_col = col_idx
-					break
-				current_x += column.current_width
-	if (_selected_rows.size() <= 1):
+
+	if mouse_pos.y >= header_height and row_height > 0:
+		var local_row: int = floori((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
+
+		if local_row >= 0 and local_row < _total_rows:
+			clicked_row = local_row
+
+	var current_x := -_h_scroll_position
+	for col_idx in range(_columns.size()):
+		var column := _columns[col_idx]
+
+		if mouse_pos.x >= current_x and mouse_pos.x < current_x + column.current_width:
+			clicked_col = col_idx
+			break
+
+		current_x += column.current_width
+
+	if _selected_rows.size() <= 1:
 		set_selected_cell(clicked_row, clicked_col)
-		cell_right_selected.emit(clicked_row, clicked_col, get_global_mouse_position())
-	if (_total_rows > 0 and clicked_row <= _total_rows):
-		cell_right_selected.emit(clicked_row, clicked_col, get_global_mouse_position())
-	elif (clicked_row > _total_rows):
-		cell_right_selected.emit(_total_rows, clicked_col, get_global_mouse_position())
+
+	cell_right_selected.emit(clicked_row, clicked_col, get_global_mouse_position())
 
 
 func _handle_double_click(mouse_pos: Vector2) -> void:

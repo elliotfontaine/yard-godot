@@ -1,11 +1,26 @@
 @tool
 extends PanelContainer
 
+enum EditMenuAction {
+	NONE = -1,
+	DELETE_ENTRIES = 0,
+	COPY_STRING_ID = 1,
+	COPY_UID = 2,
+	SHOW_IN_FILESYSTEM = 3,
+	CUT_CELL_VALUE = 5,
+	COPY_CELL_VALUE = 6,
+	PASTE_TO_CELL = 7,
+	SELECT_ALL = 9,
+	INVERT_SELECTION = 10,
+	UNSELECT = 11,
+}
+
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const RegistryIO := Namespace.RegistryIO
 const ClassUtils := Namespace.ClassUtils
 const EditorThemeUtils := Namespace.EditorThemeUtils
 const DynamicTable := Namespace.DynamicTable
+
 const LOGGING_INFO_COLOR := "lightslategray"
 const UID_COLUMN_CONFIG := ["uid", "UID", TYPE_STRING]
 const STRINGID_COLUMN_CONFIG := ["string_id", "String ID", TYPE_STRING]
@@ -32,10 +47,10 @@ var disabled_property_columns: Array[StringName] = DISABLED_BY_DEFAULT_PROPERTIE
 var properties_column_info: Array[Dictionary]
 var entries_data: Array[Array] # inner arrays are rows, their content is columns
 
-var current_selected_cell := [-1, -1]
-var current_selected_row := -1
-var current_multiple_selected_rows := -1
-var multiple_selected_rows: Array
+#var current_selected_cell := [-1, -1]
+#var current_selected_row := -1
+#var current_multiple_selected_rows := -1
+#var multiple_selected_rows: Array
 
 var toggle_button_forward := false:
 	set(value):
@@ -54,8 +69,8 @@ var _uid_resource_to_inspect: String
 @onready var resource_picker_container: PanelContainer = %ResourcePickerContainer
 @onready var entry_name_line_edit: LineEdit = %EntryNameLineEdit
 @onready var add_entry_button: Button = %AddEntryButton
-@onready var popup := %PopupMenu
-@onready var confirm_popup := %ConfirmationDialog
+@onready var edit_context_menu: PopupMenu = %EditContextMenu
+@onready var delete_entries_confirmation_dialog := %DeleteEntriesConfirmationDialog
 
 
 func _ready() -> void:
@@ -85,9 +100,6 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	if (Input.is_key_pressed(KEY_DELETE) and (current_selected_row >= 0 or current_multiple_selected_rows > 0)): # add support deleting items from keyboard
-		_confirm_delete_rows()
-
 	# Too many load() and inspect requests might be the source of the 'Abort trap: 6' crashes
 	if _uid_resource_to_inspect and Engine.get_process_frames() % 30 == 0:
 		EditorInterface.edit_resource(load(_uid_resource_to_inspect))
@@ -206,6 +218,11 @@ func get_row_resource_uid(row: int) -> StringName:
 	return uid
 
 
+func get_row_resource_string_id(row: int) -> StringName:
+	var string_id: StringName = dynamic_table.get_cell_value(row, STRINGID_COLUMN)
+	return string_id
+
+
 func _build_columns() -> Array[DynamicTable.ColumnConfig]:
 	var columns: Array[DynamicTable.ColumnConfig] = []
 
@@ -287,13 +304,13 @@ func _edit_entry_property(entry: StringName, property: StringName, old_value: Va
 		)
 
 
-func _confirm_delete_rows() -> void:
+func _ask_confirm_delete_entries() -> void:
 	var dialogtext := "Are you sure you want to delete %s?"
-	if (current_multiple_selected_rows > 0):
-		confirm_popup.dialog_text = dialogtext % ["these " + str(current_multiple_selected_rows) + " rows"]
+	if not dynamic_table._selected_rows.is_empty():
+		delete_entries_confirmation_dialog.dialog_text = dialogtext % ["these " + str(dynamic_table._selected_rows.size()) + " entries"]
 	else:
-		confirm_popup.dialog_text = dialogtext % "this row"
-	confirm_popup.show()
+		delete_entries_confirmation_dialog.dialog_text = dialogtext % "this entry"
+	delete_entries_confirmation_dialog.show()
 
 
 func _setup_add_entry() -> void:
@@ -318,13 +335,68 @@ func _toggle_add_entry_button() -> void:
 	)
 
 
+func _toggle_edit_context_menu_items() -> void:
+	edit_context_menu.set_item_disabled(EditMenuAction.DELETE_ENTRIES, dynamic_table._focused_row == -1)
+
+	if dynamic_table._selected_rows.size() > 1:
+		edit_context_menu.set_item_text(
+			EditMenuAction.DELETE_ENTRIES,
+			"Delete Entries (%s)" % dynamic_table._selected_rows.size(),
+		)
+	else:
+		edit_context_menu.set_item_text(EditMenuAction.DELETE_ENTRIES, "Delete Entry")
+
+	var has_selected_cell := -1 not in [dynamic_table._focused_row, dynamic_table._focused_col]
+	edit_context_menu.set_item_disabled(EditMenuAction.CUT_CELL_VALUE, !has_selected_cell)
+	edit_context_menu.set_item_disabled(EditMenuAction.COPY_CELL_VALUE, !has_selected_cell)
+	edit_context_menu.set_item_disabled(EditMenuAction.PASTE_TO_CELL, !has_selected_cell)
+
+	var has_selected_row: = dynamic_table._focused_row != -1
+	edit_context_menu.set_item_disabled(EditMenuAction.COPY_STRING_ID, !has_selected_row)
+	edit_context_menu.set_item_disabled(EditMenuAction.COPY_UID, !has_selected_row)
+	edit_context_menu.set_item_disabled(EditMenuAction.SHOW_IN_FILESYSTEM, !has_selected_row)
+
+
+func _do_edit_menu_action(action_id: int) -> void:
+	match action_id:
+		EditMenuAction.DELETE_ENTRIES:
+			_ask_confirm_delete_entries()
+		EditMenuAction.COPY_STRING_ID:
+			DisplayServer.clipboard_set(get_row_resource_string_id(dynamic_table._focused_row))
+		EditMenuAction.COPY_UID:
+			DisplayServer.clipboard_set(get_row_resource_uid(dynamic_table._focused_row))
+		EditMenuAction.SHOW_IN_FILESYSTEM:
+			var uid := get_row_resource_uid(dynamic_table._focused_row)
+			var path := ResourceUID.uid_to_path(uid)
+			EditorInterface.get_file_system_dock().navigate_to_path(path)
+		EditMenuAction.CUT_CELL_VALUE:
+			pass
+		EditMenuAction.COPY_CELL_VALUE:
+			pass
+		EditMenuAction.PASTE_TO_CELL:
+			pass
+		EditMenuAction.SELECT_ALL:
+			pass
+		EditMenuAction.INVERT_SELECTION:
+			pass
+		EditMenuAction.UNSELECT:
+			pass
+
+
+func _delete_selected_entries() -> void:
+	for row_idx: int in dynamic_table._selected_rows:
+		var uid := get_row_resource_uid(row_idx)
+		RegistryIO.erase_entry(current_registry, uid)
+
+	dynamic_table.set_selected_cell(-1, -1) # cancel current selection
+	update_view()
+
+
 func _on_cell_selected(row: int, column: int) -> void:
 	# WARNING: uncommenting it increases the chance of a crash occuring by a lot. Inexplicable,
 	# but supposedly related to switching selected cell with arrow keys. Only report: 'Abort trap: 6'
 	#print("Cell selected on row ", row, ", column ", column, " Cell value: ", dynamic_table.get_cell_value(row, column)) #, " Row value: ", dynamic_table.get_row_value(row))
-	current_selected_row = row
-	current_selected_cell = [row, column]
-	current_multiple_selected_rows = -1
+
 	Engine.get_process_frames()
 	if row != -1 and column != -1:
 		var uid: StringName = get_row_resource_uid(row)
@@ -333,23 +405,14 @@ func _on_cell_selected(row: int, column: int) -> void:
 
 
 func _on_cell_right_selected(row: int, column: int, mouse_pos: Vector2) -> void:
-	print("Cell right selected on row ", row, ", column ", column, " Mouse position x: ", mouse_pos.x, " y: ", mouse_pos.y)
+	#print("Cell right selected on row ", row, ", column ", column, " Mouse position x: ", mouse_pos.x, " y: ", mouse_pos.y)
 	if (row >= 0): # ignore header cells
-		current_selected_row = row
-		current_selected_cell = [row, column]
-		popup.position = mouse_pos
-		if (entries_data.size() == 0 or row == entries_data.size()):
-			popup.set(&"item_1/disabled", true)
-			current_multiple_selected_rows = -1
-		else:
-			popup.set(&"item_1/disabled", false)
-		popup.show()
+		edit_context_menu.popup(Rect2(DisplayServer.mouse_get_position(), Vector2.ZERO))
 
 
 func _on_multiple_rows_selected(rows: Array) -> void:
-	print("Multiple row selected : ", rows)
-	current_multiple_selected_rows = rows.size() # number of current multiple rows selected
-	multiple_selected_rows = rows # current multiple rows selected array
+	#print("Multiple row selected : ", rows)
+	pass
 
 
 func _on_cell_edited(row: int, column: int, old_value: Variant, new_value: Variant) -> void:
@@ -388,22 +451,8 @@ func _on_inspector_property_edited(property: StringName) -> void:
 		update_view()
 
 
-func _on_popup_menu_id_pressed(id: int) -> void:
-	if (id == 0): # Insert data row
-		dynamic_table.insert_row(current_selected_row, [0, "----", "--------", "--", "-----", "-----", "01/01/2000", 0, 0])
-	else: # Delete data row
-		_confirm_delete_rows()
-
-
-func _on_confirmation_dialog_confirmed() -> void:
-	if (current_multiple_selected_rows > 0): # multiple rows
-		multiple_selected_rows.sort_custom(func(a: Array, b: Array) -> bool: return a > b)
-		for rowidx in range(0, multiple_selected_rows.size()):
-			dynamic_table.delete_row(multiple_selected_rows[rowidx])
-		multiple_selected_rows.clear()
-	else:
-		dynamic_table.delete_row(current_selected_row) # single row
-	dynamic_table.set_selected_cell(-1, -1) # cancel current selection
+func _on_edit_context_menu_id_pressed(id: int) -> void:
+	_do_edit_menu_action(id)
 
 
 func _on_entry_name_line_edit_text_changed(_new_text: String) -> void:
@@ -412,6 +461,14 @@ func _on_entry_name_line_edit_text_changed(_new_text: String) -> void:
 
 func _on_res_picker_resource_changed(_new_resource: Resource) -> void:
 	_toggle_add_entry_button()
+
+
+func _on_delete_entries_confirmation_dialog_confirmed() -> void:
+	_delete_selected_entries()
+
+
+func _on_edit_context_menu_about_to_popup() -> void:
+	_toggle_edit_context_menu_items()
 
 
 func _on_add_entry_button_pressed() -> void:
