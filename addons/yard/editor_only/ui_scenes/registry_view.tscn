@@ -55,12 +55,14 @@ alignment = 2
 [node name="Border" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+mouse_filter = 1
 theme_override_styles/panel = SubResource("StyleBoxFlat_8g0vx")
 
 [node name="ClipChildren" type="PanelContainer" parent="VBoxContainer/Border"]
 clip_children = 1
 layout_mode = 2
 size_flags_vertical = 3
+mouse_filter = 1
 theme_override_styles/panel = SubResource("StyleBoxFlat_5vsn3")
 
 [node name="DynamicTable" type="Control" parent="VBoxContainer/Border/ClipChildren"]
