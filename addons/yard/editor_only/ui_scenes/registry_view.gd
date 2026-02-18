@@ -120,7 +120,7 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 
 	for path: String in data.files:
 		if ResourceLoader.exists(path):
-			if RegistryIO._is_resource_class_valid(current_registry, load(path)):
+			if RegistryIO.is_resource_matching_restriction(current_registry, load(path)):
 				return true
 		elif path.ends_with("/"): # is dir
 			if RegistryIO.dir_has_matching_resource(current_registry, path, true):
@@ -134,7 +134,7 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 
 	for path: String in data.files:
 		if ResourceLoader.exists(path):
-			if RegistryIO._is_resource_class_valid(current_registry, load(path)):
+			if RegistryIO.is_resource_matching_restriction(current_registry, load(path)):
 				var status := RegistryIO.add_entry(current_registry, ResourceUID.path_to_uid(path))
 				n_added += int(status == OK)
 		elif path.ends_with("/"):

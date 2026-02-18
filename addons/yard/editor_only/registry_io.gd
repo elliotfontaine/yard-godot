@@ -40,11 +40,6 @@ static func create_registry_file(
 	return save_err
 
 
-static func _edit_new_after_delay(path: String, delay: float) -> void:
-	await Engine.get_main_loop().create_timer(delay).timeout
-	EditorInterface.edit_resource(load(path))
-
-
 static func edit_registry_settings(
 		registry: Registry,
 		class_restriction: String,
@@ -64,20 +59,60 @@ static func edit_registry_settings(
 	return ResourceSaver.save(registry)
 
 
+## add a new Resource to the Registry from a UID.
+## If no string_id is given, it will use the file basename.
+## If the string_id is already used in the Registry, it will append a number to it.
+static func add_entry(registry: Registry, uid: StringName, string_id: String = "") -> Error:
+	var cache_id: int = ResourceUID.text_to_id(uid)
+	if not ResourceUID.has_id(cache_id):
+		return ERR_CANT_ACQUIRE_RESOURCE
+
+	if string_id.begins_with(("uid://")):
+		return ERR_INVALID_PARAMETER
+
+	if uid in registry._uids_to_string_ids:
+		return ERR_ALREADY_EXISTS
+
+	if not is_resource_matching_restriction(registry, load(uid)):
+		return ERR_DATABASE_CANT_WRITE
+
+	if not string_id:
+		string_id = ResourceUID.get_id_path(cache_id).get_file().get_basename()
+
+	if string_id in registry._string_ids_to_uids:
+		string_id = _make_string_unique(registry, string_id)
+
+	registry._uids_to_string_ids[uid] = string_id as StringName
+	registry._string_ids_to_uids[string_id] = uid
+
+	return ResourceSaver.save(registry)
+
+
+static func erase_entry(registry: Registry, id: StringName) -> Error:
+	var uid := registry.get_uid(id)
+	if not uid:
+		return ERR_INVALID_PARAMETER
+
+	registry._string_ids_to_uids.erase(registry.get_string_id(uid))
+	registry._uids_to_string_ids.erase(uid)
+
+	return ResourceSaver.save(registry)
+
+
 static func rename_entry(
 		registry: Registry,
-		old_string_id: StringName,
+		id: StringName,
 		new_string_id: StringName,
 ) -> Error:
-	var uid := registry.get_uid(old_string_id)
-	if uid:
-		registry._string_ids_to_uids.erase(old_string_id)
-		var unique_new_string_id := _make_string_unique(registry, new_string_id)
-		registry._string_ids_to_uids[unique_new_string_id] = uid
-		registry._uids_to_string_ids[uid] = unique_new_string_id
-		return ResourceSaver.save(registry)
-	else:
+	var uid := registry.get_uid(id)
+	if not uid:
 		return ERR_INVALID_PARAMETER
+
+	registry._string_ids_to_uids.erase(id)
+	var unique_new_string_id := _make_string_unique(registry, new_string_id)
+	registry._string_ids_to_uids[unique_new_string_id] = uid
+	registry._uids_to_string_ids[uid] = unique_new_string_id
+	return ResourceSaver.save(registry)
 
 
 static func change_entry_uid(registry: Registry, id: StringName, new_uid: StringName) -> Error:
@@ -99,7 +134,7 @@ static func change_entry_uid(registry: Registry, id: StringName, new_uid: String
 
 	if registry._class_restriction:
 		var res := load(new_uid)
-		if not _is_resource_class_valid(registry, res):
+		if not is_resource_matching_restriction(registry, res):
 			push_error(
 				"UID Change Error: The associated resource '%s' doesn't match the registry class restriction (%s)." % [
 					res.resource_path.get_file(),
@@ -112,24 +147,6 @@ static func change_entry_uid(registry: Registry, id: StringName, new_uid: String
 	registry._uids_to_string_ids[new_uid] = string_id
 	registry._string_ids_to_uids[string_id] = new_uid
 	return ResourceSaver.save(registry)
-
-
-static func is_valid_registry_output_path(path: String) -> bool:
-	path = path.strip_edges()
-	if path.is_empty():
-		return false
-
-	if path.begins_with("res://"):
-		path = path.trim_prefix("res://")
-
-	var dir_rel := path.get_base_dir()
-	var file := path.get_file()
-
-	if file.is_empty() or not file.is_valid_filename():
-		return false
-
-	var dir_abs := "res://" + dir_rel
-	return DirAccess.dir_exists_absolute(dir_abs)
 
 
 static func dir_has_matching_resource(registry: Registry, path: String, recursive: bool = false) -> bool:
@@ -150,7 +167,7 @@ static func dir_has_matching_resource(registry: Registry, path: String, recursiv
 				return true
 		elif (
 			ResourceLoader.exists(next_path)
-			and _is_resource_class_valid(registry, load(next_path))
+			and is_resource_matching_restriction(registry, load(next_path))
 		):
 			dir.list_dir_end()
 			return true
@@ -175,13 +192,63 @@ static func dir_get_matching_resources(registry: Registry, path: String, recursi
 			matching_resources += dir_get_matching_resources(registry, next_path, recursive)
 		elif ResourceLoader.exists(next_path):
 			var res := load(next_path)
-			if _is_resource_class_valid(registry, res):
+			if is_resource_matching_restriction(registry, res):
 				matching_resources.append(res)
 
 		next = dir.get_next()
 
 	dir.list_dir_end()
 	return matching_resources
+
+
+static func is_valid_registry_output_path(path: String) -> bool:
+	path = path.strip_edges()
+	if path.is_empty():
+		return false
+
+	if path.begins_with("res://"):
+		path = path.trim_prefix("res://")
+
+	var dir_rel := path.get_base_dir()
+	var file := path.get_file()
+
+	if file.is_empty() or not file.is_valid_filename():
+		return false
+
+	var dir_abs := "res://" + dir_rel
+	return DirAccess.dir_exists_absolute(dir_abs)
+
+
+static func is_resource_matching_restriction(registry: Registry, res: Resource) -> bool:
+	# TODO: refactor using the new Class Utils script
+	if res == null:
+		return false
+	#if valid_classes.is_empty():
+	#return true
+	if not registry._class_restriction:
+		return true
+
+	var class_restriction: StringName = registry._class_restriction
+	var class_stringname: StringName
+	var res_script: Script = res.get_script()
+	if res_script != null:
+		var global_name := StringName(res_script.get_global_name())
+		if not global_name.is_empty():
+			class_stringname = global_name
+		else:
+			class_stringname = StringName(res.get_class())
+	else:
+		class_stringname = StringName(res.get_class())
+
+	#for valid_class in valid_classes:
+	if class_stringname == class_restriction:
+		return true
+	if res.is_class(String(class_restriction)):
+		return true
+	if ClassDB.is_parent_class(String(class_stringname), String(class_restriction)):
+		return true
+
+	return false
 
 
 static func is_resource_class_string(class_string: String) -> bool:
@@ -223,30 +290,9 @@ static func is_quoted_string(string: String) -> bool:
 	return (first == "\"" and last == "\"") or (first == "'" and last == "'")
 
 
-## add a new Resource to the Registry from a UID.
-## If no string_id is given, it will use the file basename.
-## If the string_id is already used in the Registry, it will append a number to it.
-static func add_entry(registry: Registry, uid: StringName, string_id: String = "") -> Error:
-	var cache_id: int = ResourceUID.text_to_id(uid)
-	if not ResourceUID.has_id(cache_id):
-		return ERR_CANT_ACQUIRE_RESOURCE
-
-	if string_id.begins_with(("uid://")):
-		return ERR_INVALID_PARAMETER
-
-	if not string_id:
-		string_id = ResourceUID.get_id_path(cache_id).get_file().get_basename()
-
-	if string_id in registry._string_ids_to_uids:
-		string_id = _make_string_unique(registry, string_id)
-
-	if uid in registry._uids_to_string_ids:
-		return ERR_ALREADY_EXISTS
-
-	registry._uids_to_string_ids[uid] = string_id as StringName
-	registry._string_ids_to_uids[string_id] = uid
-
-	return ResourceSaver.save(registry)
+static func _edit_new_after_delay(path: String, delay: float) -> void:
+	await Engine.get_main_loop().create_timer(delay).timeout
+	EditorInterface.edit_resource(load(path))
 
 
 static func _make_string_unique(registry: Registry, string_id: String) -> String:
@@ -287,40 +333,8 @@ static func _validate_resource_classes(registry: Registry) -> void:
 	for uid: StringName in registry._uids_to_string_ids:
 		if not ResourceLoader.exists(uid):
 			continue
-		var is_valid := _is_resource_class_valid(registry, load(uid))
+		var is_valid := is_resource_matching_restriction(registry, load(uid))
 		if not is_valid:
 			pass
 			#set_invalid_resource(uid)
 	#_emit_registry_entries_changed()
-
-
-static func _is_resource_class_valid(registry: Registry, res: Resource) -> bool:
-	# TODO: refactor using the new Class Utils script
-	if res == null:
-		return false
-	#if valid_classes.is_empty():
-	#return true
-	if not registry._class_restriction:
-		return true
-
-	var class_restriction: StringName = registry._class_restriction
-	var class_stringname: StringName
-	var res_script: Script = res.get_script()
-	if res_script != null:
-		var global_name := StringName(res_script.get_global_name())
-		if not global_name.is_empty():
-			class_stringname = global_name
-		else:
-			class_stringname = StringName(res.get_class())
-	else:
-		class_stringname = StringName(res.get_class())
-
-	#for valid_class in valid_classes:
-	if class_stringname == class_restriction:
-		return true
-	if res.is_class(String(class_restriction)):
-		return true
-	if ClassDB.is_parent_class(String(class_stringname), String(class_restriction)):
-		return true
-
-	return false
