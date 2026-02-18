@@ -6,6 +6,7 @@ const RegistryIO := Namespace.RegistryIO
 const ClassUtils := Namespace.ClassUtils
 const EditorThemeUtils := Namespace.EditorThemeUtils
 const DynamicTable := Namespace.DynamicTable
+const LOGGING_INFO_COLOR := "lightslategray"
 const UID_COLUMN_CONFIG := ["uid", "UID", TYPE_STRING]
 const STRINGID_COLUMN_CONFIG := ["string_id", "String ID", TYPE_STRING]
 const NON_PROP_COLUMNS_COUNT := 2
@@ -109,15 +110,35 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 		if ResourceLoader.exists(path):
 			if RegistryIO._is_resource_class_valid(current_registry, load(path)):
 				return true
+		elif path.ends_with("/"): # is dir
+			if RegistryIO.dir_has_matching_resource(current_registry, path, true):
+				return true
 
 	return false
 
 
 func _drop_data(_at_position: Vector2, data: Variant) -> void:
+	var n_added := 0
+
 	for path: String in data.files:
 		if ResourceLoader.exists(path):
 			if RegistryIO._is_resource_class_valid(current_registry, load(path)):
-				RegistryIO._add_entry(current_registry, ResourceUID.path_to_uid(path))
+				var added := RegistryIO._add_entry(current_registry, ResourceUID.path_to_uid(path))
+				n_added += int(added)
+		elif path.ends_with("/"):
+			var matching_resources := RegistryIO.dir_get_matching_resources(
+				current_registry,
+				path,
+				true,
+			)
+			for res in matching_resources:
+				var added := RegistryIO._add_entry(
+					current_registry,
+					ResourceUID.path_to_uid(res.resource_path),
+				)
+				n_added += int(added)
+
+	print_rich("[color=%s]Added %s new Resources to the registry.[/color]" % [LOGGING_INFO_COLOR, n_added])
 	update_view()
 
 
@@ -239,7 +260,8 @@ func _edit_entry_property(entry: StringName, property: StringName, old_value: Va
 		):
 			res.set(property, new_value)
 			print_rich(
-				"[color=lightslategray]Set %s from %s to %s[/color]" % [
+				"[color=%s]Set %s from %s to %s[/color]" % [
+					LOGGING_INFO_COLOR,
 					property,
 					old_value,
 					new_value,

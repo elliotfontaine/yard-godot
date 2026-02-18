@@ -33,7 +33,7 @@ const _SAVED_STATE_PATH := "res://addons/yard/editor_only/state.cfg"
 
 var _opened_registries: Dictionary[String, Registry] = { } # Dict[uid, Registry]
 var _session_closed_uids: Array[String] = [] # Array[uid]
-var _file_dialog: EditorFileDialog
+var _file_dialog: EditorFileDialog # TODO: refactor as Node in packed scene
 var _file_dialog_option: MenuAction = MenuAction.NONE
 var _current_registry_uid: String = ""
 var _fuz := FuzzySearch.new()

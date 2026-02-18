@@ -128,6 +128,58 @@ static func is_valid_registry_output_path(path: String) -> bool:
 	return DirAccess.dir_exists_absolute(dir_abs)
 
 
+static func dir_has_matching_resource(registry: Registry, path: String, recursive: bool = false) -> bool:
+	var dir := DirAccess.open(path)
+	if dir == null:
+		return false
+
+	dir.list_dir_begin()
+	var next: String = dir.get_next()
+
+	while next != "":
+		var next_path: String = dir.get_current_dir().path_join(next)
+
+		if recursive and dir.current_is_dir():
+			var has_valid := dir_has_matching_resource(registry, next_path, recursive)
+			if has_valid:
+				dir.list_dir_end()
+				return true
+		elif (
+			ResourceLoader.exists(next_path)
+			and _is_resource_class_valid(registry, load(next_path))
+		):
+			dir.list_dir_end()
+			return true
+
+		next = dir.get_next()
+	return false
+
+
+static func dir_get_matching_resources(registry: Registry, path: String, recursive: bool = false) -> Array[Resource]:
+	var dir := DirAccess.open(path)
+	if dir == null:
+		return []
+
+	dir.list_dir_begin()
+	var next: String = dir.get_next()
+	var matching_resources: Array[Resource] = []
+
+	while next != "":
+		var next_path: String = dir.get_current_dir().path_join(next)
+
+		if recursive and dir.current_is_dir():
+			matching_resources += dir_get_matching_resources(registry, next_path, recursive)
+		elif ResourceLoader.exists(next_path):
+			var res := load(next_path)
+			if _is_resource_class_valid(registry, res):
+				matching_resources.append(res)
+
+		next = dir.get_next()
+
+	dir.list_dir_end()
+	return matching_resources
+
+
 static func is_resource_class_string(class_string: String) -> bool:
 	class_string.strip_edges()
 	if class_string.is_empty():
