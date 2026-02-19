@@ -315,17 +315,24 @@ func set_data(new_data: Array) -> void:
 	for row in range(_total_rows):
 		for col_idx in _columns.size():
 			var column := _columns[col_idx]
-			var header_size := font.get_string_size(column.header, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
 			var data_s := Vector2.ZERO
 
 			if column.is_progress_column():
 				data_s = Vector2(default_minimum_column_width + 20, font_size)
 			elif column.is_boolean_column():
-				data_s = Vector2(default_minimum_column_width - 50, font_size)
+				data_s = Vector2(row_height, row_height)
 			elif column.is_color_column():
 				data_s = Vector2(row_height, row_height)
 			elif column.is_resource_column():
 				data_s = Vector2(row_height * 2, row_height)
+			elif column.is_enum_column():
+				var hint_sizes_x: Array[float]
+				for enum_value: String in column.hint_string.split(",", false):
+					var text_s := font.get_string_size(enum_value, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size) + Vector2(font_size * 2, 0)
+					hint_sizes_x.append(text_s.x)
+				var max_size_x: float = hint_sizes_x.max()
+				if (column.current_width < max_size_x):
+					column.minimum_width = max_size_x
 			else:
 				if row < _data.size() and col_idx < _data[row].size():
 					var data_font := font
@@ -333,10 +340,10 @@ func set_data(new_data: Array) -> void:
 						data_font = column.custom_font
 					elif column.is_path_column():
 						data_font = mono_font
-					data_s = data_font.get_string_size(str(_data[row][col_idx]), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+					data_s = data_font.get_string_size(str(_data[row][col_idx]), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size) + Vector2(font_size * 2, 0)
 
-			if (column.current_width < max(header_size.x, data_s.x)):
-				column.minimum_width = max(header_size.x, data_s.x) + font_size * 3
+			if (column.current_width < data_s.x):
+				column.minimum_width = data_s.x
 
 	_update_scrollbars()
 	queue_redraw()
@@ -547,7 +554,8 @@ func _setup_editing_components() -> void:
 func _reset_column_widths() -> void:
 	for column in _columns:
 		column.minimum_width = default_minimum_column_width
-		column.current_width = default_minimum_column_width
+		var header_size := font.get_string_size(column.header, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size) + Vector2(font_size * 2, 0)
+		column.current_width = header_size.x
 
 
 func _update_scrollbars() -> void:
