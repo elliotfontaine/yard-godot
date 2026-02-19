@@ -704,4 +704,5 @@ func _on_new_registry_dialog_confirmed() -> void:
 func _on_filesystem_changed() -> void:
 	for registry: Registry in _opened_registries.values():
 		RegistryIO.sync_registry_entries_from_scan_dir(registry)
+	_update_registries_itemlist()
 	registry_view.update_view()
