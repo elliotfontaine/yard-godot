@@ -2,6 +2,7 @@
 extends Object
 
 const REGISTRY_FILE_EXTENSIONS := ["tres"]
+const LOGGING_INFO_COLOR := "lightslategray"
 
 
 static func create_registry_file(
@@ -149,6 +150,71 @@ static func change_entry_uid(registry: Registry, id: StringName, new_uid: String
 	return ResourceSaver.save(registry)
 
 
+static func sync_registry_entries_from_scan_dir(registry: Registry) -> void:
+	if not registry._scan_directory or not DirAccess.dir_exists_absolute(registry._scan_directory):
+		return
+
+	var n_added := 0
+	var n_removed := 0
+	var first_added := ""
+	var first_removed := ""
+	var scanned_uids := { }
+
+	# Add
+	for res in dir_get_matching_resources(registry, registry._scan_directory):
+		var uid := ResourceUID.path_to_uid(res.resource_path)
+		scanned_uids[uid] = true
+		if add_entry(registry, uid) == OK:
+			n_added += 1
+			if n_added == 1:
+				first_added = registry.get_string_id(uid)
+
+	# Remove
+	for uid in registry.get_all_uids():
+		if scanned_uids.has(uid):
+			continue
+		var string_id := registry.get_string_id(uid)
+		if erase_entry(registry, StringName(uid)) == OK:
+			n_removed += 1
+			if n_removed == 1:
+				first_removed = string_id
+		else:
+			print_rich(
+				"[color=%s]Failed to remove %s from %s.[/color]" % [
+					LOGGING_INFO_COLOR,
+					string_id,
+					registry.resource_path.get_file(),
+				],
+			)
+
+	var _log := func(action: String, prep: String, n: int, first: String) -> void:
+		if n == 1:
+			print_rich(
+				"[color=%s]%s %s %s %s.[/color]" % [
+					LOGGING_INFO_COLOR,
+					action.capitalize(),
+					first,
+					prep,
+					registry.resource_path.get_file(),
+				],
+			)
+		elif n > 1:
+			print_rich(
+				"[color=%s]%s %s and %d more entr%s %s %s.[/color]" % [
+					LOGGING_INFO_COLOR,
+					action.capitalize(),
+					first,
+					n - 1,
+					"ies" if n > 2 else "y",
+					prep,
+					registry.resource_path.get_file(),
+				],
+			)
+
+	_log.call("added", "to", n_added, first_added)
+	_log.call("removed", "from", n_removed, first_removed)
+
+
 static func dir_has_matching_resource(registry: Registry, path: String, recursive: bool = false) -> bool:
 	var dir := DirAccess.open(path)
 	if dir == null:
@@ -178,7 +244,7 @@ static func dir_has_matching_resource(registry: Registry, path: String, recursiv
 
 static func dir_get_matching_resources(registry: Registry, path: String, recursive: bool = false) -> Array[Resource]:
 	var dir := DirAccess.open(path)
-	if dir == null:
+	if not path or not dir:
 		return []
 
 	dir.list_dir_begin()

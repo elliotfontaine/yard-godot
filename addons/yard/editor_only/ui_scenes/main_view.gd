@@ -55,6 +55,10 @@ var _fuz := FuzzySearch.new()
 
 
 func _ready() -> void:
+	EditorInterface.get_resource_filesystem().filesystem_changed.connect(
+		_on_filesystem_changed,
+	)
+
 	_file_dialog = EditorFileDialog.new()
 	_file_dialog.access = EditorFileDialog.ACCESS_RESOURCES
 	_file_dialog.file_selected.connect(_on_file_dialog_action)
@@ -141,6 +145,7 @@ func select_registry(uid: String) -> void:
 		EditorInterface.inspect_object(registry, "", true)
 
 	#print("registry selected:  ", registry.resource_path, " (", uid, ")")
+	RegistryIO.sync_registry_entries_from_scan_dir(registry)
 	registry_view.current_registry = registry
 
 
@@ -682,3 +687,9 @@ func _on_new_registry_dialog_confirmed() -> void:
 		and new_registry_dialog.edited_registry == registry_view.current_registry
 	):
 		registry_view.update_view()
+
+
+func _on_filesystem_changed() -> void:
+	for registry: Registry in _opened_registries.values():
+		RegistryIO.sync_registry_entries_from_scan_dir(registry)
+	registry_view.update_view()
