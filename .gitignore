@@ -9,11 +9,6 @@ example
 
 # Godot 4+ specific ignores
 .godot/
-*.import
-*.gd.uid
-*.cs.uid
-*.json.uid
-*.txt.uid
 
 # Godot-specific ignores
 .import/
