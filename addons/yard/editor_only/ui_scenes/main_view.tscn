@@ -220,3 +220,4 @@ unique_name_in_owner = true
 [connection signal="item_selected" from="VBoxContainer/HSplitContainer/RegistriesContainer/RegistriesItemList" to="." method="_on_registries_list_item_selected"]
 [connection signal="about_to_popup" from="RegistryContextMenu" to="." method="_on_registry_context_menu_about_to_popup"]
 [connection signal="id_pressed" from="RegistryContextMenu" to="." method="_on_registry_context_menu_id_pressed"]
+[connection signal="confirmed" from="NewRegistryDialog" to="." method="_on_new_registry_dialog_confirmed"]

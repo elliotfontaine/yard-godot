@@ -656,3 +656,11 @@ func _on_registry_settings_button_pressed() -> void:
 func _on_toggle_registries_pressed() -> void:
 	registries_container.visible = !registries_container.visible
 	registry_view.toggle_button_forward = !registries_container.visible
+
+
+func _on_new_registry_dialog_confirmed() -> void:
+	if (
+		new_registry_dialog._state == new_registry_dialog.RegistryDialogState.REGISTRY_SETTINGS
+		and new_registry_dialog.edited_registry == registry_view.current_registry
+	):
+		registry_view.update_view()
