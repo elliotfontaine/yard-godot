@@ -307,7 +307,7 @@ func set_data(new_data: Array) -> void:
 	focused_row = -1
 	focused_col = -1
 
-	var blank: Variant = null # TODO: manage undefined cells differently
+	var blank: Variant = "[INVALID]" # TODO: manage undefined cells differently
 	for row_data_item: Array in _data:
 		while row_data_item.size() < _columns.size():
 			row_data_item.append(blank)
@@ -944,29 +944,34 @@ func _draw_cell_text(cell_x: float, row_y: float, col: int, row: int) -> void:
 	var cell_value := ""
 	var column := _columns[col]
 	var text_font: Font = font
+	var h_alignment := column.h_alignment
 	if column.custom_font:
 		text_font = column.custom_font
 	elif get_column(col).is_path_column():
 		text_font = mono_font
 	if row >= 0 and row < _data.size() and col >= 0 and col < _data[row].size(): # bounds check
 		cell_value = str(_data[row][col])
+		if column.is_resource_column() and _data[row][col] == null:
+			cell_value = "<empty>"
+			h_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
-	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(column.h_alignment)
+	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(h_alignment)
 	var text_size := text_font.get_string_size(
 		cell_value,
-		column.h_alignment,
+		h_alignment,
 		_columns[col].current_width - abs(x_margin_val) * 2,
 		font_size,
 	)
 	var baseline_y := row_y + (row_height / 2.0) + (font.get_height(font_size) / 2.0) - font.get_descent(font_size)
 	var text_color := column.custom_font_color if column.custom_font_color else default_font_color
 	# TODO: the following line is registry-specific. Refactor outside.
+	# For example, give the ability to set colors for specific rows.
 	text_color = get_theme_color("error_color", "Editor") if cell_value.begins_with("(!) ") else text_color
 	draw_string(
 		text_font,
 		Vector2(cell_x + x_margin_val, baseline_y),
 		cell_value,
-		column.h_alignment,
+		h_alignment,
 		_columns[col].current_width - abs(x_margin_val),
 		font_size,
 		text_color,
