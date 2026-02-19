@@ -142,6 +142,7 @@ func _ready() -> void:
 	_v_scroll = VScrollBar.new()
 	_v_scroll.name = "VScrollBar"
 	_v_scroll.set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE)
+	_v_scroll.offset_top = header_height
 	_v_scroll.offset_left = -12
 	_v_scroll.value_changed.connect(_on_v_scroll_value_changed)
 
