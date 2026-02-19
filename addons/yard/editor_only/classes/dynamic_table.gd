@@ -63,6 +63,11 @@ var font := get_theme_default_font()
 var mono_font: Font = EditorInterface.get_editor_theme().get_font("font", "CodeEdit")
 var font_size := get_theme_default_font_size()
 
+# Selection and focus variables (public)
+var selected_rows: Array = [] # Indices of the selected rows
+var focused_row: int = -1 # Currently focused row
+var focused_col: int = -1 # Currently focused column
+
 # Internal variables
 var _columns: Array[ColumnConfig]
 var _data: Array[Array] = []
@@ -91,11 +96,8 @@ var _resource_thumb_cache: Dictionary = { } # key -> Texture2D (or null if faile
 var _resource_thumb_pending: Dictionary = { } # key -> bool
 
 # Selection and focus variables
-var _selected_rows: Array = [] # Indices of the selected rows
 var _previous_sort_selected_rows: Array = [] # Array containing the selected rows before sorting
 var _anchor_row: int = -1 # Anchor row for Shift-based selection
-var _focused_row: int = -1 # Currently focused row
-var _focused_col: int = -1 # Currently focused column
 
 var _pan_delta_accumulation: Vector2 = Vector2.ZERO
 
@@ -223,7 +225,7 @@ func _draw() -> void:
 		var current_bg_color := alternate_row_color if row % 2 == 1 else row_color
 		draw_rect(Rect2(0, row_y_pos, visible_drawing_width, row_height), current_bg_color)
 
-		if _selected_rows.has(row):
+		if selected_rows.has(row):
 			draw_rect(Rect2(0, row_y_pos, visible_drawing_width, row_height - 1), selected_row_back_color)
 
 		draw_line(Vector2(0, row_y_pos + row_height), Vector2(visible_drawing_width, row_y_pos + row_height), grid_color)
@@ -234,7 +236,7 @@ func _draw() -> void:
 			if cell_x_pos < visible_drawing_width and cell_x_pos + col.current_width > 0:
 				draw_line(Vector2(cell_x_pos, row_y_pos), Vector2(cell_x_pos, row_y_pos + row_height), grid_color)
 
-				if row == _focused_row and col_idx == _focused_col:
+				if row == focused_row and col_idx == focused_col:
 					draw_rect(Rect2(cell_x_pos + 1, row_y_pos + 1, col.current_width - 3, row_height - 3), selected_cell_back_color, false, 2.0)
 				#if not (_editing_cell[0] == row and _editing_cell[1] == col_idx):
 				if col.is_progress_column():
@@ -298,12 +300,12 @@ func set_data(new_data: Array) -> void:
 	_total_rows = _data.size()
 	_visible_rows_range = [0, min(_total_rows, floor(self.size.y / row_height) if row_height > 0 else 0)]
 
-	_selected_rows.clear()
+	selected_rows.clear()
 	_resource_thumb_cache.clear()
 	_resource_thumb_pending.clear()
 	_anchor_row = -1
-	_focused_row = -1
-	_focused_col = -1
+	focused_row = -1
+	focused_col = -1
 
 	var blank: Variant = null # TODO: manage undefined cells differently
 	for row_data_item: Array in _data:
@@ -427,7 +429,7 @@ func delete_row(index: int) -> void:
 		_data.remove_at(index)
 		_total_rows -= 1
 		if (_total_rows == 0):
-			_selected_rows.clear()
+			selected_rows.clear()
 		_update_scrollbars()
 		queue_redraw()
 
@@ -461,21 +463,21 @@ func get_progress_value(row_idx: int, col: int) -> float:
 
 func set_selected_cell(row: int, col: int) -> void:
 	if row >= 0 and row < _total_rows and col >= 0 and col < _columns.size():
-		_focused_row = row
-		_focused_col = col
-		_selected_rows.clear()
-		_selected_rows.append(row)
+		focused_row = row
+		focused_col = col
+		selected_rows.clear()
+		selected_rows.append(row)
 		_anchor_row = row
 		_ensure_row_visible(row)
 		_ensure_col_visible(col)
 		queue_redraw()
 	else: # Invalid selection, clear everything
-		_focused_row = -1
-		_focused_col = -1
-		_selected_rows.clear()
+		focused_row = -1
+		focused_col = -1
+		selected_rows.clear()
 		_anchor_row = -1
 		queue_redraw()
-	cell_selected.emit(_focused_row, _focused_col)
+	cell_selected.emit(focused_row, focused_col)
 
 
 func set_progress_value(row: int, col: int, value: float) -> void:
@@ -608,21 +610,21 @@ func _parse_date(date_str: String) -> Array:
 
 
 func _store_selected_rows() -> void:
-	if (_selected_rows.size() == 0):
+	if (selected_rows.size() == 0):
 		return
 	_previous_sort_selected_rows.clear()
-	for index in range(_selected_rows.size()):
-		_previous_sort_selected_rows.append(_data[_selected_rows[index]])
+	for index in range(selected_rows.size()):
+		_previous_sort_selected_rows.append(_data[selected_rows[index]])
 
 
 func _restore_selected_rows() -> void:
 	if (_previous_sort_selected_rows.size() == 0):
 		return
-	_selected_rows.clear()
+	selected_rows.clear()
 	for index in range(_previous_sort_selected_rows.size()):
 		var idx := _data.find(_previous_sort_selected_rows[index])
 		if (idx >= 0):
-			_selected_rows.append(idx)
+			selected_rows.append(idx)
 
 
 func _start_cell_editing(row: int, col: int) -> void:
@@ -987,10 +989,10 @@ func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> voi
 
 	if clicked_row < 0 or clicked_row >= _total_rows: # Click outside valid row area
 		# Optional: clear selection when clicking outside
-		# _selected_rows.clear()
+		# selected_rows.clear()
 		# _anchor_row = -1
-		# _focused_row = -1
-		# _focused_col = -1
+		# focused_row = -1
+		# focused_col = -1
 		# queue_redraw()
 		return
 
@@ -1006,52 +1008,52 @@ func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> voi
 	if clicked_col == -1:
 		return # Click outside column area
 
-	_focused_row = clicked_row
-	_focused_col = clicked_col
+	focused_row = clicked_row
+	focused_col = clicked_col
 
 	var is_shift := event.is_shift_pressed()
 	var is_ctrl_cmd := event.is_ctrl_pressed() or event.is_meta_pressed() # Ctrl or Cmd
 
-	var selection_was_multiple := _selected_rows.size() > 1 # State before the change
+	var selection_was_multiple := selected_rows.size() > 1 # State before the change
 	var emit_multiple_selection_signal := false
 
 	if is_shift and _anchor_row != -1:
-		_selected_rows.clear()
-		var start_range: int = min(_anchor_row, _focused_row)
-		var end_range: int = max(_anchor_row, _focused_row)
+		selected_rows.clear()
+		var start_range: int = min(_anchor_row, focused_row)
+		var end_range: int = max(_anchor_row, focused_row)
 		for i in range(start_range, end_range + 1):
-			_selected_rows.append(i)
+			selected_rows.append(i)
 		# After a Shift selection, if more than one row is selected, prepare to emit.
-		if _selected_rows.size() > 1:
+		if selected_rows.size() > 1:
 			emit_multiple_selection_signal = true
 	elif is_ctrl_cmd:
-		if _selected_rows.has(_focused_row):
-			_selected_rows.erase(_focused_row)
+		if selected_rows.has(focused_row):
+			selected_rows.erase(focused_row)
 		else:
-			_selected_rows.append(_focused_row)
-		_anchor_row = _focused_row # Update the anchor for future Shift selections
+			selected_rows.append(focused_row)
+		_anchor_row = focused_row # Update the anchor for future Shift selections
 		# After a Ctrl/Cmd selection, if more than one row is selected, prepare to emit.
-		if _selected_rows.size() > 1:
+		if selected_rows.size() > 1:
 			emit_multiple_selection_signal = true
 		# If the selection was multiple and now is no longer multiple (because Ctrl-click deselects),
 		# you might still want to emit to indicate a change from a multiple-selection state.
 		# However, the requirement is "when a multiple selection EXISTS".
-		# So if _selected_rows.size() <= 1, we do not set emit_multiple_selection_signal = true.
+		# So if selected_rows.size() <= 1, we do not set emit_multiple_selection_signal = true.
 	else: # Single click without modifiers
-		_selected_rows.clear()
-		_selected_rows.append(_focused_row)
-		_anchor_row = _focused_row
-		# In this case, _selected_rows.size() will be 1.
+		selected_rows.clear()
+		selected_rows.append(focused_row)
+		_anchor_row = focused_row
+		# In this case, selected_rows.size() will be 1.
 		# If the previous selection was multiple and now is single,
 		# we do not emit multiple_rows_selected because a multiple selection no longer exists.
 
-	cell_selected.emit(_focused_row, _focused_col) # Always emit for a valid cell click
-	_ensure_col_visible(_focused_col)
+	cell_selected.emit(focused_row, focused_col) # Always emit for a valid cell click
+	_ensure_col_visible(focused_col)
 
 	# Emit the new signal if a multiple selection was identified
 	if emit_multiple_selection_signal:
-		# _selected_rows already contains the correct indices
-		multiple_rows_selected.emit(_selected_rows)
+		# selected_rows already contains the correct indices
+		multiple_rows_selected.emit(selected_rows)
 	# Also consider the case where the selection transitions from multiple to single/none
 	# due to a Ctrl operation. If you want a signal for that "change" as well,
 	# the logic here should be slightly different. But sticking to "when it exists",
@@ -1080,7 +1082,7 @@ func _handle_right_click(mouse_pos: Vector2) -> void:
 
 		current_x += column.current_width
 
-	if _selected_rows.size() <= 1:
+	if selected_rows.size() <= 1:
 		set_selected_cell(clicked_row, clicked_col)
 
 	cell_right_selected.emit(clicked_row, clicked_col, get_global_mouse_position())
@@ -1108,7 +1110,7 @@ func _handle_double_click(mouse_pos: Vector2) -> void:
 		if col != -1:
 			# If the clicked cell is not the currently focused/selected one,
 			# update the selection as a single click before starting editing.
-			if not (_selected_rows.size() == 1 and _selected_rows[0] == row and _focused_row == row and _focused_col == col):
+			if not (selected_rows.size() == 1 and selected_rows[0] == row and focused_row == row and focused_col == col):
 				set_selected_cell(row, col)
 
 			_start_cell_editing(row, col)
@@ -1190,9 +1192,9 @@ func _apply_filter(search_key: String) -> void:
 	_total_rows = _data.size()
 	_v_scroll_position = 0
 	_v_scroll.value = 0
-	_selected_rows.clear()
+	selected_rows.clear()
 	_previous_sort_selected_rows.clear()
-	_focused_row = -1
+	focused_row = -1
 	_last_column_sorted = -1 # Reset visual sorting
 
 	_update_scrollbars()
@@ -1279,17 +1281,17 @@ func _is_clicking_progress_bar(mouse_pos: Vector2) -> bool:
 	# TODO: WHAT THE HELL IS THAT SIDE EFFECT ?! Method is a predicate goddamnit. REFACTOR ASAP
 	var column := _columns[clicked_col_idx]
 	if column.is_progress_column():
-		# Set _focused_row and _focused_col when clicking on a progress bar
+		# Set focused_row and focused_col when clicking on a progress bar
 		# This ensures the row becomes "active"
-		if _focused_row != row or _focused_col != clicked_col_idx:
-			_focused_row = row
-			_focused_col = clicked_col_idx
+		if focused_row != row or focused_col != clicked_col_idx:
+			focused_row = row
+			focused_col = clicked_col_idx
 			# If not already selected, select it as a single row
-			if not _selected_rows.has(row):
-				_selected_rows.clear()
-				_selected_rows.append(row)
+			if not selected_rows.has(row):
+				selected_rows.clear()
+				selected_rows.append(row)
 				_anchor_row = row
-			cell_selected.emit(_focused_row, _focused_col) # Emit signal
+			cell_selected.emit(focused_row, focused_col) # Emit signal
 			queue_redraw()
 		_progress_drag_row = row
 		_progress_drag_col = clicked_col_idx
@@ -1355,17 +1357,17 @@ func _handle_checkbox_click(mouse_pos: Vector2) -> bool:
 	var column := _columns[clicked_col_idx]
 	if column.is_boolean_column():
 		# When clicking a checkbox, the row becomes the current single selection (if not already)
-		if _focused_row != row or _focused_col != clicked_col_idx:
-			_focused_row = row
-			_focused_col = clicked_col_idx
+		if focused_row != row or focused_col != clicked_col_idx:
+			focused_row = row
+			focused_col = clicked_col_idx
 
 			# If it is not the only selected row
-			if not _selected_rows.has(row) or _selected_rows.size() > 1:
-				_selected_rows.clear()
-				_selected_rows.append(row)
+			if not selected_rows.has(row) or selected_rows.size() > 1:
+				selected_rows.clear()
+				selected_rows.append(row)
 				_anchor_row = row
 
-			cell_selected.emit(_focused_row, _focused_col) # Emit focus signal
+			cell_selected.emit(focused_row, focused_col) # Emit focus signal
 			# Do not call queue_redraw() here; it will be done after update_cell
 
 		var old_val: Variant = get_cell_value(row, clicked_col_idx)
@@ -1449,8 +1451,8 @@ func _handle_key_input(event: InputEventKey) -> void:
 	var is_meta := event.is_meta_pressed() # Cmd on Mac
 	var is_ctrl_cmd := is_ctrl or is_meta # For actions like Ctrl+A / Cmd+A
 
-	var current_focused_r := _focused_row
-	var current_focused_c := _focused_col
+	var current_focused_r := focused_row
+	var current_focused_c := focused_col
 
 	var new_focused_r := current_focused_r
 	var new_focused_c := current_focused_c
@@ -1461,21 +1463,21 @@ func _handle_key_input(event: InputEventKey) -> void:
 
 	if is_ctrl_cmd and keycode == KEY_A:
 		if _total_rows > 0:
-			_selected_rows.clear()
+			selected_rows.clear()
 			for i in range(_total_rows):
-				_selected_rows.append(i)
+				selected_rows.append(i)
 			emit_multiple_selection_signal = true
 
 			# Set or keep focus and anchor
 			if current_focused_r == -1: # If there is no focus, go to the first row
-				_focused_row = 0
-				_focused_col = 0 if _columns.size() > 0 else -1
+				focused_row = 0
+				focused_col = 0 if _columns.size() > 0 else -1
 				_anchor_row = 0
 			else: # Otherwise, keep the current focus as anchor
-				_anchor_row = _focused_row
+				_anchor_row = focused_row
 
-			_ensure_row_visible(_focused_row)
-			_ensure_col_visible(_focused_col)
+			_ensure_row_visible(focused_row)
+			_ensure_col_visible(focused_col)
 		key_operation_performed = true
 
 	elif keycode == KEY_HOME:
@@ -1521,22 +1523,22 @@ func _handle_key_input(event: InputEventKey) -> void:
 				key_operation_performed = true
 			KEY_SPACE:
 				if is_ctrl_cmd:
-					if _selected_rows.has(current_focused_r):
-						_selected_rows.erase(current_focused_r)
+					if selected_rows.has(current_focused_r):
+						selected_rows.erase(current_focused_r)
 					else:
-						if not _selected_rows.has(current_focused_r):
-							_selected_rows.append(current_focused_r)
+						if not selected_rows.has(current_focused_r):
+							selected_rows.append(current_focused_r)
 					_anchor_row = current_focused_r
 					key_operation_performed = true
 				else:
 					event_consumed = false
 			KEY_ESCAPE:
-				if _selected_rows.size() > 0 or _focused_row != -1: # Act only if there is a selection or focus
-					_selected_rows.clear()
+				if selected_rows.size() > 0 or focused_row != -1: # Act only if there is a selection or focus
+					selected_rows.clear()
 					_previous_sort_selected_rows.clear()
 					_anchor_row = -1
-					_focused_row = -1
-					_focused_col = -1
+					focused_row = -1
+					focused_col = -1
 					key_operation_performed = true
 					set_selected_cell(-1, -1)
 				else:
@@ -1547,10 +1549,10 @@ func _handle_key_input(event: InputEventKey) -> void:
 
 	# If the focus changed or a key operation modified the selection state
 	if key_operation_performed and (new_focused_r != current_focused_r or new_focused_c != current_focused_c or keycode in [KEY_HOME, KEY_END, KEY_SPACE, KEY_A]):
-		var old_focused_r := _focused_row # Save previous focus for anchor
+		var old_focused_r := focused_row # Save previous focus for anchor
 
-		_focused_row = new_focused_r
-		_focused_col = new_focused_c
+		focused_row = new_focused_r
+		focused_col = new_focused_c
 
 		# Selection update logic
 		if not (is_ctrl_cmd and keycode == KEY_A): # Ctrl+A handles its own selection
@@ -1560,19 +1562,19 @@ func _handle_key_input(event: InputEventKey) -> void:
 				if _anchor_row == -1:
 					_anchor_row = old_focused_r if old_focused_r != -1 else 0
 
-				if _focused_row != -1: # Only if the new focused row is valid
-					_selected_rows.clear()
-					var start_r: int = min(_anchor_row, _focused_row)
-					var end_r: int = max(_anchor_row, _focused_row)
+				if focused_row != -1: # Only if the new focused row is valid
+					selected_rows.clear()
+					var start_r: int = min(_anchor_row, focused_row)
+					var end_r: int = max(_anchor_row, focused_row)
 					for i in range(start_r, end_r + 1):
 						if i >= 0 and i < _total_rows: # Check index validity
-							if not _selected_rows.has(i):
-								_selected_rows.append(i)
+							if not selected_rows.has(i):
+								selected_rows.append(i)
 								emit_multiple_selection_signal = true
-				# If _focused_row is -1 (e.g. empty table), _selected_rows stays empty or cleared
+				# If focused_row is -1 (e.g. empty table), selected_rows stays empty or cleared
 				#if emit_multiple_selection_signal:
-				# The _selected_rows array already contains the correct indices
-				#multiple_rows_selected.emit(_selected_rows)
+				# The selected_rows array already contains the correct indices
+				#multiple_rows_selected.emit(selected_rows)
 
 			elif is_ctrl_cmd and not (keycode == KEY_SPACE):
 				# Ctrl + Arrows/Pg/Home/End: move focus only, do not change selection.
@@ -1580,27 +1582,27 @@ func _handle_key_input(event: InputEventKey) -> void:
 				pass
 			elif not (keycode == KEY_SPACE and is_ctrl_cmd):
 				# No modifier (or Ctrl not for pure navigation): select only the focused row
-				if _focused_row != -1: # Only if the new focused row is valid
-					_selected_rows.clear()
-					_selected_rows.append(_focused_row)
-					_anchor_row = _focused_row
+				if focused_row != -1: # Only if the new focused row is valid
+					selected_rows.clear()
+					selected_rows.append(focused_row)
+					_anchor_row = focused_row
 					#emit_multiple_selection_signal = true
 				else: # The new focused row is not valid (e.g. empty table)
-					_selected_rows.clear()
+					selected_rows.clear()
 					_anchor_row = -1
 
-		if _focused_row != -1:
-			_ensure_row_visible(_focused_row)
-			_ensure_col_visible(_focused_col)
+		if focused_row != -1:
+			_ensure_row_visible(focused_row)
+			_ensure_col_visible(focused_col)
 
-		if current_focused_r != _focused_row or current_focused_c != _focused_col or (keycode == KEY_SPACE and is_ctrl_cmd):
+		if current_focused_r != focused_row or current_focused_c != focused_col or (keycode == KEY_SPACE and is_ctrl_cmd):
 			# Emit the signal only if the focus actually changed or if Ctrl+Space modified the selection
-			cell_selected.emit(_focused_row, _focused_col)
+			cell_selected.emit(focused_row, focused_col)
 			pass
 
 		if emit_multiple_selection_signal:
-			# The _selected_rows array already contains the correct indices
-			multiple_rows_selected.emit(_selected_rows)
+			# The selected_rows array already contains the correct indices
+			multiple_rows_selected.emit(selected_rows)
 
 	if key_operation_performed:
 		queue_redraw()

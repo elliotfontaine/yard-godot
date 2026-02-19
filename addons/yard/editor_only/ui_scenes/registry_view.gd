@@ -37,10 +37,6 @@ const DISABLED_BY_DEFAULT_PROPERTIES: Array[StringName] = [
 var current_registry: Registry:
 	set(new):
 		current_registry = new
-		if current_registry:
-			_setup_add_entry()
-		add_entry_container.visible = new != null
-
 		update_view()
 
 var disabled_property_columns: Array[StringName] = DISABLED_BY_DEFAULT_PROPERTIES.duplicate()
@@ -156,10 +152,15 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 
 func update_view() -> void:
 	if not current_registry:
+		add_entry_container.visible = false
 		dynamic_table.set_columns([])
 		var empty_data: Array[Array] = [[]]
 		dynamic_table.set_data(empty_data)
 		return
+
+	add_entry_container.visible = true
+	_setup_add_entry()
+
 	var resources: Dictionary[StringName, Resource] = current_registry.load_all_blocking() # WARNING: Blocking!
 	set_columns_data(resources.values())
 	entries_data.clear()
@@ -173,13 +174,6 @@ func update_view() -> void:
 	dynamic_table.set_columns(_build_columns())
 	dynamic_table.set_data(entries_data)
 	dynamic_table.ordering_data(STRINGID_COLUMN, true)
-
-
-func can_display_property(property_info: Dictionary) -> bool:
-	return (
-		property_info[&"type"] not in [TYPE_CALLABLE, TYPE_SIGNAL]
-		and property_info[&"usage"] & PROPERTY_USAGE_EDITOR != 0
-	)
 
 
 func is_property_disabled(property_info: Dictionary) -> bool:
@@ -198,7 +192,7 @@ func set_columns_data(resources: Array[Resource]) -> void:
 			prop[&"owner_object"] = res
 
 	for prop: Dictionary in found_props.values():
-		if can_display_property(prop):
+		if _can_display_property(prop):
 			properties_column_info.append(prop)
 
 
@@ -237,7 +231,7 @@ func _build_columns() -> Array[DynamicTable.ColumnConfig]:
 	columns.append(uid_column) #1
 
 	for prop in properties_column_info:
-		if not can_display_property(prop) or is_property_disabled(prop):
+		if not _can_display_property(prop) or is_property_disabled(prop):
 			continue
 
 		var prop_name: String = prop[&"name"]
@@ -262,6 +256,13 @@ func _build_columns() -> Array[DynamicTable.ColumnConfig]:
 		columns.append(column)
 
 	return columns
+
+
+func _can_display_property(property_info: Dictionary) -> bool:
+	return (
+		property_info[&"type"] not in [TYPE_CALLABLE, TYPE_SIGNAL]
+		and property_info[&"usage"] & PROPERTY_USAGE_EDITOR != 0
+	)
 
 
 func _edit_entry_property(entry: StringName, property: StringName, old_value: Variant, new_value: Variant) -> void:
@@ -306,8 +307,8 @@ func _edit_entry_property(entry: StringName, property: StringName, old_value: Va
 
 func _ask_confirm_delete_entries() -> void:
 	var dialogtext := "Are you sure you want to delete %s?"
-	if not dynamic_table._selected_rows.is_empty():
-		delete_entries_confirmation_dialog.dialog_text = dialogtext % ["these " + str(dynamic_table._selected_rows.size()) + " entries"]
+	if not dynamic_table.selected_rows.is_empty():
+		delete_entries_confirmation_dialog.dialog_text = dialogtext % ["these " + str(dynamic_table.selected_rows.size()) + " entries"]
 	else:
 		delete_entries_confirmation_dialog.dialog_text = dialogtext % "this entry"
 	delete_entries_confirmation_dialog.show()
@@ -336,22 +337,22 @@ func _toggle_add_entry_button() -> void:
 
 
 func _toggle_edit_context_menu_items() -> void:
-	edit_context_menu.set_item_disabled(EditMenuAction.DELETE_ENTRIES, dynamic_table._focused_row == -1)
+	edit_context_menu.set_item_disabled(EditMenuAction.DELETE_ENTRIES, dynamic_table.focused_row == -1)
 
-	if dynamic_table._selected_rows.size() > 1:
+	if dynamic_table.selected_rows.size() > 1:
 		edit_context_menu.set_item_text(
 			EditMenuAction.DELETE_ENTRIES,
-			"Delete Entries (%s)" % dynamic_table._selected_rows.size(),
+			"Delete Entries (%s)" % dynamic_table.selected_rows.size(),
 		)
 	else:
 		edit_context_menu.set_item_text(EditMenuAction.DELETE_ENTRIES, "Delete Entry")
 
-	var has_selected_cell := -1 not in [dynamic_table._focused_row, dynamic_table._focused_col]
+	var has_selected_cell := -1 not in [dynamic_table.focused_row, dynamic_table.focused_col]
 	edit_context_menu.set_item_disabled(EditMenuAction.CUT_CELL_VALUE, !has_selected_cell)
 	edit_context_menu.set_item_disabled(EditMenuAction.COPY_CELL_VALUE, !has_selected_cell)
 	edit_context_menu.set_item_disabled(EditMenuAction.PASTE_TO_CELL, !has_selected_cell)
 
-	var has_selected_row: = dynamic_table._focused_row != -1
+	var has_selected_row: = dynamic_table.focused_row != -1
 	edit_context_menu.set_item_disabled(EditMenuAction.COPY_STRING_ID, !has_selected_row)
 	edit_context_menu.set_item_disabled(EditMenuAction.COPY_UID, !has_selected_row)
 	edit_context_menu.set_item_disabled(EditMenuAction.SHOW_IN_FILESYSTEM, !has_selected_row)
@@ -362,11 +363,11 @@ func _do_edit_menu_action(action_id: int) -> void:
 		EditMenuAction.DELETE_ENTRIES:
 			_ask_confirm_delete_entries()
 		EditMenuAction.COPY_STRING_ID:
-			DisplayServer.clipboard_set(get_row_resource_string_id(dynamic_table._focused_row))
+			DisplayServer.clipboard_set(get_row_resource_string_id(dynamic_table.focused_row))
 		EditMenuAction.COPY_UID:
-			DisplayServer.clipboard_set(get_row_resource_uid(dynamic_table._focused_row))
+			DisplayServer.clipboard_set(get_row_resource_uid(dynamic_table.focused_row))
 		EditMenuAction.SHOW_IN_FILESYSTEM:
-			var uid := get_row_resource_uid(dynamic_table._focused_row)
+			var uid := get_row_resource_uid(dynamic_table.focused_row)
 			var path := ResourceUID.uid_to_path(uid)
 			EditorInterface.get_file_system_dock().navigate_to_path(path)
 		EditMenuAction.CUT_CELL_VALUE:
@@ -384,7 +385,7 @@ func _do_edit_menu_action(action_id: int) -> void:
 
 
 func _delete_selected_entries() -> void:
-	for row_idx: int in dynamic_table._selected_rows:
+	for row_idx: int in dynamic_table.selected_rows:
 		var uid := get_row_resource_uid(row_idx)
 		RegistryIO.erase_entry(current_registry, uid)
 
