@@ -20,6 +20,8 @@ enum FileMenuAction {
 	SORT = 32,
 }
 
+const EditMenuAction := registry_view.EditMenuAction
+
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const PluginCFG := Namespace.PluginCFG
 const RegistryIO := Namespace.RegistryIO
@@ -63,6 +65,7 @@ func _ready() -> void:
 	_set_context_menu_accelerators()
 	_populate_file_menu()
 	file_menu_button.get_popup().id_pressed.connect(_on_file_menu_id_pressed)
+	edit_menu_button.get_popup().id_pressed.connect(_on_edit_menu_id_pressed)
 	columns_menu_button.get_popup().id_pressed.connect(_on_columns_menu_id_pressed)
 	columns_menu_button.get_popup().hide_on_checkable_item_selection = false
 	registries_itemlist.registries_dropped.connect(_on_itemlist_registries_dropped)
@@ -407,7 +410,14 @@ func _toggle_registry_context_menu_items() -> void:
 	)
 
 
-func _do_menu_action(action_id: int) -> void:
+func _toggle_edit_menu_items() -> void:
+	var edit_menu := edit_menu_button.get_popup()
+	var no_edited_registry := not registry_view.current_registry
+	for idx in edit_menu.item_count:
+		edit_menu.set_item_disabled(idx, no_edited_registry)
+
+
+func _do_file_menu_action(action_id: int) -> void:
 	match action_id:
 		FileMenuAction.NEW:
 			new_registry_dialog.popup_with_state(
@@ -555,16 +565,24 @@ func _on_file_menu_button_about_to_popup() -> void:
 	_toggle_file_menu_items()
 
 
+func _on_edit_menu_button_about_to_popup() -> void:
+	_toggle_edit_menu_items()
+
+
 func _on_registry_context_menu_about_to_popup() -> void:
 	_toggle_registry_context_menu_items()
 
 
 func _on_file_menu_id_pressed(id: int) -> void:
-	_do_menu_action(id)
+	_do_file_menu_action(id)
+
+
+func _on_edit_menu_id_pressed(id: int) -> void:
+	registry_view.do_edit_menu_action(id)
 
 
 func _on_registry_context_menu_id_pressed(id: int) -> void:
-	_do_menu_action(id)
+	_do_file_menu_action(id)
 
 
 func _on_columns_menu_id_pressed(id: int) -> void:

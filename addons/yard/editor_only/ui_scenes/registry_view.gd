@@ -358,7 +358,9 @@ func _toggle_edit_context_menu_items() -> void:
 	edit_context_menu.set_item_disabled(EditMenuAction.SHOW_IN_FILESYSTEM, !has_selected_row)
 
 
-func _do_edit_menu_action(action_id: int) -> void:
+func do_edit_menu_action(action_id: int) -> void:
+	if not current_registry:
+		return
 	match action_id:
 		EditMenuAction.DELETE_ENTRIES:
 			_ask_confirm_delete_entries()
@@ -371,17 +373,17 @@ func _do_edit_menu_action(action_id: int) -> void:
 			var path := ResourceUID.uid_to_path(uid)
 			EditorInterface.get_file_system_dock().navigate_to_path(path)
 		EditMenuAction.CUT_CELL_VALUE:
-			pass
+			_warn_unimplemented()
 		EditMenuAction.COPY_CELL_VALUE:
-			pass
+			_warn_unimplemented()
 		EditMenuAction.PASTE_TO_CELL:
-			pass
+			_warn_unimplemented()
 		EditMenuAction.SELECT_ALL:
-			pass
+			_select_all()
 		EditMenuAction.INVERT_SELECTION:
-			pass
+			_invert_selection()
 		EditMenuAction.UNSELECT:
-			pass
+			_unselect()
 
 
 func _delete_selected_entries() -> void:
@@ -391,6 +393,30 @@ func _delete_selected_entries() -> void:
 
 	dynamic_table.set_selected_cell(-1, -1) # cancel current selection
 	update_view()
+
+
+func _select_all() -> void:
+	dynamic_table.selected_rows = range(dynamic_table._total_rows)
+	dynamic_table.queue_redraw()
+
+
+func _invert_selection() -> void:
+	var selection := dynamic_table.selected_rows
+	var inverted := []
+	for row in dynamic_table._total_rows:
+		if row not in selection:
+			inverted.append(row)
+	dynamic_table.selected_rows = inverted
+	dynamic_table.queue_redraw()
+
+
+func _unselect() -> void:
+	dynamic_table.selected_rows = []
+	dynamic_table.queue_redraw()
+
+
+func _warn_unimplemented() -> void:
+	push_warning("This feature is not implemented yet. Demand to see my manager !")
 
 
 func _on_cell_selected(row: int, column: int) -> void:
@@ -453,7 +479,7 @@ func _on_inspector_property_edited(property: StringName) -> void:
 
 
 func _on_edit_context_menu_id_pressed(id: int) -> void:
-	_do_edit_menu_action(id)
+	do_edit_menu_action(id)
 
 
 func _on_entry_name_line_edit_text_changed(_new_text: String) -> void:
