@@ -7,6 +7,7 @@ enum EditMenuAction {
 	COPY_STRING_ID = 1,
 	COPY_UID = 2,
 	SHOW_IN_FILESYSTEM = 3,
+	INSPECT_RESOURCE = 4,
 	CUT_CELL_VALUE = 5,
 	COPY_CELL_VALUE = 6,
 	PASTE_TO_CELL = 7,
@@ -337,25 +338,28 @@ func _toggle_add_entry_button() -> void:
 
 
 func _toggle_edit_context_menu_items() -> void:
-	edit_context_menu.set_item_disabled(EditMenuAction.DELETE_ENTRIES, dynamic_table.focused_row == -1)
+	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), dynamic_table.focused_row == -1)
 
 	if dynamic_table.selected_rows.size() > 1:
 		edit_context_menu.set_item_text(
-			EditMenuAction.DELETE_ENTRIES,
+			edit_context_menu.get_item_index(EditMenuAction.DELETE_ENTRIES),
 			"Delete Entries (%s)" % dynamic_table.selected_rows.size(),
 		)
 	else:
-		edit_context_menu.set_item_text(EditMenuAction.DELETE_ENTRIES, "Delete Entry")
+		edit_context_menu.set_item_text(edit_context_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), "Delete Entry")
 
 	var has_selected_cell := -1 not in [dynamic_table.focused_row, dynamic_table.focused_col]
-	edit_context_menu.set_item_disabled(EditMenuAction.CUT_CELL_VALUE, !has_selected_cell)
-	edit_context_menu.set_item_disabled(EditMenuAction.COPY_CELL_VALUE, !has_selected_cell)
-	edit_context_menu.set_item_disabled(EditMenuAction.PASTE_TO_CELL, !has_selected_cell)
+	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.CUT_CELL_VALUE), !has_selected_cell)
+	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.COPY_CELL_VALUE), !has_selected_cell)
+	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.PASTE_TO_CELL), !has_selected_cell)
+
+	var is_resource_cell := has_selected_cell and dynamic_table.get_column(dynamic_table.focused_col).is_resource_column()
+	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.INSPECT_RESOURCE), !is_resource_cell)
 
 	var has_selected_row: = dynamic_table.focused_row != -1
-	edit_context_menu.set_item_disabled(EditMenuAction.COPY_STRING_ID, !has_selected_row)
-	edit_context_menu.set_item_disabled(EditMenuAction.COPY_UID, !has_selected_row)
-	edit_context_menu.set_item_disabled(EditMenuAction.SHOW_IN_FILESYSTEM, !has_selected_row)
+	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.COPY_STRING_ID), !has_selected_row)
+	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.COPY_UID), !has_selected_row)
+	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.SHOW_IN_FILESYSTEM), !has_selected_row)
 
 
 func do_edit_menu_action(action_id: int) -> void:
@@ -372,6 +376,13 @@ func do_edit_menu_action(action_id: int) -> void:
 			var uid := get_row_resource_uid(dynamic_table.focused_row)
 			var path := ResourceUID.uid_to_path(uid)
 			EditorInterface.get_file_system_dock().navigate_to_path(path)
+		EditMenuAction.INSPECT_RESOURCE:
+			var row := dynamic_table.focused_row
+			var col := dynamic_table.focused_col
+			if -1 not in [row, col]:
+				var value: Variant = dynamic_table.get_cell_value(row, col)
+				if value is Resource:
+					EditorInterface.edit_resource(value)
 		EditMenuAction.CUT_CELL_VALUE:
 			_warn_unimplemented()
 		EditMenuAction.COPY_CELL_VALUE:
@@ -423,8 +434,6 @@ func _on_cell_selected(row: int, column: int) -> void:
 	# WARNING: uncommenting it increases the chance of a crash occuring by a lot. Inexplicable,
 	# but supposedly related to switching selected cell with arrow keys. Only report: 'Abort trap: 6'
 	#print("Cell selected on row ", row, ", column ", column, " Cell value: ", dynamic_table.get_cell_value(row, column)) #, " Row value: ", dynamic_table.get_row_value(row))
-
-	Engine.get_process_frames()
 	if row != -1 and column != -1:
 		var uid: StringName = get_row_resource_uid(row)
 		if ResourceLoader.exists(uid):

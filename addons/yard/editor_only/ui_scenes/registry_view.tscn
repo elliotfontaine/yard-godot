@@ -50,7 +50,7 @@ script = ExtResource("1_isv8r")
 [node name="EditContextMenu" type="PopupMenu" parent="."]
 unique_name_in_owner = true
 size = Vector2i(130, 65)
-item_count = 12
+item_count = 13
 item_0/text = "Delete Entry"
 item_0/id = 0
 item_1/text = "Copy String ID"
@@ -59,28 +59,31 @@ item_2/text = "Copy UID"
 item_2/id = 2
 item_3/text = "Show In Filesystem"
 item_3/id = 3
-item_4/id = 4
+item_4/id = 100
 item_4/separator = true
-item_5/text = "Cut Cell Value"
-item_5/id = 5
-item_6/text = "Copy Cell Value"
-item_6/id = 6
-item_7/text = "Paste to Cell"
-item_7/id = 7
-item_8/id = 8
-item_8/separator = true
-item_9/text = "Select All"
-item_9/id = 9
-item_10/text = "Invert Selection"
-item_10/id = 10
-item_11/text = "Unselect"
-item_11/id = 11
+item_5/text = "Edit Resource"
+item_5/id = 4
+item_6/text = "Cut Cell Value"
+item_6/id = 5
+item_7/text = "Copy Cell Value"
+item_7/id = 6
+item_8/text = "Paste to Cell"
+item_8/id = 7
+item_9/id = 8
+item_9/separator = true
+item_10/text = "Select All"
+item_10/id = 9
+item_11/text = "Invert Selection"
+item_11/id = 10
+item_12/text = "Unselect"
+item_12/id = 11
 script = ExtResource("2_8g0vx")
 icon_names = Dictionary[int, String]({
 0: "Remove",
 1: "ActionCopy",
 2: "Instance",
 3: "ShowInFileSystem",
+4: "Edit",
 5: "ActionCut",
 6: "ActionCopy",
 7: "ActionPaste"
