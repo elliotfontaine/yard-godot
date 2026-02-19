@@ -2,7 +2,7 @@
 # Copyright (c) 2025 Giuseppe Pica (jospic)
 # https://github.com/jospic/dynamicdatatable
 
-# BEHOLD THE 1800-LINES BEAST.
+# BEHOLD THE 2000-LINES BEAST.
 # Original was probably vibe-coded, but it does the job nonetheless
 
 @tool
@@ -247,6 +247,8 @@ func _draw() -> void:
 					_draw_color_cell(cell_x_pos, row_y_pos, col_idx, row)
 				elif col.is_resource_column():
 					_draw_resource_cell(cell_x_pos, row_y_pos, col_idx, row)
+				elif col.is_enum_column():
+					_draw_cell_enum(cell_x_pos, row_y_pos, col_idx, row)
 				else:
 					_draw_cell_text(cell_x_pos, row_y_pos, col_idx, row)
 			cell_x_pos += col.current_width
@@ -975,6 +977,59 @@ func _draw_cell_text(cell_x: float, row_y: float, col: int, row: int) -> void:
 		_columns[col].current_width - abs(x_margin_val),
 		font_size,
 		text_color,
+	)
+
+
+func _draw_cell_enum(cell_x: float, row_y: float, col: int, row: int) -> void:
+	var cell_value: Variant = get_cell_value(row, col)
+	if not cell_value is int:
+		_draw_cell_text(cell_x, row_y, col, row)
+		return
+
+	var value_str: String
+	var key_found := -1
+	var column := _columns[col]
+	var hint_arr: Array = column.hint_string.split(",", false)
+	for i in hint_arr.size():
+		var colon_found: int = hint_arr[i].rfind(":")
+		if colon_found == -1:
+			key_found = cell_value
+			break
+
+		if hint_arr[i].substr(colon_found + 1).to_int() == cell_value:
+			key_found = i
+			break
+
+	if key_found != -1 and key_found < hint_arr.size():
+		value_str = hint_arr[key_found]
+
+	else:
+		value_str = "?:%s" % cell_value
+
+	var text_font: Font = font #mono_font
+	var h_alignment := HORIZONTAL_ALIGNMENT_CENTER #column.h_alignment
+	var color := Color(value_str.hash()) + Color(0.25, 0.25, 0.25, 1.0)
+	if column.custom_font:
+		text_font = column.custom_font
+	elif get_column(col).is_path_column():
+		text_font = mono_font
+
+	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(h_alignment)
+	var text_size := text_font.get_string_size(
+		value_str,
+		h_alignment,
+		_columns[col].current_width - abs(x_margin_val) * 2,
+		font_size,
+	)
+	var baseline_y := row_y + (row_height / 2.0) + (font.get_height(font_size) / 2.0) - font.get_descent(font_size)
+	draw_string(
+		text_font,
+		Vector2(cell_x + x_margin_val, baseline_y),
+		value_str,
+		h_alignment,
+		_columns[col].current_width - abs(x_margin_val),
+		font_size,
+		color,
 	)
 
 
@@ -1882,6 +1937,10 @@ class ColumnConfig:
 
 	func is_color_column() -> bool:
 		return type == TYPE_COLOR
+
+
+	func is_enum_column() -> bool:
+		return type == TYPE_INT and property_hint == PROPERTY_HINT_ENUM
 
 
 	func is_resource_column() -> bool:
