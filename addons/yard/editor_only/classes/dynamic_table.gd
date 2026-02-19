@@ -575,7 +575,7 @@ func _update_scrollbars() -> void:
 	var total_content_height := float(_total_rows) * row_height
 	_v_scroll.visible = total_content_height > visible_height
 	if _v_scroll.visible:
-		_v_scroll.max_value = total_content_height
+		_v_scroll.max_value = total_content_height + row_height / 2
 		_v_scroll.page = visible_height
 		_v_scroll.step = row_height
 	else:
