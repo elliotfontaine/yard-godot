@@ -161,7 +161,7 @@ static func sync_registry_entries_from_scan_dir(registry: Registry) -> void:
 	var scanned_uids := { }
 
 	# Add
-	for res in dir_get_matching_resources(registry, registry._scan_directory):
+	for res in dir_get_matching_resources(registry, registry._scan_directory, registry._recursive_scan):
 		var uid := ResourceUID.path_to_uid(res.resource_path)
 		scanned_uids[uid] = true
 		if add_entry(registry, uid) == OK:

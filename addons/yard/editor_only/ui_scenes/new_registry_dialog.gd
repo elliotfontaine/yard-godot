@@ -68,6 +68,7 @@ func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 		title = "Create Registry"
 		ok_button_text = "Create"
 		registry_path_line_edit.editable = true
+		registry_path_line_edit.focus_mode = Control.FOCUS_ALL
 		registry_path_line_edit.text = dir + "new_registry.tres"
 		registry_path_filesystem_button.icon = AnyIcon.get_icon(&"Folder")
 		registry_path_filesystem_button.tooltip_text = ""
@@ -79,6 +80,7 @@ func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 		recursive_scan_check_box.button_pressed = edited_registry._recursive_scan
 		registry_path_line_edit.text = edited_registry.resource_path
 		registry_path_line_edit.editable = false
+		registry_path_line_edit.focus_mode = Control.FOCUS_NONE
 		registry_path_filesystem_button.icon = AnyIcon.get_icon(&"ShowInFileSystem")
 		registry_path_filesystem_button.tooltip_text = "Show in filesystem."
 	else:
