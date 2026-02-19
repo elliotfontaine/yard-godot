@@ -72,10 +72,7 @@ var focused_col: int = -1 # Currently focused column
 var _columns: Array[ColumnConfig]
 var _data: Array[Array] = []
 var _full_data: Array = []
-#var _column_widths: Array = []
-#var _min_column_widths: Array = []
 var _total_rows := 0
-#var _total_columns := 0
 var _visible_rows_range := [0, 0]
 var _h_scroll_position := 0
 var _v_scroll_position := 0
@@ -572,6 +569,8 @@ func _update_scrollbars() -> void:
 		_h_scroll.max_value = total_content_width
 		_h_scroll.page = visible_width
 		#_h_scroll.step = default_minimum_column_width / 2.0 # Ensure float division
+	else:
+		_h_scroll.value = 0
 
 	var total_content_height := float(_total_rows) * row_height
 	_v_scroll.visible = total_content_height > visible_height
@@ -579,6 +578,8 @@ func _update_scrollbars() -> void:
 		_v_scroll.max_value = total_content_height
 		_v_scroll.page = visible_height
 		_v_scroll.step = row_height
+	else:
+		_v_scroll.value = 0
 
 	_on_v_scroll_value_changed(_v_scroll.value)
 
