@@ -105,6 +105,8 @@ func _validate_fields() -> void:
 				load(class_string.remove_chars("'\"")),
 			)
 		else:
+			# TODO: Fix icon size in Godot 4.6
+			# https://github.com/godotengine/godot/pull/95817
 			class_restriction_line_edit.right_icon = AnyIcon.get_class_icon(class_string)
 		info_messages.append(INFO_MESSAGES.class_valid)
 	else:

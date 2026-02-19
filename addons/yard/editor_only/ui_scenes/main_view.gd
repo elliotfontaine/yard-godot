@@ -82,6 +82,9 @@ func _ready() -> void:
 	_fuz.allow_subsequences = true
 	_fuz.start_offset = 0
 
+	var fixed_size := get_theme_constant("class_icon_size", "Editor")
+	registries_itemlist.fixed_icon_size = Vector2i(fixed_size, fixed_size)
+
 
 func _shortcut_input(event: InputEvent) -> void:
 	if is_visible_in_tree() and event.is_pressed():
@@ -180,8 +183,6 @@ func _update_registries_itemlist() -> void:
 		registries_itemlist.set_block_signals(false)
 		return
 
-	# Keep a stable iteration order.
-	# (In practice, Godot 4 Dictionaries should preserve insertion order)
 	var all_uids: Array[String] = _opened_registries.keys()
 
 	# Determine which uids to show using fuzzy search, based on LineEdit filter.
@@ -218,9 +219,20 @@ func _update_registries_itemlist() -> void:
 func _add_registry_to_itemlist(uid: String, display_name: String) -> int:
 	var registry := _opened_registries[uid]
 	var path := registry.resource_path
-	var icon := AnyIcon.get_variant_icon(load(uid), &"ClassList")
 
-	var idx := registries_itemlist.add_item(display_name, icon, true)
+	var resource_icon := AnyIcon.get_class_icon(&"Resource")
+	var registry_icon := AnyIcon.get_class_icon(&"Registry")
+	var custom_res_icon := AnyIcon.get_variant_icon(registry, &"FileList")
+	var icon := custom_res_icon
+
+	if icon in [resource_icon, registry_icon]:
+		icon = AnyIcon.get_class_icon(registry._class_restriction, &"FileList")
+	if icon == resource_icon:
+		icon = registry_icon
+
+	var display_text := display_name + " (%s)" % registry.size()
+	var idx := registries_itemlist.add_item(display_text, icon, true)
+
 	registries_itemlist.set_item_tooltip(idx, path)
 	registries_itemlist.set_item_metadata(idx, uid)
 	return idx
@@ -605,7 +617,6 @@ func _on_columns_menu_id_pressed(id: int) -> void:
 
 
 func _on_itemlist_registries_dropped(registries: Array[Registry]) -> void:
-	print(registries)
 	for registry in registries:
 		open_registry(registry)
 
@@ -682,6 +693,7 @@ func _on_toggle_registries_pressed() -> void:
 
 
 func _on_new_registry_dialog_confirmed() -> void:
+	_update_registries_itemlist()
 	if (
 		new_registry_dialog._state == new_registry_dialog.RegistryDialogState.REGISTRY_SETTINGS
 		and new_registry_dialog.edited_registry == registry_view.current_registry
