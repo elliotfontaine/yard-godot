@@ -68,6 +68,8 @@ var _uid_resource_to_inspect: String
 @onready var add_entry_button: Button = %AddEntryButton
 @onready var edit_context_menu: PopupMenu = %EditContextMenu
 @onready var delete_entries_confirmation_dialog := %DeleteEntriesConfirmationDialog
+@onready var drag_and_drop_info_panel: PanelContainer = %DragAndDropInfoPanel
+@onready var focus_panel: PanelContainer = %FocusPanel
 
 
 func _ready() -> void:
@@ -92,6 +94,13 @@ func _ready() -> void:
 	resource_picker_container.get_theme_stylebox(&"panel").content_margin_top = 0
 	resource_picker_container.get_theme_stylebox(&"panel").content_margin_left = 0
 	resource_picker_container.get_theme_stylebox(&"panel").content_margin_right = 0
+
+	drag_and_drop_info_panel.get_theme_stylebox(&"panel").bg_color = EditorThemeUtils.get_base_color(
+		0.6,
+	)
+	drag_and_drop_info_panel.get_theme_stylebox(&"panel").bg_color.a = 0.8
+	focus_panel.add_theme_stylebox_override(&"panel", get_theme_stylebox("Focus", "EditorStyles"))
+
 	grow_horizontal = Control.GROW_DIRECTION_END
 	grow_vertical = Control.GROW_DIRECTION_END
 
@@ -106,6 +115,19 @@ func _process(_delta: float) -> void:
 		# It's set by C++ code to enlarge the resource preview in the inspector.
 		# Since we want the bottom bar height to remain constant, we have to reset it.
 		_texture_rect_parent.custom_minimum_size = Vector2(1, 1)
+
+	if not get_viewport().gui_is_dragging():
+		drag_and_drop_info_panel.visible = (
+			current_registry and current_registry.is_empty()
+		)
+
+
+func _notification(what: int) -> void:
+	match what:
+		NOTIFICATION_DRAG_BEGIN:
+			_on_drag_begin()
+		NOTIFICATION_DRAG_END:
+			_on_drag_end()
 
 
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
@@ -216,6 +238,21 @@ func get_row_resource_uid(row: int) -> StringName:
 func get_row_resource_string_id(row: int) -> StringName:
 	var string_id: StringName = dynamic_table.get_cell_value(row, STRINGID_COLUMN)
 	return string_id
+
+
+func _on_drag_begin() -> void:
+	if not current_registry:
+		drag_and_drop_info_panel.visible = false
+		return
+	var drag_data: Variant = get_viewport().gui_get_drag_data()
+	var can_drop := drag_data != null and _can_drop_data(Vector2.ZERO, drag_data)
+	drag_and_drop_info_panel.visible = can_drop
+	focus_panel.visible = can_drop
+
+
+func _on_drag_end() -> void:
+	drag_and_drop_info_panel.hide()
+	focus_panel.hide()
 
 
 func _build_columns() -> Array[DynamicTable.ColumnConfig]:
