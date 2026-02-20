@@ -3,8 +3,6 @@
 class_name Registry
 extends Resource
 
-## Invalid resources are not fetched and don't push errors.
-const INVALID_RESOURCE_ID := &"<invalid>"
 const CACHE_MODE_REUSE := ResourceLoader.CacheMode.CACHE_MODE_REUSE
 
 @warning_ignore_start("unused_private_class_variable")
@@ -57,9 +55,6 @@ func get_all_string_ids() -> Array[StringName]:
 ## always returns the UID text ("uid://..."), or "" if [param id] is invalid
 ## (i.e. not in the registry).
 func get_uid(id: StringName) -> StringName:
-	if id == INVALID_RESOURCE_ID:
-		return &""
-
 	if id.is_empty():
 		return &""
 

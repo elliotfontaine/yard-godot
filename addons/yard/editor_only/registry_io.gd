@@ -389,22 +389,3 @@ static func _make_string_unique(registry: Registry, string_id: String) -> String
 	while id_to_try + "_" + str(n) in registry._string_ids_to_uids:
 		n += 1
 	return id_to_try + "_" + str(n)
-
-
-static func _validate_uids(registry: Registry) -> Dictionary[StringName, bool]:
-	var ret: Dictionary[StringName, bool] = { }
-	for uid in registry._uids_to_string_ids:
-		ret[uid] = _is_uid_valid(uid)
-	return ret
-
-
-static func _is_uid_valid(uid: StringName) -> bool:
-	if uid == &"" or uid == Registry.INVALID_RESOURCE_ID:
-		return false
-
-	var uid_str := String(uid)
-	if not uid_str.begins_with("uid://"):
-		return false
-
-	var cache_id: int = ResourceUID.text_to_id(uid_str)
-	return ResourceUID.has_id(cache_id)
