@@ -1813,14 +1813,18 @@ func _on_gui_input(event: InputEvent) -> void:
 
 	elif event is InputEventPanGesture:
 		if _v_scroll.visible:
+			if not sign(event.delta.y) == sign(_pan_delta_accumulation.y):
+				_pan_delta_accumulation.y = 0
 			_pan_delta_accumulation.y += event.delta.y
 			if abs(_pan_delta_accumulation.y) >= 1:
-				_v_scroll.value += _v_scroll.step * 1 * sign(_pan_delta_accumulation.y)
+				_v_scroll.value += sign(_pan_delta_accumulation.y) * _v_scroll.step
 				_pan_delta_accumulation.y -= 1 * sign(_pan_delta_accumulation.y)
 		if _h_scroll.visible and abs(event.delta.x) > 0.05:
+			if not sign(event.delta.x) == sign(_pan_delta_accumulation.x):
+				_pan_delta_accumulation.x = 0
 			_pan_delta_accumulation.x += event.delta.x
 			if abs(_pan_delta_accumulation.x) >= 1:
-				_h_scroll.value += _v_scroll.step * 1 * sign(_pan_delta_accumulation.x)
+				_h_scroll.value += sign(_pan_delta_accumulation.x) * _v_scroll.step
 				_pan_delta_accumulation.x -= 1 * sign(_pan_delta_accumulation.x)
 
 	elif event is InputEventMouseMotion:
