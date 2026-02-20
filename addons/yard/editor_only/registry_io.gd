@@ -54,8 +54,12 @@ static func edit_registry_settings(
 		return ERR_DOES_NOT_EXIST
 
 	registry._class_restriction = class_restriction
-	registry._scan_directory = scan_dir
+	for uid in registry.get_all_uids():
+		if not is_resource_matching_restriction(registry, load(uid)):
+			erase_entry(registry, uid)
+
 	registry._recursive_scan = recursive
+	registry._scan_directory = scan_dir
 
 	return ResourceSaver.save(registry)
 
@@ -285,16 +289,16 @@ static func is_valid_registry_output_path(path: String) -> bool:
 	return DirAccess.dir_exists_absolute(dir_abs)
 
 
-static func is_resource_matching_restriction(registry: Registry, res: Resource) -> bool:
+static func is_resource_matching_restriction(registry: Registry, res: Resource, alt_restriction: StringName = &"") -> bool:
 	# TODO: refactor using the new Class Utils script
 	if res == null:
 		return false
 	#if valid_classes.is_empty():
 	#return true
-	if not registry._class_restriction:
+	if not registry._class_restriction and not alt_restriction:
 		return true
 
-	var class_restriction: StringName = registry._class_restriction
+	var class_restriction: StringName = alt_restriction if alt_restriction else registry._class_restriction
 	var class_stringname: StringName
 	var res_script: Script = res.get_script()
 	if res_script != null:
@@ -346,6 +350,17 @@ static func is_resource_class_string(class_string: String) -> bool:
 	return false
 
 
+static func would_erase_entries(registry: Registry, new_restriction: String) -> bool:
+	for uid: StringName in registry.get_all_uids():
+		if not ResourceLoader.exists(uid):
+			continue
+		var is_valid := is_resource_matching_restriction(registry, load(uid), new_restriction)
+		if not is_valid:
+			return true
+
+	return false
+
+
 static func is_quoted_string(string: String) -> bool:
 	if string.length() < 2:
 		return false
@@ -393,14 +408,3 @@ static func _is_uid_valid(uid: StringName) -> bool:
 
 	var cache_id: int = ResourceUID.text_to_id(uid_str)
 	return ResourceUID.has_id(cache_id)
-
-
-static func _validate_resource_classes(registry: Registry) -> void:
-	for uid: StringName in registry._uids_to_string_ids:
-		if not ResourceLoader.exists(uid):
-			continue
-		var is_valid := is_resource_matching_restriction(registry, load(uid))
-		if not is_valid:
-			pass
-			#set_invalid_resource(uid)
-	#_emit_registry_entries_changed()

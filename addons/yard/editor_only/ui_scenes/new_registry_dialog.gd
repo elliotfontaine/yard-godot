@@ -39,6 +39,7 @@ var _state: RegistryDialogState
 var _file_dialog: EditorFileDialog
 var _file_dialog_state: FileDialogState
 
+@onready var new_restriction_confirmation_dialog: ConfirmationDialog = %NewRestrictionConfirmationDialog
 @onready var class_restriction_line_edit: LineEdit = %ClassRestrictionLineEdit
 @onready var class_list_dialog_button: Button = %ClassListDialogButton
 @onready var class_filesystem_button: Button = %ClassFilesystemButton
@@ -206,6 +207,7 @@ func _on_canceled() -> void:
 func _on_confirmed() -> void:
 	match _state:
 		RegistryDialogState.NEW_REGISTRY:
+			hide()
 			var err := RegistryIO.create_registry_file(
 				registry_path_line_edit.text.strip_edges(),
 				class_restriction_line_edit.text.strip_edges(),
@@ -216,14 +218,14 @@ func _on_confirmed() -> void:
 			if err != OK:
 				print_debug(error_string(err))
 		RegistryDialogState.REGISTRY_SETTINGS:
-			var err := RegistryIO.edit_registry_settings(
-				edited_registry,
-				class_restriction_line_edit.text.strip_edges(),
-				scan_directory_line_edit.text.strip_edges(),
-				recursive_scan_check_box.button_pressed,
-			)
-			if err != OK:
-				print_debug(error_string(err))
+			var new_class_restriction := class_restriction_line_edit.text.strip_edges()
+			if (
+				new_class_restriction != edited_registry._class_restriction
+				and RegistryIO.would_erase_entries(edited_registry, new_class_restriction)
+			):
+				new_restriction_confirmation_dialog.popup()
+			else:
+				_on_new_restriction_confirmation_dialog_confirmed()
 
 
 func _on_class_restriction_line_edit_text_changed(new_text: String) -> void:
@@ -252,7 +254,7 @@ func _on_scan_directory_filesystem_button_pressed() -> void:
 
 
 func _on_recursive_scan_check_box_pressed() -> void:
-	pass # Replace with function body.
+	pass
 
 
 func _on_registry_path_line_edit_text_changed(new_text: String) -> void:
@@ -282,3 +284,15 @@ func _on_file_dialog_dir_selected(path: String) -> void:
 	if _file_dialog_state == FileDialogState.SCAN_DIRECTORY:
 		scan_directory_line_edit.text = path
 		_validate_fields()
+
+
+func _on_new_restriction_confirmation_dialog_confirmed() -> void:
+	hide()
+	var err := RegistryIO.edit_registry_settings(
+		edited_registry,
+		class_restriction_line_edit.text.strip_edges(),
+		scan_directory_line_edit.text.strip_edges(),
+		recursive_scan_check_box.button_pressed,
+	)
+	if err != OK:
+		print_debug(error_string(err))

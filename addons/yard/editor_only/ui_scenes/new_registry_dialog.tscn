@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://b3g3e36v7g6kr"]
 
 [ext_resource type="Script" uid="uid://ci6vvg34c6b6o" path="res://addons/yard/editor_only/ui_scenes/new_registry_dialog.gd" id="1_uots1"]
-[ext_resource type="Script" uid="uid://djrr6b7fc76rw" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="2_8x47h"]
+[ext_resource type="Script" uid="uid://yxdtnhovt5i0" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="2_8x47h"]
 
 [node name="NewRegistryDialog" type="ConfirmationDialog"]
 oversampling_override = 1.0
@@ -9,7 +9,19 @@ title = "Create Registry"
 initial_position = 1
 size = Vector2i(666, 306)
 ok_button_text = "Create"
+dialog_hide_on_ok = false
 script = ExtResource("1_uots1")
+
+[node name="NewRestrictionConfirmationDialog" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+oversampling_override = 1.0
+initial_position = 1
+size = Vector2i(416, 158)
+ok_button_text = "Remove"
+dialog_text = "Some of the entries in the registry do not match the
+new class restriction and would be removed.
+
+Do you want to proceed ?"
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 anchors_preset = 15
@@ -113,6 +125,7 @@ scroll_active = false
 [connection signal="canceled" from="." to="." method="_on_canceled"]
 [connection signal="close_requested" from="." to="." method="_on_close_requested"]
 [connection signal="confirmed" from="." to="." method="_on_confirmed"]
+[connection signal="confirmed" from="NewRestrictionConfirmationDialog" to="." method="_on_new_restriction_confirmation_dialog_confirmed"]
 [connection signal="text_changed" from="VBoxContainer/GridContainer/ClassRestriction/ClassRestrictionLineEdit" to="." method="_on_class_restriction_line_edit_text_changed"]
 [connection signal="pressed" from="VBoxContainer/GridContainer/ClassRestriction/ClassListDialogButton" to="." method="_on_class_list_dialog_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/GridContainer/ClassRestriction/ClassFilesystemButton" to="." method="_on_class_filesystem_button_pressed"]
