@@ -653,7 +653,7 @@ func _start_cell_editing(row: int, col: int) -> void:
 	elif column.is_string_column():
 		_open_text_editor(row, col)
 	else:
-		push_warning("You can't edit this cell")
+		push_warning("There is no editor for this type of cell.")
 	# NB: boolean cells are toggled using single click
 
 

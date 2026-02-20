@@ -294,55 +294,121 @@ static func is_engine_version_older(major: int, minor: int = 0, patch: int = 0) 
 	return not is_engine_version_equal_or_newer(major, minor, patch)
 
 
-## Retourne le type déclaré (annotation/export/ressource) d'une propriété.
-## [param target]: instance d'objet, type (Object) retourné par get_type(), ou nom de classe (String).
-## [param property_name]: nom de la propriété dont on veut connaître le typage déclaré.
-## Retour: chaîne vide si introuvable, sinon un String décrivant le type (ex: "int", "String", "Texture", "Array[int]", ...).
-static func get_property_declared_type(target: Variant, property_name: String) -> String:
+## Returns all declared types of a property as an array of strings (e.g. ["int"], ["BaseMaterial3D","ShaderMaterial"], ...).
+static func get_property_declared_types(target: Variant, property_name: String) -> Array:
+	var types := []
 	var target_obj: Object = null
 	if target is String:
 		target_obj = get_type(target)
 	elif target is Object:
 		target_obj = target
 	else:
-		return ""
-
+		return types
 	if not target_obj or not target_obj.has_method("get_property_list"):
-		return ""
-
-	var props: Array = target_obj.get_property_list()
-
-	for p: Dictionary in props:
+		return types
+	for p: Dictionary in target_obj.get_property_list():
 		if p["name"] != property_name:
 			continue
-
-		# 1) Cas où le moteur fournit un nom de type explicite (type_name)
 		if p.has("type_name") and p["type_name"] != "":
-			return str(p["type_name"])
-
-		# 2) Cas générique : type numérique (Variant.Type)
-		if p.has("type"):
+			types.append(str(p["type_name"]))
+		elif p.has("type"):
 			var t := int(p["type"])
-			# Si type builtin connu -> retourne la chaîne (int, String, Array, Dictionary, ...)
 			if t != TYPE_OBJECT:
-				return type_string(t)
+				types.append(type_string(t))
+			else:
+				if p.has("hint_string") and str(p["hint_string"]) != "":
+					for s in str(p["hint_string"]).split(","):
+						types.append(s.strip_edges())
+				elif p.has("class") and str(p["class"]) != "":
+					types.append(str(p["class"]))
+				else:
+					types.append("Object")
+		elif p.has("hint_string") and str(p["hint_string"]) != "":
+			for s in str(p["hint_string"]).split(","):
+				types.append(s.strip_edges())
+	return types
 
-			# TYPE_OBJECT : il peut s'agir d'une Resource/Node ou d'un type précisé dans hint_string
-			# Priorité aux hints (ressource ou class)
-			if p.has("hint") and p.has("hint_string") and str(p["hint_string"]) != "":
-				# Exemple: PROPERTY_HINT_RESOURCE_TYPE -> "Texture"
-				return str(p["hint_string"])
 
-			# S'il existe un "class" ou "class_name" dans la propriété, l'utiliser
-			if p.has("class") and str(p["class"]) != "":
-				return str(p["class"])
-
-			# fallback
-			return "Object"
-
-		# 3) Cas où le type est indiqué via hint_string seulement (enum, resource, etc.)
-		if p.has("hint_string") and str(p["hint_string"]) != "":
-			return str(p["hint_string"])
-
-	# Si on arrive là, propriété non trouvée
-	return ""
+## Returns the default (zero/empty) value for a given built-in Variant type.
+static func get_type_builtin_default_value(type_id: Variant.Type) -> Variant:
+	match type_id:
+		TYPE_AABB:
+			return AABB()
+		TYPE_ARRAY:
+			return Array()
+		TYPE_BASIS:
+			return Basis()
+		TYPE_BOOL:
+			return bool() # false
+		TYPE_CALLABLE:
+			return Callable()
+		TYPE_COLOR:
+			return Color() # black
+		TYPE_DICTIONARY:
+			return Dictionary()
+		TYPE_FLOAT:
+			return float()
+		TYPE_INT:
+			return int()
+		TYPE_NIL:
+			return null
+		TYPE_NODE_PATH:
+			return NodePath()
+		TYPE_OBJECT:
+			return Object.new()
+		TYPE_PACKED_BYTE_ARRAY:
+			return PackedByteArray()
+		TYPE_PACKED_COLOR_ARRAY:
+			return PackedColorArray()
+		TYPE_PACKED_FLOAT32_ARRAY:
+			return PackedFloat32Array()
+		TYPE_PACKED_FLOAT64_ARRAY:
+			return PackedFloat64Array()
+		TYPE_PACKED_INT32_ARRAY:
+			return PackedInt32Array()
+		TYPE_PACKED_INT64_ARRAY:
+			return PackedInt64Array()
+		TYPE_PACKED_STRING_ARRAY:
+			return PackedStringArray()
+		TYPE_PACKED_VECTOR2_ARRAY:
+			return PackedVector2Array()
+		TYPE_PACKED_VECTOR3_ARRAY:
+			return PackedVector3Array()
+		TYPE_PACKED_VECTOR4_ARRAY:
+			return PackedVector4Array()
+		TYPE_PLANE:
+			return Plane()
+		TYPE_PROJECTION:
+			return Projection()
+		TYPE_QUATERNION:
+			return Quaternion()
+		TYPE_RECT2:
+			return Rect2()
+		TYPE_RECT2I:
+			return Rect2i()
+		TYPE_RID:
+			return RID()
+		TYPE_SIGNAL:
+			return Signal()
+		TYPE_STRING:
+			return String()
+		TYPE_STRING_NAME:
+			return StringName()
+		TYPE_TRANSFORM2D:
+			return Transform2D()
+		TYPE_TRANSFORM3D:
+			return Transform3D()
+		TYPE_VECTOR2:
+			return Vector2()
+		TYPE_VECTOR2I:
+			return Vector2i()
+		TYPE_VECTOR3:
+			return Vector3()
+		TYPE_VECTOR3I:
+			return Vector3i()
+		TYPE_VECTOR4:
+			return Vector4()
+		TYPE_VECTOR4I:
+			return Vector4i()
+		_:
+			return null

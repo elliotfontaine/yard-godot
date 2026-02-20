@@ -43,11 +43,7 @@ var current_registry: Registry:
 var disabled_property_columns: Array[StringName] = DISABLED_BY_DEFAULT_PROPERTIES.duplicate()
 var properties_column_info: Array[Dictionary]
 var entries_data: Array[Array] # inner arrays are rows, their content is columns
-
-#var current_selected_cell := [-1, -1]
-#var current_selected_row := -1
-#var current_multiple_selected_rows := -1
-#var multiple_selected_rows: Array
+var clipboard: Variant
 
 var toggle_button_forward := false:
 	set(value):
@@ -307,40 +303,53 @@ func _edit_entry_property(entry: StringName, property: StringName, old_value: Va
 	var uid := current_registry.get_uid(entry)
 	if not uid or not ResourceLoader.exists(uid):
 		return
-	var res := load(entry)
-	if property in res:
-		var prop_type := ClassUtils.get_property_declared_type(res, property)
-		if (
-			ClassUtils.is_type_builtin(typeof(new_value)) and type_string(typeof(new_value)) == prop_type
-			or ClassUtils.is_class_of(new_value, prop_type)
-		):
-			res.set(property, new_value)
-			print_rich(
-				"[color=%s]Set %s from %s to %s[/color]" % [
-					LOGGING_INFO_COLOR,
-					property,
-					old_value,
-					new_value,
-				],
-			)
-		else:
-			print_rich(
-				"[color=%s]● [b]ERROR:[/b] Invalid type. Couldn't set %s (%s) to %s (%s)[/color]" % [
-					EditorThemeUtils.color_error.to_html(false),
-					property,
-					prop_type,
-					new_value,
-					ClassUtils.get_type_name(new_value),
-				],
-			)
 
-	else:
+	var res := load(entry)
+	if not property in res:
 		print_rich(
 			"[color=%s]● [b]ERROR:[/b] Property %s not in resource[/color]" % [
 				EditorThemeUtils.color_error.to_html(false),
 				property,
 			],
 		)
+		return
+
+	var prop_types := ClassUtils.get_property_declared_types(res, property)
+	if new_value == null:
+		if res.get_script():
+			new_value = res.get_script().get_property_default_value(property)
+		else:
+			new_value = ClassDB.class_get_property_default_value(ClassUtils.get_type_name(res), property)
+
+	var valid := false
+	for prop_type: String in prop_types:
+		if (ClassUtils.is_type_builtin(typeof(new_value)) and type_string(typeof(new_value)) == prop_type) \
+		or ClassUtils.is_class_of(new_value, prop_type) \
+		or (new_value == null and typeof(old_value) == TYPE_OBJECT):
+			valid = true
+			break
+
+	if not valid:
+		print_rich(
+			"[color=%s]● [b]ERROR:[/b] Invalid type. Couldn't set %s (%s) to %s (%s)[/color]" % [
+				EditorThemeUtils.color_error.to_html(false),
+				property,
+				", ".join(prop_types),
+				new_value,
+				ClassUtils.get_type_name(new_value),
+			],
+		)
+		return
+
+	res.set(property, new_value)
+	print_rich(
+		"[color=%s]Set %s from %s to %s[/color]" % [
+			LOGGING_INFO_COLOR,
+			property,
+			old_value,
+			new_value,
+		],
+	)
 
 
 func _ask_confirm_delete_entries() -> void:
@@ -421,11 +430,21 @@ func do_edit_menu_action(action_id: int) -> void:
 				if value is Resource:
 					EditorInterface.edit_resource(value)
 		EditMenuAction.CUT_CELL_VALUE:
-			_warn_unimplemented()
+			var row := dynamic_table.focused_row
+			var col := dynamic_table.focused_col
+			var value: Variant = dynamic_table.get_cell_value(row, col)
+			clipboard = value
+			_on_cell_edited(row, col, value, null)
 		EditMenuAction.COPY_CELL_VALUE:
-			_warn_unimplemented()
+			var row := dynamic_table.focused_row
+			var col := dynamic_table.focused_col
+			var value: Variant = dynamic_table.get_cell_value(row, col)
+			clipboard = value
 		EditMenuAction.PASTE_TO_CELL:
-			_warn_unimplemented()
+			var row := dynamic_table.focused_row
+			var col := dynamic_table.focused_col
+			var value: Variant = dynamic_table.get_cell_value(row, col)
+			_on_cell_edited(row, col, value, clipboard)
 		EditMenuAction.SELECT_ALL:
 			_select_all()
 		EditMenuAction.INVERT_SELECTION:
