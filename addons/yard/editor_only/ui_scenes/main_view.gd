@@ -429,9 +429,35 @@ func _toggle_registry_context_menu_items() -> void:
 
 func _toggle_edit_menu_items() -> void:
 	var edit_menu := edit_menu_button.get_popup()
-	var no_edited_registry := not registry_view.current_registry
-	for idx in edit_menu.item_count:
-		edit_menu.set_item_disabled(idx, no_edited_registry)
+	if not registry_view.current_registry:
+		for idx in edit_menu.item_count:
+			edit_menu.set_item_disabled(idx, true)
+		return
+
+	var dynamic_table := registry_view.dynamic_table
+	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), dynamic_table.focused_row == -1)
+
+	if dynamic_table.selected_rows.size() > 1:
+		edit_menu.set_item_text(
+			edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES),
+			"Delete Entries (%s)" % dynamic_table.selected_rows.size(),
+		)
+	else:
+		edit_menu.set_item_text(edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), "Delete Entry")
+
+	var has_selected_cell := -1 not in [dynamic_table.focused_row, dynamic_table.focused_col]
+	var cant_be_cut := dynamic_table.focused_col in [registry_view.UID_COLUMN, registry_view.STRINGID_COLUMN]
+	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.CUT_CELL_VALUE), !has_selected_cell or cant_be_cut)
+	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.COPY_CELL_VALUE), !has_selected_cell)
+	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.PASTE_TO_CELL), !has_selected_cell)
+
+	var is_resource_cell := has_selected_cell and dynamic_table.get_column(dynamic_table.focused_col).is_resource_column()
+	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.INSPECT_RESOURCE), !is_resource_cell)
+
+	var has_selected_row: = dynamic_table.focused_row != -1
+	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.COPY_STRING_ID), !has_selected_row)
+	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.COPY_UID), !has_selected_row)
+	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.SHOW_IN_FILESYSTEM), !has_selected_row)
 
 
 func _do_file_menu_action(action_id: int) -> void:

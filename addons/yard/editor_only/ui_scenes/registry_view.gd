@@ -395,7 +395,8 @@ func _toggle_edit_context_menu_items() -> void:
 		edit_context_menu.set_item_text(edit_context_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), "Delete Entry")
 
 	var has_selected_cell := -1 not in [dynamic_table.focused_row, dynamic_table.focused_col]
-	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.CUT_CELL_VALUE), !has_selected_cell)
+	var cant_be_cut := dynamic_table.focused_col in [UID_COLUMN, STRINGID_COLUMN]
+	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.CUT_CELL_VALUE), !has_selected_cell or cant_be_cut)
 	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.COPY_CELL_VALUE), !has_selected_cell)
 	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.PASTE_TO_CELL), !has_selected_cell)
 
@@ -515,9 +516,9 @@ func _on_cell_edited(row: int, column: int, old_value: Variant, new_value: Varia
 		var prop_name: StringName = col_config.identifier
 		if ResourceLoader.exists(entry):
 			_edit_entry_property(entry, prop_name, old_value, new_value)
-	elif column == STRINGID_COLUMN:
+	elif column == STRINGID_COLUMN and new_value:
 		RegistryIO.rename_entry(current_registry, old_value, new_value)
-	elif column == UID_COLUMN:
+	elif column == UID_COLUMN and new_value:
 		RegistryIO.change_entry_uid(current_registry, old_value, new_value)
 	update_view()
 
