@@ -246,7 +246,7 @@ func _on_drag_begin() -> void:
 		return
 	var drag_data: Variant = get_viewport().gui_get_drag_data()
 	var can_drop := drag_data != null and _can_drop_data(Vector2.ZERO, drag_data)
-	drag_and_drop_info_panel.visible = can_drop
+	drag_and_drop_info_panel.visible = can_drop or current_registry.is_empty()
 	focus_panel.visible = can_drop
 
 

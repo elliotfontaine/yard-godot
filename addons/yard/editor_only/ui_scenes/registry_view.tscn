@@ -146,6 +146,7 @@ selected_row_back_color = Color(1, 1, 1, 0.2)
 selected_cell_back_color = Color(0.3372549, 0.61960787, 1, 1)
 row_color = Color(0.2, 0.23, 0.31, 1)
 alternate_row_color = Color(0.164, 0.1886, 0.2542, 1)
+invalid_cell_color = Color(0.146, 0.1679, 0.2263, 1)
 
 [node name="DragAndDropInfoPanel" type="PanelContainer" parent="VBoxContainer/Border"]
 unique_name_in_owner = true
@@ -167,7 +168,7 @@ mouse_filter = 2
 
 [node name="Label" type="Label" parent="VBoxContainer/Border/DragAndDropInfoPanel/CenterContainer"]
 layout_mode = 2
-text = "Drop resources here to add them to the registry."
+text = "Drop resource files here to add them to the registry."
 
 [node name="PanelContainer" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
