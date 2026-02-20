@@ -283,7 +283,6 @@ func set_native_theming(delay: int = 0) -> void:
 func set_columns(columns: Array[ColumnConfig]) -> void:
 	_columns = columns
 	_reset_column_widths()
-	_update_scrollbars()
 	queue_redraw()
 
 
