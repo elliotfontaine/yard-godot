@@ -19,6 +19,7 @@ signal cell_edited(row: int, col: int, old_value: Variant, new_value: Variant)
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const ClassUtils := Namespace.ClassUtils
+const EditorThemeUtils := Namespace.EditorThemeUtils
 const AnyIcon := Namespace.AnyIcon
 
 const H_ALIGNMENT_MARGINS = {
@@ -26,6 +27,7 @@ const H_ALIGNMENT_MARGINS = {
 	HORIZONTAL_ALIGNMENT_CENTER: 0,
 	HORIZONTAL_ALIGNMENT_RIGHT: -5,
 }
+const CELL_INVALID := "<INVALID>"
 
 # Theming properties
 @export_group("Custom YARD Properties")
@@ -57,6 +59,8 @@ const H_ALIGNMENT_MARGINS = {
 @export var progress_background_color: Color = Color(0.3, 0.3, 0.3, 1.0)
 @export var progress_border_color: Color = Color(0.6, 0.6, 0.6, 1.0)
 @export var progress_text_color: Color = Color(1.0, 1.0, 1.0, 1.0)
+@export_group("Invalid cell")
+@export var invalid_cell_color: Color = Color("252b3aff")
 
 # Fonts
 var font := get_theme_default_font()
@@ -271,6 +275,7 @@ func set_native_theming(delay: int = 0) -> void:
 	selected_cell_back_color = root.get_theme_color(&"accent_color", &"Editor")
 	header_filter_active_font_color = root.get_theme_color(&"accent_color", &"Editor")
 	grid_color = root.get_theme_color(&"disabled_border_color", &"Editor")
+	invalid_cell_color = EditorThemeUtils.get_base_color(0.9)
 	font = root.get_theme_font(&"main", &"EditorFonts")
 	default_font_color = root.get_theme_color(&"font_color", &"Editor")
 	font_size = root.get_theme_font_size(&"main_size", &"EditorFonts")
@@ -306,7 +311,7 @@ func set_data(new_data: Array) -> void:
 	focused_row = -1
 	focused_col = -1
 
-	var blank: Variant = "[INVALID]" # TODO: manage undefined cells differently
+	var blank: Variant = CELL_INVALID # TODO: manage undefined cells differently
 	for row_data_item: Array in _data:
 		while row_data_item.size() < _columns.size():
 			row_data_item.append(blank)
@@ -640,6 +645,8 @@ func _restore_selected_rows() -> void:
 
 func _start_cell_editing(row: int, col: int) -> void:
 	var column := _columns[col]
+	if get_cell_value(row, col) == CELL_INVALID:
+		return
 
 	if column.is_color_column():
 		_open_color_editor(row, col)
@@ -788,8 +795,12 @@ func _draw_checkbox(cell_x: float, row_y: float, col: int, row: int) -> void:
 	if not row < _data.size() and col < _data[row].size():
 		return
 
-	var cell_value := bool(_data[row][col])
-	var icon_name := &"checked" if cell_value else &"unchecked"
+	var cell_value: Variant = _data[row][col]
+	if cell_value is not bool:
+		_draw_cell_text(cell_x, row_y, col, row)
+		return
+	var is_checked: bool = cell_value
+	var icon_name := &"checked" if is_checked else &"unchecked"
 	var icon: Texture2D = get_theme_icon(icon_name, &"CheckBox")
 	if icon == null:
 		return
@@ -922,7 +933,11 @@ func _draw_resource_cell(cell_x: float, row_y: float, col: int, row: int) -> voi
 
 
 func _draw_cell_text(cell_x: float, row_y: float, col: int, row: int) -> void:
-	var cell_value := ""
+	var cell_value := str(get_cell_value(row, col))
+	if cell_value == CELL_INVALID:
+		_draw_cell_invalid(cell_x, row_y, col, row)
+		return
+
 	var column := _columns[col]
 	var text_font: Font = font
 	var h_alignment := column.h_alignment
@@ -930,11 +945,10 @@ func _draw_cell_text(cell_x: float, row_y: float, col: int, row: int) -> void:
 		text_font = column.custom_font
 	elif get_column(col).is_path_column():
 		text_font = mono_font
-	if row >= 0 and row < _data.size() and col >= 0 and col < _data[row].size(): # bounds check
-		cell_value = str(_data[row][col])
-		if column.is_resource_column() and _data[row][col] == null:
-			cell_value = "<empty>"
-			h_alignment = HORIZONTAL_ALIGNMENT_CENTER
+
+	if column.is_resource_column() and _data[row][col] == null:
+		cell_value = "<empty>"
+		h_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(h_alignment)
 	var text_size := text_font.get_string_size(
@@ -1010,6 +1024,23 @@ func _draw_cell_enum(cell_x: float, row_y: float, col: int, row: int) -> void:
 		font_size,
 		color,
 	)
+
+
+func _draw_cell_invalid(cell_x: float, row_y: float, col: int, row: int) -> void:
+	var color: Color = invalid_cell_color
+	var margin := 0.0 # 0 for continuous rect between invalid cells
+	var cell_inner_width: float = _columns[col].current_width - margin * 2
+	var cell_inner_height: float = row_height - margin * 2
+	if cell_inner_width <= 0.0 or cell_inner_height <= 0.0:
+		return
+
+	var rect := Rect2(
+		Vector2(cell_x, row_y + margin),
+		Vector2(cell_inner_width, cell_inner_height),
+	)
+
+	draw_rect(rect, color, true)
+	#draw_rect(rect, Color(1, 1, 1, border_alpha), false, 1.0, true)
 
 
 func _get_interpolated_three_colors(start_c: Color, mid_c: Color, end_c: Color, t_val: float) -> Color:

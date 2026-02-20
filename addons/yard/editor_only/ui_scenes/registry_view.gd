@@ -221,8 +221,12 @@ func get_res_row_data(res: Resource) -> Array[Variant]:
 
 	var row: Array[Variant] = []
 	for prop: Dictionary in properties_column_info:
-		if prop[&"name"] in res and not is_property_disabled(prop):
+		if is_property_disabled(prop):
+			continue
+		if prop[&"name"] in res:
 			row.append(res.get(prop[&"name"]))
+		else:
+			row.append(DynamicTable.CELL_INVALID)
 	return row
 
 
