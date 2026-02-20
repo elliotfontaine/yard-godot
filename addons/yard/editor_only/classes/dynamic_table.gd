@@ -1961,7 +1961,8 @@ class ColumnConfig:
 
 
 	func is_progress_column() -> bool:
-		return type in [TYPE_FLOAT, TYPE_INT] and property_hint == PROPERTY_HINT_RANGE
+		#return type in [TYPE_FLOAT, TYPE_INT] and property_hint == PROPERTY_HINT_RANGE
+		return false
 
 
 	func is_boolean_column() -> bool:
