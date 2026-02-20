@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://pbm1netkyiqy" path="res://addons/yard/editor_only/ui_scenes/main_view.gd" id="1_2b5h5"]
 [ext_resource type="PackedScene" uid="uid://crnac01bnyk3" path="res://addons/yard/editor_only/ui_scenes/registry_view.tscn" id="2_2enek"]
 [ext_resource type="Script" uid="uid://caby6h435lr2g" path="res://addons/yard/editor_only/classes/editor_icon_menu_button.gd" id="2_g3f7o"]
-[ext_resource type="Script" uid="uid://dyxdmrhopt5i0" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="2_mepag"]
+[ext_resource type="Script" uid="uid://yxdtnhovt5i0" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="2_mepag"]
 [ext_resource type="Script" uid="uid://cfbh7d7n20geh" path="res://addons/yard/editor_only/ui_scenes/registries_itemlist.gd" id="2_qv183"]
 [ext_resource type="Texture2D" uid="uid://73a38p2r8hos" path="res://addons/yard/editor_only/assets/github_icon.svg" id="3_1eqxg"]
 [ext_resource type="PackedScene" uid="uid://b3g3e36v7g6kr" path="res://addons/yard/editor_only/ui_scenes/new_registry_dialog.tscn" id="4_qv183"]
