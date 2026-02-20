@@ -32,12 +32,17 @@ func is_empty() -> bool:
 	return _uids_to_string_ids.is_empty()
 
 
+## Given an [param id] (either String ID or UID), ...
+func has(id: StringName) -> bool:
+	return get_uid(id) != &""
+
+
 func has_uid(uid: StringName) -> bool:
 	return _uids_to_string_ids.has(uid)
 
 
-func has_string_id(id: StringName) -> bool:
-	return _string_ids_to_uids.has(id)
+func has_string_id(string_id: StringName) -> bool:
+	return _string_ids_to_uids.has(string_id)
 
 
 func get_all_uids() -> Array[StringName]:
