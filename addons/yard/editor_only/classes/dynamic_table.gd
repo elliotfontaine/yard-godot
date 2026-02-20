@@ -922,36 +922,6 @@ func _draw_resource_cell(cell_x: float, row_y: float, col: int, row: int) -> voi
 	draw_rect(Rect2(inner_pos, Vector2(cell_inner_width, cell_inner_height)), Color(1, 1, 1, 0.18), false, 1.0)
 
 
-func _on_resource_cell_thumb_ready(path: String, preview: Texture2D, thumbnail_preview: Texture2D, userdata: Variant) -> void:
-	if typeof(userdata) != TYPE_DICTIONARY:
-		return
-
-	var key: String = userdata.get("key", "")
-	if key.is_empty():
-		return
-
-	# Prefer thumbnail; fallback to preview if thumbnail missing
-	var tex: Texture2D = thumbnail_preview if thumbnail_preview != null else preview
-
-	# Fallback to resource class icon
-	if not tex:
-		tex = AnyIcon.get_class_icon(userdata.get("class", "Resource"))
-
-	_resource_thumb_cache[key] = tex # can be null if both are null
-	_resource_thumb_pending.erase(key)
-
-	await get_tree().create_timer(0.01).timeout
-	queue_redraw()
-
-
-func _get_interpolated_three_colors(start_c: Color, mid_c: Color, end_c: Color, t_val: float) -> Color:
-	var clamped_t = clampf(t_val, 0.0, 1.0)
-	if clamped_t <= 0.5:
-		return start_c.lerp(mid_c, clamped_t * 2.0)
-	else:
-		return mid_c.lerp(end_c, (clamped_t - 0.5) * 2.0)
-
-
 func _draw_cell_text(cell_x: float, row_y: float, col: int, row: int) -> void:
 	var cell_value := ""
 	var column := _columns[col]
@@ -1043,185 +1013,12 @@ func _draw_cell_enum(cell_x: float, row_y: float, col: int, row: int) -> void:
 	)
 
 
-func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> void:
-	# TODO: clean / refactor method
-	if _editing_cell[1] >= 0:
-		var column := get_column(_editing_cell[1])
-		if column.is_resource_column() or column.is_path_column():
-			# When focus is lost (after an editor window was closed) do NOT save changes
-			_finish_editing(false)
-		else:
-			_finish_editing(true)
-
-	var clicked_row := -1
-	if row_height > 0: # Avoid division by zero
-		clicked_row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
-
-	if clicked_row < 0 or clicked_row >= _total_rows: # Click outside valid row area
-		# Optional: clear selection when clicking outside
-		# selected_rows.clear()
-		# _anchor_row = -1
-		# focused_row = -1
-		# focused_col = -1
-		# queue_redraw()
-		return
-
-	var current_x_pos := -_h_scroll_position
-	var clicked_col := -1
-	for col_idx in _columns.size():
-		var column := _columns[col_idx]
-		if mouse_pos.x >= current_x_pos && mouse_pos.x < current_x_pos + column.current_width:
-			clicked_col = col_idx
-			break
-		current_x_pos += column.current_width
-
-	if clicked_col == -1:
-		return # Click outside column area
-
-	focused_row = clicked_row
-	focused_col = clicked_col
-
-	var is_shift := event.is_shift_pressed()
-	var is_ctrl_cmd := event.is_ctrl_pressed() or event.is_meta_pressed() # Ctrl or Cmd
-
-	var selection_was_multiple := selected_rows.size() > 1 # State before the change
-	var emit_multiple_selection_signal := false
-
-	if is_shift and _anchor_row != -1:
-		selected_rows.clear()
-		var start_range: int = min(_anchor_row, focused_row)
-		var end_range: int = max(_anchor_row, focused_row)
-		for i in range(start_range, end_range + 1):
-			selected_rows.append(i)
-		# After a Shift selection, if more than one row is selected, prepare to emit.
-		if selected_rows.size() > 1:
-			emit_multiple_selection_signal = true
-	elif is_ctrl_cmd:
-		if selected_rows.has(focused_row):
-			selected_rows.erase(focused_row)
-		else:
-			selected_rows.append(focused_row)
-		_anchor_row = focused_row # Update the anchor for future Shift selections
-		# After a Ctrl/Cmd selection, if more than one row is selected, prepare to emit.
-		if selected_rows.size() > 1:
-			emit_multiple_selection_signal = true
-		# If the selection was multiple and now is no longer multiple (because Ctrl-click deselects),
-		# you might still want to emit to indicate a change from a multiple-selection state.
-		# However, the requirement is "when a multiple selection EXISTS".
-		# So if selected_rows.size() <= 1, we do not set emit_multiple_selection_signal = true.
-	else: # Single click without modifiers
-		selected_rows.clear()
-		selected_rows.append(focused_row)
-		_anchor_row = focused_row
-		# In this case, selected_rows.size() will be 1.
-		# If the previous selection was multiple and now is single,
-		# we do not emit multiple_rows_selected because a multiple selection no longer exists.
-
-	cell_selected.emit(focused_row, focused_col) # Always emit for a valid cell click
-	_ensure_col_visible(focused_col)
-
-	# Emit the new signal if a multiple selection was identified
-	if emit_multiple_selection_signal:
-		# selected_rows already contains the correct indices
-		multiple_rows_selected.emit(selected_rows)
-	# Also consider the case where the selection transitions from multiple to single/none
-	# due to a Ctrl operation. If you want a signal for that "change" as well,
-	# the logic here should be slightly different. But sticking to "when it exists",
-	# the current approach is correct.
-
-	queue_redraw()
-
-
-func _handle_right_click(mouse_pos: Vector2) -> void:
-	var clicked_row := -1
-	var clicked_col := -1
-
-	if mouse_pos.y >= header_height and row_height > 0:
-		var local_row: int = floori((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
-
-		if local_row >= 0 and local_row < _total_rows:
-			clicked_row = local_row
-
-	var current_x := -_h_scroll_position
-	for col_idx in range(_columns.size()):
-		var column := _columns[col_idx]
-
-		if mouse_pos.x >= current_x and mouse_pos.x < current_x + column.current_width:
-			clicked_col = col_idx
-			break
-
-		current_x += column.current_width
-
-	if selected_rows.size() <= 1:
-		set_selected_cell(clicked_row, clicked_col)
-
-	cell_right_selected.emit(clicked_row, clicked_col, get_global_mouse_position())
-
-
-func _handle_double_click(mouse_pos: Vector2) -> void:
-	if mouse_pos.y < header_height: # Clicked on header
-		return
-
-	var row = -1
-	if row_height > 0:
-		row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
-
-	if row >= 0 and row < _total_rows:
-		var current_x = -_h_scroll_position
-		var col = -1
-
-		for col_idx in _columns.size():
-			var column := _columns[col_idx]
-			if mouse_pos.x >= current_x and mouse_pos.x < current_x + column.current_width:
-				col = col_idx
-				break
-			current_x += column.current_width
-
-		if col != -1:
-			# If the clicked cell is not the currently focused/selected one,
-			# update the selection as a single click before starting editing.
-			if not (selected_rows.size() == 1 and selected_rows[0] == row and focused_row == row and focused_col == col):
-				set_selected_cell(row, col)
-
-			_start_cell_editing(row, col)
-
-
-func _handle_header_click(mouse_pos: Vector2) -> void:
-	var current_x := -_h_scroll_position
-
-	for col_idx in _columns.size():
-		var column := _columns[col_idx]
-		if (
-			mouse_pos.x >= current_x + _divider_width / 2
-			and mouse_pos.x < current_x + column.current_width - _divider_width / 2
-		):
-			# Finish editing if active
-			_finish_editing(false)
-
-			if _last_column_sorted == col_idx:
-				_ascending = not _ascending
-			else:
-				_ascending = true
-
-			ordering_data(col_idx, _ascending)
-			header_clicked.emit(col_idx)
-			break
-
-		current_x += column.current_width
-
-
-func _handle_header_double_click(mouse_pos: Vector2) -> void:
-	_finish_editing(false) # Finish cell editing, if active
-	var current_x := -_h_scroll_position
-
-	for col_idx in _columns.size():
-		var column := _columns[col_idx]
-		if mouse_pos.x >= current_x and mouse_pos.x < current_x + column.current_width:
-			var header_rect := Rect2(current_x, 0, column.current_width, header_height)
-			_start_filtering(col_idx, header_rect)
-			break
-
-		current_x += column.current_width
+func _get_interpolated_three_colors(start_c: Color, mid_c: Color, end_c: Color, t_val: float) -> Color:
+	var clamped_t = clampf(t_val, 0.0, 1.0)
+	if clamped_t <= 0.5:
+		return start_c.lerp(mid_c, clamped_t * 2.0)
+	else:
+		return mid_c.lerp(end_c, (clamped_t - 0.5) * 2.0)
 
 
 func _start_filtering(col: int, header_rect: Rect2) -> void:
@@ -1365,86 +1162,6 @@ func _is_clicking_progress_bar(mouse_pos: Vector2) -> bool:
 			queue_redraw()
 		_progress_drag_row = row
 		_progress_drag_col = clicked_col_idx
-		return true
-
-	return false
-
-
-func _handle_progress_drag(mouse_pos: Vector2) -> void:
-	if (
-		_progress_drag_row < 0
-		or _progress_drag_col < 0
-		or _progress_drag_col >= _columns.size()
-	):
-		return
-
-	var current_x := -_h_scroll_position
-	for col_loop in range(_progress_drag_col):
-		current_x += _columns[col_loop].current_width
-
-	var margin := 4.0
-	var bar_x_pos := current_x + margin
-	var bar_width = _columns[_progress_drag_col].current_width - (margin * 2.0)
-
-	if bar_width <= 0:
-		return # Avoid division by zero
-
-	var relative_x := mouse_pos.x - bar_x_pos
-	var new_progress = clamp(relative_x / bar_width, 0.0, 1.0)
-
-	if (
-		_progress_drag_row < _data.size()
-		and _progress_drag_col < _data[_progress_drag_row].size()
-	):
-		_data[_progress_drag_row][_progress_drag_col] = new_progress
-		progress_changed.emit(_progress_drag_row, _progress_drag_col, new_progress)
-		queue_redraw()
-
-
-func _handle_checkbox_click(mouse_pos: Vector2) -> bool:
-	if mouse_pos.y < header_height:
-		return false
-
-	var row := -1
-	if row_height > 0:
-		row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
-
-	if row < 0 or row >= _total_rows:
-		return false
-
-	var current_x := -_h_scroll_position
-	var clicked_col_idx := -1
-
-	for col_idx in _columns.size():
-		var column := _columns[col_idx]
-		if mouse_pos.x >= current_x and mouse_pos.x < current_x + column.current_width:
-			clicked_col_idx = col_idx
-			break
-		current_x += column.current_width
-
-	# TODO: WHAT THE HELL IS THAT SIDE EFFECT ?! Method is a predicate goddamnit. REFACTOR ASAP
-	# TODO: same code as progress above, refactor for that too
-	var column := _columns[clicked_col_idx]
-	if column.is_boolean_column():
-		# When clicking a checkbox, the row becomes the current single selection (if not already)
-		if focused_row != row or focused_col != clicked_col_idx:
-			focused_row = row
-			focused_col = clicked_col_idx
-
-			# If it is not the only selected row
-			if not selected_rows.has(row) or selected_rows.size() > 1:
-				selected_rows.clear()
-				selected_rows.append(row)
-				_anchor_row = row
-
-			cell_selected.emit(focused_row, focused_col) # Emit focus signal
-			# Do not call queue_redraw() here; it will be done after update_cell
-
-		var old_val: Variant = get_cell_value(row, clicked_col_idx)
-		var new_val := not bool(old_val)
-
-		update_cell(row, clicked_col_idx, new_val) # update_cell calls queue_redraw()
-		cell_edited.emit(row, clicked_col_idx, old_val, new_val)
 		return true
 
 	return false
@@ -1680,9 +1397,400 @@ func _handle_key_input(event: InputEventKey) -> void:
 	elif event_consumed: # Consume the event if it was partially handled (e.g. key recognized but no action)
 		get_viewport().set_input_as_handled()
 
+
+func _handle_pan_gesture(event: InputEventPanGesture) -> void:
+	if _v_scroll.visible:
+		if not sign(event.delta.y) == sign(_pan_delta_accumulation.y):
+			_pan_delta_accumulation.y = 0
+		_pan_delta_accumulation.y += event.delta.y
+		if abs(_pan_delta_accumulation.y) >= 1:
+			_v_scroll.value += sign(_pan_delta_accumulation.y) * _v_scroll.step
+			_pan_delta_accumulation.y -= 1 * sign(_pan_delta_accumulation.y)
+	if _h_scroll.visible and abs(event.delta.x) > 0.05:
+		if not sign(event.delta.x) == sign(_pan_delta_accumulation.x):
+			_pan_delta_accumulation.x = 0
+		_pan_delta_accumulation.x += event.delta.x
+		if abs(_pan_delta_accumulation.x) >= 1:
+			_h_scroll.value += sign(_pan_delta_accumulation.x) * _v_scroll.step
+			_pan_delta_accumulation.x -= 1 * sign(_pan_delta_accumulation.x)
+
+
+func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
+	var m_pos = event.position
+
+	if (
+		_dragging_progress
+		and _progress_drag_row >= 0
+		and _progress_drag_col >= 0
+	):
+		_handle_progress_drag(m_pos)
+
+	elif (
+		_resizing_column >= 0
+		and _resizing_column < _columns.size() - 1
+	):
+		var delta_x: float = m_pos.x - _resizing_start_pos
+		var new_width: float = max(
+			_resizing_start_width + delta_x,
+			_columns[_resizing_column].minimum_width,
+		)
+
+		_columns[_resizing_column].current_width = new_width
+		_update_scrollbars()
+		column_resized.emit(_resizing_column, new_width)
+		queue_redraw()
+
+	else:
+		_check_mouse_over_divider(m_pos)
+		_update_tooltip(m_pos)
+
+
+func _handle_mouse_button(event: InputEventMouseButton) -> void:
+	if event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			var m_pos := event.position
+
+			# Double-click handling
+			if (
+				_click_count == 1
+				and _double_click_timer.time_left > 0
+				and _last_click_pos.distance_to(m_pos) < _click_position_threshold
+			):
+				_click_count = 0
+				_double_click_timer.stop()
+
+				if m_pos.y < header_height:
+					_handle_header_double_click(m_pos) # <-- NEW CALL
+				else:
+					_handle_double_click(m_pos)
+			else:
+				# Single-click handling
+				_click_count = 1
+				_last_click_pos = m_pos
+				_double_click_timer.start()
+
+				if m_pos.y < header_height:
+					# If the filter LineEdit is visible, do not process single header clicks
+					if not _filter_line_edit.visible:
+						_handle_header_click(m_pos)
+				else:
+					_handle_checkbox_click(m_pos)
+					_handle_cell_click(m_pos, event)
+
+					if _is_clicking_progress_bar(m_pos):
+						_dragging_progress = true
+
+				if _mouse_over_divider >= 0:
+					_resizing_column = _mouse_over_divider
+					_resizing_start_pos = m_pos.x
+					_resizing_start_width = _columns[_resizing_column].current_width
+
+		else:
+			# Mouse button released
+			_resizing_column = -1
+			_dragging_progress = false
+			_progress_drag_row = -1
+			_progress_drag_col = -1
+
+	elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+		_handle_right_click(event.position) # Use event.position
+
+	elif event.button_index == MOUSE_BUTTON_WHEEL_UP:
+		if _v_scroll.visible:
+			_v_scroll.value = max(
+				0,
+				_v_scroll.value - _v_scroll.step * 1,
+			)
+
+	elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+		if _v_scroll.visible:
+			_v_scroll.value = min(
+				_v_scroll.max_value,
+				_v_scroll.value + _v_scroll.step * 1,
+			)
+
+
+func _handle_progress_drag(mouse_pos: Vector2) -> void:
+	if (
+		_progress_drag_row < 0
+		or _progress_drag_col < 0
+		or _progress_drag_col >= _columns.size()
+	):
+		return
+
+	var current_x := -_h_scroll_position
+	for col_loop in range(_progress_drag_col):
+		current_x += _columns[col_loop].current_width
+
+	var margin := 4.0
+	var bar_x_pos := current_x + margin
+	var bar_width = _columns[_progress_drag_col].current_width - (margin * 2.0)
+
+	if bar_width <= 0:
+		return # Avoid division by zero
+
+	var relative_x := mouse_pos.x - bar_x_pos
+	var new_progress = clamp(relative_x / bar_width, 0.0, 1.0)
+
+	if (
+		_progress_drag_row < _data.size()
+		and _progress_drag_col < _data[_progress_drag_row].size()
+	):
+		_data[_progress_drag_row][_progress_drag_col] = new_progress
+		progress_changed.emit(_progress_drag_row, _progress_drag_col, new_progress)
+		queue_redraw()
+
+
+func _handle_checkbox_click(mouse_pos: Vector2) -> bool:
+	if mouse_pos.y < header_height:
+		return false
+
+	var row := -1
+	if row_height > 0:
+		row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
+
+	if row < 0 or row >= _total_rows:
+		return false
+
+	var current_x := -_h_scroll_position
+	var clicked_col_idx := -1
+
+	for col_idx in _columns.size():
+		var column := _columns[col_idx]
+		if mouse_pos.x >= current_x and mouse_pos.x < current_x + column.current_width:
+			clicked_col_idx = col_idx
+			break
+		current_x += column.current_width
+
+	# TODO: WHAT THE HELL IS THAT SIDE EFFECT ?! Method is a predicate goddamnit. REFACTOR ASAP
+	# TODO: same code as progress above, refactor for that too
+	var column := _columns[clicked_col_idx]
+	if column.is_boolean_column():
+		# When clicking a checkbox, the row becomes the current single selection (if not already)
+		if focused_row != row or focused_col != clicked_col_idx:
+			focused_row = row
+			focused_col = clicked_col_idx
+
+			# If it is not the only selected row
+			if not selected_rows.has(row) or selected_rows.size() > 1:
+				selected_rows.clear()
+				selected_rows.append(row)
+				_anchor_row = row
+
+			cell_selected.emit(focused_row, focused_col) # Emit focus signal
+			# Do not call queue_redraw() here; it will be done after update_cell
+
+		var old_val: Variant = get_cell_value(row, clicked_col_idx)
+		var new_val := not bool(old_val)
+
+		update_cell(row, clicked_col_idx, new_val) # update_cell calls queue_redraw()
+		cell_edited.emit(row, clicked_col_idx, old_val, new_val)
+		return true
+
+	return false
+
+
+func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> void:
+	# TODO: clean / refactor method
+	if _editing_cell[1] >= 0:
+		var column := get_column(_editing_cell[1])
+		if column.is_resource_column() or column.is_path_column():
+			# When focus is lost (after an editor window was closed) do NOT save changes
+			_finish_editing(false)
+		else:
+			_finish_editing(true)
+
+	var clicked_row := -1
+	if row_height > 0: # Avoid division by zero
+		clicked_row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
+
+	if clicked_row < 0 or clicked_row >= _total_rows: # Click outside valid row area
+		# Optional: clear selection when clicking outside
+		# selected_rows.clear()
+		# _anchor_row = -1
+		# focused_row = -1
+		# focused_col = -1
+		# queue_redraw()
+		return
+
+	var current_x_pos := -_h_scroll_position
+	var clicked_col := -1
+	for col_idx in _columns.size():
+		var column := _columns[col_idx]
+		if mouse_pos.x >= current_x_pos && mouse_pos.x < current_x_pos + column.current_width:
+			clicked_col = col_idx
+			break
+		current_x_pos += column.current_width
+
+	if clicked_col == -1:
+		return # Click outside column area
+
+	focused_row = clicked_row
+	focused_col = clicked_col
+
+	var is_shift := event.is_shift_pressed()
+	var is_ctrl_cmd := event.is_ctrl_pressed() or event.is_meta_pressed() # Ctrl or Cmd
+
+	var selection_was_multiple := selected_rows.size() > 1 # State before the change
+	var emit_multiple_selection_signal := false
+
+	if is_shift and _anchor_row != -1:
+		selected_rows.clear()
+		var start_range: int = min(_anchor_row, focused_row)
+		var end_range: int = max(_anchor_row, focused_row)
+		for i in range(start_range, end_range + 1):
+			selected_rows.append(i)
+		# After a Shift selection, if more than one row is selected, prepare to emit.
+		if selected_rows.size() > 1:
+			emit_multiple_selection_signal = true
+	elif is_ctrl_cmd:
+		if selected_rows.has(focused_row):
+			selected_rows.erase(focused_row)
+		else:
+			selected_rows.append(focused_row)
+		_anchor_row = focused_row # Update the anchor for future Shift selections
+		# After a Ctrl/Cmd selection, if more than one row is selected, prepare to emit.
+		if selected_rows.size() > 1:
+			emit_multiple_selection_signal = true
+		# If the selection was multiple and now is no longer multiple (because Ctrl-click deselects),
+		# you might still want to emit to indicate a change from a multiple-selection state.
+		# However, the requirement is "when a multiple selection EXISTS".
+		# So if selected_rows.size() <= 1, we do not set emit_multiple_selection_signal = true.
+	else: # Single click without modifiers
+		selected_rows.clear()
+		selected_rows.append(focused_row)
+		_anchor_row = focused_row
+		# In this case, selected_rows.size() will be 1.
+		# If the previous selection was multiple and now is single,
+		# we do not emit multiple_rows_selected because a multiple selection no longer exists.
+
+	cell_selected.emit(focused_row, focused_col) # Always emit for a valid cell click
+	_ensure_col_visible(focused_col)
+
+	# Emit the new signal if a multiple selection was identified
+	if emit_multiple_selection_signal:
+		# selected_rows already contains the correct indices
+		multiple_rows_selected.emit(selected_rows)
+	# Also consider the case where the selection transitions from multiple to single/none
+	# due to a Ctrl operation. If you want a signal for that "change" as well,
+	# the logic here should be slightly different. But sticking to "when it exists",
+	# the current approach is correct.
+
+	queue_redraw()
+
+
+func _handle_right_click(mouse_pos: Vector2) -> void:
+	var clicked_row := -1
+	var clicked_col := -1
+
+	if mouse_pos.y >= header_height and row_height > 0:
+		var local_row: int = floori((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
+
+		if local_row >= 0 and local_row < _total_rows:
+			clicked_row = local_row
+
+	var current_x := -_h_scroll_position
+	for col_idx in range(_columns.size()):
+		var column := _columns[col_idx]
+
+		if mouse_pos.x >= current_x and mouse_pos.x < current_x + column.current_width:
+			clicked_col = col_idx
+			break
+
+		current_x += column.current_width
+
+	if selected_rows.size() <= 1:
+		set_selected_cell(clicked_row, clicked_col)
+
+	cell_right_selected.emit(clicked_row, clicked_col, get_global_mouse_position())
+
+
+func _handle_double_click(mouse_pos: Vector2) -> void:
+	if mouse_pos.y < header_height: # Clicked on header
+		return
+
+	var row = -1
+	if row_height > 0:
+		row = floor((mouse_pos.y - header_height) / row_height) + _visible_rows_range[0]
+
+	if row >= 0 and row < _total_rows:
+		var current_x = -_h_scroll_position
+		var col = -1
+
+		for col_idx in _columns.size():
+			var column := _columns[col_idx]
+			if mouse_pos.x >= current_x and mouse_pos.x < current_x + column.current_width:
+				col = col_idx
+				break
+			current_x += column.current_width
+
+		if col != -1:
+			# If the clicked cell is not the currently focused/selected one,
+			# update the selection as a single click before starting editing.
+			if not (selected_rows.size() == 1 and selected_rows[0] == row and focused_row == row and focused_col == col):
+				set_selected_cell(row, col)
+
+			_start_cell_editing(row, col)
+
+
+func _handle_header_click(mouse_pos: Vector2) -> void:
+	var current_x := -_h_scroll_position
+
+	for col_idx in _columns.size():
+		var column := _columns[col_idx]
+		if (
+			mouse_pos.x >= current_x + _divider_width / 2
+			and mouse_pos.x < current_x + column.current_width - _divider_width / 2
+		):
+			# Finish editing if active
+			_finish_editing(false)
+
+			if _last_column_sorted == col_idx:
+				_ascending = not _ascending
+			else:
+				_ascending = true
+
+			ordering_data(col_idx, _ascending)
+			header_clicked.emit(col_idx)
+			break
+
+		current_x += column.current_width
+
+
+func _handle_header_double_click(mouse_pos: Vector2) -> void:
+	_finish_editing(false) # Finish cell editing, if active
+	var current_x := -_h_scroll_position
+
+	for col_idx in _columns.size():
+		var column := _columns[col_idx]
+		if mouse_pos.x >= current_x and mouse_pos.x < current_x + column.current_width:
+			var header_rect := Rect2(current_x, 0, column.current_width, header_height)
+			_start_filtering(col_idx, header_rect)
+			break
+
+		current_x += column.current_width
+
 #endregion
 
 #region SIGNAL CALLBACKS
+
+func _on_gui_input(event: InputEvent) -> void:
+	if event is InputEventPanGesture:
+		_handle_pan_gesture(event)
+
+	elif event is InputEventMouseMotion:
+		_handle_mouse_motion(event)
+
+	elif event is InputEventMouseButton:
+		_handle_mouse_button(event)
+
+	elif (
+		event is InputEventKey
+		and event.is_pressed()
+		and has_focus()
+	):
+		_handle_key_input(event as InputEventKey)
+
 
 func _on_resized() -> void:
 	_update_scrollbars()
@@ -1744,131 +1852,6 @@ func _on_filter_focus_exited() -> void:
 		_apply_filter(_filter_line_edit.text)
 
 
-func _on_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton:
-		var mouse_btn_event = event as InputEventMouseButton
-
-		if mouse_btn_event.button_index == MOUSE_BUTTON_LEFT:
-			if mouse_btn_event.pressed:
-				var m_pos = mouse_btn_event.position
-
-				# Double-click handling
-				if (
-					_click_count == 1
-					and _double_click_timer.time_left > 0
-					and _last_click_pos.distance_to(m_pos) < _click_position_threshold
-				):
-					_click_count = 0
-					_double_click_timer.stop()
-
-					if m_pos.y < header_height:
-						_handle_header_double_click(m_pos) # <-- NEW CALL
-					else:
-						_handle_double_click(m_pos)
-				else:
-					# Single-click handling
-					_click_count = 1
-					_last_click_pos = m_pos
-					_double_click_timer.start()
-
-					if m_pos.y < header_height:
-						# If the filter LineEdit is visible, do not process single header clicks
-						if not _filter_line_edit.visible:
-							_handle_header_click(m_pos)
-					else:
-						_handle_checkbox_click(m_pos)
-						_handle_cell_click(m_pos, mouse_btn_event)
-
-						if _is_clicking_progress_bar(m_pos):
-							_dragging_progress = true
-
-					if _mouse_over_divider >= 0:
-						_resizing_column = _mouse_over_divider
-						_resizing_start_pos = m_pos.x
-						_resizing_start_width = _columns[_resizing_column].current_width
-
-			else:
-				# Mouse button released
-				_resizing_column = -1
-				_dragging_progress = false
-				_progress_drag_row = -1
-				_progress_drag_col = -1
-
-		elif mouse_btn_event.button_index == MOUSE_BUTTON_RIGHT and mouse_btn_event.pressed:
-			_handle_right_click(mouse_btn_event.position) # Use mouse_btn_event.position
-
-		elif mouse_btn_event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			if _v_scroll.visible:
-				_v_scroll.value = max(
-					0,
-					_v_scroll.value - _v_scroll.step * 1,
-				)
-
-		elif mouse_btn_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			if _v_scroll.visible:
-				_v_scroll.value = min(
-					_v_scroll.max_value,
-					_v_scroll.value + _v_scroll.step * 1,
-				)
-
-	elif event is InputEventPanGesture:
-		if _v_scroll.visible:
-			if not sign(event.delta.y) == sign(_pan_delta_accumulation.y):
-				_pan_delta_accumulation.y = 0
-			_pan_delta_accumulation.y += event.delta.y
-			if abs(_pan_delta_accumulation.y) >= 1:
-				_v_scroll.value += sign(_pan_delta_accumulation.y) * _v_scroll.step
-				_pan_delta_accumulation.y -= 1 * sign(_pan_delta_accumulation.y)
-		if _h_scroll.visible and abs(event.delta.x) > 0.05:
-			if not sign(event.delta.x) == sign(_pan_delta_accumulation.x):
-				_pan_delta_accumulation.x = 0
-			_pan_delta_accumulation.x += event.delta.x
-			if abs(_pan_delta_accumulation.x) >= 1:
-				_h_scroll.value += sign(_pan_delta_accumulation.x) * _v_scroll.step
-				_pan_delta_accumulation.x -= 1 * sign(_pan_delta_accumulation.x)
-
-	elif event is InputEventMouseMotion:
-		var mouse_mot_event = event as InputEventMouseMotion # Cast
-		var m_pos = mouse_mot_event.position # Renamed from `mouse_pos`
-
-		if (
-			_dragging_progress
-			and _progress_drag_row >= 0
-			and _progress_drag_col >= 0
-		):
-			_handle_progress_drag(m_pos)
-
-		elif (
-			_resizing_column >= 0
-			and _resizing_column < _columns.size() - 1
-		):
-			# Changed from headers.size() to _total_columns
-			var delta_x = m_pos.x - _resizing_start_pos
-			var new_width = max(
-				_resizing_start_width + delta_x,
-				_columns[_resizing_column].minimum_width,
-			)
-
-			_columns[_resizing_column].current_width = new_width
-			_update_scrollbars()
-			column_resized.emit(_resizing_column, new_width)
-			queue_redraw()
-
-		else:
-			_check_mouse_over_divider(m_pos)
-			_update_tooltip(m_pos)
-
-	elif (
-		event is InputEventKey
-		and event.is_pressed()
-		and has_focus()
-	):
-		# Keyboard input handling
-		_handle_key_input(event as InputEventKey) # Call the dedicated handler
-		# accept_event() or get_viewport().set_input_as_handled()
-		# will be called inside _handle_key_input
-
-
 func _on_editor_settings_changed() -> void:
 	var changed_settings := EditorInterface.get_editor_settings().get_changed_settings()
 	for setting in changed_settings:
@@ -1888,6 +1871,28 @@ func _on_resource_previewer_preview_invalidated(path: String) -> void:
 	#push_warning("RESOURCE PREVIEW INVALIDATED: %s" % path)
 	if _resource_thumb_cache.has(path):
 		_resource_thumb_cache.erase(path)
+
+
+func _on_resource_cell_thumb_ready(path: String, preview: Texture2D, thumbnail_preview: Texture2D, userdata: Variant) -> void:
+	if typeof(userdata) != TYPE_DICTIONARY:
+		return
+
+	var key: String = userdata.get("key", "")
+	if key.is_empty():
+		return
+
+	# Prefer thumbnail; fallback to preview if thumbnail missing
+	var tex: Texture2D = thumbnail_preview if thumbnail_preview != null else preview
+
+	# Fallback to resource class icon
+	if not tex:
+		tex = AnyIcon.get_class_icon(userdata.get("class", "Resource"))
+
+	_resource_thumb_cache[key] = tex # can be null if both are null
+	_resource_thumb_pending.erase(key)
+
+	await get_tree().create_timer(0.01).timeout
+	queue_redraw()
 
 #endregion
 
