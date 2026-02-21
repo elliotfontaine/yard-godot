@@ -19,17 +19,17 @@ enum FileMenuAction {
 	MOVE_DOWN = 31,
 	SORT = 32,
 }
-const EditMenuAction := registry_view.EditMenuAction # Enum
+const EditMenuAction := RegistryTableView.EditMenuAction # Enum
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const PluginCFG := Namespace.PluginCFG
 const RegistryIO := Namespace.RegistryIO
 const RegistriesItemList := Namespace.RegistriesItemList
-const RegistryView := Namespace.RegistryView
+const RegistryTableView := Namespace.RegistryTableView
 const NewRegistryDialog := Namespace.NewRegistryDialog
 const AnyIcon := Namespace.AnyIcon
 const FuzzySearch := Namespace.FuzzySearch
-const FuzzySearchResult := Namespace.FuzzySearchResult
+const FuzzySearchResult := FuzzySearch.FuzzySearchResult
 
 const ACCELERATORS: Dictionary = {
 	FileMenuAction.NEW: KEY_MASK_META | KEY_N,
@@ -55,7 +55,7 @@ var _fuz := FuzzySearch.new()
 @onready var registries_filter: LineEdit = %RegistriesFilter
 @onready var registries_container: VBoxContainer = %RegistriesContainer
 @onready var registries_itemlist: RegistriesItemList = %RegistriesItemList
-@onready var registry_view: RegistryView = %RegistryView
+@onready var registry_table_view: RegistryTableView = %RegistryTableView
 @onready var registry_context_menu: PopupMenu = %RegistryContextMenu
 @onready var new_registry_dialog: NewRegistryDialog = %NewRegistryDialog
 
@@ -79,7 +79,7 @@ func _ready() -> void:
 	columns_menu_button.get_popup().id_pressed.connect(_on_columns_menu_id_pressed)
 	columns_menu_button.get_popup().hide_on_checkable_item_selection = false
 	registries_itemlist.registries_dropped.connect(_on_itemlist_registries_dropped)
-	registry_view.toggle_registry_panel_button.pressed.connect(_on_toggle_registries_pressed)
+	registry_table_view.toggle_registry_panel_button.pressed.connect(_on_toggle_registries_pressed)
 
 	# Fuzzy Search settings
 	_fuz.max_results = 20
@@ -154,12 +154,12 @@ func select_registry(uid: String) -> void:
 
 	#print("registry selected:  ", registry.resource_path, " (", uid, ")")
 	RegistryIO.sync_registry_entries_from_scan_dir(registry)
-	registry_view.current_registry = registry
+	registry_table_view.current_registry = registry
 
 
 func unselect_registry() -> void:
 	_current_registry_uid = ""
-	registry_view.current_registry = null
+	registry_table_view.current_registry = null
 	_toggle_visibility_topbar_buttons(false)
 	registries_itemlist.deselect_all()
 
@@ -180,9 +180,9 @@ func _setup_accelerators() -> void:
 			registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(action), ACCELERATORS.get(action))
 
 	var edit_menu := edit_menu_button.get_popup()
-	for action: EditMenuAction in registry_view.ACCELERATORS:
+	for action: EditMenuAction in registry_table_view.ACCELERATORS:
 		if edit_menu.get_item_index(action) != -1:
-			edit_menu.set_item_accelerator(edit_menu.get_item_index(action), registry_view.ACCELERATORS.get(action))
+			edit_menu.set_item_accelerator(edit_menu.get_item_index(action), registry_table_view.ACCELERATORS.get(action))
 
 
 func _populate_open_recent_submenu() -> void:
@@ -425,12 +425,12 @@ func _toggle_registry_context_menu_items() -> void:
 
 func _toggle_edit_menu_items() -> void:
 	var edit_menu := edit_menu_button.get_popup()
-	if not registry_view.current_registry:
+	if not registry_table_view.current_registry:
 		for idx in edit_menu.item_count:
 			edit_menu.set_item_disabled(idx, true)
 		return
 
-	var dynamic_table := registry_view.dynamic_table
+	var dynamic_table := registry_table_view.dynamic_table
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), dynamic_table.focused_row == -1)
 
 	if dynamic_table.selected_rows.size() > 1:
@@ -442,7 +442,7 @@ func _toggle_edit_menu_items() -> void:
 		edit_menu.set_item_text(edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), "Delete Entry")
 
 	var has_selected_cell := -1 not in [dynamic_table.focused_row, dynamic_table.focused_col]
-	var cant_be_cut := dynamic_table.focused_col in [registry_view.UID_COLUMN, registry_view.STRINGID_COLUMN]
+	var cant_be_cut := dynamic_table.focused_col in [registry_table_view.UID_COLUMN, registry_table_view.STRINGID_COLUMN]
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.CUT_CELL_VALUE), !has_selected_cell or cant_be_cut)
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.COPY_CELL_VALUE), !has_selected_cell)
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.PASTE_TO_CELL), !has_selected_cell)
@@ -617,7 +617,7 @@ func _on_file_menu_id_pressed(id: int) -> void:
 
 
 func _on_edit_menu_id_pressed(id: int) -> void:
-	registry_view.do_edit_menu_action(id)
+	registry_table_view.do_edit_menu_action(id)
 
 
 func _on_registry_context_menu_id_pressed(id: int) -> void:
@@ -630,12 +630,12 @@ func _on_columns_menu_id_pressed(id: int) -> void:
 	popup.toggle_item_checked(id)
 
 	if popup.is_item_checked(id):
-		registry_view.disabled_property_columns.erase(prop_name)
+		registry_table_view.disabled_property_columns.erase(prop_name)
 	else:
-		if not prop_name in registry_view.disabled_property_columns:
-			registry_view.disabled_property_columns.append(prop_name)
+		if not prop_name in registry_table_view.disabled_property_columns:
+			registry_table_view.disabled_property_columns.append(prop_name)
 
-	registry_view.update_view()
+	registry_table_view.update_view()
 
 
 func _on_itemlist_registries_dropped(registries: Array[Registry]) -> void:
@@ -658,8 +658,8 @@ func _on_file_dialog_action(path: String) -> void:
 
 
 func _on_refresh_view_button_pressed() -> void:
-	if registry_view.current_registry:
-		registry_view.update_view()
+	if registry_table_view.current_registry:
+		registry_table_view.update_view()
 
 
 func _on_report_issue_button_pressed() -> void:
@@ -676,34 +676,34 @@ func _on_make_floating_button_pressed() -> void:
 
 func _on_columns_menu_button_about_to_popup() -> void:
 	var popup := columns_menu_button.get_popup()
-	var registry := registry_view.current_registry
+	var registry := registry_table_view.current_registry
 	popup.clear()
 
 	if not registry:
 		popup.add_separator("Select a registry first")
 		return
 
-	for prop: Dictionary in registry_view.properties_column_info:
+	for prop: Dictionary in registry_table_view.properties_column_info:
 		var prop_name: String = prop[&"name"]
-		if prop_name not in registry_view.DISABLED_BY_DEFAULT_PROPERTIES:
+		if prop_name not in registry_table_view.DISABLED_BY_DEFAULT_PROPERTIES:
 			popup.add_check_item(prop_name.capitalize())
 			popup.set_item_tooltip(popup.item_count - 1, prop_name)
 			popup.set_item_icon(popup.item_count - 1, AnyIcon.get_property_icon_from_dict(prop))
-			popup.set_item_checked(popup.item_count - 1, prop_name not in registry_view.disabled_property_columns)
+			popup.set_item_checked(popup.item_count - 1, prop_name not in registry_table_view.disabled_property_columns)
 
 	popup.add_separator()
 
-	for prop: Dictionary in registry_view.properties_column_info:
+	for prop: Dictionary in registry_table_view.properties_column_info:
 		var prop_name: String = prop[&"name"]
-		if prop_name in registry_view.DISABLED_BY_DEFAULT_PROPERTIES:
+		if prop_name in registry_table_view.DISABLED_BY_DEFAULT_PROPERTIES:
 			popup.add_check_item(prop_name.capitalize())
 			popup.set_item_tooltip(popup.item_count - 1, prop_name)
 			popup.set_item_icon(popup.item_count - 1, AnyIcon.get_property_icon_from_dict(prop))
-			popup.set_item_checked(popup.item_count - 1, prop_name not in registry_view.disabled_property_columns)
+			popup.set_item_checked(popup.item_count - 1, prop_name not in registry_table_view.disabled_property_columns)
 
 
 func _on_registry_settings_button_pressed() -> void:
-	new_registry_dialog.edited_registry = registry_view.current_registry
+	new_registry_dialog.edited_registry = registry_table_view.current_registry
 	new_registry_dialog.popup_with_state(
 		new_registry_dialog.RegistryDialogState.REGISTRY_SETTINGS,
 	)
@@ -711,23 +711,23 @@ func _on_registry_settings_button_pressed() -> void:
 
 func _on_toggle_registries_pressed() -> void:
 	registries_container.visible = !registries_container.visible
-	registry_view.toggle_button_forward = !registries_container.visible
+	registry_table_view.toggle_button_forward = !registries_container.visible
 
 
 func _on_new_registry_dialog_confirmed() -> void:
 	_update_registries_itemlist()
 	if (
 		new_registry_dialog._state == new_registry_dialog.RegistryDialogState.REGISTRY_SETTINGS
-		and new_registry_dialog.edited_registry == registry_view.current_registry
+		and new_registry_dialog.edited_registry == registry_table_view.current_registry
 	):
-		registry_view.update_view()
+		registry_table_view.update_view()
 
 
 func _on_filesystem_changed() -> void:
 	for registry: Registry in _opened_registries.values():
 		RegistryIO.sync_registry_entries_from_scan_dir(registry)
 	_update_registries_itemlist()
-	registry_view.update_view()
+	registry_table_view.update_view()
 
 
 func _on_open_documentation_button_pressed() -> void:

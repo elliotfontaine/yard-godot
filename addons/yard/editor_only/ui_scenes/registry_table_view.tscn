@@ -1,8 +1,8 @@
 [gd_scene load_steps=11 format=3 uid="uid://crnac01bnyk3"]
 
-[ext_resource type="Script" uid="uid://tahli441tq7q" path="res://addons/yard/editor_only/ui_scenes/registry_view.gd" id="1_isv8r"]
+[ext_resource type="Script" uid="uid://tahli441tq7q" path="res://addons/yard/editor_only/ui_scenes/registry_table_view.gd" id="1_isv8r"]
 [ext_resource type="Script" uid="uid://0fmlvbrxn2lf" path="res://addons/yard/editor_only/classes/editor_icon_popup_menu.gd" id="2_8g0vx"]
-[ext_resource type="Script" uid="uid://d25c0lxjdxouk" path="res://addons/yard/editor_only/classes/dynamic_table.gd" id="2_wsykm"]
+[ext_resource type="Script" uid="uid://d25c0lxjdxouk" path="res://addons/yard/editor_only/ui_scenes/components/dynamic_table.gd" id="2_wsykm"]
 [ext_resource type="Script" uid="uid://yxdtnhovt5i0" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="3_5vsn3"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5vsn3"]
@@ -26,7 +26,7 @@ corner_radius_bottom_left = 8
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1gq3u"]
 bg_color = Color(0.164, 0.1886, 0.2542, 0.8)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dsmxi"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p6h1j"]
 content_margin_left = 4.0
 content_margin_top = 4.0
 content_margin_right = 4.0
@@ -39,7 +39,7 @@ border_width_right = 2
 border_width_bottom = 2
 corner_detail = 1
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xt2wx"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3v8u8"]
 content_margin_left = 0.0
 content_margin_top = 0.0
 content_margin_right = 0.0
@@ -53,7 +53,7 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[node name="RegistryView" type="PanelContainer"]
+[node name="RegistryTableView" type="PanelContainer"]
 clip_contents = true
 anchors_preset = 15
 anchor_right = 1.0
@@ -160,7 +160,7 @@ unique_name_in_owner = true
 visible = false
 layout_mode = 2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_dsmxi")
+theme_override_styles/panel = SubResource("StyleBoxFlat_p6h1j")
 
 [node name="CenterContainer" type="CenterContainer" parent="VBoxContainer/Border/DragAndDropInfoPanel"]
 layout_mode = 2
@@ -194,7 +194,7 @@ alignment = 2
 [node name="ResourcePickerContainer" type="PanelContainer" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_xt2wx")
+theme_override_styles/panel = SubResource("StyleBoxFlat_3v8u8")
 
 [node name="EntryNameLineEdit" type="LineEdit" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer"]
 unique_name_in_owner = true

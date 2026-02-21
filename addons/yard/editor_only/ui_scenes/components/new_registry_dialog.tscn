@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://b3g3e36v7g6kr"]
 
-[ext_resource type="Script" uid="uid://ci6vvg34c6b6o" path="res://addons/yard/editor_only/ui_scenes/new_registry_dialog.gd" id="1_uots1"]
+[ext_resource type="Script" uid="uid://ci6vvg34c6b6o" path="res://addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd" id="1_uots1"]
 [ext_resource type="Script" uid="uid://yxdtnhovt5i0" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="2_8x47h"]
 
 [node name="NewRegistryDialog" type="ConfirmationDialog"]

@@ -1,15 +1,15 @@
 [gd_scene load_steps=9 format=3 uid="uid://dsg55mejcqgyb"]
 
-[ext_resource type="Script" uid="uid://pbm1netkyiqy" path="res://addons/yard/editor_only/ui_scenes/main_view.gd" id="1_2b5h5"]
-[ext_resource type="PackedScene" uid="uid://crnac01bnyk3" path="res://addons/yard/editor_only/ui_scenes/registry_view.tscn" id="2_2enek"]
-[ext_resource type="Script" uid="uid://caby6h435lr2g" path="res://addons/yard/editor_only/classes/editor_icon_menu_button.gd" id="2_g3f7o"]
-[ext_resource type="Script" uid="uid://yxdtnhovt5i0" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="2_mepag"]
-[ext_resource type="Script" uid="uid://cfbh7d7n20geh" path="res://addons/yard/editor_only/ui_scenes/registries_itemlist.gd" id="2_qv183"]
-[ext_resource type="Texture2D" uid="uid://73a38p2r8hos" path="res://addons/yard/editor_only/assets/github_icon.svg" id="3_1eqxg"]
-[ext_resource type="PackedScene" uid="uid://b3g3e36v7g6kr" path="res://addons/yard/editor_only/ui_scenes/new_registry_dialog.tscn" id="4_qv183"]
-[ext_resource type="Script" uid="uid://bk8fqxqrmwbc0" path="res://addons/yard/editor_only/classes/editor_icon_line_edit.gd" id="4_x5voa"]
+[ext_resource type="Script" uid="uid://pbm1netkyiqy" path="res://addons/yard/editor_only/ui_scenes/registry_editor.gd" id="1_tv1od"]
+[ext_resource type="Script" uid="uid://caby6h435lr2g" path="res://addons/yard/editor_only/classes/editor_icon_menu_button.gd" id="3_m1qax"]
+[ext_resource type="Texture2D" uid="uid://73a38p2r8hos" path="res://addons/yard/editor_only/assets/github_icon.svg" id="4_6e4lp"]
+[ext_resource type="Script" uid="uid://yxdtnhovt5i0" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="4_dd5h4"]
+[ext_resource type="Script" uid="uid://bk8fqxqrmwbc0" path="res://addons/yard/editor_only/classes/editor_icon_line_edit.gd" id="5_g1ejb"]
+[ext_resource type="Script" uid="uid://cfbh7d7n20geh" path="res://addons/yard/editor_only/ui_scenes/components/registries_itemlist.gd" id="6_gl5oh"]
+[ext_resource type="PackedScene" uid="uid://crnac01bnyk3" path="res://addons/yard/editor_only/ui_scenes/registry_table_view.tscn" id="7_w3c1k"]
+[ext_resource type="PackedScene" uid="uid://b3g3e36v7g6kr" path="res://addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn" id="8_drmf8"]
 
-[node name="MainView" type="MarginContainer"]
+[node name="RegistryEditor" type="MarginContainer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -20,7 +20,7 @@ size_flags_vertical = 3
 theme_override_constants/margin_left = 6
 theme_override_constants/margin_right = 6
 theme_override_constants/margin_bottom = 6
-script = ExtResource("1_2b5h5")
+script = ExtResource("1_tv1od")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 2
@@ -110,7 +110,7 @@ layout_mode = 2
 focus_mode = 3
 theme_type_variation = &"FlatButton"
 text = "Registry Settings"
-script = ExtResource("2_mepag")
+script = ExtResource("4_dd5h4")
 icon_name = "GDScript"
 
 [node name="ColumnsMenuButton" type="MenuButton" parent="VBoxContainer/HBoxContainer"]
@@ -122,7 +122,7 @@ theme_type_variation = &"FlatMenuButton"
 text = "Columns"
 flat = false
 switch_on_hover = true
-script = ExtResource("2_g3f7o")
+script = ExtResource("3_m1qax")
 icon_name = "Panels2Alt"
 
 [node name="RefreshViewButton" type="Button" parent="VBoxContainer/HBoxContainer"]
@@ -133,7 +133,7 @@ tooltip_text = "Refresh table view from the underlying registry."
 focus_mode = 3
 theme_type_variation = &"FlatButton"
 text = "Refresh"
-script = ExtResource("2_mepag")
+script = ExtResource("4_dd5h4")
 icon_name = "Loop"
 
 [node name="ReportIssueButton" type="Button" parent="VBoxContainer/HBoxContainer"]
@@ -143,7 +143,7 @@ tooltip_text = "Open project's issues in your browser."
 focus_mode = 3
 theme_type_variation = &"FlatButton"
 text = "Report Issue"
-icon = ExtResource("3_1eqxg")
+icon = ExtResource("4_6e4lp")
 
 [node name="OpenDocumentationButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
@@ -151,7 +151,7 @@ tooltip_text = "Open the Registry class documentation."
 focus_mode = 3
 theme_type_variation = &"FlatButton"
 text = "Open Docs"
-script = ExtResource("2_mepag")
+script = ExtResource("4_dd5h4")
 icon_name = "Help"
 
 [node name="VSeparator2" type="VSeparator" parent="VBoxContainer/HBoxContainer"]
@@ -162,7 +162,7 @@ layout_mode = 2
 tooltip_text = "Make the registry editor floating."
 focus_mode = 3
 theme_type_variation = &"FlatButton"
-script = ExtResource("2_mepag")
+script = ExtResource("4_dd5h4")
 icon_name = "MakeFloating"
 
 [node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer"]
@@ -178,7 +178,7 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 placeholder_text = "Filter Registries"
-script = ExtResource("4_x5voa")
+script = ExtResource("5_g1ejb")
 icon_name = "Search"
 
 [node name="RegistriesItemList" type="ItemList" parent="VBoxContainer/HSplitContainer/RegistriesContainer"]
@@ -188,9 +188,9 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_type_variation = &"ItemListSecondary"
 allow_reselect = true
-script = ExtResource("2_qv183")
+script = ExtResource("6_gl5oh")
 
-[node name="RegistryView" parent="VBoxContainer/HSplitContainer" instance=ExtResource("2_2enek")]
+[node name="RegistryTableView" parent="VBoxContainer/HSplitContainer" instance=ExtResource("7_w3c1k")]
 unique_name_in_owner = true
 layout_mode = 2
 
@@ -222,7 +222,7 @@ item_10/id = 31
 item_11/text = "Sort"
 item_11/id = 32
 
-[node name="NewRegistryDialog" parent="." instance=ExtResource("4_qv183")]
+[node name="NewRegistryDialog" parent="." instance=ExtResource("8_drmf8")]
 unique_name_in_owner = true
 
 [connection signal="about_to_popup" from="VBoxContainer/HBoxContainer/FileMenuButton" to="." method="_on_file_menu_button_about_to_popup"]

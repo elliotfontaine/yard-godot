@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://cuhed17jgms48"]
 
-[ext_resource type="Script" uid="uid://2xver6rxjvvu" path="res://addons/yard/editor_only/ui_scenes/color_editor.gd" id="1_4lnk3"]
+[ext_resource type="Script" uid="uid://2xver6rxjvvu" path="res://addons/yard/editor_only/ui_scenes/components/color_editor.gd" id="1_4lnk3"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4lnk3"]
 bg_color = Color(0.152, 0.1748, 0.2356, 1)
