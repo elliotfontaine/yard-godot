@@ -1,0 +1,30 @@
+[gd_scene load_steps=4 format=3 uid="uid://cr2e4rh57odlx"]
+
+[ext_resource type="Script" uid="uid://c8c8t33yl3ksl" path="res://addons/yard/editor_only/ui_scenes/window_wrapper.gd" id="1_1brus"]
+[ext_resource type="PackedScene" uid="uid://dsg55mejcqgyb" path="res://addons/yard/editor_only/ui_scenes/registry_editor.tscn" id="2_p2ln8"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_p2ln8"]
+
+[node name="WindowWrapper" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_p2ln8")
+script = ExtResource("1_1brus")
+
+[node name="FloatingWindow" type="Window" parent="."]
+oversampling_override = 1.0
+title = "Registry Editor - Godot Engine"
+position = Vector2i(0, 36)
+visible = false
+wrap_controls = true
+
+[node name="RegistryEditor" parent="." instance=ExtResource("2_p2ln8")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[connection signal="close_requested" from="FloatingWindow" to="." method="_on_floating_window_close_requested"]
+[connection signal="make_floating_requested" from="RegistryEditor" to="." method="_on_registry_editor_make_floating_requested"]
