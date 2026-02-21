@@ -645,7 +645,7 @@ func _restore_selected_rows() -> void:
 
 func _start_cell_editing(row: int, col: int) -> void:
 	var column := _columns[col]
-	if get_cell_value(row, col) == CELL_INVALID:
+	if str(get_cell_value(row, col)) == CELL_INVALID:
 		return
 
 	if column.is_color_column():
