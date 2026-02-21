@@ -107,7 +107,7 @@ icon_names = Dictionary[int, String]({
 
 [node name="DeleteEntriesConfirmationDialog" type="ConfirmationDialog" parent="."]
 unique_name_in_owner = true
-title = "Please Confirm deleting data"
+title = "Please Confirm"
 initial_position = 1
 size = Vector2i(400, 100)
 ok_button_text = "Yes"

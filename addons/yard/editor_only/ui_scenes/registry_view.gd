@@ -22,6 +22,13 @@ const ClassUtils := Namespace.ClassUtils
 const EditorThemeUtils := Namespace.EditorThemeUtils
 const DynamicTable := Namespace.DynamicTable
 
+const ACCELERATORS: Dictionary = {
+	EditMenuAction.DELETE_ENTRIES: KEY_MASK_META | KEY_BACKSPACE,
+	EditMenuAction.CUT_CELL_VALUE: KEY_MASK_META | KEY_X,
+	EditMenuAction.COPY_CELL_VALUE: KEY_MASK_META | KEY_C,
+	EditMenuAction.PASTE_TO_CELL: KEY_MASK_META | KEY_V,
+}
+
 const LOGGING_INFO_COLOR := "lightslategray"
 const UID_COLUMN_CONFIG := ["uid", "UID", TYPE_STRING]
 const STRINGID_COLUMN_CONFIG := ["string_id", "String ID", TYPE_STRING]
@@ -81,6 +88,10 @@ func _ready() -> void:
 	dynamic_table.column_resized.connect(_on_column_resized)
 	dynamic_table.multiple_rows_selected.connect(_on_multiple_rows_selected)
 
+	for action: EditMenuAction in ACCELERATORS:
+		if edit_context_menu.get_item_index(action) != -1:
+			edit_context_menu.set_item_accelerator(edit_context_menu.get_item_index(action), ACCELERATORS.get(action))
+
 	# Resource Picker Theming
 	resource_picker_container.add_theme_stylebox_override(
 		&"panel",
@@ -124,6 +135,14 @@ func _notification(what: int) -> void:
 			_on_drag_begin()
 		NOTIFICATION_DRAG_END:
 			_on_drag_end()
+
+
+func _shortcut_input(event: InputEvent) -> void:
+	if not event.is_pressed() or event.is_echo():
+		return
+
+	if dynamic_table.has_focus() and edit_context_menu.activate_item_by_event(event):
+		get_viewport().set_input_as_handled()
 
 
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
@@ -231,8 +250,11 @@ func get_res_row_data(res: Resource) -> Array[Variant]:
 
 
 func get_row_resource_uid(row: int) -> StringName:
-	var uid: StringName = dynamic_table.get_cell_value(row, UID_COLUMN)
-	return uid
+	var uid: Variant = dynamic_table.get_cell_value(row, UID_COLUMN)
+	if uid and uid is StringName:
+		return uid
+	else:
+		return &""
 
 
 func get_row_resource_string_id(row: int) -> StringName:

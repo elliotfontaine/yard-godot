@@ -19,8 +19,7 @@ enum FileMenuAction {
 	MOVE_DOWN = 31,
 	SORT = 32,
 }
-
-const EditMenuAction := registry_view.EditMenuAction
+const EditMenuAction := registry_view.EditMenuAction # Enum
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const PluginCFG := Namespace.PluginCFG
@@ -31,7 +30,14 @@ const NewRegistryDialog := Namespace.NewRegistryDialog
 const AnyIcon := Namespace.AnyIcon
 const FuzzySearch := Namespace.FuzzySearch
 const FuzzySearchResult := Namespace.FuzzySearchResult
-const _SAVED_STATE_PATH := "res://addons/yard/editor_only/state.cfg"
+
+const ACCELERATORS: Dictionary = {
+	FileMenuAction.NEW: KEY_MASK_META | KEY_N,
+	FileMenuAction.REOPEN_CLOSED: KEY_MASK_SHIFT | KEY_MASK_META | KEY_T,
+	FileMenuAction.CLOSE: KEY_MASK_META | KEY_W,
+	FileMenuAction.MOVE_UP: KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP,
+	FileMenuAction.MOVE_DOWN: KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN,
+}
 
 var _opened_registries: Dictionary[String, Registry] = { } # Dict[uid, Registry]
 var _session_closed_uids: Array[String] = [] # Array[uid]
@@ -65,9 +71,9 @@ func _ready() -> void:
 	add_child(_file_dialog)
 
 	_toggle_visibility_topbar_buttons(false)
+	_setup_accelerators()
+	_populate_open_recent_submenu()
 
-	_set_context_menu_accelerators()
-	_populate_file_menu()
 	file_menu_button.get_popup().id_pressed.connect(_on_file_menu_id_pressed)
 	edit_menu_button.get_popup().id_pressed.connect(_on_edit_menu_id_pressed)
 	columns_menu_button.get_popup().id_pressed.connect(_on_columns_menu_id_pressed)
@@ -160,8 +166,38 @@ func unselect_registry() -> void:
 
 
 func is_any_registry_selected() -> bool:
-	#return registries_itemlist.is_anything_selected()
 	return not _current_registry_uid.is_empty()
+
+
+func _setup_accelerators() -> void:
+	# TODO: when Godot 4.6 is out, register editor shortcuts
+	# and reuse already registered ones using `EditorSettings.get_shortcut()`
+	# https://github.com/godotengine/godot/pull/102889
+	var file_menu := file_menu_button.get_popup()
+	for action: FileMenuAction in ACCELERATORS:
+		if file_menu.get_item_index(action) != -1:
+			file_menu.set_item_accelerator(file_menu.get_item_index(action), ACCELERATORS.get(action))
+		if registry_context_menu.get_item_index(action) != -1:
+			registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(action), ACCELERATORS.get(action))
+
+	var edit_menu := edit_menu_button.get_popup()
+	for action: EditMenuAction in registry_view.ACCELERATORS:
+		if edit_menu.get_item_index(action) != -1:
+			edit_menu.set_item_accelerator(edit_menu.get_item_index(action), registry_view.ACCELERATORS.get(action))
+
+
+func _populate_open_recent_submenu() -> void:
+	var file_menu := file_menu_button.get_popup()
+	file_menu.name = "FileMenu"
+
+	# TODO: implement "recent" logic
+	var recent := PopupMenu.new()
+	#recent.add_item("previously_used.tres")
+	#recent.add_item("placeholder.tres")
+	file_menu.set_item_submenu_node(
+		file_menu.get_item_index(FileMenuAction.OPEN_RECENT),
+		recent,
+	)
 
 
 ## Returns the index in the ItemList of the specified registry (by uid)
@@ -319,41 +355,6 @@ func _build_registry_display_names(uids: Array[String]) -> Dictionary:
 
 	return result
 
-@warning_ignore_start("int_as_enum_without_cast")
-@warning_ignore_start("int_as_enum_without_match")
-
-
-func _populate_file_menu() -> void:
-	# TODO: when Godot 4.6 is out, register editor shortcuts
-	# and reuse already registered ones using `EditorSettings.get_shortcut()`
-	# https://github.com/godotengine/godot/pull/102889
-	var file_menu := file_menu_button.get_popup()
-	file_menu.name = "FileMenu"
-	file_menu.set_item_accelerator(file_menu.get_item_index(FileMenuAction.NEW), KEY_MASK_META | KEY_N)
-	file_menu.set_item_accelerator(
-		file_menu.get_item_index(FileMenuAction.REOPEN_CLOSED),
-		KEY_MASK_SHIFT | KEY_MASK_META | KEY_T,
-	)
-	file_menu.set_item_accelerator(file_menu.get_item_index(FileMenuAction.CLOSE), KEY_MASK_META | KEY_W)
-
-	# TODO: implement "previous" logic
-	var recent := PopupMenu.new()
-	recent.add_item("previously_used.tres")
-	recent.add_item("placeholder.tres")
-	file_menu.set_item_submenu_node(
-		file_menu.get_item_index(FileMenuAction.OPEN_RECENT),
-		recent,
-	)
-
-
-func _set_context_menu_accelerators() -> void:
-	registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(FileMenuAction.CLOSE), KEY_MASK_META | KEY_W)
-	registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(FileMenuAction.MOVE_UP), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP)
-	registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(FileMenuAction.MOVE_DOWN), KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN)
-
-@warning_ignore_restore("int_as_enum_without_cast")
-@warning_ignore_restore("int_as_enum_without_match")
-
 
 func _toggle_file_menu_items() -> void:
 	var file_menu := file_menu_button.get_popup()
@@ -377,10 +378,6 @@ func _toggle_file_menu_items() -> void:
 	var is_last := idx == registries_itemlist.item_count - 1
 	var has_single_file := registries_itemlist.item_count == 1
 	var has_no_file := registries_itemlist.item_count == 0
-	file_menu.set_item_disabled(
-		file_menu.get_item_index(FileMenuAction.CLOSE_TABS_BELOW),
-		is_last,
-	)
 	file_menu.set_item_disabled(
 		file_menu.get_item_index(FileMenuAction.CLOSE_TABS_BELOW),
 		is_last,

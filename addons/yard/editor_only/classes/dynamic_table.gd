@@ -156,7 +156,6 @@ func _ready() -> void:
 	_reset_column_widths()
 
 	resized.connect(_on_resized)
-	gui_input.connect(_on_gui_input) # Manage input from keyboard whwn has focus control
 
 	self.anchor_left = 0.0
 	self.anchor_top = 0.0
@@ -164,6 +163,24 @@ func _ready() -> void:
 	self.anchor_bottom = 1.0
 
 	queue_redraw()
+
+
+func _gui_input(event: InputEvent) -> void:
+	if event is InputEventPanGesture:
+		_handle_pan_gesture(event)
+
+	elif event is InputEventMouseMotion:
+		_handle_mouse_motion(event)
+
+	elif event is InputEventMouseButton:
+		_handle_mouse_button(event)
+
+	elif (
+		event is InputEventKey
+		and event.is_pressed()
+		and has_focus()
+	):
+		_handle_key_input(event as InputEventKey)
 
 
 func _draw() -> void:
@@ -1425,7 +1442,8 @@ func _handle_key_input(event: InputEventKey) -> void:
 		queue_redraw()
 		get_viewport().set_input_as_handled()
 	elif event_consumed: # Consume the event if it was partially handled (e.g. key recognized but no action)
-		get_viewport().set_input_as_handled()
+		#get_viewport().set_input_as_handled()
+		pass
 
 
 func _handle_pan_gesture(event: InputEventPanGesture) -> void:
@@ -1803,24 +1821,6 @@ func _handle_header_double_click(mouse_pos: Vector2) -> void:
 #endregion
 
 #region SIGNAL CALLBACKS
-
-func _on_gui_input(event: InputEvent) -> void:
-	if event is InputEventPanGesture:
-		_handle_pan_gesture(event)
-
-	elif event is InputEventMouseMotion:
-		_handle_mouse_motion(event)
-
-	elif event is InputEventMouseButton:
-		_handle_mouse_button(event)
-
-	elif (
-		event is InputEventKey
-		and event.is_pressed()
-		and has_focus()
-	):
-		_handle_key_input(event as InputEventKey)
-
 
 func _on_resized() -> void:
 	_update_scrollbars()
