@@ -142,6 +142,14 @@ theme_type_variation = &"FlatButton"
 text = "Report Issue"
 icon = ExtResource("3_1eqxg")
 
+[node name="OpenDocumentationButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+tooltip_text = "Open the Registry class documentation."
+theme_type_variation = &"FlatButton"
+text = "Open Docs"
+script = ExtResource("2_mepag")
+icon_name = "Help"
+
 [node name="VSeparator2" type="VSeparator" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 
@@ -218,6 +226,7 @@ unique_name_in_owner = true
 [connection signal="about_to_popup" from="VBoxContainer/HBoxContainer/ColumnsMenuButton" to="." method="_on_columns_menu_button_about_to_popup"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/RefreshViewButton" to="." method="_on_refresh_view_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/ReportIssueButton" to="." method="_on_report_issue_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/OpenDocumentationButton" to="." method="_on_open_documentation_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/MakeFloatingButton" to="." method="_on_make_floating_button_pressed"]
 [connection signal="text_changed" from="VBoxContainer/HSplitContainer/RegistriesContainer/RegistriesFilter" to="." method="_on_registries_filter_text_changed"]
 [connection signal="item_clicked" from="VBoxContainer/HSplitContainer/RegistriesContainer/RegistriesItemList" to="." method="_on_registries_list_item_clicked"]

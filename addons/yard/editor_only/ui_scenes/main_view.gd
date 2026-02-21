@@ -732,3 +732,7 @@ func _on_filesystem_changed() -> void:
 		RegistryIO.sync_registry_entries_from_scan_dir(registry)
 	_update_registries_itemlist()
 	registry_view.update_view()
+
+
+func _on_open_documentation_button_pressed() -> void:
+	EditorInterface.get_script_editor().goto_help("class:Registry")
