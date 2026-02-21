@@ -59,7 +59,7 @@ func _edit(object: Object) -> void:
 
 
 func _get_plugin_name() -> String:
-	return "YARD"
+	return "Registry"
 
 
 func _get_plugin_icon() -> Texture2D:
