@@ -79,7 +79,6 @@ func _ready() -> void:
 	columns_menu_button.get_popup().id_pressed.connect(_on_columns_menu_id_pressed)
 	columns_menu_button.get_popup().hide_on_checkable_item_selection = false
 	registries_itemlist.registries_dropped.connect(_on_itemlist_registries_dropped)
-
 	registry_view.toggle_registry_panel_button.pressed.connect(_on_toggle_registries_pressed)
 
 	# Fuzzy Search settings

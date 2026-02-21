@@ -349,10 +349,17 @@ func _edit_entry_property(entry: StringName, property: StringName, old_value: Va
 
 	var valid := false
 	for prop_type: String in prop_types:
-		if (ClassUtils.is_type_builtin(typeof(new_value)) and type_string(typeof(new_value)) == prop_type) \
-		or ClassUtils.is_class_of(new_value, prop_type) \
-		or (new_value == null and typeof(old_value) == TYPE_OBJECT):
+		if (
+			(ClassUtils.is_type_builtin(typeof(new_value)) and type_string(typeof(new_value)) == prop_type)
+			or (typeof(new_value) in [TYPE_INT, TYPE_FLOAT] and prop_type in [type_string(TYPE_INT), type_string(TYPE_FLOAT)])
+			or ClassUtils.is_class_of(new_value, prop_type)
+			or (new_value == null and typeof(old_value) == TYPE_OBJECT)
+		):
 			valid = true
+			break
+		elif typeof(new_value) in [TYPE_INT, TYPE_FLOAT] and prop_type == type_string(TYPE_STRING):
+			valid = true
+			new_value = str(new_value)
 			break
 
 	if not valid:
@@ -373,7 +380,7 @@ func _edit_entry_property(entry: StringName, property: StringName, old_value: Va
 			LOGGING_INFO_COLOR,
 			property,
 			old_value,
-			new_value,
+			res.get(property),
 		],
 	)
 
