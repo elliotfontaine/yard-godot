@@ -638,12 +638,13 @@ func _open_color_editor(row: int, col: int) -> void:
 
 func _open_resource_editor(row: int, col: int) -> void:
 	_editing_cell = [row, col]
-	var columnn := get_column(col)
+	var column := get_column(col)
 	_resource_editor.edited_resource = null
-	if ClassUtils.is_valid(columnn.hint_string):
-		_resource_editor.base_type = columnn.hint_string
-	else:
-		_resource_editor.base_type = "Resource"
+	_resource_editor.base_type = "Resource"
+	if not column.hint_string.is_empty():
+		var valid_types := Array(column.hint_string.split(",", false)).filter(ClassUtils.is_valid)
+		if not valid_types.is_empty():
+			_resource_editor.base_type = ",".join(valid_types)
 	var quick_load: Button = _resource_editor.get_child(1, true)
 	if quick_load:
 		quick_load.pressed.emit()
