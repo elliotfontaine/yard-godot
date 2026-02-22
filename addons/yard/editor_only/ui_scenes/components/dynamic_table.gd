@@ -187,8 +187,8 @@ func _draw() -> void:
 	if not is_inside_tree() or _columns.is_empty():
 		return
 
-	var current_x_offset := -_h_scroll_position
-	var current_y_offset := header_height
+	var current_x_offset: float = -_h_scroll_position
+	var current_y_offset: float = header_height
 	var visible_drawing_width := size.x - (_v_scroll.size.x if _v_scroll.visible else 0.0)
 	var header_font_color := default_font_color
 
@@ -253,23 +253,24 @@ func _draw() -> void:
 		for col_idx in _columns.size():
 			var col := _columns[col_idx]
 			if cell_x_pos < visible_drawing_width and cell_x_pos + col.current_width > 0:
+				var cell_rect := Rect2(cell_x_pos, row_y_pos, col.current_width, row_height)
 				draw_line(Vector2(cell_x_pos, row_y_pos), Vector2(cell_x_pos, row_y_pos + row_height), grid_color)
 
 				if row == focused_row and col_idx == focused_col:
-					draw_rect(Rect2(cell_x_pos + 1, row_y_pos + 1, col.current_width - 3, row_height - 3), selected_cell_back_color, false, 2.0)
-				#if not (_editing_cell[0] == row and _editing_cell[1] == col_idx):
+					draw_rect(cell_rect.grow_individual(-1, -1, -2, -2), selected_cell_back_color, false, 2.0)
+
 				if col.is_progress_column():
-					_draw_progress_bar(cell_x_pos, row_y_pos, col_idx, row)
+					_draw_cell_progress(cell_rect, row, col_idx)
 				elif col.is_boolean_column():
-					_draw_checkbox(cell_x_pos, row_y_pos, col_idx, row)
+					_draw_cell_bool(cell_rect, row, col_idx)
 				elif col.is_color_column():
-					_draw_color_cell(cell_x_pos, row_y_pos, col_idx, row)
+					_draw_cell_color(cell_rect, row, col_idx)
 				elif col.is_resource_column():
-					_draw_resource_cell(cell_x_pos, row_y_pos, col_idx, row)
+					_draw_cell_resource(cell_rect, row, col_idx)
 				elif col.is_enum_column():
-					_draw_cell_enum(cell_x_pos, row_y_pos, col_idx, row)
+					_draw_cell_enum(cell_rect, row, col_idx)
 				else:
-					_draw_cell_text(cell_x_pos, row_y_pos, col_idx, row)
+					_draw_cell_text(cell_rect, row, col_idx)
 			cell_x_pos += col.current_width
 
 		# Draw the final right vertical line of the table (right border of the last column)
@@ -768,111 +769,95 @@ func _get_cell_rect(row: int, col: int) -> Rect2:
 	return Rect2(cell_x, row_y_pos, column.current_width, row_height)
 
 
-func _draw_progress_bar(cell_x: float, row_y: float, col: int, row: int) -> void:
-	var cell_value = 0.0
+func _draw_cell_progress(rect: Rect2, row: int, col: int) -> void:
+	var cell_value := 0.0
 	if row < _data.size() and col < _data[row].size():
 		cell_value = _get_progress_value(_data[row][col])
 
-	var margin := 4.0
-	var bar_x_pos := cell_x + margin
-	var bar_y_pos := row_y + margin
-	var bar_width := _columns[col].current_width - (margin * 2.0)
-	var bar_h := row_height - (margin * 2.0)
+	var bar := rect.grow(-4.0)
 
-	draw_rect(Rect2(bar_x_pos, bar_y_pos, bar_width, bar_h), progress_background_color)
-	draw_rect(Rect2(bar_x_pos, bar_y_pos, bar_width, bar_h), progress_border_color, false, 1.0)
+	draw_rect(bar, progress_background_color)
+	draw_rect(bar, progress_border_color, false, 1.0)
 
-	var progress_w: float = bar_width * cell_value
-	if progress_w > 0:
-		draw_rect(Rect2(bar_x_pos, bar_y_pos, progress_w, bar_h), _get_interpolated_three_colors(progress_bar_start_color, progress_bar_middle_color, progress_bar_end_color, cell_value))
+	if bar.size.x * cell_value > 0:
+		var fill := Rect2(bar.position, Vector2(bar.size.x * cell_value, bar.size.y))
+		draw_rect(fill, _get_interpolated_three_colors(progress_bar_start_color, progress_bar_middle_color, progress_bar_end_color, cell_value))
 
 	var perc_text := str(int(round(cell_value * 100.0))) + "%"
-	var text_size := font.get_string_size(perc_text, HORIZONTAL_ALIGNMENT_CENTER, bar_width, font_size)
-	draw_string(font, Vector2(bar_x_pos + bar_width / 2.0 - text_size.x / 2.0, bar_y_pos + bar_h / 2.0 + text_size.y / 2.0 - 5.0), perc_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, progress_text_color)
+	var text_size := font.get_string_size(perc_text, HORIZONTAL_ALIGNMENT_CENTER, bar.size.x, font_size)
+	draw_string(font, Vector2(bar.position.x + bar.size.x / 2.0 - text_size.x / 2.0, bar.position.y + bar.size.y / 2.0 + text_size.y / 2.0 - 5.0), perc_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, progress_text_color)
 
 
-func _draw_checkbox(cell_x: float, row_y: float, col: int, row: int) -> void:
+func _draw_cell_bool(rect: Rect2, row: int, col: int) -> void:
 	if not row < _data.size() and col < _data[row].size():
 		return
 
 	var cell_value: Variant = _data[row][col]
 	if cell_value is not bool:
-		_draw_cell_text(cell_x, row_y, col, row)
+		_draw_cell_text(rect, row, col)
 		return
-	var is_checked: bool = cell_value
-	var icon_name := &"checked" if is_checked else &"unchecked"
+
+	var icon_name := &"checked" if (cell_value as bool) else &"unchecked"
 	var icon: Texture2D = get_theme_icon(icon_name, &"CheckBox")
 	if icon == null:
 		return
 
-	var margin := 2.0
+	var inner := rect.grow(-2.0)
 	var tex_size := icon.get_size()
-	var cell_inner_width: float = _columns[col].current_width - margin * 2
-	var cell_inner_height: float = row_height - margin * 2
-	var pos := Vector2(
-		cell_x + margin + (cell_inner_width - tex_size.x) / 2.0,
-		row_y + margin + (cell_inner_height - tex_size.y) / 2.0,
-	)
-
+	var pos := inner.position + (inner.size - tex_size) / 2.0
 	draw_texture(icon, pos)
 
 
-func _draw_color_cell(cell_x: float, row_y: float, col: int, row: int) -> void:
+func _draw_cell_color(rect: Rect2, row: int, col: int) -> void:
 	var value: Variant = get_cell_value(row, col)
 	if not value is Color:
-		_draw_cell_text(cell_x, row_y, col, row)
+		_draw_cell_text(rect, row, col)
 		return
 
 	var color: Color = value
-
-	var rect := _get_cell_inner_rect(cell_x, row_y, col)
-	if rect == Rect2():
+	var inner := rect.grow(-2.0)
+	if inner.size.x <= 0.0 or inner.size.y <= 0.0:
 		return
+
 	var border_alpha := 0.65 if color.a < 0.25 else 0.35
 
 	# Checkerboard background to visualize transparency
 	if color.a < 1.0:
 		var tile := 6.0
-		var x0 := rect.position.x
-		var y0 := rect.position.y
-		var x1 := rect.position.x + rect.size.x
-		var y1 := rect.position.y + rect.size.y
-
+		var x0 := inner.position.x
+		var y0 := inner.position.y
+		var x1 := inner.end.x
+		var y1 := inner.end.y
 		var y := y0
 		var row_i := 0
 		while y < y1:
 			var x := x0
 			var col_i := 0
 			while x < x1:
-				var w := min(tile, x1 - x)
-				var h := min(tile, y1 - y)
-				var is_dark := ((row_i + col_i) % 2) == 0
-				var bg := Color(0, 0, 0, 0.10) if is_dark else Color(1, 1, 1, 0.10)
-				draw_rect(Rect2(Vector2(x, y), Vector2(w, h)), bg, true)
+				var bg := Color(0, 0, 0, 0.10) if ((row_i + col_i) % 2) == 0 else Color(1, 1, 1, 0.10)
+				draw_rect(Rect2(Vector2(x, y), Vector2(min(tile, x1 - x), min(tile, y1 - y))), bg, true)
 				x += tile
 				col_i += 1
 			y += tile
 			row_i += 1
 
-	draw_rect(rect, color, true)
-	draw_rect(rect, Color(1, 1, 1, border_alpha), false, 1.0)
+	draw_rect(inner, color, true)
+	draw_rect(inner, Color(1, 1, 1, border_alpha), false, 1.0)
 
 
-func _draw_resource_cell(cell_x: float, row_y: float, col: int, row: int) -> void:
+func _draw_cell_resource(rect: Rect2, row: int, col: int) -> void:
 	var value: Variant = get_cell_value(row, col)
 	if not value is Resource:
-		_draw_cell_text(cell_x, row_y, col, row)
+		_draw_cell_text(rect, row, col)
 		return
 
 	var res: Resource = value
-
 	var key: String = res.resource_path
 	if key.is_empty():
 		key = "iid:%d" % res.get_instance_id()
 
-	var margin := 2.0
-	var rect := _get_cell_inner_rect(cell_x, row_y, col, margin)
-	if rect == Rect2():
+	var inner := rect.grow(-2.0)
+	if inner.size.x <= 0.0 or inner.size.y <= 0.0:
 		return
 
 	# Cached thumbnail? draw it
@@ -886,19 +871,14 @@ func _draw_resource_cell(cell_x: float, row_y: float, col: int, row: int) -> voi
 			return
 
 		var tex_aspect := tex_size.x / tex_size.y
-		var cell_aspect := rect.size.x / rect.size.y
-
+		var cell_aspect := inner.size.x / inner.size.y
 		var drawn_rect := Rect2()
 		if tex_aspect > cell_aspect:
-			drawn_rect.size.x = rect.size.x
-			drawn_rect.size.y = rect.size.x / tex_aspect
-			drawn_rect.position.x = rect.position.x
-			drawn_rect.position.y = rect.position.y + (rect.size.y - drawn_rect.size.y) / 2.0
+			drawn_rect.size = Vector2(inner.size.x, inner.size.x / tex_aspect)
+			drawn_rect.position = Vector2(inner.position.x, inner.position.y + (inner.size.y - drawn_rect.size.y) / 2.0)
 		else:
-			drawn_rect.size.y = rect.size.y
-			drawn_rect.size.x = rect.size.y * tex_aspect
-			drawn_rect.position.y = rect.position.y
-			drawn_rect.position.x = rect.position.x + (rect.size.x - drawn_rect.size.x) / 2.0
+			drawn_rect.size = Vector2(inner.size.y * tex_aspect, inner.size.y)
+			drawn_rect.position = Vector2(inner.position.x + (inner.size.x - drawn_rect.size.x) / 2.0, inner.position.y)
 
 		draw_texture_rect(texture, drawn_rect, false)
 		return
@@ -906,27 +886,22 @@ func _draw_resource_cell(cell_x: float, row_y: float, col: int, row: int) -> voi
 	# Not cached yet and no pending request: request once
 	if not _resource_thumb_pending.has(key):
 		_resource_thumb_pending[key] = true
-
-		var previewer := EditorInterface.get_resource_previewer()
-		previewer.queue_edited_resource_preview(
+		EditorInterface.get_resource_previewer().queue_edited_resource_preview(
 			res,
 			self,
 			"_on_resource_cell_thumb_ready",
-			{
-				"key": key,
-				"class": ClassUtils.get_type_name(res),
-			},
+			{ "key": key, "class": ClassUtils.get_type_name(res) },
 		)
 
 	# Placeholder
-	draw_rect(rect, Color(1, 1, 1, 0.06), true)
-	draw_rect(rect, Color(1, 1, 1, 0.18), false, 1.0)
+	draw_rect(inner, Color(1, 1, 1, 0.06), true)
+	draw_rect(inner, Color(1, 1, 1, 0.18), false, 1.0)
 
 
-func _draw_cell_text(cell_x: float, row_y: float, col: int, row: int) -> void:
+func _draw_cell_text(rect: Rect2, row: int, col: int) -> void:
 	var cell_value := str(get_cell_value(row, col))
 	if cell_value == CELL_INVALID:
-		_draw_cell_invalid(cell_x, row_y, col, row)
+		_draw_cell_invalid(rect, row, col)
 		return
 
 	var column := _columns[col]
@@ -934,7 +909,7 @@ func _draw_cell_text(cell_x: float, row_y: float, col: int, row: int) -> void:
 	var h_alignment := column.h_alignment
 	if column.custom_font:
 		text_font = column.custom_font
-	elif get_column(col).is_path_column():
+	elif column.is_path_column():
 		text_font = mono_font
 
 	if column.is_resource_column() and _data[row][col] == null:
@@ -942,26 +917,25 @@ func _draw_cell_text(cell_x: float, row_y: float, col: int, row: int) -> void:
 		h_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
 	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(h_alignment)
-	var baseline_y := _get_text_baseline_y(row_y)
+	var baseline_y := _get_text_baseline_y(rect.position.y)
 	var text_color := column.custom_font_color if column.custom_font_color else default_font_color
-	# TODO: the following line is registry-specific. Refactor outside.
-	# For example, give the ability to set colors for specific rows.
+	# TODO: registry-specific. Refactor outside — e.g. give the ability to set colors for specific rows.
 	text_color = get_theme_color("error_color", "Editor") if cell_value.begins_with("(!) ") else text_color
 	draw_string(
 		text_font,
-		Vector2(cell_x + x_margin_val, baseline_y),
+		Vector2(rect.position.x + x_margin_val, baseline_y),
 		cell_value,
 		h_alignment,
-		_columns[col].current_width - abs(x_margin_val),
+		rect.size.x - abs(x_margin_val),
 		font_size,
 		text_color,
 	)
 
 
-func _draw_cell_enum(cell_x: float, row_y: float, col: int, row: int) -> void:
+func _draw_cell_enum(rect: Rect2, row: int, col: int) -> void:
 	var cell_value: Variant = get_cell_value(row, col)
 	if not cell_value is int:
-		_draw_cell_text(cell_x, row_y, col, row)
+		_draw_cell_text(rect, row, col)
 		return
 
 	var value_str: String
@@ -973,53 +947,31 @@ func _draw_cell_enum(cell_x: float, row_y: float, col: int, row: int) -> void:
 		if colon_found == -1:
 			key_found = cell_value
 			break
-
 		if hint_arr[i].substr(colon_found + 1).to_int() == cell_value:
 			key_found = i
 			break
 
-	if key_found != -1 and key_found < hint_arr.size():
-		value_str = hint_arr[key_found]
+	value_str = hint_arr[key_found] if key_found != -1 and key_found < hint_arr.size() else "?:%s" % cell_value
 
-	else:
-		value_str = "?:%s" % cell_value
-
-	var text_font: Font = font #mono_font
-	var h_alignment := HORIZONTAL_ALIGNMENT_CENTER #column.h_alignment
+	var text_font: Font = column.custom_font if column.custom_font else font
+	var h_alignment := HORIZONTAL_ALIGNMENT_CENTER
 	var color := Color(value_str.hash()) + Color(0.25, 0.25, 0.25, 1.0)
-	if column.custom_font:
-		text_font = column.custom_font
-	elif get_column(col).is_path_column():
-		text_font = mono_font
 
 	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(h_alignment)
-	var baseline_y := _get_text_baseline_y(row_y)
+	var baseline_y := _get_text_baseline_y(rect.position.y)
 	draw_string(
 		text_font,
-		Vector2(cell_x + x_margin_val, baseline_y),
+		Vector2(rect.position.x + x_margin_val, baseline_y),
 		value_str,
 		h_alignment,
-		_columns[col].current_width - abs(x_margin_val),
+		rect.size.x - abs(x_margin_val),
 		font_size,
 		color,
 	)
 
 
-func _draw_cell_invalid(cell_x: float, row_y: float, col: int, row: int) -> void:
-	var color: Color = invalid_cell_color
-	var margin := 0.0 # 0 for continuous rect between invalid cells
-	var cell_inner_width: float = _columns[col].current_width - margin * 2
-	var cell_inner_height: float = row_height - margin * 2
-	if cell_inner_width <= 0.0 or cell_inner_height <= 0.0:
-		return
-
-	var rect := Rect2(
-		Vector2(cell_x, row_y + margin),
-		Vector2(cell_inner_width, cell_inner_height),
-	)
-
-	draw_rect(rect, color, true)
-	#draw_rect(rect, Color(1, 1, 1, border_alpha), false, 1.0, true)
+func _draw_cell_invalid(rect: Rect2, _row: int, _col: int) -> void:
+	draw_rect(rect, invalid_cell_color, true)
 
 
 func _get_interpolated_three_colors(start_c: Color, mid_c: Color, end_c: Color, t_val: float) -> Color:
@@ -1105,15 +1057,6 @@ func _get_row_at_y(y: float) -> int:
 func _get_text_baseline_y(cell_y: float, cell_height: float = -1.0) -> float:
 	var h := cell_height if cell_height >= 0.0 else row_height
 	return cell_y + (h / 2.0) + (font.get_height(font_size) / 2.0) - font.get_descent(font_size)
-
-
-## Returns the inner Rect2 of a cell with the given margin, or an empty Rect2 if too small.
-func _get_cell_inner_rect(cell_x: float, row_y: float, col: int, margin: float = 2.0) -> Rect2:
-	var w := _columns[col].current_width - margin * 2
-	var h := row_height - margin * 2
-	if w <= 0.0 or h <= 0.0:
-		return Rect2()
-	return Rect2(Vector2(cell_x + margin, row_y + margin), Vector2(w, h))
 
 
 func _check_mouse_over_divider(mouse_pos: Vector2) -> void:
