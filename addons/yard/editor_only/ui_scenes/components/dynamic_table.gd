@@ -42,7 +42,7 @@ const CELL_INVALID := "<INVALID>"
 @export_group("Size and grid")
 @export var default_minimum_column_width: float = 50.0
 @export var row_height: float = 30.0
-@export var n_freezed_columns: int = 0
+@export var n_frozen_columns: int = 0
 @export var grid_color: Color = Color(0.8, 0.8, 0.8)
 @export_group("Rows")
 @export var selected_row_back_color: Color = Color(0.0, 0.0, 1.0, 0.5)
@@ -197,7 +197,7 @@ func _draw() -> void:
 	draw_rect(Rect2(0, 0, size.x, header_height), header_color)
 
 	# ── PASS 1 : SCROLLABLE COLUMNS ────────────────────────────────────────────
-	_draw_header_column_range(n_freezed_columns, _columns.size(), scroll_x, frozen_w, vis_w)
+	_draw_header_column_range(n_frozen_columns, _columns.size(), scroll_x, frozen_w, vis_w)
 
 	for row in range(_visible_rows_range[0], _visible_rows_range[1]):
 		if row >= _total_rows:
@@ -208,10 +208,10 @@ func _draw() -> void:
 		if selected_rows.has(row):
 			draw_rect(Rect2(0, row_y, vis_w, row_height - 1), selected_row_back_color)
 		draw_line(Vector2(0, row_y + row_height), Vector2(vis_w, row_y + row_height), grid_color)
-		_draw_cells_column_range(row, row_y, n_freezed_columns, _columns.size(), scroll_x, frozen_w, vis_w)
+		_draw_cells_column_range(row, row_y, n_frozen_columns, _columns.size(), scroll_x, frozen_w, vis_w)
 
 	# ── PASS 2 : FROZEN COLUMNS (drawn on top) ─────────────────────────────────
-	if n_freezed_columns > 0:
+	if n_frozen_columns > 0:
 		for row in range(_visible_rows_range[0], _visible_rows_range[1]):
 			if row >= _total_rows:
 				continue
@@ -221,15 +221,15 @@ func _draw() -> void:
 			if selected_rows.has(row):
 				draw_rect(Rect2(0, row_y, frozen_w, row_height - 1), selected_row_back_color)
 			draw_line(Vector2(0, row_y + row_height), Vector2(frozen_w, row_y + row_height), grid_color)
-			_draw_cells_column_range(row, row_y, 0, n_freezed_columns, 0.0, 0.0, frozen_w)
+			_draw_cells_column_range(row, row_y, 0, n_frozen_columns, 0.0, 0.0, frozen_w)
 
 		# Frozen header on top of scrollable header
 		draw_rect(Rect2(0, 0, frozen_w, header_height), header_color)
-		_draw_header_column_range(0, n_freezed_columns, 0.0, 0.0, vis_w)
+		_draw_header_column_range(0, n_frozen_columns, 0.0, 0.0, vis_w)
 
 		# Separator shadow at the frozen/scrollable boundary
 		var separator_bottom := header_height + mini(_total_rows, _visible_rows_range[1] - _visible_rows_range[0]) * row_height
-		draw_line(Vector2(frozen_w, 0), Vector2(frozen_w, separator_bottom), grid_color.darkened(0.3), 2.0)
+		draw_line(Vector2(frozen_w, 0), Vector2(frozen_w, separator_bottom), grid_color.darkened(0.2), 2.0)
 
 #region PUBLIC METHODS
 
@@ -538,7 +538,7 @@ func _update_scrollbars() -> void:
 	var frozen_w := _frozen_width()
 	var visible_scrollable_w := visible_width - frozen_w
 	var total_scrollable_w := 0.0
-	for i in range(n_freezed_columns, _columns.size()):
+	for i in range(n_frozen_columns, _columns.size()):
 		total_scrollable_w += _columns[i].current_width
 
 	_h_scroll.visible = total_scrollable_w > visible_scrollable_w
@@ -991,7 +991,7 @@ func _get_col_at_x(x: float) -> int:
 	# Frozen zone — fixed positions, drawn on top
 	if x < frozen_w:
 		var cx := 0.0
-		for col_idx in n_freezed_columns:
+		for col_idx in n_frozen_columns:
 			if x < cx + _columns[col_idx].current_width:
 				return col_idx
 			cx += _columns[col_idx].current_width
@@ -999,7 +999,7 @@ func _get_col_at_x(x: float) -> int:
 
 	# Scrollable zone
 	var cx := frozen_w - _h_scroll_position
-	for col_idx in range(n_freezed_columns, _columns.size()):
+	for col_idx in range(n_frozen_columns, _columns.size()):
 		var col_end := cx + _columns[col_idx].current_width
 		if x >= maxf(cx, frozen_w) and x < col_end:
 			return col_idx
@@ -1024,7 +1024,7 @@ func _get_text_baseline_y(cell_y: float, cell_height: float = -1.0) -> float:
 ## Total width of frozen (pinned) columns.
 func _frozen_width() -> float:
 	var w := 0.0
-	for i in mini(n_freezed_columns, _columns.size()):
+	for i in mini(n_frozen_columns, _columns.size()):
 		w += _columns[i].current_width
 	return w
 
@@ -1032,14 +1032,14 @@ func _frozen_width() -> float:
 ## Screen X of the left edge of column col_idx, accounting for freeze and scroll.
 ## Frozen columns sit at fixed positions; scrollable columns follow the h-scroll.
 func _get_col_x_pos(col_idx: int) -> float:
-	if col_idx < n_freezed_columns:
+	if col_idx < n_frozen_columns:
 		var x := 0.0
 		for i in col_idx:
 			x += _columns[i].current_width
 		return x
 	else:
 		var x := _frozen_width() - _h_scroll_position
-		for i in range(n_freezed_columns, col_idx):
+		for i in range(n_frozen_columns, col_idx):
 			x += _columns[i].current_width
 		return x
 
@@ -1151,7 +1151,7 @@ func _check_mouse_over_divider(mouse_pos: Vector2) -> void:
 		for col_idx in range(_columns.size() - 1): # Not for the last column
 			var divider_x := _get_col_x_pos(col_idx) + _columns[col_idx].current_width
 			# Skip dividers of scrollable columns hidden behind the frozen zone
-			if col_idx >= n_freezed_columns and divider_x <= _frozen_width():
+			if col_idx >= n_frozen_columns and divider_x <= _frozen_width():
 				continue
 			var divider_rect := Rect2(divider_x - _divider_width / 2.0, 0, _divider_width, header_height)
 			if divider_rect.has_point(mouse_pos):
@@ -1245,14 +1245,14 @@ func _ensure_row_visible(row_idx: int) -> void:
 func _ensure_col_visible(col_idx: int) -> void:
 	if _columns.is_empty() or col_idx < 0 or col_idx >= _columns.size():
 		return
-	if col_idx < n_freezed_columns:
+	if col_idx < n_frozen_columns:
 		return # Frozen columns are always visible
 	if not _h_scroll.visible:
 		return
 
 	# Scroll-space: position relative to start of scrollable content
 	var col_scroll_pos := 0.0
-	for i in range(n_freezed_columns, col_idx):
+	for i in range(n_frozen_columns, col_idx):
 		col_scroll_pos += _columns[i].current_width
 	var col_scroll_end := col_scroll_pos + _columns[col_idx].current_width
 	var visible_scrollable_w := _h_scroll.page

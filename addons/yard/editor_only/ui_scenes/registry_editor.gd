@@ -626,6 +626,12 @@ func _on_registry_context_menu_id_pressed(id: int) -> void:
 
 func _on_columns_menu_id_pressed(id: int) -> void:
 	var popup := columns_menu_button.get_popup()
+
+	if id == 0: # Freeze ID Columns
+		popup.toggle_item_checked(0)
+		registry_table_view.id_columns_frozen = popup.is_item_checked(0)
+		return
+
 	var prop_name: StringName = popup.get_item_tooltip(id)
 	popup.toggle_item_checked(id)
 
@@ -688,6 +694,11 @@ func _on_columns_menu_button_about_to_popup() -> void:
 	if not registry:
 		popup.add_separator("Select a registry first")
 		return
+
+	popup.add_check_item("Freeze ID Columns")
+	popup.set_item_checked(0, registry_table_view.id_columns_frozen)
+
+	popup.add_separator()
 
 	for prop: Dictionary in registry_table_view.properties_column_info:
 		var prop_name: String = prop[&"name"]

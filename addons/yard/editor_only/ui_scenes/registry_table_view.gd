@@ -53,11 +53,15 @@ var entries_data: Array[Array] # inner arrays are rows, their content is columns
 var clipboard: Variant
 
 var toggle_button_forward := false:
-	set(value):
-		if value:
-			toggle_registry_panel_button.icon = get_theme_icon("Forward", "EditorIcons")
-		else:
-			toggle_registry_panel_button.icon = get_theme_icon("Back", "EditorIcons")
+	set(forward):
+		var icon_name := &"Forward" if forward else &"Back"
+		toggle_registry_panel_button.icon = get_theme_icon(icon_name, &"EditorIcons")
+
+var id_columns_frozen := true:
+	set(frozen):
+		id_columns_frozen = frozen
+		dynamic_table.n_frozen_columns = 2 if frozen else 0
+		dynamic_table._update_scrollbars() # private but whatever
 
 var _texture_rect_parent: Button
 var _res_picker: EditorResourcePicker
@@ -110,6 +114,7 @@ func _ready() -> void:
 
 	grow_horizontal = Control.GROW_DIRECTION_END
 	grow_vertical = Control.GROW_DIRECTION_END
+	id_columns_frozen = id_columns_frozen # to refresh
 
 
 func _process(_delta: float) -> void:
