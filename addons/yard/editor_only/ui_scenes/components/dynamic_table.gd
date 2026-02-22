@@ -635,13 +635,6 @@ func _get_progress_value(value: Variant) -> float:
 		return clamp(num_val, 0.0, 1.0)
 
 
-func _parse_date(date_str: String) -> Array:
-	var parts := date_str.split("/")
-	if parts.size() != 3:
-		return [0, 0, 0]
-	return [int(parts[2]), int(parts[1]), int(parts[0])] # Year, Month, Day
-
-
 func _store_selected_rows() -> void:
 	if (selected_rows.size() == 0):
 		return
