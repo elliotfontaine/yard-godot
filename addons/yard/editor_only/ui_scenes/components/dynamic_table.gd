@@ -42,6 +42,7 @@ const CELL_INVALID := "<INVALID>"
 @export_group("Size and grid")
 @export var default_minimum_column_width: float = 50.0
 @export var row_height: float = 30.0
+@export var n_freezed_columns: int = 0
 @export var grid_color: Color = Color(0.8, 0.8, 0.8)
 @export_group("Rows")
 @export var selected_row_back_color: Color = Color(0.0, 0.0, 1.0, 0.5)
@@ -77,7 +78,7 @@ var _columns: Array[ColumnConfig]
 var _data: Array[Array] = []
 var _full_data: Array = []
 var _total_rows := 0
-var _visible_rows_range := [0, 0]
+var _visible_rows_range: Array[int] = [0, 0]
 var _h_scroll_position := 0
 var _v_scroll_position := 0
 var _resizing_column := -1
@@ -187,95 +188,47 @@ func _draw() -> void:
 	if not is_inside_tree() or _columns.is_empty():
 		return
 
-	var current_x_offset: float = -_h_scroll_position
-	var current_y_offset: float = header_height
-	var visible_drawing_width := size.x - (_v_scroll.size.x if _v_scroll.visible else 0.0)
-	var header_font_color := default_font_color
+	var frozen_w := _frozen_width()
+	var scroll_x := frozen_w - _h_scroll_position # screen X of first scrollable column
+	var vis_w := size.x - (_v_scroll.size.x if _v_scroll.visible else 0.0)
+	var y_offset := header_height
 
+	# ── HEADER BACKGROUND ──────────────────────────────────────────────────────
 	draw_rect(Rect2(0, 0, size.x, header_height), header_color)
 
-	var header_cell_x := current_x_offset
-	for col_idx in _columns.size():
-		var column: ColumnConfig = _columns[col_idx]
-		if header_cell_x + column.current_width > 0 and header_cell_x < visible_drawing_width:
-			draw_line(Vector2(header_cell_x, 0), Vector2(header_cell_x, header_height), grid_color)
-			var rect_width: float = min(header_cell_x + column.current_width, visible_drawing_width)
-			draw_line(Vector2(header_cell_x, header_height), Vector2(rect_width, header_height), grid_color)
+	# ── PASS 1 : SCROLLABLE COLUMNS ────────────────────────────────────────────
+	_draw_header_column_range(n_freezed_columns, _columns.size(), scroll_x, frozen_w, vis_w)
 
-			if col_idx < _columns.size():
-				var header_text_content := column.header
-				var x_margin_val: int = H_ALIGNMENT_MARGINS.get(column.h_alignment)
-				if (col_idx == _filtering_column):
-					header_font_color = header_filter_active_font_color
-					header_text_content += " (" + str(_data.size()) + ")"
-				#elif column.custom_font_color:
-				#	header_font_color = column.custom_font_color
-				else:
-					header_font_color = default_font_color
-
-				var text_size := font.get_string_size(header_text_content, column.h_alignment, column.current_width, font_size)
-				var baseline_y := _get_text_baseline_y(0.0, header_height)
-				draw_string(
-					font,
-					Vector2(header_cell_x + x_margin_val, baseline_y),
-					header_text_content,
-					column.h_alignment,
-					column.current_width - abs(x_margin_val),
-					font_size,
-					header_font_color,
-				)
-				if (col_idx == _last_column_sorted):
-					var icon_h_align := HORIZONTAL_ALIGNMENT_LEFT
-					if column.h_alignment in [HORIZONTAL_ALIGNMENT_LEFT, HORIZONTAL_ALIGNMENT_CENTER]:
-						icon_h_align = HORIZONTAL_ALIGNMENT_RIGHT
-					draw_string(font, Vector2(header_cell_x, header_height / 2.0 + text_size.y / 2.0 - (font_size / 2.0 - 1.0)), _icon_sort, icon_h_align, column.current_width, font_size / 1.3, header_font_color)
-
-			var divider_x_pos := header_cell_x + column.current_width
-			if (divider_x_pos < visible_drawing_width and col_idx <= _columns.size() - 1): # Do not draw for the last column
-				draw_line(Vector2(divider_x_pos, 0), Vector2(divider_x_pos, header_height), grid_color, 2.0 if _mouse_over_divider == col_idx else 1.0)
-		header_cell_x += column.current_width
-
-	# Draw data rows
 	for row in range(_visible_rows_range[0], _visible_rows_range[1]):
 		if row >= _total_rows:
-			continue # Safety break
-		var row_y_pos: float = current_y_offset + (row - _visible_rows_range[0]) * row_height
-
-		var current_bg_color := alternate_row_color if row % 2 == 1 else row_color
-		draw_rect(Rect2(0, row_y_pos, visible_drawing_width, row_height), current_bg_color)
-
+			continue
+		var row_y := y_offset + (row - _visible_rows_range[0]) * row_height
+		var bg := alternate_row_color if row % 2 == 1 else row_color
+		draw_rect(Rect2(0, row_y, vis_w, row_height), bg)
 		if selected_rows.has(row):
-			draw_rect(Rect2(0, row_y_pos, visible_drawing_width, row_height - 1), selected_row_back_color)
+			draw_rect(Rect2(0, row_y, vis_w, row_height - 1), selected_row_back_color)
+		draw_line(Vector2(0, row_y + row_height), Vector2(vis_w, row_y + row_height), grid_color)
+		_draw_cells_column_range(row, row_y, n_freezed_columns, _columns.size(), scroll_x, frozen_w, vis_w)
 
-		draw_line(Vector2(0, row_y_pos + row_height), Vector2(visible_drawing_width, row_y_pos + row_height), grid_color)
+	# ── PASS 2 : FROZEN COLUMNS (drawn on top) ─────────────────────────────────
+	if n_freezed_columns > 0:
+		for row in range(_visible_rows_range[0], _visible_rows_range[1]):
+			if row >= _total_rows:
+				continue
+			var row_y := y_offset + (row - _visible_rows_range[0]) * row_height
+			var bg := alternate_row_color if row % 2 == 1 else row_color
+			draw_rect(Rect2(0, row_y, frozen_w, row_height), bg)
+			if selected_rows.has(row):
+				draw_rect(Rect2(0, row_y, frozen_w, row_height - 1), selected_row_back_color)
+			draw_line(Vector2(0, row_y + row_height), Vector2(frozen_w, row_y + row_height), grid_color)
+			_draw_cells_column_range(row, row_y, 0, n_freezed_columns, 0.0, 0.0, frozen_w)
 
-		var cell_x_pos := current_x_offset # Relative to -_h_scroll_position
-		for col_idx in _columns.size():
-			var col := _columns[col_idx]
-			if cell_x_pos < visible_drawing_width and cell_x_pos + col.current_width > 0:
-				var cell_rect := Rect2(cell_x_pos, row_y_pos, col.current_width, row_height)
-				draw_line(Vector2(cell_x_pos, row_y_pos), Vector2(cell_x_pos, row_y_pos + row_height), grid_color)
+		# Frozen header on top of scrollable header
+		draw_rect(Rect2(0, 0, frozen_w, header_height), header_color)
+		_draw_header_column_range(0, n_freezed_columns, 0.0, 0.0, vis_w)
 
-				if row == focused_row and col_idx == focused_col:
-					draw_rect(cell_rect.grow_individual(-1, -1, -2, -2), selected_cell_back_color, false, 2.0)
-
-				if col.is_progress_column():
-					_draw_cell_progress(cell_rect, row, col_idx)
-				elif col.is_boolean_column():
-					_draw_cell_bool(cell_rect, row, col_idx)
-				elif col.is_color_column():
-					_draw_cell_color(cell_rect, row, col_idx)
-				elif col.is_resource_column():
-					_draw_cell_resource(cell_rect, row, col_idx)
-				elif col.is_enum_column():
-					_draw_cell_enum(cell_rect, row, col_idx)
-				else:
-					_draw_cell_text(cell_rect, row, col_idx)
-			cell_x_pos += col.current_width
-
-		# Draw the final right vertical line of the table (right border of the last column)
-		if cell_x_pos <= visible_drawing_width and cell_x_pos > -_h_scroll_position:
-			draw_line(Vector2(cell_x_pos, row_y_pos), Vector2(cell_x_pos, row_y_pos + row_height), grid_color)
+		# Separator shadow at the frozen/scrollable boundary
+		draw_line(Vector2(frozen_w, 0), Vector2(frozen_w, size.y), grid_color.darkened(0.3), 2.0)
 
 #region PUBLIC METHODS
 
@@ -285,7 +238,7 @@ func set_native_theming(delay: int = 0) -> void:
 		await get_tree().create_timer(delay).timeout
 
 	var root := EditorInterface.get_base_control()
-	header_color = root.get_theme_color(&"dark_color_2", &"Editor")
+	header_color = root.get_theme_color(&"dark_color_1", &"Editor")
 	row_color = root.get_theme_color(&"base_color", &"Editor")
 	alternate_row_color = root.get_theme_color(&"dark_color_3", &"Editor")
 	#selected_row_back_color = root.get_theme_color(&"box_selection_fill_color", &"Editor")
@@ -320,7 +273,7 @@ func set_data(new_data: Array) -> void:
 	_data = _full_data.duplicate(false)
 
 	_total_rows = _data.size()
-	_visible_rows_range = [0, min(_total_rows, floor(self.size.y / row_height) if row_height > 0 else 0)]
+	_visible_rows_range = [0, min(_total_rows, floori(self.size.y / row_height) if row_height > 0 else 0)]
 
 	selected_rows.clear()
 	_resource_thumb_cache.clear()
@@ -577,19 +530,20 @@ func _update_scrollbars() -> void:
 		_total_rows = 0 if _total_rows == null else _total_rows
 		row_height = 30.0 if row_height == null or row_height <= 0 else row_height
 
-	var visible_width = size.x - (_v_scroll.size.x if _v_scroll.visible else 0)
-	var visible_height = size.y - (_h_scroll.size.y if _h_scroll.visible else 0) - header_height
+	var visible_width := size.x - (_v_scroll.size.x if _v_scroll.visible else 0.)
+	var visible_height := size.y - (_h_scroll.size.y if _h_scroll.visible else 0.) - header_height
 
-	var total_content_width := 0
-	for column in _columns:
-		if column.current_width != null:
-			total_content_width += column.current_width
+	# H-scroll covers only the scrollable (non-frozen) columns
+	var frozen_w := _frozen_width()
+	var visible_scrollable_w := visible_width - frozen_w
+	var total_scrollable_w := 0.0
+	for i in range(n_freezed_columns, _columns.size()):
+		total_scrollable_w += _columns[i].current_width
 
-	_h_scroll.visible = total_content_width > visible_width
+	_h_scroll.visible = total_scrollable_w > visible_scrollable_w
 	if _h_scroll.visible:
-		_h_scroll.max_value = total_content_width
-		_h_scroll.page = visible_width
-		#_h_scroll.step = default_minimum_column_width / 2.0 # Ensure float division
+		_h_scroll.max_value = total_scrollable_w
+		_h_scroll.page = visible_scrollable_w
 	else:
 		_h_scroll.value = 0
 
@@ -755,18 +709,14 @@ func _get_editor_value_for_column(column: ColumnConfig) -> Variant:
 
 
 func _get_cell_rect(row: int, col: int) -> Rect2:
-	var column := _columns[col]
 	if row < _visible_rows_range[0] or row >= _visible_rows_range[1] or col >= _columns.size():
 		return Rect2()
-	var x_offset := -_h_scroll_position
-	var cell_x := x_offset
-	for c in range(col):
-		cell_x += _columns[c].current_width
-	var visible_width = size.x - (_v_scroll.size.x if _v_scroll.visible else 0)
-	if cell_x + column.current_width <= 0 or cell_x >= visible_width:
+	var cell_x := _get_col_x_pos(col)
+	var vis_w := size.x - (_v_scroll.size.x if _v_scroll.visible else 0.)
+	if cell_x + _columns[col].current_width <= 0 or cell_x >= vis_w:
 		return Rect2()
-	var row_y_pos = header_height + (row - _visible_rows_range[0]) * row_height
-	return Rect2(cell_x, row_y_pos, column.current_width, row_height)
+	var row_y := header_height + (row - _visible_rows_range[0]) * row_height
+	return Rect2(cell_x, row_y, _columns[col].current_width, row_height)
 
 
 func _draw_cell_progress(rect: Rect2, row: int, col: int) -> void:
@@ -983,14 +933,11 @@ func _get_interpolated_three_colors(start_c: Color, mid_c: Color, end_c: Color, 
 
 
 func _start_filtering(col_idx: int) -> void:
-	var column := _columns[col_idx]
-	var col_x := -_h_scroll_position
-	for i in col_idx:
-		col_x += _columns[i].current_width
-	var header_rect := Rect2(col_x, 0, column.current_width, header_height)
 	if _filtering_column == col_idx and _filter_line_edit.visible:
 		return # Already in filter mode on this column
 
+	var col_x := _get_col_x_pos(col_idx)
+	var header_rect := Rect2(col_x, 0, _columns[col_idx].current_width, header_height)
 	_filtering_column = col_idx
 	_filter_line_edit.position = header_rect.position + Vector2(1, 1)
 	_filter_line_edit.size = header_rect.size - Vector2(2, 2)
@@ -1034,14 +981,27 @@ func _apply_filter(search_key: String) -> void:
 	queue_redraw()
 
 
-## Returns the column index under x, or -1 if none.
+## Returns the column index under screen x, or -1 if none.
+## Frozen columns take priority: a click in the frozen zone always hits a frozen column.
 func _get_col_at_x(x: float) -> int:
-	var current_x := -_h_scroll_position
-	for col_idx in _columns.size():
-		var col := _columns[col_idx]
-		if x >= current_x and x < current_x + col.current_width:
+	var frozen_w := _frozen_width()
+
+	# Frozen zone — fixed positions, drawn on top
+	if x < frozen_w:
+		var cx := 0.0
+		for col_idx in n_freezed_columns:
+			if x < cx + _columns[col_idx].current_width:
+				return col_idx
+			cx += _columns[col_idx].current_width
+		return -1
+
+	# Scrollable zone
+	var cx := frozen_w - _h_scroll_position
+	for col_idx in range(n_freezed_columns, _columns.size()):
+		var col_end := cx + _columns[col_idx].current_width
+		if x >= maxf(cx, frozen_w) and x < col_end:
 			return col_idx
-		current_x += col.current_width
+		cx = col_end
 	return -1
 
 
@@ -1059,28 +1019,145 @@ func _get_text_baseline_y(cell_y: float, cell_height: float = -1.0) -> float:
 	return cell_y + (h / 2.0) + (font.get_height(font_size) / 2.0) - font.get_descent(font_size)
 
 
+## Total width of frozen (pinned) columns.
+func _frozen_width() -> float:
+	var w := 0.0
+	for i in mini(n_freezed_columns, _columns.size()):
+		w += _columns[i].current_width
+	return w
+
+
+## Screen X of the left edge of column col_idx, accounting for freeze and scroll.
+## Frozen columns sit at fixed positions; scrollable columns follow the h-scroll.
+func _get_col_x_pos(col_idx: int) -> float:
+	if col_idx < n_freezed_columns:
+		var x := 0.0
+		for i in col_idx:
+			x += _columns[i].current_width
+		return x
+	else:
+		var x := _frozen_width() - _h_scroll_position
+		for i in range(n_freezed_columns, col_idx):
+			x += _columns[i].current_width
+		return x
+
+
+## Dispatches drawing of a single data cell to the correct typed draw function.
+func _dispatch_cell_draw(cell_rect: Rect2, row: int, col_idx: int) -> void:
+	var col := _columns[col_idx]
+	if col.is_progress_column():
+		_draw_cell_progress(cell_rect, row, col_idx)
+	elif col.is_boolean_column():
+		_draw_cell_bool(cell_rect, row, col_idx)
+	elif col.is_color_column():
+		_draw_cell_color(cell_rect, row, col_idx)
+	elif col.is_resource_column():
+		_draw_cell_resource(cell_rect, row, col_idx)
+	elif col.is_enum_column():
+		_draw_cell_enum(cell_rect, row, col_idx)
+	else:
+		_draw_cell_text(cell_rect, row, col_idx)
+
+
+## Draws a single header cell (borders, text, sort icon, resize divider).
+func _draw_header_cell(col_idx: int, cell_x: float, vis_w: float) -> void:
+	var column := _columns[col_idx]
+	draw_line(Vector2(cell_x, 0), Vector2(cell_x, header_height), grid_color)
+	draw_line(
+		Vector2(cell_x, header_height),
+		Vector2(minf(cell_x + column.current_width, vis_w), header_height),
+		grid_color,
+	)
+
+	var header_text := column.header
+	var font_color := default_font_color
+	if col_idx == _filtering_column:
+		font_color = header_filter_active_font_color
+		header_text += " (" + str(_data.size()) + ")"
+
+	var x_margin: int = H_ALIGNMENT_MARGINS.get(column.h_alignment)
+	var baseline_y := _get_text_baseline_y(0.0, header_height)
+	draw_string(
+		font,
+		Vector2(cell_x + x_margin, baseline_y),
+		header_text,
+		column.h_alignment,
+		column.current_width - abs(x_margin),
+		font_size,
+		font_color,
+	)
+
+	if col_idx == _last_column_sorted:
+		var text_size := font.get_string_size(header_text, column.h_alignment, column.current_width, font_size)
+		var icon_align := HORIZONTAL_ALIGNMENT_RIGHT \
+		if column.h_alignment in [HORIZONTAL_ALIGNMENT_LEFT, HORIZONTAL_ALIGNMENT_CENTER] \
+		else HORIZONTAL_ALIGNMENT_LEFT
+		draw_string(
+			font,
+			Vector2(cell_x, header_height / 2.0 + text_size.y / 2.0 - (font_size / 2.0 - 1.0)),
+			_icon_sort,
+			icon_align,
+			column.current_width,
+			font_size / 1.3,
+			font_color,
+		)
+
+	# Resize divider — every column except the last one
+	var divider_x := cell_x + column.current_width
+	if col_idx < _columns.size() - 1 and divider_x < vis_w:
+		draw_line(
+			Vector2(divider_x, 0),
+			Vector2(divider_x, header_height),
+			grid_color,
+			2.0 if _mouse_over_divider == col_idx else 1.0,
+		)
+
+
+## Draws header cells for columns [col_from, col_to), clipped to [clip_left, vis_w).
+func _draw_header_column_range(col_from: int, col_to: int, start_x: float, clip_left: float, vis_w: float) -> void:
+	var hx := start_x
+	for col_idx in range(col_from, col_to):
+		var col := _columns[col_idx]
+		if hx + col.current_width > clip_left and hx < vis_w:
+			_draw_header_cell(col_idx, hx, vis_w)
+		hx += col.current_width
+
+
+## Draws data cells for columns [col_from, col_to) for one row, clipped to [clip_left, vis_w).
+## Also draws the table's right border when col_to is the last column.
+func _draw_cells_column_range(row: int, row_y: float, col_from: int, col_to: int, start_x: float, clip_left: float, vis_w: float) -> void:
+	var cx := start_x
+	for col_idx in range(col_from, col_to):
+		var col := _columns[col_idx]
+		if cx + col.current_width > clip_left and cx < vis_w:
+			var cell_rect := Rect2(cx, row_y, col.current_width, row_height)
+			draw_line(Vector2(cx, row_y), Vector2(cx, row_y + row_height), grid_color)
+			if row == focused_row and col_idx == focused_col:
+				draw_rect(cell_rect.grow_individual(-1, -1, -2, -2), selected_cell_back_color, false, 2.0)
+			_dispatch_cell_draw(cell_rect, row, col_idx)
+		cx += col.current_width
+	# Right border of the last column in the whole table
+	if col_to == _columns.size() and cx <= vis_w and cx > clip_left:
+		draw_line(Vector2(cx, row_y), Vector2(cx, row_y + row_height), grid_color)
+
+
 func _check_mouse_over_divider(mouse_pos: Vector2) -> void:
 	_mouse_over_divider = -1
 	mouse_default_cursor_shape = CURSOR_ARROW
 
 	if mouse_pos.y < header_height:
-		var current_x := -_h_scroll_position
-
 		for col_idx in range(_columns.size() - 1): # Not for the last column
-			var column := _columns[col_idx]
-			current_x += column.current_width
-			var divider_rect := Rect2(
-				current_x - _divider_width / 2,
-				0,
-				_divider_width,
-				header_height,
-			)
-
+			var divider_x := _get_col_x_pos(col_idx) + _columns[col_idx].current_width
+			# Skip dividers of scrollable columns hidden behind the frozen zone
+			if col_idx >= n_freezed_columns and divider_x <= _frozen_width():
+				continue
+			var divider_rect := Rect2(divider_x - _divider_width / 2.0, 0, _divider_width, header_height)
 			if divider_rect.has_point(mouse_pos):
 				_mouse_over_divider = col_idx
 				mouse_default_cursor_shape = CURSOR_HSIZE
+				break
 
-	queue_redraw() # Refresh to show the highlighted divider
+	queue_redraw()
 
 
 func _update_tooltip(mouse_pos: Vector2) -> void:
@@ -1164,36 +1241,27 @@ func _ensure_row_visible(row_idx: int) -> void:
 
 
 func _ensure_col_visible(col_idx: int) -> void:
-	if _columns.is_empty() or col_idx not in range(_columns.size()) or not _h_scroll.visible:
+	if _columns.is_empty() or col_idx < 0 or col_idx >= _columns.size():
+		return
+	if col_idx < n_freezed_columns:
+		return # Frozen columns are always visible
+	if not _h_scroll.visible:
 		return
 
-	#print(Engine.get_process_frames())
-	#return
-	var column_start: float
-	var column_end: float
-	var visible_area_x := Vector2(
-		_h_scroll.value,
-		size.x + _h_scroll.value - _v_scroll.size.x,
-	)
+	# Scroll-space: position relative to start of scrollable content
+	var col_scroll_pos := 0.0
+	for i in range(n_freezed_columns, col_idx):
+		col_scroll_pos += _columns[i].current_width
+	var col_scroll_end := col_scroll_pos + _columns[col_idx].current_width
+	var visible_scrollable_w := _h_scroll.page
 
-	var col_width: float
-	var iter_x_pos := 0.0
-	for i in _columns.size():
-		var column := _columns[i]
-		if i == col_idx:
-			col_width = column.current_width
-			column_start = iter_x_pos
-			column_end = iter_x_pos + col_width
-			break
-		iter_x_pos += column.current_width
-
-	if column_start < visible_area_x[0]:
-		_h_scroll.value = column_start
-	elif column_end > visible_area_x[1]:
-		if col_width > (visible_area_x[1] - visible_area_x[0]):
-			_h_scroll.value = column_start
-		else:
-			_h_scroll.value = column_end - (visible_area_x[1] - visible_area_x[0])
+	if col_scroll_pos < _h_scroll.value:
+		_h_scroll.value = col_scroll_pos
+	elif col_scroll_end > _h_scroll.value + visible_scrollable_w:
+		_h_scroll.value = col_scroll_end - visible_scrollable_w \
+		if _columns[col_idx].current_width <= visible_scrollable_w \
+		else col_scroll_pos
+	_h_scroll.value = clamp(_h_scroll.value, 0.0, _h_scroll.max_value)
 
 
 func _handle_key_input(event: InputEventKey) -> void:
@@ -1490,24 +1558,14 @@ func _handle_progress_drag(mouse_pos: Vector2) -> void:
 	):
 		return
 
-	var current_x := -_h_scroll_position
-	for col_loop in range(_progress_drag_col):
-		current_x += _columns[col_loop].current_width
-
 	var margin := 4.0
-	var bar_x_pos := current_x + margin
-	var bar_width = _columns[_progress_drag_col].current_width - (margin * 2.0)
+	var bar_x := _get_col_x_pos(_progress_drag_col) + margin
+	var bar_w := _columns[_progress_drag_col].current_width - margin * 2.0
+	if bar_w <= 0:
+		return
 
-	if bar_width <= 0:
-		return # Avoid division by zero
-
-	var relative_x := mouse_pos.x - bar_x_pos
-	var new_progress = clamp(relative_x / bar_width, 0.0, 1.0)
-
-	if (
-		_progress_drag_row < _data.size()
-		and _progress_drag_col < _data[_progress_drag_row].size()
-	):
+	var new_progress := clamp((mouse_pos.x - bar_x) / bar_w, 0.0, 1.0)
+	if _progress_drag_row < _data.size() and _progress_drag_col < _data[_progress_drag_row].size():
 		_data[_progress_drag_row][_progress_drag_col] = new_progress
 		progress_changed.emit(_progress_drag_row, _progress_drag_col, new_progress)
 		queue_redraw()
@@ -1637,23 +1695,17 @@ func _handle_double_click(mouse_pos: Vector2) -> void:
 
 
 func _handle_header_click(mouse_pos: Vector2) -> void:
-	var current_x := -_h_scroll_position
-
 	for col_idx in _columns.size():
-		var column := _columns[col_idx]
+		var col_x := _get_col_x_pos(col_idx)
 		if (
-			mouse_pos.x >= current_x + _divider_width / 2
-			and mouse_pos.x < current_x + column.current_width - _divider_width / 2
+			mouse_pos.x >= col_x + _divider_width / 2.0
+			and mouse_pos.x < col_x + _columns[col_idx].current_width - _divider_width / 2.0
 		):
 			_finish_editing(false)
-			if _last_column_sorted == col_idx:
-				_ascending = not _ascending
-			else:
-				_ascending = true
+			_ascending = not _ascending if _last_column_sorted == col_idx else true
 			ordering_data(col_idx, _ascending)
 			header_clicked.emit(col_idx)
 			break
-		current_x += column.current_width
 
 
 func _handle_header_double_click(mouse_pos: Vector2) -> void:
@@ -1710,8 +1762,8 @@ func _on_h_scroll_changed(value) -> void:
 func _on_v_scroll_value_changed(value) -> void:
 	_v_scroll_position = value
 	if row_height > 0: # Avoid division by zero
-		_visible_rows_range[0] = floor(value / row_height)
-		_visible_rows_range[1] = _visible_rows_range[0] + floor((size.y - header_height) / row_height) + 1
+		_visible_rows_range[0] = floori(value / row_height)
+		_visible_rows_range[1] = _visible_rows_range[0] + floori((size.y - header_height) / row_height) + 1
 		_visible_rows_range[1] = min(_visible_rows_range[1], _total_rows)
 	else: # Fallback if row_height is not valid
 		_visible_rows_range = [0, _total_rows]
