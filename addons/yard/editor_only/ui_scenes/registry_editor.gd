@@ -671,7 +671,13 @@ func _on_report_issue_button_pressed() -> void:
 
 
 func _on_make_floating_button_pressed() -> void:
-	_warn_unimplemented()
+	print_rich("Coming soon! Thanks, KoBeWi ! <3")
+	print_rich(
+		"[color=SKY_BLUE][url]",
+		"https://github.com/godotengine/godot/pull/113051",
+		"[/url][/color]",
+	)
+	#_warn_unimplemented()
 
 
 func _on_columns_menu_button_about_to_popup() -> void:
