@@ -542,6 +542,7 @@ func _update_scrollbars() -> void:
 		total_scrollable_w += _columns[i].current_width
 
 	_h_scroll.visible = total_scrollable_w > visible_scrollable_w
+	_h_scroll.offset_left = frozen_w
 	if _h_scroll.visible:
 		_h_scroll.max_value = total_scrollable_w
 		_h_scroll.page = visible_scrollable_w
@@ -1259,9 +1260,11 @@ func _ensure_col_visible(col_idx: int) -> void:
 	if col_scroll_pos < _h_scroll.value:
 		_h_scroll.value = col_scroll_pos
 	elif col_scroll_end > _h_scroll.value + visible_scrollable_w:
-		_h_scroll.value = col_scroll_end - visible_scrollable_w \
-		if _columns[col_idx].current_width <= visible_scrollable_w \
-		else col_scroll_pos
+		_h_scroll.value = (
+			col_scroll_end - visible_scrollable_w
+			if _columns[col_idx].current_width <= visible_scrollable_w
+			else col_scroll_pos
+		)
 	_h_scroll.value = clamp(_h_scroll.value, 0.0, _h_scroll.max_value)
 
 
