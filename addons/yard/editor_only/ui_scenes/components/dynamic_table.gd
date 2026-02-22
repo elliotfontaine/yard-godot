@@ -228,7 +228,8 @@ func _draw() -> void:
 		_draw_header_column_range(0, n_freezed_columns, 0.0, 0.0, vis_w)
 
 		# Separator shadow at the frozen/scrollable boundary
-		draw_line(Vector2(frozen_w, 0), Vector2(frozen_w, size.y), grid_color.darkened(0.3), 2.0)
+		var separator_bottom := header_height + mini(_total_rows, _visible_rows_range[1] - _visible_rows_range[0]) * row_height
+		draw_line(Vector2(frozen_w, 0), Vector2(frozen_w, separator_bottom), grid_color.darkened(0.3), 2.0)
 
 #region PUBLIC METHODS
 
