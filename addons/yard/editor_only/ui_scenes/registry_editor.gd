@@ -1,8 +1,6 @@
 @tool
 extends Container
 
-signal make_floating_requested
-
 # To be used for PopupMenus items (context menu or the "File" MenuButton)
 enum FileMenuAction {
 	NONE = -1,
@@ -60,7 +58,6 @@ var _fuz := FuzzySearch.new()
 @onready var registry_table_view: RegistryTableView = %RegistryTableView
 @onready var registry_context_menu: PopupMenu = %RegistryContextMenu
 @onready var new_registry_dialog: NewRegistryDialog = %NewRegistryDialog
-@onready var make_floating_button: Button = %MakeFloatingButton
 
 
 func _ready() -> void:
@@ -83,13 +80,6 @@ func _ready() -> void:
 	columns_menu_button.get_popup().hide_on_checkable_item_selection = false
 	registries_itemlist.registries_dropped.connect(_on_itemlist_registries_dropped)
 	registry_table_view.toggle_registry_panel_button.pressed.connect(_on_toggle_registries_pressed)
-
-	make_floating_button.disabled = !EditorInterface.is_multi_window_enabled()
-	make_floating_button.tooltip_text = (
-		"Make the registry editor floating."
-		if EditorInterface.is_multi_window_enabled()
-		else "Multi-window support is not available because Interface > Multi Window > Enable is disabled in the editor settings."
-	)
 
 	# Fuzzy Search settings
 	_fuz.max_results = 20
@@ -681,7 +671,6 @@ func _on_report_issue_button_pressed() -> void:
 
 
 func _on_make_floating_button_pressed() -> void:
-	make_floating_requested.emit()
 	_warn_unimplemented()
 
 

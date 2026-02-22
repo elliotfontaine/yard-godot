@@ -158,7 +158,6 @@ icon_name = "Help"
 layout_mode = 2
 
 [node name="MakeFloatingButton" type="Button" parent="VBoxContainer/HBoxContainer"]
-unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Make the registry editor floating."
 focus_mode = 3
