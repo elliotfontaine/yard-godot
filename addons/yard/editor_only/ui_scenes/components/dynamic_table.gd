@@ -382,7 +382,6 @@ func ordering_data(column_index: int, ascending: bool = true) -> int:
 			func(a: Array, b: Array) -> bool:
 				var a_val := _get_progress_value(a[column_index])
 				var b_val := _get_progress_value(b[column_index])
-				_restore_selected_rows()
 				return a_val < b_val if ascending else a_val > b_val
 		)
 	elif column.is_boolean_column():
@@ -390,7 +389,6 @@ func ordering_data(column_index: int, ascending: bool = true) -> int:
 			func(a: Array, b: Array) -> bool:
 				var a_val := bool(a[column_index])
 				var b_val := bool(b[column_index])
-				_restore_selected_rows()
 				return (a_val and not b_val) if ascending else (not a_val and b_val)
 		)
 	elif column.is_color_column():
@@ -398,19 +396,13 @@ func ordering_data(column_index: int, ascending: bool = true) -> int:
 			func(a: Array, b: Array) -> bool:
 				var ca := Color(a[column_index])
 				var cb := Color(b[column_index])
-
 				# HSV ordering: H, then S, then V, then A (tie-break)
 				if ca.h != cb.h:
-					_restore_selected_rows()
 					return ca.h < cb.h if ascending else ca.h > cb.h
 				if ca.s != cb.s:
-					_restore_selected_rows()
 					return ca.s < cb.s if ascending else ca.s > cb.s
 				if ca.v != cb.v:
-					_restore_selected_rows()
 					return ca.v < cb.v if ascending else ca.v > cb.v
-
-				_restore_selected_rows()
 				return ca.a < cb.a if ascending else ca.a > cb.a
 		)
 	else:
@@ -423,12 +415,10 @@ func ordering_data(column_index: int, ascending: bool = true) -> int:
 					if a_val == null:
 						return ascending # nulls first if ascending
 					if b_val == null:
-						return not ascending # nulls last if ascending
-					# Compare as strings if types differ but are not null
-					_restore_selected_rows()
+						return not ascending
 					return str(a_val) < str(b_val) if ascending else str(a_val) > str(b_val)
 				if a_val == null and b_val == null:
-					return false # Both null, considered equal
+					return false
 				if a_val == null:
 					return ascending
 				if b_val == null:
@@ -436,9 +426,9 @@ func ordering_data(column_index: int, ascending: bool = true) -> int:
 				if typeof(a_val) == TYPE_STRING_NAME:
 					a_val = str(a_val)
 					b_val = str(b_val)
-				_restore_selected_rows()
 				return a_val < b_val if ascending else a_val > b_val
 		)
+	_restore_selected_rows()
 	queue_redraw()
 	return -1 # The original function returned -1
 
