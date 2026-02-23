@@ -1,5 +1,5 @@
 @tool
-@icon("res://addons/yard/editor_only/assets/FileList.svg")
+@icon("res://addons/yard/editor_only/assets/yard.svg")
 class_name Registry
 extends Resource
 ## A lightweight registry mapping resource UIDs to human-readable string IDs.

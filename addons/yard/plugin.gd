@@ -63,11 +63,7 @@ func _get_plugin_name() -> String:
 
 
 func _get_plugin_icon() -> Texture2D:
-	# will do for now
-	return EditorInterface.get_editor_theme().get_icon(
-		"ResourcePreloader",
-		"EditorIcons",
-	)
+	return preload("res://addons/yard/editor_only/assets/yard.svg")
 
 
 func _filesystem_create_context_menu_plugin_callback(context: Array) -> void:
