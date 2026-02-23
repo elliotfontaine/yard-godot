@@ -46,6 +46,7 @@ static func edit_registry_settings(
 		class_restriction: String,
 		scan_dir: String,
 		recursive: bool,
+		indexed_props: String,
 ) -> Error:
 	if class_restriction and not is_resource_class_string(class_restriction):
 		return ERR_DOES_NOT_EXIST
@@ -60,6 +61,11 @@ static func edit_registry_settings(
 
 	registry._recursive_scan = recursive
 	registry._scan_directory = scan_dir
+
+	var props: Array[StringName] = []
+	for p: String in indexed_props.split(",", false):
+		props.append(StringName(p.strip_edges()))
+	_replace_indexed_properties_list(registry, props)
 
 	return ResourceSaver.save(registry)
 
@@ -271,6 +277,35 @@ static func dir_get_matching_resources(registry: Registry, path: String, recursi
 	return matching_resources
 
 
+## Rebuilds the property index by loading every registered resource and reading
+## the currently indexed properties.[br][br]
+##
+## This is a blocking operation — it loads all resources synchronously.
+## Only properties already registered via [method add_indexed_property] are indexed.
+## Entries whose resource cannot be loaded are skipped.
+static func rebuild_property_index(registry: Registry) -> Error:
+	# Clear existing values while keeping registered property keys
+	for property: StringName in registry._property_index:
+		registry._property_index[property] = { }
+
+	for uid: StringName in registry.get_all_uids():
+		if not ResourceLoader.exists(uid):
+			continue
+		var res := load(uid)
+		if res == null:
+			continue
+		var string_id := registry.get_string_id(uid)
+		for property: StringName in registry._property_index.keys():
+			if not property in res:
+				continue
+			var value: Variant = res.get(property)
+			if not registry._property_index[property].has(value):
+				registry._property_index[property][value] = { }
+			registry._property_index[property][value][string_id] = true
+
+	return ResourceSaver.save(registry)
+
+
 static func is_valid_registry_output_path(path: String) -> bool:
 	path = path.strip_edges()
 	if path.is_empty():
@@ -389,3 +424,25 @@ static func _make_string_unique(registry: Registry, string_id: String) -> String
 	while id_to_try + "_" + str(n) in registry._string_ids_to_uids:
 		n += 1
 	return id_to_try + "_" + str(n)
+
+
+## Reconciles the set of indexed properties to match [param properties] exactly.[br][br]
+##
+## Properties in [param properties] not yet indexed are added.
+## Properties currently indexed but absent from [param properties] are removed.
+## Existing index data for kept properties is preserved. Call
+## [method rebuild_property_index] afterwards to refresh values.
+static func _replace_indexed_properties_list(registry: Registry, properties: Array[StringName]) -> Error:
+	var target := { }
+	for p in properties:
+		target[p] = true
+
+	for existing: StringName in registry._property_index.keys():
+		if not target.has(existing):
+			registry._property_index.erase(existing)
+
+	for p in properties:
+		if not registry._property_index.has(p):
+			registry._property_index[p] = { }
+
+	return ResourceSaver.save(registry)

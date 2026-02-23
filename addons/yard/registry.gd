@@ -32,8 +32,13 @@ extends Resource
 @export_storage var _recursive_scan: bool = false
 @warning_ignore_restore("unused_private_class_variable")
 
+# Version number for editor use. Can be helpful to trigger reprocessing of registries when loading old versions with new code.
+@export_storage var _registry_version: int = 0
+# Bidirectional map. Populated by RegistryIO in the editor, read-only at runtime.
 @export_storage var _uids_to_string_ids: Dictionary[StringName, StringName]
 @export_storage var _string_ids_to_uids: Dictionary[StringName, StringName]
+# Baked property index: property -> value -> set of resources string IDs.
+@export_storage var _property_index: Dictionary[StringName, Dictionary]
 
 
 func _init() -> void:
@@ -52,6 +57,15 @@ func size() -> int:
 ## See also [method Registry.size].
 func is_empty() -> bool:
 	return _uids_to_string_ids.is_empty()
+
+
+## Returns [code]true[/code] if [param property] has been baked into the property index.[br][br]
+##
+## Use this to guard calls to [method Registry.filter_by_value],
+## [method Registry.filter_by], and [method Registry.filter_by_values]
+## when indexing of a given property is not guaranteed.
+func is_property_indexed(property: StringName) -> bool:
+	return _property_index.has(property)
 
 
 ## Returns [code]true[/code] if the given [param id] exists in the registry.[br][br]
@@ -176,6 +190,76 @@ func load_all_threaded_request(
 			tracker.__status[string_id] = ResourceLoader.THREAD_LOAD_INVALID_RESOURCE
 
 	return tracker
+
+
+## Returns the string IDs of all entries whose [param property] satisfies [param predicate].[br][br]
+##
+## [param predicate] receives the property value and must return a [bool].
+## Requires the property index to have been baked for [param property].
+## Returns an empty array if the property is not indexed.
+## [codeblock]
+## var high_level := weapon_registry.filter_by(&"level", func(v): return v >= 10)
+## var rare_or_epic := weapon_registry.filter_by(&"rarity", func(v): return v in [Rarity.RARE, Rarity.EPIC])
+## [/codeblock]
+func filter_by(property: StringName, predicate: Callable) -> Array[StringName]:
+	var result: Array[StringName] = []
+	if not _property_index.has(property):
+		return result
+	for value: Variant in _property_index[property]:
+		if predicate.call(value):
+			for string_id: StringName in _property_index[property][value]:
+				result.append(string_id)
+	return result
+
+
+## Returns the string IDs of all entries whose [param property] equals [param value].[br][br]
+##
+## Requires the property index to have been baked for [param property].
+## Returns an empty array if the property or value is not indexed.
+## [codeblock]
+## var legendaries := weapon_registry.filter_by_value(&"rarity", Rarity.LEGENDARY)
+## [/codeblock]
+func filter_by_value(property: StringName, value: Variant) -> Array[StringName]:
+	var result: Array[StringName] = []
+	if not _property_index.has(property):
+		return result
+	var value_map: Dictionary = _property_index[property]
+	if not value_map.has(value):
+		return result
+	result.assign(value_map[value].keys())
+	return result
+
+
+## Returns the string IDs of all entries matching all [param criteria] (AND logic).[br][br]
+##
+## [param criteria] is a [Dictionary] mapping property names to their expected values.
+## Requires each property to have been baked in the index.
+## Returns an empty array if any property is not indexed or yields no match.
+## [codeblock]
+## var perfect_armors := armor_registry.filter_by_values({&"defense": 100, &"weight": 0})
+## var legendary_swords := weapon_registry.filter_by_values({&"rarity": Rarity.LEGENDARY, &"type": "sword"})
+## [/codeblock]
+func filter_by_values(criteria: Dictionary) -> Array[StringName]:
+	var result: Array[StringName] = []
+	var first := true
+	for property: StringName in criteria:
+		var matches := filter_by_value(property, criteria[property])
+		if first:
+			result = matches
+			first = false
+		else:
+			# Intersect: keep only IDs present in both
+			var matches_set: Dictionary[StringName, bool] = { }
+			for id in matches:
+				matches_set[id] = true
+			var intersected: Array[StringName] = []
+			for id in result:
+				if matches_set.has(id):
+					intersected.append(id)
+			result = intersected
+		if result.is_empty():
+			return result
+	return result
 
 
 ## Loading tracker used with [method Registry.load_all_threaded_request]
