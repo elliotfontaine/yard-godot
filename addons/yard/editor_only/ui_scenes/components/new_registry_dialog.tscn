@@ -29,8 +29,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 8.0
 offset_top = 8.0
-offset_right = 658.0
-offset_bottom = 257.0
+offset_right = -8.0
+offset_bottom = -49.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 16
@@ -94,20 +94,38 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "On"
 
-[node name="PathLabel" type="Label" parent="VBoxContainer/GridContainer"]
+[node name="IndexedPropertiesLabel" type="Label" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Indexed Properties:"
+
+[node name="IndexedPropertiesLineEdit" type="LineEdit" parent="VBoxContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "category,price,texture"
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="PathLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 text = "Path:"
 
-[node name="RegistryPath" type="HBoxContainer" parent="VBoxContainer/GridContainer"]
+[node name="RegistryPath" type="HBoxContainer" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 
-[node name="RegistryPathLineEdit" type="LineEdit" parent="VBoxContainer/GridContainer/RegistryPath"]
+[node name="RegistryPathLineEdit" type="LineEdit" parent="VBoxContainer/HBoxContainer/RegistryPath"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "new_registry.tres"
 
-[node name="RegistryPathFilesystemButton" type="Button" parent="VBoxContainer/GridContainer/RegistryPath"]
+[node name="RegistryPathFilesystemButton" type="Button" parent="VBoxContainer/HBoxContainer/RegistryPath"]
 unique_name_in_owner = true
 layout_mode = 2
 script = ExtResource("2_8x47h")
@@ -132,5 +150,6 @@ scroll_active = false
 [connection signal="text_changed" from="VBoxContainer/GridContainer/ScanDirectory/ScanDirectoryLineEdit" to="." method="_on_scan_directory_line_edit_text_changed"]
 [connection signal="pressed" from="VBoxContainer/GridContainer/ScanDirectory/ScanDirectoryFilesystemButton" to="." method="_on_scan_directory_filesystem_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/GridContainer/RecursiveScanCheckBox" to="." method="_on_recursive_scan_check_box_pressed"]
-[connection signal="text_changed" from="VBoxContainer/GridContainer/RegistryPath/RegistryPathLineEdit" to="." method="_on_registry_path_line_edit_text_changed"]
-[connection signal="pressed" from="VBoxContainer/GridContainer/RegistryPath/RegistryPathFilesystemButton" to="." method="_on_registry_path_filesystem_button_pressed"]
+[connection signal="text_changed" from="VBoxContainer/GridContainer/IndexedPropertiesLineEdit" to="." method="_on_indexed_properties_line_edit_text_changed"]
+[connection signal="text_changed" from="VBoxContainer/HBoxContainer/RegistryPath/RegistryPathLineEdit" to="." method="_on_registry_path_line_edit_text_changed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/RegistryPath/RegistryPathFilesystemButton" to="." method="_on_registry_path_filesystem_button_pressed"]

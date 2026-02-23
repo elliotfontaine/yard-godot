@@ -9,6 +9,7 @@ enum FileDialogState { CLASS_RESTRICTION, SCAN_DIRECTORY, REGISTRY_PATH }
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const RegistryIO := Namespace.RegistryIO
+const ClassUtils := Namespace.ClassUtils
 const AnyIcon := Namespace.AnyIcon
 const DEFAULT_COLOR = Color(0.71, 0.722, 0.745, 1.0)
 const SUCCESS_COLOR = Color(0.45, 0.95, 0.5)
@@ -24,6 +25,12 @@ const INFO_MESSAGES: Dictionary[StringName, Array] = {
 	&"scan_valid": ["Scan directory valid. Will watch for new Resources…", SUCCESS_COLOR],
 	&"scan_invalid": ["Scan directory invalid. Pick an existing directory.", ERROR_COLOR],
 	&"scan_empty": ["No scan directory, resources auto-discovery is disabled.", DEFAULT_COLOR],
+
+	# --- Indexed properties ---
+	&"properties_none": ["Indexed properties are optional. Separate multiple properties with commas.", DEFAULT_COLOR],
+	&"properties_valid": ["All properties found on the specified resource class.", SUCCESS_COLOR],
+	&"properties_empty_prop": ["Empty property name detected. Remove extra commas.", ERROR_COLOR],
+	&"properties_cant_verify": ["Property '{prop}' may not exist on the resource class.", WARNING_COLOR],
 
 	# --- Registry path ---
 	&"path_available": ["Will create a new registry file.", SUCCESS_COLOR],
@@ -48,6 +55,7 @@ var _file_dialog_state: FileDialogState
 @onready var recursive_scan_check_box: CheckBox = %RecursiveScanCheckBox
 @onready var registry_path_line_edit: LineEdit = %RegistryPathLineEdit
 @onready var registry_path_filesystem_button: Button = %RegistryPathFilesystemButton
+@onready var indexed_properties_line_edit: LineEdit = %IndexedPropertiesLineEdit
 @onready var info_label: RichTextLabel = %InfoLabel
 
 
@@ -68,6 +76,10 @@ func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 	if state == RegistryDialogState.NEW_REGISTRY:
 		title = "Create Registry"
 		ok_button_text = "Create"
+		class_restriction_line_edit.text = ""
+		scan_directory_line_edit.text = ""
+		recursive_scan_check_box.button_pressed = false
+		indexed_properties_line_edit.text = ""
 		registry_path_line_edit.editable = true
 		registry_path_line_edit.focus_mode = Control.FOCUS_ALL
 		registry_path_line_edit.text = dir + "new_registry.tres"
@@ -79,6 +91,7 @@ func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 		class_restriction_line_edit.text = edited_registry._class_restriction
 		scan_directory_line_edit.text = edited_registry._scan_directory
 		recursive_scan_check_box.button_pressed = edited_registry._recursive_scan
+		indexed_properties_line_edit.text = ",".join(edited_registry._property_index.keys())
 		registry_path_line_edit.text = edited_registry.resource_path
 		registry_path_line_edit.editable = false
 		registry_path_line_edit.focus_mode = Control.FOCUS_NONE
@@ -96,61 +109,82 @@ func _validate_fields() -> void:
 
 	# Resource class
 	var class_string := class_restriction_line_edit.text.strip_edges()
-	var is_class_valid: bool = RegistryIO.is_resource_class_string(class_string)
-	if class_string == "":
+	var is_class_valid := RegistryIO.is_resource_class_string(class_string)
+	if class_string.is_empty():
+		class_string = "Resource"
+		is_class_valid = true
 		class_restriction_line_edit.right_icon = AnyIcon.get_class_icon(&"Resource")
 		info_messages.append(INFO_MESSAGES.class_empty)
 	elif is_class_valid:
-		if RegistryIO.is_quoted_string(class_string): # meaning it's a script path
-			class_restriction_line_edit.right_icon = AnyIcon.get_script_icon(
-				load(class_string.remove_chars("'\"")),
-			)
-		else:
-			# TODO: Fix icon size in Godot 4.6
-			# https://github.com/godotengine/godot/pull/95817
-			class_restriction_line_edit.right_icon = AnyIcon.get_class_icon(class_string)
+		# TODO: Fix icon size in Godot 4.6 — https://github.com/godotengine/godot/pull/95817
+		class_restriction_line_edit.right_icon = (
+			AnyIcon.get_script_icon(load(class_string.remove_chars("'\"")))
+			if RegistryIO.is_quoted_string(class_string)
+			else AnyIcon.get_class_icon(class_string)
+		)
 		info_messages.append(INFO_MESSAGES.class_valid)
 	else:
-		get_ok_button().disabled = true
 		class_restriction_line_edit.right_icon = AnyIcon.get_icon(&"MissingResource")
-		info_messages.append(INFO_MESSAGES.class_invalid)
+		_invalidate(info_messages, &"class_invalid")
 
 	# Scan directory
 	var scan_path := scan_directory_line_edit.text.strip_edges()
-	var is_scan_valid := DirAccess.dir_exists_absolute(scan_path)
-	if scan_path == "":
+	if scan_path.is_empty():
 		info_messages.append(INFO_MESSAGES.scan_empty)
-	elif is_scan_valid:
+	elif DirAccess.dir_exists_absolute(scan_path):
 		info_messages.append(INFO_MESSAGES.scan_valid)
 	else:
-		get_ok_button().disabled = true
-		info_messages.append(INFO_MESSAGES.scan_invalid)
+		_invalidate(info_messages, &"scan_invalid")
+
+	# Indexed properties
+	var properties: Array[String] = []
+	var indexed_properties_string := indexed_properties_line_edit.text.strip_edges()
+	if indexed_properties_string.is_empty():
+		info_messages.append(INFO_MESSAGES.properties_none)
+	else:
+		properties.assign(indexed_properties_string.split(",", true))
+		if properties.any(func(s: String) -> bool: return s.strip_edges().is_empty()):
+			_invalidate(info_messages, &"properties_empty_prop")
+		else:
+			var class_props := _get_class_property_names(class_string) if is_class_valid else []
+			var msgs_before := info_messages.size()
+			for p: String in properties:
+				if not class_props.has(p.strip_edges()):
+					var msg := INFO_MESSAGES.properties_cant_verify.duplicate()
+					msg[0] = msg[0].format({ "prop": p })
+					info_messages.append(msg)
+			if info_messages.size() == msgs_before:
+				info_messages.append(INFO_MESSAGES.properties_valid)
 
 	if _state == RegistryDialogState.REGISTRY_SETTINGS:
-		# flush messages and return early, don't validate registry path
 		_fill_info_label(info_messages)
 		return
 
 	# Registry file path
 	var file_path := registry_path_line_edit.text.strip_edges()
-	if file_path == "":
-		get_ok_button().disabled = true
-		info_messages.append(INFO_MESSAGES.filename_empty)
+	if file_path.is_empty():
+		_invalidate(info_messages, &"filename_empty")
+	elif file_path.get_extension().to_lower() not in RegistryIO.REGISTRY_FILE_EXTENSIONS:
+		_invalidate(info_messages, &"extension_invalid")
+	elif not RegistryIO.is_valid_registry_output_path(file_path):
+		_invalidate(info_messages, &"path_invalid")
+	elif ResourceLoader.exists(file_path):
+		_invalidate(info_messages, &"path_already_used")
 	else:
-		var ext := file_path.get_extension().to_lower()
-		if ext not in RegistryIO.REGISTRY_FILE_EXTENSIONS: #["tres", "res"]:
-			get_ok_button().disabled = true
-			info_messages.append(INFO_MESSAGES.extension_invalid)
-		elif not RegistryIO.is_valid_registry_output_path(file_path):
-			get_ok_button().disabled = true
-			info_messages.append(INFO_MESSAGES.path_invalid)
-		elif ResourceLoader.exists(file_path):
-			get_ok_button().disabled = true
-			info_messages.append(INFO_MESSAGES.path_already_used)
-		else:
-			info_messages.append(INFO_MESSAGES.path_available)
+		info_messages.append(INFO_MESSAGES.path_available)
 
 	_fill_info_label(info_messages)
+
+
+func _invalidate(info_messages: Array[Array], key: StringName) -> void:
+	get_ok_button().disabled = true
+	info_messages.append(INFO_MESSAGES[key])
+
+
+func _get_class_property_names(class_string: String) -> Array:
+	if RegistryIO.is_quoted_string(class_string):
+		return ClassUtils.get_class_property_names(load(class_string.remove_chars("'\"")))
+	return ClassUtils.get_class_property_names(class_string)
 
 
 func _fill_info_label(info_messages: Array[Array]) -> void:
@@ -192,6 +226,22 @@ func _open_file_dialog_as_registry_path() -> void:
 	_file_dialog.popup_file_dialog()
 
 
+func _edit_settings_and_rebuild_index() -> void:
+	var err := RegistryIO.edit_registry_settings(
+		edited_registry,
+		class_restriction_line_edit.text.strip_edges(),
+		scan_directory_line_edit.text.strip_edges(),
+		recursive_scan_check_box.button_pressed,
+		indexed_properties_line_edit.text.strip_edges(),
+	)
+	if err != OK:
+		print_debug(error_string(err))
+
+	err = RegistryIO.rebuild_property_index(edited_registry)
+	if err != OK:
+		print_debug(error_string(err))
+
+
 func _on_about_to_popup() -> void:
 	_validate_fields()
 
@@ -217,6 +267,9 @@ func _on_confirmed() -> void:
 			)
 			if err != OK:
 				print_debug(error_string(err))
+			err = RegistryIO.rebuild_property_index(edited_registry)
+			if err != OK:
+				print_debug(error_string(err))
 		RegistryDialogState.REGISTRY_SETTINGS:
 			var new_class_restriction := class_restriction_line_edit.text.strip_edges()
 			if (
@@ -225,10 +278,11 @@ func _on_confirmed() -> void:
 			):
 				new_restriction_confirmation_dialog.popup()
 			else:
-				_on_new_restriction_confirmation_dialog_confirmed()
+				hide()
+				_edit_settings_and_rebuild_index()
 
 
-func _on_class_restriction_line_edit_text_changed(new_text: String) -> void:
+func _on_class_restriction_line_edit_text_changed(_new_text: String) -> void:
 	_validate_fields()
 
 
@@ -245,7 +299,7 @@ func _on_class_filesystem_button_pressed() -> void:
 	_open_file_dialog_as_class_restriction()
 
 
-func _on_scan_directory_line_edit_text_changed(new_text: String) -> void:
+func _on_scan_directory_line_edit_text_changed(_new_text: String) -> void:
 	_validate_fields()
 
 
@@ -257,7 +311,11 @@ func _on_recursive_scan_check_box_pressed() -> void:
 	pass
 
 
-func _on_registry_path_line_edit_text_changed(new_text: String) -> void:
+func _on_indexed_properties_line_edit_text_changed(_new_text: String) -> void:
+	_validate_fields()
+
+
+func _on_registry_path_line_edit_text_changed(_new_text: String) -> void:
 	_validate_fields()
 
 
@@ -288,11 +346,4 @@ func _on_file_dialog_dir_selected(path: String) -> void:
 
 func _on_new_restriction_confirmation_dialog_confirmed() -> void:
 	hide()
-	var err := RegistryIO.edit_registry_settings(
-		edited_registry,
-		class_restriction_line_edit.text.strip_edges(),
-		scan_directory_line_edit.text.strip_edges(),
-		recursive_scan_check_box.button_pressed,
-	)
-	if err != OK:
-		print_debug(error_string(err))
+	_edit_settings_and_rebuild_index()

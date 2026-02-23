@@ -18,8 +18,6 @@ const _SCRIPT_BODY_EDITOR := "static func eval():
 
 const _SCRIPT_BODY_RUNTIME := "static func eval(): return %s"
 
-static var _script: GDScript = GDScript.new()
-
 
 ## Returns the inheritance tree of a class type reference or name.
 static func get_inheritance_list(class_type: Variant, include_self: bool = false) -> Array[String]:
@@ -138,6 +136,7 @@ static func get_type(classname: String) -> Object:
 
 ## Used by [method get_type] and core plugin features. Executes with minimal validation.
 static func get_type_unsafe(classname: String) -> Object:
+	var _script := GDScript.new()
 	if Engine.is_editor_hint():
 		_script.set_source_code(_SCRIPT_BODY_EDITOR % [classname, classname])
 	else:
@@ -185,7 +184,7 @@ static func is_native(class_type: Variant) -> bool:
 	if not class_type:
 		return false
 
-	if class_type is String:
+	if class_type is String or class_type is StringName:
 		return ClassDB.class_exists(class_type) and ClassDB.is_class_enabled(class_type)
 	elif class_type is Object and (class_type as Object).get_class() == "GDScriptNativeClass":
 		return true
@@ -213,6 +212,40 @@ static func is_script(script: Variant) -> bool:
 			break
 
 	return result
+
+
+# WARNING: hacky
+## Returns an array of property names declared in a Native Class or user-defined Script, based on a reference or name.
+## [br][br][param obj]: Accepts anything other than built-in Variant types directly.
+## [br] This includes Native Classes, user-defined Scripts, instances of Node/Resource.
+static func get_class_property_names(class_type: Variant) -> Array[String]:
+	var prop_names: Array[String] = []
+	if not class_type:
+		return prop_names
+
+	if is_native(class_type):
+		var classname: String = class_type if class_type is String else get_type_name(class_type)
+		var props_native := ClassDB.class_get_property_list(classname)
+		for p in props_native:
+			if not p.name.is_empty() and not p.type == TYPE_NIL:
+				prop_names.append(p.name)
+
+	elif is_script(class_type):
+		var obj: GDScript = class_type if class_type is GDScript else get_type(class_type)
+		if obj is GDScript:
+			var script := obj as GDScript
+			var script_props := script.get_script_property_list()
+			#print(script_props)
+			for p in script_props:
+				if not p.name.is_empty() and not p.type == TYPE_NIL:
+					prop_names.append(p.name)
+
+		var props := obj.get_property_list()
+		for p in props:
+			if not p.name.is_empty() and not p.type == TYPE_NIL:
+				prop_names.append(p.name)
+
+	return prop_names
 
 
 ## Checks if a given type ID represents any built-in type except TYPE_OBJECT.
