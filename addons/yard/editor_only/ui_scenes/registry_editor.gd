@@ -253,24 +253,33 @@ func _update_registries_itemlist() -> void:
 
 func _add_registry_to_itemlist(uid: String, display_name: String) -> int:
 	var registry := _opened_registries[uid]
-	var path := registry.resource_path
-
-	var resource_icon := AnyIcon.get_class_icon(&"Resource")
-	var registry_icon := AnyIcon.get_class_icon(&"Registry")
-	var custom_res_icon := AnyIcon.get_variant_icon(registry, &"FileList")
-	var icon := custom_res_icon
-
-	if icon in [resource_icon, registry_icon]:
-		icon = AnyIcon.get_class_icon(registry._class_restriction, &"FileList")
-	if icon == resource_icon:
-		icon = registry_icon
-
-	var display_text := display_name + " (%s)" % registry.size()
-	var idx := registries_itemlist.add_item(display_text, icon, true)
-
-	registries_itemlist.set_item_tooltip(idx, path)
+	var idx := registries_itemlist.add_item(
+		"%s (%s)" % [display_name, registry.size()],
+		_resolve_registry_itemlist_icon(registry),
+		true,
+	)
+	registries_itemlist.set_item_tooltip(idx, registry.resource_path)
 	registries_itemlist.set_item_metadata(idx, uid)
 	return idx
+
+
+func _resolve_registry_itemlist_icon(registry: Registry) -> Texture2D:
+	var restriction := registry._class_restriction
+	if restriction != "":
+		if RegistryIO.is_quoted_string(restriction):
+			var path := restriction.substr(1, restriction.length() - 2)
+			return AnyIcon.get_script_icon(ResourceLoader.load(path))
+		else:
+			var icon := AnyIcon.get_class_icon(restriction, &"Resource")
+			if icon:
+				return icon
+
+	var custom_icon := AnyIcon.get_variant_icon(registry, &"Resource")
+	var registry_icon := AnyIcon.get_class_icon(&"Registry")
+	if custom_icon and custom_icon != registry_icon:
+		return custom_icon
+
+	return registry_icon
 
 
 func _restore_selection(uid: String) -> void:
