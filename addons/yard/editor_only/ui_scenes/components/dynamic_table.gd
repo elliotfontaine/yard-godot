@@ -291,39 +291,6 @@ func set_data(new_data: Array) -> void:
 		while row_data_item.size() < _columns.size():
 			row_data_item.append(blank)
 
-	for row in range(_total_rows):
-		for col_idx in _columns.size():
-			var column := _columns[col_idx]
-			var data_s := Vector2.ZERO
-
-			if column.is_progress_column():
-				data_s = Vector2(default_minimum_column_width + 20, font_size)
-			elif column.is_boolean_column():
-				data_s = Vector2(row_height, row_height)
-			elif column.is_color_column():
-				data_s = Vector2(row_height, row_height)
-			elif column.is_resource_column():
-				data_s = Vector2(row_height * 2, row_height)
-			elif column.is_enum_column():
-				var hint_sizes_x: Array[float]
-				for enum_value: String in column.hint_string.split(",", false):
-					var text_s := font.get_string_size(enum_value, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size) + Vector2(font_size * 2, 0)
-					hint_sizes_x.append(text_s.x)
-				var max_size_x: float = hint_sizes_x.max()
-				if (column.current_width < max_size_x):
-					column.minimum_width = max_size_x
-			else:
-				if row < _data.size() and col_idx < _data[row].size():
-					var data_font := font
-					if column.custom_font:
-						data_font = column.custom_font
-					elif column.is_path_column():
-						data_font = mono_font
-					data_s = data_font.get_string_size(str(_data[row][col_idx]), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size) + Vector2(font_size * 2, 0)
-
-			if (column.current_width < data_s.x):
-				column.minimum_width = data_s.x
-
 	_update_scrollbars()
 	queue_redraw()
 
@@ -968,13 +935,14 @@ func _draw_cell_text(rect: Rect2, row: int, col: int) -> void:
 
 	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(h_alignment)
 	var baseline_y := _get_text_baseline_y(rect.position.y)
+	var display_text := _get_display_text(cell_value, text_font, rect.size.x - absf(x_margin_val))
 	var text_color := column.custom_font_color if column.custom_font_color else default_font_color
-	# TODO: registry-specific. Refactor outside — e.g. give the ability to set colors for specific rows.
-	text_color = get_theme_color("error_color", "Editor") if cell_value.begins_with("(!) ") else text_color
+	text_color = get_theme_color("error_color", "Editor") if cell_value.begins_with("(!) ") else text_color # TODO: registry-specific. Refactor outside — e.g. give the ability to set colors for specific rows.
+
 	draw_string(
 		text_font,
 		Vector2(rect.position.x + x_margin_val, baseline_y),
-		cell_value,
+		display_text,
 		h_alignment,
 		rect.size.x - abs(x_margin_val),
 		font_size,
@@ -1005,14 +973,14 @@ func _draw_cell_enum(rect: Rect2, row: int, col: int) -> void:
 
 	var text_font: Font = column.custom_font if column.custom_font else font
 	var h_alignment := HORIZONTAL_ALIGNMENT_CENTER
-	var color := Color(value_str.hash()) + Color(0.25, 0.25, 0.25, 1.0)
-
 	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(h_alignment)
+	var display_text := _get_display_text(value_str, text_font, rect.size.x - absf(x_margin_val))
+	var color := Color(value_str.hash()) + Color(0.25, 0.25, 0.25, 1.0)
 	var baseline_y := _get_text_baseline_y(rect.position.y)
 	draw_string(
 		text_font,
 		Vector2(rect.position.x + x_margin_val, baseline_y),
-		value_str,
+		display_text,
 		h_alignment,
 		rect.size.x - abs(x_margin_val),
 		font_size,
@@ -1022,6 +990,28 @@ func _draw_cell_enum(rect: Rect2, row: int, col: int) -> void:
 
 func _draw_cell_invalid(rect: Rect2, _row: int, _col: int) -> void:
 	draw_rect(rect, invalid_cell_color, true)
+
+
+func _get_display_text(cell_value: String, text_font: Font, max_width: float) -> String:
+	var text_size := text_font.get_string_size(cell_value, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+	if text_size.x <= max_width:
+		return cell_value
+
+	var ellipsis := "..."
+	var ellipsis_width := text_font.get_string_size(ellipsis, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	var max_text_width := max_width - ellipsis_width
+
+	if max_text_width <= 0:
+		return ellipsis
+
+	var truncated_text := ""
+	for i in range(cell_value.length()):
+		var test_text := cell_value.substr(0, i + 1)
+		var test_width := text_font.get_string_size(test_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		if test_width > max_text_width:
+			break
+		truncated_text = test_text
+	return truncated_text + ellipsis
 
 
 func _get_interpolated_three_colors(start_c: Color, mid_c: Color, end_c: Color, t_val: float) -> Color:
