@@ -2,7 +2,7 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="addons/yard/editor_only/assets/yard_dark.svg">
     <source media="(prefers-color-scheme: light)" srcset="addons/yard/editor_only/assets/yard_light.svg">
-    <img src="addons/yard/editor_only/assets/yard.svg" width="20">
+    <img src="addons/yard/editor_only/assets/yard.svg" width="24">
   </picture>
   YARD — Yet Another Resource Database
 </h1>
