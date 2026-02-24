@@ -4,6 +4,8 @@ A Godot 4 plugin for managing and querying collections of resources through a de
 
 ## Overview
 
+![preview of the registry editor](addons/yard/editor_only/assets/ui_example.png)
+
 YARD has two complementary aspects:
 
 **A table-based resource editor.** The YARD editor tab lets you create and manage registries: catalogues of resources grouped by class. Each registry provides a spreadsheet-like view of your resources and their properties.
