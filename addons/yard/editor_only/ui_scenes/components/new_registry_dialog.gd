@@ -202,27 +202,41 @@ func _fill_info_label(info_messages: Array[Array]) -> void:
 
 
 func _open_file_dialog_as_class_restriction() -> void:
+	_file_dialog.title = tr("Choose Custom Resource Script")
 	_file_dialog.clear_filters()
 	_file_dialog.add_filter("*.gd", "Scripts")
 	_file_dialog_state = FileDialogState.CLASS_RESTRICTION
 	_file_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
-	_file_dialog.title = tr("Choose Custom Resource Script")
+	var restriction := class_restriction_line_edit.text
+	if not restriction.is_empty() and RegistryIO.is_quoted_string(restriction):
+		var path := restriction.substr(1, restriction.length() - 2)
+		_file_dialog.current_dir = path.get_base_dir()
+		_file_dialog.current_path = path.get_file()
+	else:
+		_file_dialog.current_dir = ""
+		_file_dialog.current_path = ""
 	_file_dialog.popup_file_dialog()
 
 
 func _open_file_dialog_as_scan_directory() -> void:
-	_file_dialog.clear_filters()
+	_file_dialog.title = tr("Choose Directory to Scan")
 	_file_dialog_state = FileDialogState.SCAN_DIRECTORY
 	_file_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_DIR
-	_file_dialog.title = tr("Choose Directory to Scan")
+	var scan_dir := scan_directory_line_edit.text
+	var dir_exist := DirAccess.dir_exists_absolute(scan_dir)
+	_file_dialog.current_dir = scan_dir if dir_exist else scan_dir.get_base_dir()
+	_file_dialog.clear_filters()
 	_file_dialog.popup_file_dialog()
 
 
 func _open_file_dialog_as_registry_path() -> void:
-	_file_dialog.clear_filters()
-	_file_dialog_state = FileDialogState.REGISTRY_PATH
-	_file_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
 	_file_dialog.title = tr("Choose Registry Location")
+	_file_dialog.clear_filters()
+	_file_dialog.add_filter("*.tres, *.res")
+	_file_dialog_state = FileDialogState.REGISTRY_PATH
+	_file_dialog.file_mode = EditorFileDialog.FILE_MODE_SAVE_FILE
+	_file_dialog.current_dir = registry_path_line_edit.text.get_base_dir()
+	_file_dialog.current_path = registry_path_line_edit.text.get_file()
 	_file_dialog.popup_file_dialog()
 
 
