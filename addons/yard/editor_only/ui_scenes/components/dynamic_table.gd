@@ -496,6 +496,7 @@ func _setup_editing_components() -> void:
 	add_child(_resource_editor)
 
 	_path_editor = EditorFileDialog.new()
+	_path_editor.disable_overwrite_warning = true
 	_path_editor.dir_selected.connect(_on_path_editor_path_selected)
 	_path_editor.file_selected.connect(_on_path_editor_path_selected)
 	add_child(_path_editor)
@@ -657,9 +658,15 @@ func _open_path_editor(row: int, col: int) -> void:
 	_editing_cell = [row, col]
 	var column := get_column(col)
 	if column.property_hint in [PROPERTY_HINT_FILE, PROPERTY_HINT_FILE_PATH]:
-		_path_editor.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
+		_path_editor.file_mode = EditorFileDialog.FILE_MODE_SAVE_FILE
+		_path_editor.title = "Select a File"
+		_path_editor.ok_button_text = "Select"
 	if column.property_hint in [PROPERTY_HINT_DIR]:
 		_path_editor.file_mode = EditorFileDialog.FILE_MODE_OPEN_DIR
+		_path_editor.title = "Select a Directory"
+	var current_path: String = get_cell_value(row, col)
+	_path_editor.current_dir = current_path.get_base_dir()
+	_path_editor.current_path = current_path
 	_path_editor.popup_centered_ratio(0.55)
 
 
@@ -1737,7 +1744,10 @@ func _on_resource_editor_resource_changed(_res: Resource) -> void:
 	_finish_editing(true)
 
 
-func _on_path_editor_path_selected(_path: String) -> void:
+func _on_path_editor_path_selected(path: String) -> void:
+	var column := get_column(focused_col)
+	if column and column.property_hint in [PROPERTY_HINT_DIR]:
+		_path_editor.current_path = path.path_join("")
 	_finish_editing(true)
 
 
