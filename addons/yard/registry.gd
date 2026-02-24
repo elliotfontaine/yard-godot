@@ -2,29 +2,39 @@
 @icon("res://addons/yard/editor_only/assets/yard.svg")
 class_name Registry
 extends Resource
-## A lightweight registry mapping resource UIDs to human-readable string IDs.
+## A registry associating resources with stable, human-readable string IDs.
 ##
-## Maps each resource UID (for example, [code]"uid://dqtv77mng5dyh"[/code]) to a readable string ID
-## (for example, [code]"enemy_skeleton"[/code]) and vice versa.
-## Provides helper methods to check, resolve, and load registered resources, either
-## synchronously or asynchronously using threaded loading.
+## [Registry] lets you reference resources by stable string IDs (e.g. [code]&"enemy_skeleton"[/code])
+## instead of file paths, which can silently change when assets are moved.
+## It provides a bidirectional map between string IDs and UIDs, helpers to resolve and load
+## entries individually or in bulk (synchronously or via threaded loading).[br][br]
+##
+## It also offers an optional property index for querying entries (resources) by their
+## properties at runtime, without loading them. Since the property index is baked into
+## the registry at editor time, querying is fast.
 ##
 ## [codeblock]
-## const ENEMY_REGISTRY: Registry = preload("res://data/enemy_registry.tres")
+## const ENEMIES: Registry = preload("res://data/enemy_registry.tres")
+## const WEAPONS: Registry = preload("res://data/weapon_registry.tres")
 ##
-## @onready var enemy_sprite: Sprite2D = %EnemySprite
+## func _show_skeleton() -> void:
+##     var skeleton: Enemy = ENEMIES.load_entry(&"skeleton")
+##     %Sprite.texture = skeleton.creature_sprite
 ##
-##
-## func _on_show_skeleton_button_pressed():
-##     var skeleton: Enemy = ENEMY_REGISTRY.load_entry(&"skeleton")
-##     enemy_sprite.texture = skeleton.creature_sprite
+## func _get_legendary_weapons() -> Array[StringName]:
+##     return WEAPONS.filter_by_value(&"rarity", Rarity.LEGENDARY)
 ## [/codeblock][br]
 ##
-## Instances are immutable at runtime. Entries cannot be added/removed
-## via script and the [Registry] must be edited using the dedicated tab of the
-## editor.[br][br]
+## Registries and their entries are read-only at runtime and must be managed through
+## the dedicated editor tab :[br][br]
 ##
 ## [img width=1200]res://addons/yard/editor_only/assets/ui_example.png[/img]
+## [br][br]
+##
+## [b]See Also:[/b][br][br]
+##
+## • [Resource] - [i]Base class for serializable objects.[/i][br]
+## • [ResourceLoader] - [i]A singleton for loading resource files.[/i][br]
 
 @warning_ignore_start("unused_private_class_variable")
 @export_storage var _class_restriction: StringName = &""
@@ -129,7 +139,7 @@ func get_string_id(uid: StringName) -> StringName:
 ## Loads the resource associated with [param id] (string ID or UID) and returns it.
 ## Returns [code]null[/code] if the entry does not exist or cannot be loaded.[br][br]
 ##
-## [param type_hint] and [param cache_down] are passed down to
+## [param type_hint] and [param cache_mode] are passed down to
 ## [method ResourceLoader.load].
 func load_entry(
 		id: StringName,
@@ -147,7 +157,7 @@ func load_entry(
 ## mapping string IDs to their loaded [Resource] instances.
 ## Missing or invalid entries are skipped.[br][br]
 ##
-## [param type_hint] and [param cache_down] are passed down to
+## [param type_hint] and [param cache_mode] are passed down to
 ## [method ResourceLoader.load].
 func load_all_blocking(
 		type_hint: String = "",
@@ -196,7 +206,7 @@ func load_all_threaded_request(
 ##
 ## [param predicate] receives the property value and must return a [bool].
 ## Requires the property index to have been baked for [param property].
-## Returns an empty array if the property is not indexed.
+## Returns an empty array if the property is not indexed or no value matches the predicate.
 ## [codeblock]
 ## var high_level := weapon_registry.filter_by(&"level", func(v): return v >= 10)
 ## var rare_or_epic := weapon_registry.filter_by(&"rarity", func(v): return v in [Rarity.RARE, Rarity.EPIC])
@@ -215,7 +225,7 @@ func filter_by(property: StringName, predicate: Callable) -> Array[StringName]:
 ## Returns the string IDs of all entries whose [param property] equals [param value].[br][br]
 ##
 ## Requires the property index to have been baked for [param property].
-## Returns an empty array if the property or value is not indexed.
+## Returns an empty array if the property is not indexed or no entry has that value.
 ## [codeblock]
 ## var legendaries := weapon_registry.filter_by_value(&"rarity", Rarity.LEGENDARY)
 ## [/codeblock]
@@ -233,8 +243,8 @@ func filter_by_value(property: StringName, value: Variant) -> Array[StringName]:
 ## Returns the string IDs of all entries matching all [param criteria] (AND logic).[br][br]
 ##
 ## [param criteria] is a [Dictionary] mapping property names to their expected values.
-## Requires each property to have been baked in the index.
-## Returns an empty array if any property is not indexed or yields no match.
+## Requires the property index to have been baked for each property.
+## Returns an empty array if any property is not indexed or if the intersection yields no results.
 ## [codeblock]
 ## var perfect_armors := armor_registry.filter_by_values({&"defense": 100, &"weight": 0})
 ## var legendary_swords := weapon_registry.filter_by_values({&"rarity": Rarity.LEGENDARY, &"type": "sword"})
