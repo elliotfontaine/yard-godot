@@ -1,4 +1,4 @@
-# YARD — Yet Another Resource Database
+# <img src="addons/yard/editor_only/assets/yard.svg" width="20"> YARD — Yet Another Resource Database
 
 A Godot 4 plugin for managing and querying collections of resources through a dedicated editor interface and runtime API.
 
