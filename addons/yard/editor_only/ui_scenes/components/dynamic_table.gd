@@ -231,6 +231,9 @@ func _draw() -> void:
 		var separator_bottom := header_height + mini(_total_rows, _visible_rows_range[1] - _visible_rows_range[0]) * row_height
 		draw_line(Vector2(frozen_w, 0), Vector2(frozen_w, separator_bottom), grid_color.darkened(0.2), 2.0)
 
+		if _v_scroll.visible:
+			draw_rect(Rect2(vis_w, header_height, _v_scroll.size.x + 50, size.y), row_color)
+
 #region PUBLIC METHODS
 
 func set_native_theming(delay: int = 0) -> void:
