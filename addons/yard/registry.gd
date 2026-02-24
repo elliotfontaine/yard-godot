@@ -249,7 +249,7 @@ func filter_by_value(property: StringName, value: Variant) -> Array[StringName]:
 ## var perfect_armors := armor_registry.filter_by_values({&"defense": 100, &"weight": 0})
 ## var legendary_swords := weapon_registry.filter_by_values({&"rarity": Rarity.LEGENDARY, &"type": "sword"})
 ## [/codeblock]
-func filter_by_values(criteria: Dictionary) -> Array[StringName]:
+func filter_by_values(criteria: Dictionary[StringName, Variant]) -> Array[StringName]:
 	var result: Array[StringName] = []
 	var first := true
 	for property: StringName in criteria:
