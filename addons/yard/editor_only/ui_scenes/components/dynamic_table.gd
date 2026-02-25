@@ -185,7 +185,7 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _draw() -> void:
-	if not is_inside_tree() or _columns.is_empty():
+	if not is_inside_tree() or _columns.is_empty() or _data.is_empty():
 		return
 
 	var frozen_w := _get_frozen_width()
