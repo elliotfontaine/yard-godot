@@ -86,14 +86,17 @@ class EditorStateData:
 	const _SECTION_GENERAL := "general"
 	const _SECTION_RECENT := "recent"
 	const _MAX_RECENT := 10
+	const _SECTION_OPENED := "opened"
 	var version: int = _EDITOR_STATE_VERSION
 	var recent_registry_uids: Array[String] = []
+	var opened_registries: Dictionary[String, Registry] = { } # uid -> Registry
 
 
 	func save() -> Error:
 		var cfg := ConfigFile.new()
 		cfg.set_value(_SECTION_GENERAL, "version", version)
 		cfg.set_value(_SECTION_RECENT, "uids", recent_registry_uids)
+		cfg.set_value(_SECTION_OPENED, "uids", opened_registries.keys())
 		DirAccess.make_dir_recursive_absolute(_BASE_DIR)
 		return cfg.save(_STATE_FILE)
 
@@ -114,6 +117,14 @@ class EditorStateData:
 
 		var raw: Array = cfg.get_value(_SECTION_RECENT, "uids", [])
 		data.recent_registry_uids.assign(raw)
+		var raw_opened: Array = cfg.get_value(_SECTION_OPENED, "uids", [])
+		for uid: String in raw_opened:
+			var path := ResourceUID.get_id_path(ResourceUID.text_to_id(uid))
+			if path.is_empty():
+				continue
+			var registry := ResourceLoader.load(path) as Registry
+			if registry:
+				data.opened_registries[uid] = registry
 		return data
 
 

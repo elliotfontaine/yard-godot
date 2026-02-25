@@ -41,7 +41,6 @@ const ACCELERATORS: Dictionary = {
 	FileMenuAction.MOVE_DOWN: KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN,
 }
 
-var _opened_registries: Dictionary[String, Registry] = { } # Dict[uid, Registry]
 var _editor_state_data: EditorStateData
 var _session_closed_uids: Array[String] = [] # Array[uid]
 var _file_dialog: EditorFileDialog # TODO: refactor as Node in packed scene
@@ -69,8 +68,6 @@ func _ready() -> void:
 		_on_filesystem_changed,
 	)
 
-	_editor_state_data = EditorStateData.load_or_default()
-
 	_file_dialog = EditorFileDialog.new()
 	_file_dialog.access = EditorFileDialog.ACCESS_RESOURCES
 	_file_dialog.file_selected.connect(_on_file_dialog_action)
@@ -95,6 +92,12 @@ func _ready() -> void:
 	var fixed_size := get_theme_constant("class_icon_size", "Editor")
 	registries_itemlist.fixed_icon_size = Vector2i(fixed_size, fixed_size)
 
+	_editor_state_data = EditorStateData.load_or_default()
+	if _editor_state_data.opened_registries.size() > 0:
+		var first_uid: String = _editor_state_data.opened_registries.keys()[0]
+		select_registry(first_uid)
+	_update_registries_itemlist()
+
 
 func _shortcut_input(event: InputEvent) -> void:
 	if is_visible_in_tree() and event.is_pressed():
@@ -106,8 +109,9 @@ func open_registry(registry: Registry) -> void:
 	var filepath := registry.resource_path
 	var uid := ResourceUID.path_to_uid(filepath)
 
-	if uid not in _opened_registries:
-		_opened_registries[uid] = registry
+	if uid not in _editor_state_data.opened_registries:
+		_editor_state_data.opened_registries[uid] = registry
+		_editor_state_data.save()
 	_update_registries_itemlist()
 	_editor_state_data.add_recent(registry)
 	select_registry(uid)
@@ -115,21 +119,22 @@ func open_registry(registry: Registry) -> void:
 
 ## Close a registry, ask for save if not saved, and remove it from the list
 func close_registry(uid: String) -> void:
-	assert(_opened_registries.has(uid))
-	_opened_registries.erase(uid)
+	assert(_editor_state_data.opened_registries.has(uid))
+	_editor_state_data.opened_registries.erase(uid)
+	_editor_state_data.save()
 
 	# TODO: save accept dialog if unsaved changes to resource
-	if _opened_registries.is_empty():
+	if _editor_state_data.opened_registries.is_empty():
 		unselect_registry()
 	elif _current_registry_uid == uid:
-		select_registry(_opened_registries.keys()[0])
+		select_registry(_editor_state_data.opened_registries.keys()[0])
 
 	_session_closed_uids.append(uid)
 	_update_registries_itemlist()
 
 
 func close_all() -> void:
-	var safe_iter := _opened_registries.keys()
+	var safe_iter: Array[String] = _editor_state_data.opened_registries.keys()
 	safe_iter.reverse()
 	for uid: String in safe_iter:
 		close_registry(uid)
@@ -153,7 +158,7 @@ func select_registry(uid: String) -> void:
 
 	_current_registry_uid = uid
 
-	var registry: Registry = _opened_registries[uid]
+	var registry: Registry = _editor_state_data.opened_registries[uid]
 	if EditorInterface.get_inspector().get_edited_object() != registry:
 		EditorInterface.inspect_object(registry, "", true)
 
@@ -208,7 +213,7 @@ func _populate_open_recent_submenu() -> void:
 				return
 			var uid := _editor_state_data.recent_registry_uids[id]
 			if ResourceUID.has_id(ResourceUID.text_to_id(uid)):
-				select_registry(uid) if _opened_registries.has(uid) else open_registry(load(uid))
+				select_registry(uid) if _editor_state_data.opened_registries.has(uid) else open_registry(load(uid))
 	)
 
 	file_menu.set_item_submenu_node(
@@ -232,11 +237,11 @@ func _update_registries_itemlist() -> void:
 	registries_itemlist.set_block_signals(true)
 	registries_itemlist.clear()
 
-	if _opened_registries.is_empty():
+	if _editor_state_data.opened_registries.is_empty():
 		registries_itemlist.set_block_signals(false)
 		return
 
-	var all_uids: Array[String] = _opened_registries.keys()
+	var all_uids: Array[String] = _editor_state_data.opened_registries.keys()
 
 	# Determine which uids to show using fuzzy search, based on LineEdit filter.
 	var display_name_by_uid := _build_registry_display_names(all_uids)
@@ -250,7 +255,7 @@ func _update_registries_itemlist() -> void:
 		for uid in all_uids:
 			# Fuzzy match on displayed names, mimicking the Godot Editor script list.
 			# To match on full resource paths, replace by the following :
-			# `targets.append(_opened_registries[uid].resource_path)`
+			# `targets.append(_editor_state_data.opened_registries[uid].resource_path)`
 			targets.append(display_name_by_uid[uid])
 		var fuzzy_results: Array = []
 		_fuz.search_all(targets, fuzzy_results) # sorted by score already
@@ -270,7 +275,7 @@ func _update_registries_itemlist() -> void:
 
 
 func _add_registry_to_itemlist(uid: String, display_name: String) -> int:
-	var registry := _opened_registries[uid]
+	var registry: Registry = _editor_state_data.opened_registries[uid]
 	var idx := registries_itemlist.add_item(
 		"%s (%s)" % [display_name, registry.size()],
 		_resolve_registry_itemlist_icon(registry),
@@ -326,7 +331,7 @@ func _build_registry_display_names(uids: Array[String]) -> Dictionary:
 
 	# 1) Collect path parts and group by basename
 	for uid in uids:
-		var path := _opened_registries[uid].resource_path
+		var path := _editor_state_data.opened_registries[uid].resource_path
 		var rel := path
 		if rel.begins_with("res://"):
 			rel = rel.substr(6)
@@ -545,10 +550,10 @@ func _do_file_menu_action(action_id: int) -> void:
 func _reorder_opened_registries_move(uid: String, delta: int) -> bool:
 	# delta = -1 -> move one up,
 	# delta = +1 -> move one down
-	if not _opened_registries.has(uid):
+	if not _editor_state_data.opened_registries.has(uid):
 		return false
 
-	var keys: Array[String] = _opened_registries.keys()
+	var keys: Array[String] = _editor_state_data.opened_registries.keys()
 	var i := keys.find(uid)
 	if i == -1:
 		return false
@@ -563,26 +568,28 @@ func _reorder_opened_registries_move(uid: String, delta: int) -> bool:
 
 	var reordered: Dictionary[String, Registry] = { }
 	for k in keys:
-		reordered[k] = _opened_registries[k]
-	_opened_registries = reordered
+		reordered[k] = _editor_state_data.opened_registries[k]
+	_editor_state_data.opened_registries = reordered
+	_editor_state_data.save()
 	return true
 
 
 func _sort_opened_registries_by_filename() -> void:
-	var keys: Array[String] = _opened_registries.keys()
+	var keys: Array[String] = _editor_state_data.opened_registries.keys()
 	var sorted: Dictionary[String, Registry] = { }
 	keys.sort_custom(
 		func(a: String, b: String) -> bool:
-			return _opened_registries[a].resource_path.get_file().to_lower() \
-			< _opened_registries[b].resource_path.get_file().to_lower()
+			return _editor_state_data.opened_registries[a].resource_path.get_file().to_lower() \
+			< _editor_state_data.opened_registries[b].resource_path.get_file().to_lower()
 	)
 	for uid in keys:
-		sorted[uid] = _opened_registries[uid]
-	_opened_registries = sorted
+		sorted[uid] = _editor_state_data.opened_registries[uid]
+	_editor_state_data.opened_registries = sorted
+	_editor_state_data.save()
 
 
 func _close_other_tabs(uid: String) -> void:
-	var other_uids := _opened_registries.keys()
+	var other_uids := _editor_state_data.opened_registries.keys()
 	other_uids.erase(uid)
 	other_uids.reverse()
 	for o_uid: String in other_uids:
@@ -782,7 +789,7 @@ func _on_new_registry_dialog_confirmed() -> void:
 
 
 func _on_filesystem_changed() -> void:
-	for registry: Registry in _opened_registries.values():
+	for registry: Registry in _editor_state_data.opened_registries.values():
 		RegistryIO.sync_registry_entries_from_scan_dir(registry)
 	_update_registries_itemlist()
 	registry_table_view.update_view()
