@@ -52,6 +52,7 @@ var _fuz := FuzzySearch.new()
 @onready var columns_menu_button: MenuButton = %ColumnsMenuButton
 @onready var registry_settings_button: Button = %RegistrySettingsButton
 @onready var refresh_view_button: Button = %RefreshViewButton
+@onready var reindex_button: Button = %ReindexButton
 @onready var registries_filter: LineEdit = %RegistriesFilter
 @onready var registries_container: VBoxContainer = %RegistriesContainer
 @onready var registries_itemlist: RegistriesItemList = %RegistriesItemList
@@ -70,7 +71,7 @@ func _ready() -> void:
 	_file_dialog.file_selected.connect(_on_file_dialog_action)
 	add_child(_file_dialog)
 
-	_toggle_visibility_topbar_buttons(false)
+	_toggle_visibility_topbar_buttons()
 	_setup_accelerators()
 	_populate_open_recent_submenu()
 
@@ -146,7 +147,6 @@ func select_registry(uid: String) -> void:
 				break
 
 	_current_registry_uid = uid
-	_toggle_visibility_topbar_buttons(true)
 
 	var registry: Registry = _opened_registries[uid]
 	if EditorInterface.get_inspector().get_edited_object() != registry:
@@ -155,12 +155,13 @@ func select_registry(uid: String) -> void:
 	#print("registry selected:  ", registry.resource_path, " (", uid, ")")
 	RegistryIO.sync_registry_entries_from_scan_dir(registry)
 	registry_table_view.current_registry = registry
+	_toggle_visibility_topbar_buttons()
 
 
 func unselect_registry() -> void:
 	_current_registry_uid = ""
 	registry_table_view.current_registry = null
-	_toggle_visibility_topbar_buttons(false)
+	_toggle_visibility_topbar_buttons()
 	registries_itemlist.deselect_all()
 
 
@@ -289,11 +290,14 @@ func _restore_selection(uid: String) -> void:
 			return
 
 
-func _toggle_visibility_topbar_buttons(p_visible: bool) -> void:
-	registry_buttons_v_separator.visible = p_visible
-	registry_settings_button.visible = p_visible
-	columns_menu_button.visible = p_visible
-	refresh_view_button.visible = p_visible
+func _toggle_visibility_topbar_buttons() -> void:
+	var has_registry := registry_table_view.current_registry != null
+	registry_buttons_v_separator.visible = has_registry
+	registry_settings_button.visible = has_registry
+	columns_menu_button.visible = has_registry
+	refresh_view_button.visible = false #has_registry # TODO: add project setting for showing it based on user preference
+	reindex_button.visible = has_registry
+	reindex_button.disabled = not has_registry or registry_table_view.current_registry.get_indexed_properties().is_empty()
 
 
 ## Returns: uid -> display name in list.
@@ -679,6 +683,13 @@ func _on_refresh_view_button_pressed() -> void:
 		registry_table_view.update_view()
 
 
+func _on_reindex_button_pressed() -> void:
+	var registry := registry_table_view.current_registry
+	if registry:
+		RegistryIO.rebuild_property_index(registry)
+		print("Registry reindexed for %s." % ", ".join(registry.get_indexed_properties()))
+
+
 func _on_report_issue_button_pressed() -> void:
 	var cfg := ConfigFile.new()
 	cfg.load(PluginCFG)
@@ -748,7 +759,7 @@ func _on_new_registry_dialog_confirmed() -> void:
 		new_registry_dialog._state == new_registry_dialog.RegistryDialogState.REGISTRY_SETTINGS
 		and new_registry_dialog.edited_registry == registry_table_view.current_registry
 	):
-		registry_table_view.update_view()
+		select_registry(_current_registry_uid)
 
 
 func _on_filesystem_changed() -> void:
