@@ -21,7 +21,6 @@ const RegistryIO := Namespace.RegistryIO
 const ClassUtils := Namespace.ClassUtils
 const EditorThemeUtils := Namespace.EditorThemeUtils
 const DynamicTable := Namespace.DynamicTable
-const YardEditorCache := Namespace.YardEditorCache
 const RegistryCacheData := Namespace.YardEditorCache.RegistryCacheData
 
 const ACCELERATORS: Dictionary = {
@@ -37,12 +36,12 @@ const STRINGID_COLUMN_CONFIG := ["string_id", "String ID", TYPE_STRING]
 const NON_PROP_COLUMNS_COUNT := 2
 const STRINGID_COLUMN := 0
 const UID_COLUMN := 1
-const DISABLED_BY_DEFAULT_PROPERTIES: Array[StringName] = YardEditorCache.DISABLED_BY_DEFAULT_PROPERTIES
+const DISABLED_BY_DEFAULT_PROPERTIES: Array[StringName] = RegistryCacheData.DISABLED_BY_DEFAULT_PROPERTIES
 
 var current_registry: Registry:
 	set(new):
 		current_registry = new
-		current_cache_data = YardEditorCache.load_or_default(new) if current_registry else null
+		current_cache_data = RegistryCacheData.load_or_default(new) if current_registry else null
 		update_view()
 var current_cache_data: RegistryCacheData
 

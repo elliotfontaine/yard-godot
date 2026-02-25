@@ -25,7 +25,7 @@ const EditMenuAction := RegistryTableView.EditMenuAction # Enum
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const PluginCFG := Namespace.PluginCFG
 const RegistryIO := Namespace.RegistryIO
-const YardEditorCache := Namespace.YardEditorCache
+const EditorStateData := Namespace.YardEditorCache.EditorStateData
 const RegistriesItemList := Namespace.RegistriesItemList
 const RegistryTableView := Namespace.RegistryTableView
 const NewRegistryDialog := Namespace.NewRegistryDialog
@@ -42,6 +42,7 @@ const ACCELERATORS: Dictionary = {
 }
 
 var _opened_registries: Dictionary[String, Registry] = { } # Dict[uid, Registry]
+var _editor_state_data: EditorStateData
 var _session_closed_uids: Array[String] = [] # Array[uid]
 var _file_dialog: EditorFileDialog # TODO: refactor as Node in packed scene
 var _file_dialog_option: FileMenuAction = FileMenuAction.NONE
@@ -67,6 +68,8 @@ func _ready() -> void:
 	EditorInterface.get_resource_filesystem().filesystem_changed.connect(
 		_on_filesystem_changed,
 	)
+
+	_editor_state_data = EditorStateData.load_or_default()
 
 	_file_dialog = EditorFileDialog.new()
 	_file_dialog.access = EditorFileDialog.ACCESS_RESOURCES
@@ -106,7 +109,7 @@ func open_registry(registry: Registry) -> void:
 	if uid not in _opened_registries:
 		_opened_registries[uid] = registry
 	_update_registries_itemlist()
-	YardEditorCache.add_recent_registry(registry)
+	_editor_state_data.add_recent(registry)
 	select_registry(uid)
 
 
@@ -192,7 +195,7 @@ func _populate_open_recent_submenu() -> void:
 	var file_menu := file_menu_button.get_popup()
 
 	var recent := PopupMenu.new()
-	for entry in YardEditorCache.get_recent_registry_uids():
+	for entry in _editor_state_data.recent_registry_uids:
 		if ResourceUID.has_id(ResourceUID.text_to_id(entry)):
 			recent.add_item(ResourceUID.uid_to_path(entry))
 	recent.add_separator()
@@ -201,9 +204,9 @@ func _populate_open_recent_submenu() -> void:
 	recent.id_pressed.connect(
 		func(id: int) -> void:
 			if id == FileMenuAction.CLEAR_RECENT:
-				YardEditorCache.clear_recent_registries()
+				_editor_state_data.clear_recent()
 				return
-			var uid := YardEditorCache.get_recent_registry_uids()[id]
+			var uid := _editor_state_data.recent_registry_uids[id]
 			if ResourceUID.has_id(ResourceUID.text_to_id(uid)):
 				select_registry(uid) if _opened_registries.has(uid) else open_registry(load(uid))
 	)

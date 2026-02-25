@@ -2,25 +2,19 @@
 extends Object
 
 const _BASE_DIR := "res://.godot/plugins/yard/"
-const _REGISTRIES_DIR := _BASE_DIR + "registries/"
-const _STATE_FILE := _BASE_DIR + "editor_state.cfg"
-const _SECTION_GENERAL := "general"
-const _SECTION_TABLE := "table"
-const _SECTION_RECENT := "recent"
-const _REGISTRY_CACHE_VERSION := 1
-const _EDITOR_STATE_VERSION := 1
-const _MAX_RECENT := 10
-const DISABLED_BY_DEFAULT_PROPERTIES: Array[StringName] = [
-	&"script",
-	&"resource_local_to_scene",
-	&"resource_path",
-	&"resource_name",
-]
 
 
 class RegistryCacheData:
-	const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
-	const YardEditorCache := Namespace.YardEditorCache
+	const _REGISTRY_CACHE_VERSION := 1
+	const _REGISTRIES_DIR := _BASE_DIR + "registries/"
+	const _SECTION_GENERAL := "general"
+	const _SECTION_TABLE := "table"
+	const DISABLED_BY_DEFAULT_PROPERTIES: Array[StringName] = [
+		&"script",
+		&"resource_local_to_scene",
+		&"resource_path",
+		&"resource_name",
+	]
 	var version: int = _REGISTRY_CACHE_VERSION
 	var disabled_columns: Array[StringName] = DISABLED_BY_DEFAULT_PROPERTIES.duplicate()
 	var uid_column_width: float = 200.0
@@ -42,77 +36,101 @@ class RegistryCacheData:
 		cfg.set_value(_SECTION_TABLE, "string_id_column_width", string_id_column_width)
 		cfg.set_value(_SECTION_TABLE, "property_columns_widths", property_columns_widths)
 		DirAccess.make_dir_recursive_absolute(_REGISTRIES_DIR)
-		return cfg.save(YardEditorCache._get_registry_cache_path(_registry))
+		return cfg.save(_get_registry_cache_path(_registry))
 
 
-static func load_or_default(registry: Registry) -> RegistryCacheData:
-	var data := RegistryCacheData.new(registry)
-	var cfg := ConfigFile.new()
-	if cfg.load(_get_registry_cache_path(registry)) != OK:
-		data.save()
+	static func load_or_default(registry: Registry) -> RegistryCacheData:
+		var data := RegistryCacheData.new(registry)
+		var cfg := ConfigFile.new()
+		if cfg.load(_get_registry_cache_path(registry)) != OK:
+			data.save()
+			return data
+
+		data.version = cfg.get_value(_SECTION_GENERAL, "version", data.version)
+		if data.version != _REGISTRY_CACHE_VERSION:
+			RegistryCacheData._update_format(data, cfg)
+			data.version = _REGISTRY_CACHE_VERSION
+			data.save()
+			return data
+
+		data.disabled_columns = cfg.get_value(_SECTION_TABLE, "disabled_columns", data.disabled_columns)
+		data.uid_column_width = cfg.get_value(_SECTION_TABLE, "uid_column_width", data.uid_column_width)
+		data.string_id_column_width = cfg.get_value(_SECTION_TABLE, "string_id_column_width", data.string_id_column_width)
+		data.property_columns_widths = cfg.get_value(_SECTION_TABLE, "property_columns_widths", data.property_columns_widths)
 		return data
 
-	data.version = cfg.get_value(_SECTION_GENERAL, "version", data.version)
-	if data.version != _REGISTRY_CACHE_VERSION:
-		_update_cache_format(data, cfg)
-		data.version = _REGISTRY_CACHE_VERSION
-		data.save()
+
+	static func erase(registry: Registry) -> void:
+		var path := _get_registry_cache_path(registry)
+		if FileAccess.file_exists(path):
+			DirAccess.remove_absolute(path)
+
+
+	static func _get_registry_cache_path(registry: Registry) -> String:
+		var uid := ResourceUID.path_to_uid(registry.resource_path)
+		var uid_str := uid.trim_prefix("uid://")
+		return _REGISTRIES_DIR + uid_str + ".cfg"
+
+
+	static func _update_format(_data: RegistryCacheData, _old_cfg: ConfigFile) -> void:
+		# Migrate old cache formats here when _REGISTRY_CACHE_VERSION is incremented.
+		# var old_version: int = _old_cfg.get_value(_SECTION_GENERAL, "version", 0)
+		# if old_version < 2:
+		#     _migrate_v1_to_v2(_data, _old_cfg)
+		pass
+
+
+class EditorStateData:
+	const _EDITOR_STATE_VERSION := 1
+	const _STATE_FILE := _BASE_DIR + "editor_state.cfg"
+	const _SECTION_GENERAL := "general"
+	const _SECTION_RECENT := "recent"
+	const _MAX_RECENT := 10
+	var version: int = _EDITOR_STATE_VERSION
+	var recent_registry_uids: Array[String] = []
+
+
+	func save() -> Error:
+		var cfg := ConfigFile.new()
+		cfg.set_value(_SECTION_GENERAL, "version", version)
+		cfg.set_value(_SECTION_RECENT, "uids", recent_registry_uids)
+		DirAccess.make_dir_recursive_absolute(_BASE_DIR)
+		return cfg.save(_STATE_FILE)
+
+
+	static func load_or_default() -> EditorStateData:
+		var data := EditorStateData.new()
+		var cfg := ConfigFile.new()
+		if cfg.load(_STATE_FILE) != OK:
+			data.save()
+			return data
+
+		data.version = cfg.get_value(_SECTION_GENERAL, "version", data.version)
+		if data.version != _EDITOR_STATE_VERSION:
+			EditorStateData._update_format(data, cfg)
+			data.version = _EDITOR_STATE_VERSION
+			data.save()
+			return data
+
+		var raw: Array = cfg.get_value(_SECTION_RECENT, "uids", [])
+		data.recent_registry_uids.assign(raw)
 		return data
 
-	data.disabled_columns = cfg.get_value(_SECTION_TABLE, "disabled_columns", data.disabled_columns)
-	data.uid_column_width = cfg.get_value(_SECTION_TABLE, "uid_column_width", data.uid_column_width)
-	data.string_id_column_width = cfg.get_value(_SECTION_TABLE, "string_id_column_width", data.string_id_column_width)
-	data.property_columns_widths = cfg.get_value(_SECTION_TABLE, "property_columns_widths", data.property_columns_widths)
-	return data
+
+	func add_recent(registry: Registry) -> void:
+		var uid := ResourceUID.path_to_uid(registry.resource_path)
+		recent_registry_uids.erase(uid)
+		recent_registry_uids.push_front(uid)
+		if recent_registry_uids.size() > _MAX_RECENT:
+			recent_registry_uids.resize(_MAX_RECENT)
+		save()
 
 
-static func erase(registry: Registry) -> void:
-	var path := _get_registry_cache_path(registry)
-	if FileAccess.file_exists(path):
-		DirAccess.remove_absolute(path)
+	func clear_recent() -> void:
+		recent_registry_uids.clear()
+		save()
 
 
-static func _update_cache_format(_data: RegistryCacheData, _old_cfg: ConfigFile) -> void:
-	# Migrate old cache formats here when _REGISTRY_CACHE_VERSION is incremented.
-	# var old_version: int = cfg.get_value(_SECTION_GENERAL, "version", 0)
-	# if old_version < 2:
-	#     _migrate_v1_to_v2(data, cfg)
-	pass
-
-
-static func _get_registry_cache_path(registry: Registry) -> String:
-	var uid := ResourceUID.path_to_uid(registry.resource_path)
-	var uid_str := uid.trim_prefix("uid://")
-	return _REGISTRIES_DIR + uid_str + ".cfg"
-
-
-static func add_recent_registry(registry: Registry) -> void:
-	var uid := ResourceUID.path_to_uid(registry.resource_path)
-	var list := get_recent_registry_uids()
-	list.erase(uid)
-	list.push_front(uid)
-	if list.size() > _MAX_RECENT:
-		list.resize(_MAX_RECENT)
-	_save_recent(list)
-
-
-static func clear_recent_registries() -> void:
-	_save_recent([])
-
-
-static func get_recent_registry_uids() -> Array[String]:
-	var cfg := ConfigFile.new()
-	if cfg.load(_STATE_FILE) != OK:
-		return []
-	var raw: Array = cfg.get_value(_SECTION_RECENT, "uids", [])
-	var result: Array[String] = []
-	result.assign(raw)
-	return result
-
-
-static func _save_recent(uids: Array[String]) -> void:
-	var cfg := ConfigFile.new()
-	cfg.set_value(_SECTION_RECENT, "version", _EDITOR_STATE_VERSION)
-	cfg.set_value(_SECTION_RECENT, "uids", uids)
-	DirAccess.make_dir_recursive_absolute(_BASE_DIR)
-	cfg.save(_STATE_FILE)
+	static func _update_format(_data: EditorStateData, _old_cfg: ConfigFile) -> void:
+		# Migrate old state formats here when _EDITOR_STATE_VERSION is incremented.
+		pass
