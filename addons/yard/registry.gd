@@ -136,6 +136,18 @@ func get_string_id(uid: StringName) -> StringName:
 		return &""
 
 
+## Returns an [Array] of all properties that have been baked into the property index.[br][br]
+##
+## Each entry in the returned array is a [StringName] corresponding to a property key
+## that can be queried using [method Registry.filter_by], [method Registry.filter_by_value],
+## or [method Registry.filter_by_values].[br][br]
+##
+## Use this method to inspect which properties are available for fast lookup at runtime,
+## without loading the underlying resources.
+func get_indexed_properties() -> Array[StringName]:
+	return _property_index.keys()
+
+
 ## Loads the resource associated with [param id] (string ID or UID) and returns it.
 ## Returns [code]null[/code] if the entry does not exist or cannot be loaded.[br][br]
 ##
