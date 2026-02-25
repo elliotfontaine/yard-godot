@@ -155,9 +155,11 @@ script = ExtResource("4_dd5h4")
 icon_name = "Help"
 
 [node name="VSeparator2" type="VSeparator" parent="VBoxContainer/HBoxContainer"]
+visible = false
 layout_mode = 2
 
 [node name="MakeFloatingButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+visible = false
 layout_mode = 2
 tooltip_text = "Make the registry editor floating."
 focus_mode = 3
