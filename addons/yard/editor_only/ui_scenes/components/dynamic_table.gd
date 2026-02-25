@@ -302,60 +302,30 @@ func ordering_data(column_index: int, ascending: bool = true) -> int:
 	var column := _columns[column_index]
 	_icon_sort = " ▼ " if ascending else " ▲ "
 
-	if column.is_progress_column():
-		_data.sort_custom(
-			func(a: Array, b: Array) -> bool:
-				var a_val := _get_progress_value(a[column_index])
-				var b_val := _get_progress_value(b[column_index])
-				return a_val < b_val if ascending else a_val > b_val
-		)
-	elif column.is_boolean_column():
-		_data.sort_custom(
-			func(a: Array, b: Array) -> bool:
-				var a_val := bool(a[column_index])
-				var b_val := bool(b[column_index])
-				return (a_val and not b_val) if ascending else (not a_val and b_val)
-		)
-	elif column.is_color_column():
-		_data.sort_custom(
-			func(a: Array, b: Array) -> bool:
-				var ca := Color(a[column_index])
-				var cb := Color(b[column_index])
-				# HSV ordering: H, then S, then V, then A (tie-break)
-				if ca.h != cb.h:
-					return ca.h < cb.h if ascending else ca.h > cb.h
-				if ca.s != cb.s:
-					return ca.s < cb.s if ascending else ca.s > cb.s
-				if ca.v != cb.v:
-					return ca.v < cb.v if ascending else ca.v > cb.v
-				return ca.a < cb.a if ascending else ca.a > cb.a
-		)
-	else:
-		_data.sort_custom(
-			func(a: Array, b: Array) -> bool:
-				var a_val: Variant = a[column_index]
-				var b_val: Variant = b[column_index]
-				# Robust handling for mixed types or null values
-				if typeof(a_val) != typeof(b_val):
-					if a_val == null:
-						return ascending # nulls first if ascending
-					if b_val == null:
-						return not ascending
-					return str(a_val) < str(b_val) if ascending else str(a_val) > str(b_val)
-				if a_val == null and b_val == null:
-					return false
-				if a_val == null:
-					return ascending
-				if b_val == null:
-					return not ascending
-				if typeof(a_val) == TYPE_STRING_NAME:
-					a_val = str(a_val)
-					b_val = str(b_val)
-				return a_val < b_val if ascending else a_val > b_val
-		)
+	_data.sort_custom(
+		func(a: Array, b: Array) -> bool:
+			var ka: Variant = _key_for_sort(a[column_index], column)
+			var kb: Variant = _key_for_sort(b[column_index], column)
+			if ka == null and kb == null:
+				return false
+			if ka == null:
+				return ascending
+			if kb == null:
+				return not ascending
+			if typeof(ka) == TYPE_ARRAY and typeof(kb) == TYPE_ARRAY:
+				var n := mini(ka.size(), kb.size())
+				for i in range(n):
+					if ka[i] != kb[i]:
+						return ka[i] < kb[i] if ascending else ka[i] > kb[i]
+				return ka.size() < kb.size() if ascending else ka.size() > kb.size()
+			if (typeof(ka) in [TYPE_INT, TYPE_FLOAT]) and (typeof(kb) in [TYPE_INT, TYPE_FLOAT]):
+				return ka < kb if ascending else ka > kb
+			return str(ka) < str(kb) if ascending else str(ka) > str(kb)
+	)
+
 	_restore_selected_rows()
 	queue_redraw()
-	return -1 # The original function returned -1
+	return -1
 
 
 func update_cell(row: int, col: int, value: Variant) -> void:
@@ -1050,6 +1020,26 @@ func _apply_filter(search_key: String) -> void:
 
 	_update_scrollbars()
 	queue_redraw()
+
+
+func _key_for_sort(value: Variant, column: ColumnConfig) -> Variant:
+	if value == null:
+		return null
+	if column.is_progress_column() or column.is_numeric_column():
+		return float(value)
+	if column.is_boolean_column():
+		return (1 if bool(value) else 0)
+	if column.is_color_column():
+		var c := Color(value)
+		return [c.h, c.s, c.v, c.a]
+	if column.is_resource_column():
+		if value is Resource: # might be <empty>
+			var r: Resource = value
+			if r.resource_path != "":
+				return r.resource_path.get_file()
+			return str(r.get_class()) + ":" + str(r.get_instance_id())
+		return str(value)
+	return str(value)
 
 
 ## Returns the column index under screen x, or -1 if none.
