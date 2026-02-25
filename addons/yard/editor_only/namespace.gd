@@ -2,6 +2,7 @@ const PluginCFG := "res://addons/yard/plugin.cfg"
 
 # Static Util Classes
 const RegistryIO := preload("res://addons/yard/editor_only/registry_io.gd")
+const YardEditorCache := preload("res://addons/yard/editor_only/classes/yard_editor_cache.gd")
 const ClassUtils := preload("res://addons/yard/editor_only/classes/class_utils.gd")
 const EditorThemeUtils := preload("res://addons/yard/editor_only/classes/editor_theme_utils.gd")
 const FuzzySearch := preload("res://addons/yard/editor_only/classes/fuzzy_search.gd")

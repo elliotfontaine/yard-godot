@@ -358,25 +358,6 @@ func ordering_data(column_index: int, ascending: bool = true) -> int:
 	return -1 # The original function returned -1
 
 
-func insert_row(index: int, row_data: Array) -> void:
-	while row_data.size() < _columns.size(): # Ensure column consistency
-		row_data.append(null) # or a default value
-	_data.insert(index, row_data)
-	_total_rows += 1
-	_update_scrollbars()
-	queue_redraw()
-
-
-func delete_row(index: int) -> void:
-	if (_total_rows >= 1 and index < _total_rows):
-		_data.remove_at(index)
-		_total_rows -= 1
-		if (_total_rows == 0):
-			selected_rows.clear()
-		_update_scrollbars()
-		queue_redraw()
-
-
 func update_cell(row: int, col: int, value: Variant) -> void:
 	if row >= 0 and row < _data.size() and col >= 0 and col < _columns.size():
 		while _data[row].size() <= col:

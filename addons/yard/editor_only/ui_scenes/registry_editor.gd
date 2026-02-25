@@ -645,10 +645,12 @@ func _on_columns_menu_id_pressed(id: int) -> void:
 	popup.toggle_item_checked(id)
 
 	if popup.is_item_checked(id):
-		registry_table_view.disabled_property_columns.erase(prop_name)
+		registry_table_view.current_cache_data.disabled_columns.erase(prop_name)
+		registry_table_view.current_cache_data.save()
 	else:
-		if not prop_name in registry_table_view.disabled_property_columns:
-			registry_table_view.disabled_property_columns.append(prop_name)
+		if not prop_name in registry_table_view.current_cache_data.disabled_columns:
+			registry_table_view.current_cache_data.disabled_columns.append(prop_name)
+			registry_table_view.current_cache_data.save()
 
 	registry_table_view.update_view()
 
@@ -715,7 +717,7 @@ func _on_columns_menu_button_about_to_popup() -> void:
 			popup.add_check_item(prop_name.capitalize())
 			popup.set_item_tooltip(popup.item_count - 1, prop_name)
 			popup.set_item_icon(popup.item_count - 1, AnyIcon.get_property_icon_from_dict(prop))
-			popup.set_item_checked(popup.item_count - 1, prop_name not in registry_table_view.disabled_property_columns)
+			popup.set_item_checked(popup.item_count - 1, prop_name not in registry_table_view.current_cache_data.disabled_columns)
 
 	popup.add_separator()
 
@@ -725,7 +727,7 @@ func _on_columns_menu_button_about_to_popup() -> void:
 			popup.add_check_item(prop_name.capitalize())
 			popup.set_item_tooltip(popup.item_count - 1, prop_name)
 			popup.set_item_icon(popup.item_count - 1, AnyIcon.get_property_icon_from_dict(prop))
-			popup.set_item_checked(popup.item_count - 1, prop_name not in registry_table_view.disabled_property_columns)
+			popup.set_item_checked(popup.item_count - 1, prop_name not in registry_table_view.current_cache_data.disabled_columns)
 
 
 func _on_registry_settings_button_pressed() -> void:

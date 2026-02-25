@@ -21,6 +21,8 @@ const RegistryIO := Namespace.RegistryIO
 const ClassUtils := Namespace.ClassUtils
 const EditorThemeUtils := Namespace.EditorThemeUtils
 const DynamicTable := Namespace.DynamicTable
+const YardEditorCache := Namespace.YardEditorCache
+const RegistryCacheData := Namespace.YardEditorCache.RegistryCacheData
 
 const ACCELERATORS: Dictionary = {
 	EditMenuAction.DELETE_ENTRIES: KEY_MASK_META | KEY_BACKSPACE,
@@ -35,19 +37,15 @@ const STRINGID_COLUMN_CONFIG := ["string_id", "String ID", TYPE_STRING]
 const NON_PROP_COLUMNS_COUNT := 2
 const STRINGID_COLUMN := 0
 const UID_COLUMN := 1
-const DISABLED_BY_DEFAULT_PROPERTIES: Array[StringName] = [
-	&"script",
-	&"resource_local_to_scene",
-	&"resource_path",
-	&"resource_name",
-]
+const DISABLED_BY_DEFAULT_PROPERTIES: Array[StringName] = YardEditorCache.DISABLED_BY_DEFAULT_PROPERTIES
 
 var current_registry: Registry:
 	set(new):
 		current_registry = new
+		current_cache_data = YardEditorCache.load_or_default(new) if current_registry else null
 		update_view()
+var current_cache_data: RegistryCacheData
 
-var disabled_property_columns: Array[StringName] = DISABLED_BY_DEFAULT_PROPERTIES.duplicate()
 var properties_column_info: Array[Dictionary]
 var entries_data: Array[Array] # inner arrays are rows, their content is columns
 var clipboard: Variant
@@ -218,9 +216,21 @@ func update_view() -> void:
 	dynamic_table.set_data(entries_data)
 	dynamic_table.ordering_data(STRINGID_COLUMN, true)
 
+	for idx in dynamic_table._columns.size():
+		var column := dynamic_table.get_column(idx)
+		match idx:
+			UID_COLUMN:
+				column.current_width = current_cache_data.uid_column_width
+			STRINGID_COLUMN:
+				column.current_width = current_cache_data.string_id_column_width
+			_:
+				var prop_name := column.identifier
+				if current_cache_data.property_columns_widths.has(prop_name):
+					column.current_width = current_cache_data.property_columns_widths[prop_name]
+
 
 func is_property_disabled(property_info: Dictionary) -> bool:
-	return property_info[&"name"] in disabled_property_columns
+	return property_info[&"name"] in current_cache_data.disabled_columns
 
 
 func set_columns_data(resources: Array[Resource]) -> void:
@@ -567,8 +577,17 @@ func _on_header_clicked(column: int) -> void:
 
 
 func _on_column_resized(column: int, new_width: float) -> void:
-	pass
-	#print("Column ", column, " resized at width ", new_width)
+	match column:
+		UID_COLUMN:
+			current_cache_data.uid_column_width = new_width
+		STRINGID_COLUMN:
+			current_cache_data.string_id_column_width = new_width
+		_:
+			var col_config: DynamicTable.ColumnConfig = dynamic_table.get_column(column)
+			var prop_name: StringName = col_config.identifier
+			current_cache_data.property_columns_widths[prop_name] = new_width
+
+	current_cache_data.save()
 
 
 func _on_inspector_property_edited(property: StringName) -> void:
