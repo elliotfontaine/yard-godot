@@ -32,9 +32,9 @@ const FuzzySearch := Namespace.FuzzySearch
 const FuzzySearchResult := FuzzySearch.FuzzySearchResult
 
 const ACCELERATORS: Dictionary = {
-	FileMenuAction.NEW: KEY_MASK_META | KEY_N,
-	FileMenuAction.REOPEN_CLOSED: KEY_MASK_SHIFT | KEY_MASK_META | KEY_T,
-	FileMenuAction.CLOSE: KEY_MASK_META | KEY_W,
+	FileMenuAction.NEW: KEY_MASK_CMD_OR_CTRL | KEY_N,
+	FileMenuAction.REOPEN_CLOSED: KEY_MASK_SHIFT | KEY_MASK_CMD_OR_CTRL | KEY_T,
+	FileMenuAction.CLOSE: KEY_MASK_CMD_OR_CTRL | KEY_W,
 	FileMenuAction.MOVE_UP: KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP,
 	FileMenuAction.MOVE_DOWN: KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN,
 }

@@ -25,10 +25,10 @@ const YardEditorCache := Namespace.YardEditorCache
 const RegistryCacheData := Namespace.YardEditorCache.RegistryCacheData
 
 const ACCELERATORS: Dictionary = {
-	EditMenuAction.DELETE_ENTRIES: KEY_MASK_META | KEY_BACKSPACE,
-	EditMenuAction.CUT_CELL_VALUE: KEY_MASK_META | KEY_X,
-	EditMenuAction.COPY_CELL_VALUE: KEY_MASK_META | KEY_C,
-	EditMenuAction.PASTE_TO_CELL: KEY_MASK_META | KEY_V,
+	EditMenuAction.DELETE_ENTRIES: KEY_MASK_CMD_OR_CTRL | KEY_BACKSPACE,
+	EditMenuAction.CUT_CELL_VALUE: KEY_MASK_CMD_OR_CTRL | KEY_X,
+	EditMenuAction.COPY_CELL_VALUE: KEY_MASK_CMD_OR_CTRL | KEY_C,
+	EditMenuAction.PASTE_TO_CELL: KEY_MASK_CMD_OR_CTRL | KEY_V,
 }
 
 const LOGGING_INFO_COLOR := "lightslategray"
