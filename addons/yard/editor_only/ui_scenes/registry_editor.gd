@@ -18,12 +18,14 @@ enum FileMenuAction {
 	MOVE_UP = 30,
 	MOVE_DOWN = 31,
 	SORT = 32,
+	CLEAR_RECENT = 40,
 }
 const EditMenuAction := RegistryTableView.EditMenuAction # Enum
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const PluginCFG := Namespace.PluginCFG
 const RegistryIO := Namespace.RegistryIO
+const YardEditorCache := Namespace.YardEditorCache
 const RegistriesItemList := Namespace.RegistriesItemList
 const RegistryTableView := Namespace.RegistryTableView
 const NewRegistryDialog := Namespace.NewRegistryDialog
@@ -73,7 +75,6 @@ func _ready() -> void:
 
 	_toggle_visibility_topbar_buttons()
 	_setup_accelerators()
-	_populate_open_recent_submenu()
 
 	file_menu_button.get_popup().id_pressed.connect(_on_file_menu_id_pressed)
 	edit_menu_button.get_popup().id_pressed.connect(_on_edit_menu_id_pressed)
@@ -105,6 +106,7 @@ func open_registry(registry: Registry) -> void:
 	if uid not in _opened_registries:
 		_opened_registries[uid] = registry
 	_update_registries_itemlist()
+	YardEditorCache.add_recent_registry(registry)
 	select_registry(uid)
 
 
@@ -188,12 +190,24 @@ func _setup_accelerators() -> void:
 
 func _populate_open_recent_submenu() -> void:
 	var file_menu := file_menu_button.get_popup()
-	file_menu.name = "FileMenu"
 
-	# TODO: implement "recent" logic
 	var recent := PopupMenu.new()
-	#recent.add_item("previously_used.tres")
-	#recent.add_item("placeholder.tres")
+	for entry in YardEditorCache.get_recent_registry_uids():
+		if ResourceUID.has_id(ResourceUID.text_to_id(entry)):
+			recent.add_item(ResourceUID.uid_to_path(entry))
+	recent.add_separator()
+	recent.add_item(tr("Clear Recent Registries"), FileMenuAction.CLEAR_RECENT)
+	recent.set_item_disabled(recent.get_item_index(FileMenuAction.CLEAR_RECENT), recent.get_item_count() == 2) # only the "Clear" item
+	recent.id_pressed.connect(
+		func(id: int) -> void:
+			if id == FileMenuAction.CLEAR_RECENT:
+				YardEditorCache.clear_recent_registries()
+				return
+			var uid := YardEditorCache.get_recent_registry_uids()[id]
+			if ResourceUID.has_id(ResourceUID.text_to_id(uid)):
+				select_registry(uid) if _opened_registries.has(uid) else open_registry(load(uid))
+	)
+
 	file_menu.set_item_submenu_node(
 		file_menu.get_item_index(FileMenuAction.OPEN_RECENT),
 		recent,
@@ -402,6 +416,8 @@ func _toggle_file_menu_items() -> void:
 		file_menu.get_item_index(FileMenuAction.CLOSE_ALL),
 		has_no_file,
 	)
+
+	_populate_open_recent_submenu()
 
 
 func _toggle_registry_context_menu_items() -> void:
