@@ -37,11 +37,13 @@ YARD has two complementary aspects:
 
 ### Creating a registry
 
-Open the **YARD** tab in the editor, click **New Registry**, and configure:
+Open the **Registry** tab in the editor, click **File > New Registry**, and configure:
 
-- **Class restriction** — only resources of this class (or subclasses) will be accepted
+- **Class restriction** — only resources of this class (or its subclasses) will be accepted
 - **Scan directory** — the registry will stay in sync with resource files in this folder
 - **Indexed properties** — property names to bake into the index for runtime filtering
+
+If you didn't specify a scan directory, you can add entries manually by dragging and dropping resources from the FileSystem dock into the registry table, or use the resource picker at the bottom.
 
 ### Loading an entry
 
@@ -64,7 +66,7 @@ var tracker := ENEMIES.load_all_threaded_request()
 
 ### Querying the index
 
-The property index is baked in the editor. Queries run at runtime without loading any resource.
+The property index can be baked while in the editor. At runtime, queries run without loading any resource.
 
 ```gdscript
 # All entries where rarity == LEGENDARY
@@ -82,7 +84,7 @@ var legendary_swords := WEAPONS.filter_by_values({
 
 ## API Reference
 
-Full API documentation is available in the in-editor class reference.
+Full API documentation for `Registry` is available in the in-editor class reference.
 
 ### Lookup
 
@@ -119,18 +121,25 @@ Filtering methods require the relevant properties to have been indexed in the ed
 
 ## How the property index work
 
-When you specify indexed properties in the editor and trigger a rebuild, YARD loads every resource in the registry, reads the listed properties, and stores the results in a baked index inside the `.tres` file.
+The index is simply a nested dictionary stored inside the registry `.tres` file :
 
-At runtime, `filter_by_value` and related methods query this index directly, no resource is loaded. Pure sorcery !
-
-```
+```gdscript
 _property_index = {
-    "rarity": {
-        Rarity.LEGENDARY: { "excalibur": true, "mjolnir": true },
-        Rarity.COMMON:    { "stick": true },
+    &"rarity": {
+        Rarity.LEGENDARY: { &"excalibur": true, &"mjolnir": true },
+        Rarity.COMMON: { &"stick": true },
+    }
+    &"level": {
+        1: { &"stick": true },
+        10: { &"excalibur": true },
+        12: { &"mjolnir": true },
     }
 }
 ```
+
+## Contributing
+
+Contributions are welcome. For major changes, open an issue first to discuss what you have in mind.
 
 ## License
 
