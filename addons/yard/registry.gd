@@ -37,13 +37,12 @@ extends Resource
 ## • [ResourceLoader] - [i]A singleton for loading resource files.[/i][br]
 
 @warning_ignore_start("unused_private_class_variable")
+@export_storage var _registry_version: int = 0
 @export_storage var _class_restriction: StringName = &""
 @export_storage var _scan_directory: String = ""
 @export_storage var _recursive_scan: bool = false
 @warning_ignore_restore("unused_private_class_variable")
 
-# Version number for editor use. Can be helpful to trigger reprocessing of registries when loading old versions with new code.
-@export_storage var _registry_version: int = 0
 # Bidirectional map. Populated by RegistryIO in the editor, read-only at runtime.
 @export_storage var _uids_to_string_ids: Dictionary[StringName, StringName]
 @export_storage var _string_ids_to_uids: Dictionary[StringName, StringName]
