@@ -651,6 +651,8 @@ func _dispatch_cell_draw(cell_rect: Rect2, row: int, col_idx: int) -> void:
 		_draw_cell_resource(cell_rect, row, col_idx)
 	elif col.is_enum_column():
 		_draw_cell_enum(cell_rect, row, col_idx)
+	elif col.is_array_column() or col.is_dictionary_column():
+		_draw_cell_collection(cell_rect, row, col_idx)
 	else:
 		_draw_cell_text(cell_rect, row, col_idx)
 
@@ -941,6 +943,53 @@ func _draw_cell_enum(rect: Rect2, row: int, col: int) -> void:
 
 func _draw_cell_invalid(rect: Rect2, _row: int, _col: int) -> void:
 	draw_rect(rect, invalid_cell_color, true)
+
+
+func _draw_cell_collection(rect: Rect2, row: int, col: int) -> void:
+	var value: Variant = get_cell_value(row, col)
+	if not (value is Array or value is Dictionary):
+		_draw_cell_text(rect, row, col)
+		return
+	var text := _format_collection_value(value)
+	var x_margin: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_LEFT)
+	var baseline_y := _get_text_baseline_y(rect.position.y)
+	var display_text := _get_display_text(text, font, rect.size.x - absf(x_margin))
+	draw_string(
+		font,
+		Vector2(rect.position.x + x_margin, baseline_y),
+		display_text,
+		HORIZONTAL_ALIGNMENT_LEFT,
+		rect.size.x - absf(x_margin),
+		font_size,
+		default_font_color,
+	)
+
+
+static func _format_collection_elem(elem: Variant) -> String:
+	if elem is Array:
+		return "Array(%d)" % (elem as Array).size()
+	if elem is Dictionary:
+		return "Dict(%d)" % (elem as Dictionary).size()
+	return str(elem)
+
+
+static func _format_collection_value(value: Variant) -> String:
+	var is_dict := value is Dictionary
+	var items: Array = (value as Dictionary).keys() if is_dict else (value as Array)
+
+	var parts: Array[String] = []
+	for i in mini(items.size(), 3):
+		if is_dict:
+			var key: Variant = items[i]
+			parts.append("%s: %s" % [str(key), _format_collection_elem((value as Dictionary)[key])])
+		else:
+			parts.append(_format_collection_elem(items[i]))
+
+	var result := ", ".join(parts)
+	var remaining := items.size() - 3
+	if remaining > 0:
+		result += " and %d more" % remaining
+	return "{ %s }" % result if is_dict else "[%s]" % result
 
 
 func _get_display_text(cell_value: String, text_font: Font, max_width: float) -> String:
@@ -1849,3 +1898,11 @@ class ColumnConfig:
 
 	func is_resource_column() -> bool:
 		return type == TYPE_OBJECT and property_hint == PROPERTY_HINT_RESOURCE_TYPE
+
+
+	func is_array_column() -> bool:
+		return type == TYPE_ARRAY
+
+
+	func is_dictionary_column() -> bool:
+		return type == TYPE_DICTIONARY
