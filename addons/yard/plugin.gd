@@ -27,6 +27,20 @@ func _enter_tree() -> void:
 	_registry_editor.set_translation_domain(TRANSLATION_DOMAIN)
 	_make_visible(false)
 
+	# Force reimport of icons if it doesn't match the editor scale
+	var icon: CompressedTexture2D = load("res://addons/yard/editor_only/assets/github_icon.svg")
+	var scale := EditorInterface.get_editor_scale()
+	if float(icon.get_width()) != scale * 16:
+		print("YARD - Editor scale changed, reimporting icons. This might throw an error. Disregard.")
+		EditorInterface.get_resource_filesystem().reimport_files(
+			PackedStringArray(
+				[
+					"res://addons/yard/editor_only/assets/github_icon.svg",
+					"res://addons/yard/editor_only/assets/yard.svg",
+				],
+			),
+		)
+
 
 func _exit_tree() -> void:
 	if is_instance_valid(_registry_editor):

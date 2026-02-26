@@ -65,9 +65,7 @@ var _fuz := FuzzySearch.new()
 
 
 func _ready() -> void:
-	EditorInterface.get_resource_filesystem().filesystem_changed.connect(
-		_on_filesystem_changed,
-	)
+	EditorInterface.get_resource_filesystem().filesystem_changed.connect(_on_filesystem_changed)
 
 	_file_dialog = EditorFileDialog.new()
 	_file_dialog.access = EditorFileDialog.ACCESS_RESOURCES
