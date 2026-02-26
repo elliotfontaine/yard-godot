@@ -11,7 +11,7 @@ A Godot 4 plugin for managing and querying collections of resources through a de
 
 ## Overview
 
-![preview of the registry editor](addons/yard/editor_only/assets/ui_example.png)
+![preview of the registry editor](etc/preview_2.png)
 
 YARD has two complementary aspects:
 
