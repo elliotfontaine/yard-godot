@@ -212,8 +212,6 @@ func update_view() -> void:
 		entries_data.append(entry_data)
 
 	dynamic_table.set_columns(_build_columns())
-	dynamic_table.set_data(entries_data)
-	dynamic_table.ordering_data(STRINGID_COLUMN, true)
 
 	for idx in dynamic_table._columns.size():
 		var column := dynamic_table.get_column(idx)
@@ -226,6 +224,9 @@ func update_view() -> void:
 				var prop_name := column.identifier
 				if current_cache_data.property_columns_widths.has(prop_name):
 					column.current_width = current_cache_data.property_columns_widths[prop_name]
+
+	dynamic_table.set_data(entries_data)
+	dynamic_table.ordering_data(STRINGID_COLUMN, true)
 
 
 func is_property_disabled(property_info: Dictionary) -> bool:
