@@ -1,0 +1,211 @@
+[gd_scene load_steps=15 format=3 uid="uid://woa50nl7s75b"]
+
+[ext_resource type="Script" uid="uid://cbi6iha8se2sg" path="res://addons/yard/editor_only/ui_scenes/components/readme_window.gd" id="1_jbsvw"]
+[ext_resource type="Script" uid="uid://bfyublltgtwo3" path="res://addons/yard/editor_only/classes/markdownlabel/markdownlabel.gd" id="1_xfkfm"]
+[ext_resource type="Script" uid="uid://cv5t5tg8tt0fo" path="res://addons/yard/editor_only/classes/markdownlabel/h1_format.gd" id="2_jbsvw"]
+[ext_resource type="Script" uid="uid://nlhsm3ui24tp" path="res://addons/yard/editor_only/classes/markdownlabel/h2_format.gd" id="3_jo4n4"]
+[ext_resource type="Script" uid="uid://bybkadsssodhg" path="res://addons/yard/editor_only/classes/markdownlabel/h3_format.gd" id="4_o5a66"]
+[ext_resource type="Script" uid="uid://cne86e04ci56j" path="res://addons/yard/editor_only/classes/markdownlabel/h4_format.gd" id="5_2fmg0"]
+[ext_resource type="Script" uid="uid://cewol4xb8qqd3" path="res://addons/yard/editor_only/classes/markdownlabel/h5_format.gd" id="6_3ru8o"]
+[ext_resource type="Script" uid="uid://ck5yuuybmohr2" path="res://addons/yard/editor_only/classes/markdownlabel/h6_format.gd" id="7_a16y5"]
+
+[sub_resource type="Resource" id="Resource_5v6am"]
+resource_local_to_scene = true
+script = ExtResource("2_jbsvw")
+is_bold = true
+draw_horizontal_rule = true
+
+[sub_resource type="Resource" id="Resource_8lmd3"]
+resource_local_to_scene = true
+script = ExtResource("3_jo4n4")
+is_bold = true
+override_font_color = true
+font_color = Color(0, 0, 0, 1)
+draw_horizontal_rule = true
+
+[sub_resource type="Resource" id="Resource_u72bi"]
+resource_local_to_scene = true
+script = ExtResource("4_o5a66")
+is_italic = true
+is_underlined = true
+font_color = Color(0, 0, 0, 1)
+
+[sub_resource type="Resource" id="Resource_hmvhy"]
+resource_local_to_scene = true
+script = ExtResource("5_2fmg0")
+
+[sub_resource type="Resource" id="Resource_db5ns"]
+resource_local_to_scene = true
+script = ExtResource("6_3ru8o")
+
+[sub_resource type="Resource" id="Resource_ouans"]
+resource_local_to_scene = true
+script = ExtResource("7_a16y5")
+
+[node name="ReadMeWindow" type="AcceptDialog"]
+oversampling_override = 1.0
+title = "README.md"
+size = Vector2i(500, 500)
+ok_button_text = "Close"
+script = ExtResource("1_jbsvw")
+
+[node name="MarkdownLabel" type="RichTextLabel" parent="."]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -49.0
+grow_horizontal = 2
+grow_vertical = 2
+focus_mode = 2
+bbcode_enabled = true
+selection_enabled = true
+script = ExtResource("1_xfkfm")
+markdown_text = "# YARD — Yet Another Resource Database
+
+
+A Godot 4 plugin for managing and querying collections of resources through a dedicated editor interface and runtime API.
+
+## Overview
+
+YARD has two complementary aspects:
+
+**A table-based resource editor.** The YARD editor tab lets you create and manage registries: catalogues of resources grouped by class. Each registry provides a spreadsheet-like view of your resources and their properties.
+
+**A lightweight runtime API.** At runtime, a `Registry` is just a small `.tres` file holding UIDs and string IDs. It does not load the resources it references. _You_ control when loading happens, and how.
+
+## Features
+
+- 🏷 Reference resources by stable, human-readable string IDs instead of file paths or UIDs lying around in some autoload
+- 🔒 Restrict a registry to a specific class — only matching resources can be added
+- 🔄 Sync a registry from a directory — entries are added and removed automatically as resource files appear or disappear, recursively or not
+- 🥧 Bake a property index in the editor for zero-cost runtime queries by resource property values
+- 📦 Load entries individually, all at once (blocking), or asynchronously via threaded loading
+- ⚡ No runtime overhead beyond what you explicitly request, all expensive operations happen in the editor
+
+## Installation
+
+1. Copy the `addons/yard` folder into your project's `addons/` directory
+2. Enable the plugin in **Project > Project Settings > Plugins**
+
+## Usage
+
+### Creating a registry
+
+Open the **Registry** tab in the editor, click **File > New Registry**, and configure:
+
+- **Class restriction** — only resources of this class (or its subclasses) will be accepted
+- **Scan directory** — the registry will stay in sync with resource files in this folder
+- **Indexed properties** — property names to bake into the index for runtime filtering
+
+If you didn't specify a scan directory, you can add entries manually by dragging and dropping resources from the FileSystem dock into the registry table, or use the resource picker at the bottom.
+
+### Loading an entry
+
+```gdscript
+const ENEMIES: Registry = preload(\"res://data/enemy_registry.tres\")
+
+func _on_fight_started() -> void:
+    var skeleton: Enemy = ENEMIES.load_entry(&\"skeleton\")
+```
+
+### Loading all entries
+
+```gdscript
+# Blocking
+var all_enemies := ENEMIES.load_all_blocking()
+
+# Threaded
+var tracker := ENEMIES.load_all_threaded_request()
+```
+
+### Querying the index
+
+The property index can be baked while in the editor. At runtime, queries run without loading any resource.
+
+```gdscript
+# All entries where rarity == LEGENDARY
+var legendaries := WEAPONS.filter_by_value(&\"rarity\", Rarity.LEGENDARY)
+
+# All entries where level >= 10
+var high_level := WEAPONS.filter_by(&\"level\", func(v): return v >= 10)
+
+# AND query across multiple properties
+var legendary_swords := WEAPONS.filter_by_values({
+    &\"rarity\": Rarity.LEGENDARY,
+    &\"type\": &\"sword\",
+})
+```
+
+## API Reference
+
+Full API documentation for `Registry` is available in the in-editor class reference.
+
+### Lookup
+
+| Method                     | Description                                                   |
+| -------------------------- | ------------------------------------------------------------- |
+| `has(id)`                  | Returns `true` if the string ID or UID exists in the registry |
+| `has_string_id(string_id)` | Returns `true` if the string ID exists                        |
+| `has_uid(uid)`             | Returns `true` if the UID exists                              |
+| `get_uid(id)`              | Resolves a string ID or UID to its canonical UID              |
+| `get_string_id(uid)`       | Returns the string ID for a given UID                         |
+| `get_all_string_ids()`     | Returns all registered string IDs                             |
+| `get_all_uids()`           | Returns all registered UIDs                                   |
+| `size()`                   | Number of entries                                             |
+| `is_empty()`               | Returns `true` if the registry has no entries                 |
+
+### Loading
+
+| Method                                      | Description                                                                 |
+| ------------------------------------------- | --------------------------------------------------------------------------- |
+| `load_entry(id, type_hint, cache_mode)`     | Loads and returns a single resource                                         |
+| `load_all_blocking(type_hint, cache_mode)`  | Loads all entries synchronously, returns `Dictionary[StringName, Resource]` |
+| `load_all_threaded_request(type_hint, ...)` | Requests threaded loading for all entries, returns a `RegistryLoadTracker`  |
+
+### Filtering
+
+Filtering methods require the relevant properties to have been indexed in the editor.
+
+| Method                             | Description                                                           |
+| ---------------------------------- | --------------------------------------------------------------------- |
+| `is_property_indexed(property)`    | Returns `true` if the property has a baked index                      |
+| `filter_by_value(property, value)` | Returns string IDs of entries where `property == value`               |
+| `filter_by(property, predicate)`   | Returns string IDs of entries where `predicate.call(value)` is `true` |
+| `filter_by_values(criteria)`       | Returns string IDs matching all criteria (AND logic)                  |
+
+## How the property index work
+
+The index is simply a nested dictionary stored inside the registry `.tres` file :
+
+```gdscript
+_property_index = {
+    &\"rarity\": {
+        Rarity.LEGENDARY: { &\"excalibur\": true, &\"mjolnir\": true },
+        Rarity.COMMON: { &\"stick\": true },
+    }
+    &\"level\": {
+        1: { &\"stick\": true },
+        10: { &\"excalibur\": true },
+        12: { &\"mjolnir\": true },
+    }
+}
+```
+
+## Contributing
+
+Contributions are welcome. For major changes, open an issue first to discuss what you have in mind.
+
+## License
+
+[MIT](LICENSE)
+"
+h1 = SubResource("Resource_5v6am")
+h2 = SubResource("Resource_8lmd3")
+h3 = SubResource("Resource_u72bi")
+h4 = SubResource("Resource_hmvhy")
+h5 = SubResource("Resource_db5ns")
+h6 = SubResource("Resource_ouans")

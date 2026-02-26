@@ -11,6 +11,7 @@ const AnyIcon := preload("res://addons/yard/editor_only/classes/any_icon.gd")
 # UI Scenes
 const RegistryEditor := preload("res://addons/yard/editor_only/ui_scenes/registry_editor.gd")
 const RegistryTableView := preload("res://addons/yard/editor_only/ui_scenes/registry_table_view.gd")
+const MarkdownLabel := preload("res://addons/yard/editor_only/classes/markdownlabel/markdownlabel.gd")
 const DynamicTable := preload("res://addons/yard/editor_only/ui_scenes/components/dynamic_table.gd")
 const RegistriesItemList := preload("res://addons/yard/editor_only/ui_scenes/components/registries_itemlist.gd")
 const NewRegistryDialog := preload("res://addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd")

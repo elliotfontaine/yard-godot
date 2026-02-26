@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://dsg55mejcqgyb"]
+[gd_scene load_steps=10 format=3 uid="uid://dsg55mejcqgyb"]
 
 [ext_resource type="Script" uid="uid://pbm1netkyiqy" path="res://addons/yard/editor_only/ui_scenes/registry_editor.gd" id="1_tv1od"]
 [ext_resource type="Script" uid="uid://caby6h435lr2g" path="res://addons/yard/editor_only/classes/editor_icon_menu_button.gd" id="3_m1qax"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://cfbh7d7n20geh" path="res://addons/yard/editor_only/ui_scenes/components/registries_itemlist.gd" id="6_gl5oh"]
 [ext_resource type="PackedScene" uid="uid://crnac01bnyk3" path="res://addons/yard/editor_only/ui_scenes/registry_table_view.tscn" id="7_w3c1k"]
 [ext_resource type="PackedScene" uid="uid://b3g3e36v7g6kr" path="res://addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn" id="8_drmf8"]
+[ext_resource type="PackedScene" uid="uid://woa50nl7s75b" path="res://addons/yard/editor_only/ui_scenes/components/readme_window.tscn" id="9_6e4lp"]
 
 [node name="RegistryEditor" type="MarginContainer"]
 anchors_preset = 15
@@ -138,10 +139,12 @@ icon_name = "Loop"
 
 [node name="ReindexButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 tooltip_text = "Rebuild property index."
 focus_mode = 3
 theme_type_variation = &"FlatButton"
+disabled = true
 text = "Reindex"
 script = ExtResource("4_dd5h4")
 icon_name = "Loop"
@@ -165,8 +168,15 @@ script = ExtResource("4_dd5h4")
 icon_name = "Help"
 
 [node name="VSeparator2" type="VSeparator" parent="VBoxContainer/HBoxContainer"]
-visible = false
 layout_mode = 2
+
+[node name="ReadMeButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+tooltip_text = "Open the README.md popup."
+focus_mode = 3
+theme_type_variation = &"FlatButton"
+script = ExtResource("4_dd5h4")
+icon_name = "Info"
 
 [node name="MakeFloatingButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 visible = false
@@ -237,6 +247,8 @@ item_11/id = 32
 [node name="NewRegistryDialog" parent="." instance=ExtResource("8_drmf8")]
 unique_name_in_owner = true
 
+[node name="ReadMeWindow" parent="." instance=ExtResource("9_6e4lp")]
+
 [connection signal="about_to_popup" from="VBoxContainer/HBoxContainer/FileMenuButton" to="." method="_on_file_menu_button_about_to_popup"]
 [connection signal="about_to_popup" from="VBoxContainer/HBoxContainer/EditMenuButton" to="." method="_on_edit_menu_button_about_to_popup"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/RegistrySettingsButton" to="." method="_on_registry_settings_button_pressed"]
@@ -245,6 +257,7 @@ unique_name_in_owner = true
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/ReindexButton" to="." method="_on_reindex_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/ReportIssueButton" to="." method="_on_report_issue_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/OpenDocumentationButton" to="." method="_on_open_documentation_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/ReadMeButton" to="." method="_on_read_me_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/MakeFloatingButton" to="." method="_on_make_floating_button_pressed"]
 [connection signal="text_changed" from="VBoxContainer/HSplitContainer/RegistriesContainer/RegistriesFilter" to="." method="_on_registries_filter_text_changed"]
 [connection signal="item_clicked" from="VBoxContainer/HSplitContainer/RegistriesContainer/RegistriesItemList" to="." method="_on_registries_list_item_clicked"]

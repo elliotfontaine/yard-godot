@@ -61,6 +61,7 @@ var _fuz := FuzzySearch.new()
 @onready var registry_table_view: RegistryTableView = %RegistryTableView
 @onready var registry_context_menu: PopupMenu = %RegistryContextMenu
 @onready var new_registry_dialog: NewRegistryDialog = %NewRegistryDialog
+@onready var read_me_window: AcceptDialog = $ReadMeWindow
 
 
 func _ready() -> void:
@@ -797,3 +798,7 @@ func _on_filesystem_changed() -> void:
 
 func _on_open_documentation_button_pressed() -> void:
 	EditorInterface.get_script_editor().goto_help("class:Registry")
+
+
+func _on_read_me_button_pressed() -> void:
+	read_me_window.popup_centered_ratio(0.8)
