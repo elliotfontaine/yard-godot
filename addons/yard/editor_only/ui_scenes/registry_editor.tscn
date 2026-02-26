@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://pbm1netkyiqy" path="res://addons/yard/editor_only/ui_scenes/registry_editor.gd" id="1_tv1od"]
 [ext_resource type="Script" uid="uid://caby6h435lr2g" path="res://addons/yard/editor_only/classes/editor_icon_menu_button.gd" id="3_m1qax"]
 [ext_resource type="Texture2D" uid="uid://73a38p2r8hos" path="res://addons/yard/editor_only/assets/github_icon.svg" id="4_6e4lp"]
-[ext_resource type="Script" uid="uid://yxdtnhovt5i0" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="4_dd5h4"]
+[ext_resource type="Script" uid="uid://djrr6b7fc76rw" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="4_dd5h4"]
 [ext_resource type="Script" uid="uid://bk8fqxqrmwbc0" path="res://addons/yard/editor_only/classes/editor_icon_line_edit.gd" id="5_g1ejb"]
 [ext_resource type="Script" uid="uid://cfbh7d7n20geh" path="res://addons/yard/editor_only/ui_scenes/components/registries_itemlist.gd" id="6_gl5oh"]
 [ext_resource type="PackedScene" uid="uid://crnac01bnyk3" path="res://addons/yard/editor_only/ui_scenes/registry_table_view.tscn" id="7_w3c1k"]
