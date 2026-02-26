@@ -1106,7 +1106,7 @@ func _check_mouse_over_divider(mouse_pos: Vector2) -> void:
 	mouse_default_cursor_shape = CURSOR_ARROW
 
 	if mouse_pos.y < header_height:
-		for col_idx in range(_columns.size() - 1): # Not for the last column
+		for col_idx in _columns.size():
 			var divider_x := _get_col_x_pos(col_idx) + _columns[col_idx].current_width
 			# Skip dividers of scrollable columns hidden behind the frozen zone
 			if col_idx >= n_frozen_columns and divider_x <= _get_frozen_width():
@@ -1427,10 +1427,7 @@ func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
 	):
 		_handle_progress_drag(m_pos)
 
-	elif (
-		_resizing_column >= 0
-		and _resizing_column < _columns.size() - 1
-	):
+	elif _resizing_column in range(_columns.size()):
 		var delta_x: float = m_pos.x - _resizing_start_pos
 		var new_width: float = max(
 			_resizing_start_width + delta_x,
