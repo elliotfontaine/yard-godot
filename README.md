@@ -1,8 +1,8 @@
 <h1>
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="addons/yard/editor_only/assets/yard_dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="addons/yard/editor_only/assets/yard_light.svg">
-    <img src="addons/yard/editor_only/assets/yard.svg" width="24">
+	<source media="(prefers-color-scheme: dark)" srcset="addons/yard/editor_only/assets/yard_dark.svg">
+	<source media="(prefers-color-scheme: light)" srcset="addons/yard/editor_only/assets/yard_light.svg">
+	<img src="addons/yard/editor_only/assets/yard.svg" width="24">
   </picture>
   YARD — Yet Another Resource Database
 </h1>
@@ -51,7 +51,7 @@ If you didn't specify a scan directory, you can add entries manually by dragging
 const ENEMIES: Registry = preload("res://data/enemy_registry.tres")
 
 func _on_fight_started() -> void:
-    var skeleton: Enemy = ENEMIES.load_entry(&"skeleton")
+	var skeleton: Enemy = ENEMIES.load_entry(&"skeleton")
 ```
 
 ### Loading all entries
@@ -77,8 +77,8 @@ var high_level := WEAPONS.filter_by(&"level", func(v): return v >= 10)
 
 # AND query across multiple properties
 var legendary_swords := WEAPONS.filter_by_values({
-    &"rarity": Rarity.LEGENDARY,
-    &"type": &"sword",
+	&"rarity": Rarity.LEGENDARY,
+	&"type": &"sword",
 })
 ```
 
@@ -125,15 +125,15 @@ The index is simply a nested dictionary stored inside the registry `.tres` file 
 
 ```gdscript
 _property_index = {
-    &"rarity": {
-        Rarity.LEGENDARY: { &"excalibur": true, &"mjolnir": true },
-        Rarity.COMMON: { &"stick": true },
-    }
-    &"level": {
-        1: { &"stick": true },
-        10: { &"excalibur": true },
-        12: { &"mjolnir": true },
-    }
+	&"rarity": {
+		Rarity.LEGENDARY: { &"excalibur": true, &"mjolnir": true },
+		Rarity.COMMON: { &"stick": true },
+	}
+	&"level": {
+		1: { &"stick": true },
+		10: { &"excalibur": true },
+		12: { &"mjolnir": true },
+	}
 }
 ```
 
