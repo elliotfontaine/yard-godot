@@ -1,6 +1,7 @@
 @tool
 extends Object
 
+const ClassUtils := preload("res://addons/yard/editor_only/classes/class_utils.gd")
 const REGISTRY_FILE_EXTENSIONS := ["tres"]
 const LOGGING_INFO_COLOR := "lightslategray"
 
@@ -284,6 +285,10 @@ static func dir_get_matching_resources(registry: Registry, path: String, recursi
 ## Only properties already registered via [method add_indexed_property] are indexed.
 ## Entries whose resource cannot be loaded are skipped.
 static func rebuild_property_index(registry: Registry) -> Error:
+	# Initialize _property_index if it's null (older registry files)
+	if registry._property_index == null:
+		registry._property_index = {}
+	
 	# Clear existing values while keeping registered property keys
 	for property: StringName in registry._property_index:
 		registry._property_index[property] = { }
@@ -352,6 +357,8 @@ static func is_resource_matching_restriction(registry: Registry, res: Resource, 
 		return true
 	if ClassDB.is_parent_class(String(class_stringname), String(class_restriction)):
 		return true
+	if ClassUtils.is_class_of(class_stringname, class_restriction):
+		return true
 
 	return false
 
@@ -380,7 +387,7 @@ static func is_resource_class_string(class_string: String) -> bool:
 	for info: Dictionary in ProjectSettings.get_global_class_list():
 		if info.get("class", "") == class_string:
 			var base := StringName(info.get("base", ""))
-			return base == &"Resource" or ClassDB.is_parent_class(base, &"Resource")
+			return ClassUtils.is_class_of(class_string, "Resource")
 
 	return false
 
@@ -433,6 +440,10 @@ static func _make_string_unique(registry: Registry, string_id: String) -> String
 ## Existing index data for kept properties is preserved. Call
 ## [method rebuild_property_index] afterwards to refresh values.
 static func _replace_indexed_properties_list(registry: Registry, properties: Array[StringName]) -> Error:
+	# Initialize _property_index if it's null (older registry files)
+	if registry._property_index == null:
+		registry._property_index = {}
+	
 	var target := { }
 	for p in properties:
 		target[p] = true
