@@ -1,0 +1,67 @@
+[gd_scene load_steps=3 format=3 uid="uid://dvmf633b8xlkm"]
+
+[ext_resource type="Script" uid="uid://batb4hb4cbisr" path="res://test/fixtures/scenes/item_displayer.gd" id="1_2jg5f"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xmcq8"]
+bg_color = Color(0.16862746, 0.19607843, 0.2627451, 1)
+
+[node name="ItemDisplayer" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_xmcq8")
+script = ExtResource("1_2jg5f")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="Input" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Input"]
+layout_mode = 2
+text = "Item Registry"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer/Input"]
+layout_mode = 2
+
+[node name="StringIDLineEdit" type="LineEdit" parent="MarginContainer/HBoxContainer/Input/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+placeholder_text = "wood"
+
+[node name="DisplayButton" type="Button" parent="MarginContainer/HBoxContainer/Input/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Display"
+
+[node name="Display" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ItemTextureRect" type="TextureRect" parent="MarginContainer/HBoxContainer/Display"]
+unique_name_in_owner = true
+texture_filter = 1
+custom_minimum_size = Vector2(30, 200)
+layout_mode = 2
+expand_mode = 3
+stretch_mode = 5
+
+[node name="ItemNameLabel" type="Label" parent="MarginContainer/HBoxContainer/Display"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "Name"
+horizontal_alignment = 1
+
+[connection signal="pressed" from="MarginContainer/HBoxContainer/Input/HBoxContainer/DisplayButton" to="." method="_on_display_button_pressed"]

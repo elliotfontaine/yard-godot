@@ -1,0 +1,69 @@
+[gd_resource type="Resource" script_class="Registry" load_steps=2 format=3 uid="uid://fr1nfvgyu25k"]
+
+[ext_resource type="Script" uid="uid://dqtv77mng5dyh" path="res://addons/yard/registry.gd" id="1_xci8q"]
+
+[resource]
+script = ExtResource("1_xci8q")
+_class_restriction = &"Item"
+_uids_to_string_ids = Dictionary[StringName, StringName]({
+&"uid://4amkkv73m0lc": &"coin_purple",
+&"uid://7vy4rqrqnt4q": &"scroll_enchant",
+&"uid://b0l5g2tgwvm3b": &"potion_blue",
+&"uid://b45up1xg1qnlo": &"metalscrap_gold",
+&"uid://b8v7s14saov52": &"belt_2",
+&"uid://bwtgji4rkgc5": &"head_wizardhat",
+&"uid://cbrsfa22sudf5": &"potion_purple",
+&"uid://cfnofpkt060b1": &"chestplate_2",
+&"uid://cidvqmpxobgv7": &"melee_sword",
+&"uid://ckgvaqimbvnv8": &"wand_purple",
+&"uid://cqbrojgnmjvil": &"coin_gold",
+&"uid://crq178t8cp2g7": &"potion_red",
+&"uid://csj85mouew67r": &"feather",
+&"uid://ctmrs4u6u6kr6": &"chestplate_1",
+&"uid://d1sgj2djflire": &"ring_1",
+&"uid://d2vm3srqwars": &"metalscrap_copper",
+&"uid://d4eo3up2esgao": &"magic_crystal",
+&"uid://desvy1h36yy1s": &"metalscrap_wyvernite",
+&"uid://dmgt12il41ul7": &"head_helmet",
+&"uid://dwsqjeolbi2j6": &"ring_2",
+&"uid://dyb3w176j3sco": &"metalscrap_iron",
+&"uid://fdjsc6wqjovm": &"arrows",
+&"uid://fe82fgdtwfb2": &"belt_1",
+&"uid://ghiwkmadh0i": &"gem_blue",
+&"uid://napa4vmvmphs": &"wand_red",
+&"uid://okiwvbkwltf2": &"leather",
+&"uid://uge4rk0vtwxs": &"wood",
+&"uid://v7imonnsq6xx": &"herb",
+&"uid://vi43b1o26w60": &"melee_battleaxe"
+})
+_string_ids_to_uids = Dictionary[StringName, StringName]({
+&"arrows": &"uid://fdjsc6wqjovm",
+&"belt_1": &"uid://fe82fgdtwfb2",
+&"belt_2": &"uid://b8v7s14saov52",
+&"chestplate_1": &"uid://ctmrs4u6u6kr6",
+&"chestplate_2": &"uid://cfnofpkt060b1",
+&"coin_gold": &"uid://cqbrojgnmjvil",
+&"coin_purple": &"uid://4amkkv73m0lc",
+&"feather": &"uid://csj85mouew67r",
+&"gem_blue": &"uid://ghiwkmadh0i",
+&"head_helmet": &"uid://dmgt12il41ul7",
+&"head_wizardhat": &"uid://bwtgji4rkgc5",
+&"herb": &"uid://v7imonnsq6xx",
+&"leather": &"uid://okiwvbkwltf2",
+&"magic_crystal": &"uid://d4eo3up2esgao",
+&"melee_battleaxe": &"uid://vi43b1o26w60",
+&"melee_sword": &"uid://cidvqmpxobgv7",
+&"metalscrap_copper": &"uid://d2vm3srqwars",
+&"metalscrap_gold": &"uid://b45up1xg1qnlo",
+&"metalscrap_iron": &"uid://dyb3w176j3sco",
+&"metalscrap_wyvernite": &"uid://desvy1h36yy1s",
+&"potion_blue": &"uid://b0l5g2tgwvm3b",
+&"potion_purple": &"uid://cbrsfa22sudf5",
+&"potion_red": &"uid://crq178t8cp2g7",
+&"ring_1": &"uid://d1sgj2djflire",
+&"ring_2": &"uid://dwsqjeolbi2j6",
+&"scroll_enchant": &"uid://7vy4rqrqnt4q",
+&"wand_purple": &"uid://ckgvaqimbvnv8",
+&"wand_red": &"uid://napa4vmvmphs",
+&"wood": &"uid://uge4rk0vtwxs"
+})

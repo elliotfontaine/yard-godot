@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=3 format=3 uid="uid://ce2kulhm7amkp"]
+
+[ext_resource type="Texture2D" uid="uid://djjpa8lluue1g" path="res://example/Random Upgrades/icons/all_icons/all_icons_5.tres" id="1_we1lq"]
+[ext_resource type="Script" uid="uid://dal80o4tjrktw" path="res://example/Random Upgrades/upgrade_data.gd" id="2"]
+
+[resource]
+resource_name = "Upgrade: Magic"
+script = ExtResource("2")
+color1 = Color(1, 1, 1, 1)
+max_duplicates = 9
+tags = Array[String](["magic"])
+type = 1
+attributes = Array[int]([1])
+icon = ExtResource("1_we1lq")
+prerequisites = Array[ExtResource("2")]([])
+color2 = Color(0.188235, 0.45098, 0.901961, 1)
+base_weight = 10.0
+is_notable = false
+multiplier_per_tag = ""
+multiplier_if_tag_present = ""
+multiplier_if_tag_not_present = "magic 0"
+max_tags_present = ""
+list_item_delimeter = " "
+list_row_delimeter = "
+"
