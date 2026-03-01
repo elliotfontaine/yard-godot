@@ -1,0 +1,7 @@
+[gd_resource type="Resource" load_steps=3 format=3 uid="uid://b3lolnnlh808g"]
+
+[ext_resource type="Script" uid="uid://dal80o4tjrktw" path="res://test/fixtures/classes/upgrade_data.gd" id="1_ic3de"]
+[ext_resource type="Script" uid="uid://debq61hnidsro" path="res://test/fixtures/classes/upgrade_tool_data.gd" id="2_gn3j8"]
+
+[resource]
+script = ExtResource("2_gn3j8")

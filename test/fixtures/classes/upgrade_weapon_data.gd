@@ -1,4 +1,3 @@
-@tool
 extends "res://test/fixtures/classes/upgrade_data.gd"
 
 @export var weapon_damage := 0.0

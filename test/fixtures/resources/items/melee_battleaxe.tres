@@ -1,7 +1,7 @@
-[gd_resource type="Resource" load_steps=4 format=3 uid="uid://vi43b1o26w60"]
+[gd_resource type="Resource" script_class="Item" load_steps=4 format=3 uid="uid://vi43b1o26w60"]
 
-[ext_resource type="Script" uid="uid://h6p7lsxyhmyt" path="res://example/Items/item_type.gd" id="2"]
-[ext_resource type="Texture2D" uid="uid://dwi4ioxeauoc4" path="res://example/Items/item_icons/items.png" id="2_glg1x"]
+[ext_resource type="Script" uid="uid://h6p7lsxyhmyt" path="res://test/fixtures/classes/item_type.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://dwi4ioxeauoc4" path="res://test/fixtures/resources/items/item_icons/items.png" id="2_glg1x"]
 
 [sub_resource type="AtlasTexture" id="1"]
 atlas = ExtResource("2_glg1x")
@@ -11,8 +11,6 @@ region = Rect2(12, 72, 12, 48)
 script = ExtResource("2")
 name = "melee_battleaxe"
 description = "desc_melee_battleaxe"
-max_stack_count = 1
-in_inventory_width = 1
 in_inventory_height = 4
 texture = SubResource("1")
 slot_flags = 9
