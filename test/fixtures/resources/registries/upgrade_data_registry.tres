@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="Registry" load_steps=2 format=3 uid="uid://c3pfvwij5wsjc"]
+
+[ext_resource type="Script" uid="uid://dqtv77mng5dyh" path="res://addons/yard/registry.gd" id="1_jhhdw"]
+
+[resource]
+script = ExtResource("1_jhhdw")
+_class_restriction = &"UpgradeData"
+_scan_directory = "res://test/fixtures/resources/upgrades"
+_recursive_scan = true
+_uids_to_string_ids = Dictionary[StringName, StringName]({
+&"uid://2totlbwc40e8": &"mastery_magic",
+&"uid://2y7extlq12d5": &"up_aoe",
+&"uid://60buw33oe30f": &"weapon_chaos_blast",
+&"uid://8m6y2o6tbmpn": &"elemental",
+&"uid://b0kdw067vtgvn": &"weapon_lightning",
+&"uid://b3lolnnlh808g": &"tool_shovel",
+&"uid://b78jqcpgef2ud": &"weapon_axe",
+&"uid://bn0r0bvk8fylt": &"up_movement_speed",
+&"uid://c1mrcevxrm5kv": &"weapon_giga_sword",
+&"uid://c6hsg3j74vm56": &"up_strength",
+&"uid://ce2kulhm7amkp": &"up_magic",
+&"uid://cux4x0qopwiqk": &"weapon_dagger",
+&"uid://d1suh8iai43st": &"mastery_strength",
+&"uid://djqq1lqaevth5": &"weapon_blizzard",
+&"uid://dys7hpijn82t0": &"health",
+&"uid://rjxr4qtfc6qd": &"weapon_fireball",
+&"uid://xl0yx8uq6bfp": &"weapon_spear"
+})
+_string_ids_to_uids = Dictionary[StringName, StringName]({
+&"elemental": &"uid://8m6y2o6tbmpn",
+&"health": &"uid://dys7hpijn82t0",
+&"mastery_magic": &"uid://2totlbwc40e8",
+&"mastery_strength": &"uid://d1suh8iai43st",
+&"tool_shovel": &"uid://b3lolnnlh808g",
+&"up_aoe": &"uid://2y7extlq12d5",
+&"up_magic": &"uid://ce2kulhm7amkp",
+&"up_movement_speed": &"uid://bn0r0bvk8fylt",
+&"up_strength": &"uid://c6hsg3j74vm56",
+&"weapon_axe": &"uid://b78jqcpgef2ud",
+&"weapon_blizzard": &"uid://djqq1lqaevth5",
+&"weapon_chaos_blast": &"uid://60buw33oe30f",
+&"weapon_dagger": &"uid://cux4x0qopwiqk",
+&"weapon_fireball": &"uid://rjxr4qtfc6qd",
+&"weapon_giga_sword": &"uid://c1mrcevxrm5kv",
+&"weapon_lightning": &"uid://b0kdw067vtgvn",
+&"weapon_spear": &"uid://xl0yx8uq6bfp"
+})

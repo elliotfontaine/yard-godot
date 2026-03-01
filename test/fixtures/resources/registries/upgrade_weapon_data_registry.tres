@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="Registry" load_steps=2 format=3 uid="uid://ccr1wvuukgpea"]
+
+[ext_resource type="Script" uid="uid://dqtv77mng5dyh" path="res://addons/yard/registry.gd" id="1_cqwsc"]
+
+[resource]
+script = ExtResource("1_cqwsc")
+_class_restriction = &"\"res://test/fixtures/classes/upgrade_weapon_data.gd\""
+_scan_directory = "res://test/fixtures/resources/upgrades/weapons"
+_recursive_scan = true
+_uids_to_string_ids = Dictionary[StringName, StringName]({
+&"uid://60buw33oe30f": &"weapon_chaos_blast",
+&"uid://b0kdw067vtgvn": &"weapon_lightning",
+&"uid://b78jqcpgef2ud": &"weapon_axe",
+&"uid://c1mrcevxrm5kv": &"weapon_giga_sword",
+&"uid://cux4x0qopwiqk": &"weapon_dagger",
+&"uid://djqq1lqaevth5": &"weapon_blizzard",
+&"uid://rjxr4qtfc6qd": &"weapon_fireball",
+&"uid://xl0yx8uq6bfp": &"weapon_spear"
+})
+_string_ids_to_uids = Dictionary[StringName, StringName]({
+&"weapon_axe": &"uid://b78jqcpgef2ud",
+&"weapon_blizzard": &"uid://djqq1lqaevth5",
+&"weapon_chaos_blast": &"uid://60buw33oe30f",
+&"weapon_dagger": &"uid://cux4x0qopwiqk",
+&"weapon_fireball": &"uid://rjxr4qtfc6qd",
+&"weapon_giga_sword": &"uid://c1mrcevxrm5kv",
+&"weapon_lightning": &"uid://b0kdw067vtgvn",
+&"weapon_spear": &"uid://xl0yx8uq6bfp"
+})
