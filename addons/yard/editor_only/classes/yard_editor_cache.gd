@@ -1,6 +1,9 @@
 @tool
 extends Object
 
+const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const RegistryIO := Namespace.RegistryIO
+
 const _BASE_DIR := "res://.godot/plugins/yard/"
 
 
@@ -95,10 +98,18 @@ class EditorStateData:
 	func save() -> Error:
 		var cfg := ConfigFile.new()
 		cfg.set_value(_SECTION_GENERAL, "version", version)
-		cfg.set_value(_SECTION_RECENT, "uids", recent_registry_uids)
-		cfg.set_value(_SECTION_OPENED, "uids", opened_registries.keys())
+		cfg.set_value(_SECTION_RECENT, "uids", recent_registry_uids.filter(RegistryIO.is_uid_valid))
+		cfg.set_value(_SECTION_OPENED, "uids", opened_registries.keys().filter(RegistryIO.is_uid_valid))
 		DirAccess.make_dir_recursive_absolute(_BASE_DIR)
 		return cfg.save(_STATE_FILE)
+
+
+	func save_and_reload() -> EditorStateData:
+		var err := save()
+		if err == OK:
+			return load_or_default()
+		else:
+			return self
 
 
 	static func load_or_default() -> EditorStateData:
@@ -115,9 +126,10 @@ class EditorStateData:
 			data.save()
 			return data
 
-		var raw: Array = cfg.get_value(_SECTION_RECENT, "uids", [])
-		data.recent_registry_uids.assign(raw)
+		var raw_recent: Array = cfg.get_value(_SECTION_RECENT, "uids", [])
+		data.recent_registry_uids.assign(raw_recent.filter(RegistryIO.is_uid_valid))
 		var raw_opened: Array = cfg.get_value(_SECTION_OPENED, "uids", [])
+		raw_opened = raw_opened.filter(RegistryIO.is_uid_valid)
 		for uid: String in raw_opened:
 			var path := ResourceUID.get_id_path(ResourceUID.text_to_id(uid))
 			if path.is_empty():

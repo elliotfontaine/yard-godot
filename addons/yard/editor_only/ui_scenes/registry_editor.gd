@@ -110,7 +110,7 @@ func open_registry(registry: Registry) -> void:
 
 	if uid not in _editor_state_data.opened_registries:
 		_editor_state_data.opened_registries[uid] = registry
-		_editor_state_data.save()
+		_editor_state_data = _editor_state_data.save_and_reload()
 	_update_registries_itemlist()
 	_editor_state_data.add_recent(registry)
 	select_registry(uid)
@@ -120,7 +120,7 @@ func open_registry(registry: Registry) -> void:
 func close_registry(uid: String) -> void:
 	assert(_editor_state_data.opened_registries.has(uid))
 	_editor_state_data.opened_registries.erase(uid)
-	_editor_state_data.save()
+	_editor_state_data = _editor_state_data.save_and_reload()
 
 	# TODO: save accept dialog if unsaved changes to resource
 	if _editor_state_data.opened_registries.is_empty():
@@ -240,6 +240,7 @@ func _update_registries_itemlist() -> void:
 		registries_itemlist.set_block_signals(false)
 		return
 
+	_editor_state_data = _editor_state_data.save_and_reload()
 	var all_uids: Array[String] = _editor_state_data.opened_registries.keys()
 
 	# Determine which uids to show using fuzzy search, based on LineEdit filter.
@@ -512,7 +513,7 @@ func _do_file_menu_action(action_id: int) -> void:
 				return
 			for idx in range(_session_closed_uids.size() - 1, -1, -1):
 				var uid := _session_closed_uids[idx]
-				if ResourceUID.has_id(ResourceUID.text_to_id(uid)):
+				if RegistryIO.is_uid_valid(uid):
 					_session_closed_uids.remove_at(idx)
 					open_registry(load(uid))
 					return
@@ -569,7 +570,7 @@ func _reorder_opened_registries_move(uid: String, delta: int) -> bool:
 	for k in keys:
 		reordered[k] = _editor_state_data.opened_registries[k]
 	_editor_state_data.opened_registries = reordered
-	_editor_state_data.save()
+	_editor_state_data = _editor_state_data.save_and_reload()
 	return true
 
 
@@ -584,7 +585,7 @@ func _sort_opened_registries_by_filename() -> void:
 	for uid in keys:
 		sorted[uid] = _editor_state_data.opened_registries[uid]
 	_editor_state_data.opened_registries = sorted
-	_editor_state_data.save()
+	_editor_state_data = _editor_state_data.save_and_reload()
 
 
 func _close_other_tabs(uid: String) -> void:

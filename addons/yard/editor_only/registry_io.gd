@@ -403,6 +403,10 @@ static func unquote(string: String) -> String:
 	return string.substr(1, string.length() - 2)
 
 
+static func is_uid_valid(uid: String) -> bool:
+	return ResourceUID.has_id(ResourceUID.text_to_id(uid))
+
+
 static func _make_string_unique(registry: Registry, string_id: String) -> String:
 	if not string_id in registry._string_ids_to_uids:
 		return string_id
