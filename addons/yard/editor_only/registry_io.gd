@@ -13,7 +13,7 @@ static func create_registry_file(
 		class_restriction: String = "",
 		scan_dir: String = "",
 		recursive: bool = false,
-		edit_on_creation: bool = false,
+		indexed_props: String = "",
 ) -> Error:
 	path = path.strip_edges()
 
@@ -35,11 +35,13 @@ static func create_registry_file(
 	registry._scan_directory = scan_dir
 	registry._recursive_scan = recursive
 
+	var props: Array[StringName] = []
+	for p: String in indexed_props.split(",", false):
+		props.append(StringName(p.strip_edges()))
+	_replace_indexed_properties_list(registry, props)
+
 	var save_err := ResourceSaver.save(registry, path, ResourceSaver.FLAG_CHANGE_PATH)
 	EditorInterface.get_resource_filesystem().scan()
-
-	if edit_on_creation and save_err == OK:
-		_edit_new_after_delay(path, 0.5)
 
 	return save_err
 
@@ -401,11 +403,6 @@ static func unquote(string: String) -> String:
 	return string.substr(1, string.length() - 2)
 
 
-static func _edit_new_after_delay(path: String, delay: float) -> void:
-	await Engine.get_main_loop().create_timer(delay).timeout
-	EditorInterface.edit_resource(load(path))
-
-
 static func _make_string_unique(registry: Registry, string_id: String) -> String:
 	if not string_id in registry._string_ids_to_uids:
 		return string_id
@@ -427,7 +424,7 @@ static func _make_string_unique(registry: Registry, string_id: String) -> String
 ## Properties currently indexed but absent from [param properties] are removed.
 ## Existing index data for kept properties is preserved. Call
 ## [method rebuild_property_index] afterwards to refresh values.
-static func _replace_indexed_properties_list(registry: Registry, properties: Array[StringName]) -> Error:
+static func _replace_indexed_properties_list(registry: Registry, properties: Array[StringName]) -> void:
 	var target := { }
 	for p in properties:
 		target[p] = true
@@ -439,5 +436,3 @@ static func _replace_indexed_properties_list(registry: Registry, properties: Arr
 	for p in properties:
 		if not registry._property_index.has(p):
 			registry._property_index[p] = { }
-
-	return ResourceSaver.save(registry)

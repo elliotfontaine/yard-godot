@@ -272,16 +272,20 @@ func _on_confirmed() -> void:
 	match _state:
 		RegistryDialogState.NEW_REGISTRY:
 			hide()
+			var registry_path := registry_path_line_edit.text.strip_edges()
 			var err := RegistryIO.create_registry_file(
-				registry_path_line_edit.text.strip_edges(),
+				registry_path,
 				class_restriction_line_edit.text.strip_edges(),
 				scan_directory_line_edit.text.strip_edges(),
 				recursive_scan_check_box.button_pressed,
-				true,
+				indexed_properties_line_edit.text.strip_edges(),
 			)
 			if err != OK:
 				print_debug(error_string(err))
-			err = RegistryIO.rebuild_property_index(edited_registry)
+				return
+			var new_registry: Registry = load(registry_path)
+			EditorInterface.edit_resource(new_registry)
+			err = RegistryIO.rebuild_property_index(new_registry)
 			if err != OK:
 				print_debug(error_string(err))
 		RegistryDialogState.REGISTRY_SETTINGS:

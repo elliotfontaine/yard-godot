@@ -47,7 +47,7 @@ extends Resource
 @export_storage var _uids_to_string_ids: Dictionary[StringName, StringName]
 @export_storage var _string_ids_to_uids: Dictionary[StringName, StringName]
 # Baked property index: property -> value -> set of resources string IDs.
-@export_storage var _property_index: Dictionary[StringName, Dictionary]
+@export_storage var _property_index: Dictionary[StringName, Dictionary] = { }
 
 
 func _init() -> void:
