@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_cqwsc")
 _class_restriction = &"\"res://test/fixtures/classes/upgrade_weapon_data.gd\""
-_scan_directory = "res://test/fixtures/resources/upgrades/weapons"
+_scan_directory = "res://test/fixtures/resources/upgrades"
 _recursive_scan = true
 _uids_to_string_ids = Dictionary[StringName, StringName]({
 &"uid://60buw33oe30f": &"weapon_chaos_blast",

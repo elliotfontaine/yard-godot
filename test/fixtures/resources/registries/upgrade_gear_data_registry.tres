@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_f308b")
 _class_restriction = &"UpgradeGearData"
+_scan_directory = "res://test/fixtures/resources/upgrades/gear"
 _uids_to_string_ids = Dictionary[StringName, StringName]({
 &"uid://b0ovvabrhde26": &"fire_protection"
 })

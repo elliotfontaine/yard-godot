@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_xci8q")
 _class_restriction = &"Item"
+_scan_directory = "res://test/fixtures/resources/items"
 _uids_to_string_ids = Dictionary[StringName, StringName]({
 &"uid://4amkkv73m0lc": &"coin_purple",
 &"uid://7vy4rqrqnt4q": &"scroll_enchant",

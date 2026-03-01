@@ -35,6 +35,11 @@ class TestTypeName extends GutTest:
 		assert_eq(ClassUtils.get_type_name(UPGRADE_GEAR_DATA_SCRIPT), &"UpgradeGearData")
 
 
+class TestScriptInheritance extends GutTest:
+	func test_assert_eq():
+		assert_has(ClassUtils.get_script_inheritance_list(UpgradeWeaponData), UpgradeData)
+
+
 class TestInheritance extends GutTest:
 	func test_assert_true_resource_is_resource():
 		assert_true(ClassUtils.is_class_of("Resource", "Resource"))
