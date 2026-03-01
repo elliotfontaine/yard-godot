@@ -71,6 +71,17 @@ static func get_inheritance_list(class_type: Variant, include_self: bool = false
 	return inheritance_list
 
 
+static func get_script_inheritance_list(script: Script, include_self: bool = false) -> Array[Script]:
+	var result: Array[Script] = []
+	var current: Script = script.get_base_script() if not include_self else script
+
+	while current:
+		result.append(current)
+		current = current.get_base_script()
+
+	return result
+
+
 ## Returns the type name of any given type or it's instance.
 ## [br][br][param obj]: Accepts anything other than built-in Variant types directly.
 ## [br] This includes Native Classes, user-defined Scripts,

@@ -343,14 +343,16 @@ static func is_resource_matching_restriction(
 		return true
 
 	if is_quoted_string(restriction):
-		var script_path := unquote(restriction)
-		if not ResourceLoader.exists(script_path):
-			return false
-		var restriction_script := load(script_path) as Script
-		if restriction_script == null:
+		var restriction_script_path := unquote(restriction)
+		var resource_script: Script = res.get_script()
+		if not resource_script or not ResourceLoader.exists(restriction_script_path):
 			return false
 
-		return ClassUtils.is_class_of(res, restriction_script)
+		var restriction_script := load(restriction_script_path) as Script
+		if not restriction_script:
+			return false
+
+		return restriction_script in ClassUtils.get_script_inheritance_list(resource_script, true)
 
 	else:
 		return ClassUtils.is_class_of(res, restriction)
