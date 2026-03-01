@@ -1,6 +1,9 @@
 @tool
 extends Object
 
+const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const ClassUtils := Namespace.ClassUtils
+
 const REGISTRY_FILE_EXTENSIONS := ["tres"]
 const LOGGING_INFO_COLOR := "lightslategray"
 
@@ -324,86 +327,76 @@ static func is_valid_registry_output_path(path: String) -> bool:
 	return DirAccess.dir_exists_absolute(dir_abs)
 
 
-static func is_resource_matching_restriction(registry: Registry, res: Resource, alt_restriction: StringName = &"") -> bool:
-	# TODO: refactor using the new Class Utils script
+## Returns true if [param res] matches the registry's class restriction (or [param alt_restriction]).
+## Handles native classes, named scripts (class_name), and unnamed scripts (quoted path).
+## Subclasses of the restriction are accepted.
+static func is_resource_matching_restriction(
+		registry: Registry,
+		res: Resource,
+		alt_restriction: StringName = &"",
+) -> bool:
 	if res == null:
 		return false
-	#if valid_classes.is_empty():
-	#return true
-	if not registry._class_restriction and not alt_restriction:
+
+	var restriction := String(alt_restriction if alt_restriction else registry._class_restriction)
+	if restriction.is_empty():
 		return true
 
-	var class_restriction: StringName = alt_restriction if alt_restriction else registry._class_restriction
-	var class_stringname: StringName
-	var res_script: Script = res.get_script()
-	if res_script != null:
-		var global_name := StringName(res_script.get_global_name())
-		if not global_name.is_empty():
-			class_stringname = global_name
-		else:
-			class_stringname = StringName(res.get_class())
+	if is_quoted_string(restriction):
+		var script_path := unquote(restriction)
+		if not ResourceLoader.exists(script_path):
+			return false
+		var restriction_script := load(script_path) as Script
+		if restriction_script == null:
+			return false
+
+		return ClassUtils.is_class_of(res, restriction_script)
+
 	else:
-		class_stringname = StringName(res.get_class())
-
-	#for valid_class in valid_classes:
-	if class_stringname == class_restriction:
-		return true
-	if res.is_class(String(class_restriction)):
-		return true
-	if ClassDB.is_parent_class(String(class_stringname), String(class_restriction)):
-		return true
-
-	return false
+		return ClassUtils.is_class_of(res, restriction)
 
 
+## Returns true if [param class_string] names a valid Resource subclass.[br]
+## Accepts native class names, script class_names, and quoted script paths.
 static func is_resource_class_string(class_string: String) -> bool:
-	class_string.strip_edges()
+	class_string = class_string.strip_edges()
 	if class_string.is_empty():
 		return false
 
 	if is_quoted_string(class_string):
-		class_string = class_string.substr(1, class_string.length() - 2)
-		if not ResourceLoader.exists(class_string):
+		var path := unquote(class_string)
+		if not ResourceLoader.exists(path):
 			return false
-
-		var res := load(class_string)
-		if res == null or not (res is Script):
+		var script := load(path) as Script
+		if script == null:
 			return false
-
-		var script := res as Script
-		var base_type: StringName = script.get_instance_base_type()
-		return base_type == &"Resource" or ClassDB.is_parent_class(base_type, &"Resource")
-
-	if ClassDB.class_exists(class_string):
-		return class_string == "Resource" or ClassDB.is_parent_class(class_string, &"Resource")
-
-	for info: Dictionary in ProjectSettings.get_global_class_list():
-		if info.get("class", "") == class_string:
-			var base := StringName(info.get("base", ""))
-			return base == &"Resource" or ClassDB.is_parent_class(base, &"Resource")
-
-	return false
+		return ClassUtils.is_class_of(script, "Resource")
+	else:
+		return ClassUtils.is_class_of(class_string, "Resource")
 
 
 static func would_erase_entries(registry: Registry, new_restriction: String) -> bool:
 	for uid: StringName in registry.get_all_uids():
 		if not ResourceLoader.exists(uid):
 			continue
-		var is_valid := is_resource_matching_restriction(registry, load(uid), new_restriction)
-		if not is_valid:
+		if not is_resource_matching_restriction(registry, load(uid), new_restriction):
 			return true
-
 	return false
 
 
+## Returns true if [param string] is wrapped in matching single or double quotes.
 static func is_quoted_string(string: String) -> bool:
 	if string.length() < 2:
 		return false
-
 	var first := string[0]
 	var last := string[-1]
-
 	return (first == "\"" and last == "\"") or (first == "'" and last == "'")
+
+
+## Strips the surrounding quotes from a quoted string.
+## Call [method is_quoted_string] first to ensure the input is valid.
+static func unquote(string: String) -> String:
+	return string.substr(1, string.length() - 2)
 
 
 static func _edit_new_after_delay(path: String, delay: float) -> void:

@@ -118,7 +118,7 @@ func _validate_fields() -> void:
 	elif is_class_valid:
 		# TODO: Fix icon size in Godot 4.6 — https://github.com/godotengine/godot/pull/95817
 		class_restriction_line_edit.right_icon = (
-			AnyIcon.get_script_icon(load(class_string.remove_chars("'\"")))
+			AnyIcon.get_script_icon(load(RegistryIO.unquote(class_string)))
 			if RegistryIO.is_quoted_string(class_string)
 			else AnyIcon.get_class_icon(class_string)
 		)
@@ -183,7 +183,7 @@ func _invalidate(info_messages: Array[Array], key: StringName) -> void:
 
 func _get_class_property_names(class_string: String) -> Array:
 	if RegistryIO.is_quoted_string(class_string):
-		return ClassUtils.get_class_property_names(load(class_string.remove_chars("'\"")))
+		return ClassUtils.get_class_property_names(load(RegistryIO.unquote(class_string)))
 	return ClassUtils.get_class_property_names(class_string)
 
 
@@ -209,7 +209,7 @@ func _open_file_dialog_as_class_restriction() -> void:
 	_file_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
 	var restriction := class_restriction_line_edit.text
 	if not restriction.is_empty() and RegistryIO.is_quoted_string(restriction):
-		var path := restriction.substr(1, restriction.length() - 2)
+		var path := RegistryIO.unquote(restriction)
 		_file_dialog.current_dir = path.get_base_dir()
 		_file_dialog.current_path = path.get_file()
 	else:

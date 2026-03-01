@@ -90,6 +90,10 @@ static func get_type_name(obj: Variant) -> String:
 					class_type_name = inner_script["class"]
 					break
 
+		if class_type_name.is_empty() and obj.get_base_script():
+			# recursion until we get a global name or hit a built-in class
+			class_type_name = get_type_name(obj.get_base_script())
+
 		if class_type_name.is_empty():
 			class_type_name = obj.get_class()
 
@@ -157,7 +161,7 @@ static func get_type_unsafe(classname: String) -> Object:
 ## [br][br]Both parameters accept String names, instances and types of Scripts or Native Classes.
 static func is_class_of(class_type: Variant, base_class_type: Variant) -> bool:
 	var class_type_name: String
-	if class_type is String:
+	if class_type is String or class_type is StringName:
 		class_type_name = class_type
 	elif class_type is Object:
 		class_type_name = get_type_name(class_type)
@@ -165,7 +169,7 @@ static func is_class_of(class_type: Variant, base_class_type: Variant) -> bool:
 		return false
 
 	var base_class_type_name := ""
-	if base_class_type is String:
+	if base_class_type is String or base_class_type is StringName:
 		base_class_type_name = base_class_type
 	elif base_class_type is Object:
 		base_class_type_name = get_type_name(base_class_type)
