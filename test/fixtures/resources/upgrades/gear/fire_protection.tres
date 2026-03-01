@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="UpgradeGearData" load_steps=3 format=3 uid="uid://b0ovvabrhde26"]
+
+[ext_resource type="Script" uid="uid://dal80o4tjrktw" path="res://test/fixtures/classes/upgrade_data.gd" id="1_lgdse"]
+[ext_resource type="Script" uid="uid://cepmbq60ss420" path="res://test/fixtures/classes/upgrade_gear_data.gd" id="2_xa1pd"]
+
+[resource]
+script = ExtResource("2_xa1pd")
+protection_level = 3
+color1 = Color(0.8802083, 0.63200504, 0.15816243, 1)
+type = 1
+color2 = Color(1, 0.61222285, 1, 1)
+metadata/_custom_type_script = "uid://cepmbq60ss420"

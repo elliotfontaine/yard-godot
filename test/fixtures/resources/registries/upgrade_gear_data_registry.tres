@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="Registry" load_steps=2 format=3 uid="uid://dondnw7tk5hjc"]
+
+[ext_resource type="Script" uid="uid://dqtv77mng5dyh" path="res://addons/yard/registry.gd" id="1_f308b"]
+
+[resource]
+script = ExtResource("1_f308b")
+_class_restriction = &"UpgradeGearData"
+_uids_to_string_ids = Dictionary[StringName, StringName]({
+&"uid://b0ovvabrhde26": &"fire_protection"
+})
+_string_ids_to_uids = Dictionary[StringName, StringName]({
+&"fire_protection": &"uid://b0ovvabrhde26"
+})

@@ -13,6 +13,7 @@ _uids_to_string_ids = Dictionary[StringName, StringName]({
 &"uid://60buw33oe30f": &"weapon_chaos_blast",
 &"uid://8m6y2o6tbmpn": &"elemental",
 &"uid://b0kdw067vtgvn": &"weapon_lightning",
+&"uid://b0ovvabrhde26": &"fire_protection",
 &"uid://b3lolnnlh808g": &"tool_shovel",
 &"uid://b78jqcpgef2ud": &"weapon_axe",
 &"uid://bn0r0bvk8fylt": &"up_movement_speed",
@@ -28,6 +29,7 @@ _uids_to_string_ids = Dictionary[StringName, StringName]({
 })
 _string_ids_to_uids = Dictionary[StringName, StringName]({
 &"elemental": &"uid://8m6y2o6tbmpn",
+&"fire_protection": &"uid://b0ovvabrhde26",
 &"health": &"uid://dys7hpijn82t0",
 &"mastery_magic": &"uid://2totlbwc40e8",
 &"mastery_strength": &"uid://d1suh8iai43st",
