@@ -5,6 +5,7 @@ addons/resources_spreadsheet_view
 addons/resource_databases
 addons/zylann.editor_debugger
 addons/GDQuest_GDScript_formatter
+addons/gut
 example
 
 # Godot 4+ specific ignores
