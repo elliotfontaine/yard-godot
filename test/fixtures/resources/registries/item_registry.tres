@@ -68,3 +68,54 @@ _string_ids_to_uids = Dictionary[StringName, StringName]({
 &"wand_red": &"uid://napa4vmvmphs",
 &"wood": &"uid://uge4rk0vtwxs"
 })
+_property_index = Dictionary[StringName, Dictionary]({
+&"slot_flags": {
+4: {
+&"potion_blue": true,
+&"potion_purple": true,
+&"potion_red": true
+},
+5: {
+&"arrows": true
+},
+6: {
+&"coin_gold": true,
+&"coin_purple": true,
+&"scroll_enchant": true
+},
+8: {
+&"feather": true,
+&"gem_blue": true,
+&"herb": true,
+&"leather": true,
+&"magic_crystal": true,
+&"metalscrap_copper": true,
+&"metalscrap_gold": true,
+&"metalscrap_iron": true,
+&"metalscrap_wyvernite": true,
+&"wood": true
+},
+9: {
+&"melee_battleaxe": true,
+&"melee_sword": true,
+&"wand_purple": true,
+&"wand_red": true
+},
+11: {
+&"head_helmet": true,
+&"head_wizardhat": true
+},
+12: {
+&"chestplate_1": true,
+&"chestplate_2": true
+},
+13: {
+&"belt_1": true,
+&"belt_2": true
+},
+16: {
+&"ring_1": true,
+&"ring_2": true
+}
+}
+})
