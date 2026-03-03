@@ -92,7 +92,7 @@ static func get_type_name(obj: Variant) -> String:
 	if (obj is Node or obj is Resource) and obj.get_script():
 		obj = obj.get_script()
 
-	if obj is GDScript:
+	if obj is Script:
 		if is_engine_version_equal_or_newer(4, 3):
 			class_type_name = obj.get_global_name()
 		else:
@@ -212,8 +212,9 @@ static func is_native(class_type: Variant) -> bool:
 static func is_script(script: Variant) -> bool:
 	var script_name: String
 
-	if script is GDScript:
+	if script is Script:
 		return true
+
 	elif script is String:
 		script_name = script
 
@@ -246,9 +247,9 @@ static func get_class_property_names(class_type: Variant) -> Array[String]:
 				prop_names.append(p.name)
 
 	elif is_script(class_type):
-		var obj: GDScript = class_type if class_type is GDScript else get_type(class_type)
-		if obj is GDScript:
-			var script := obj as GDScript
+		var obj: Script = class_type if class_type is Script else get_type(class_type)
+		if obj is Script:
+			var script := obj as Script
 			var script_props := script.get_script_property_list()
 			#print(script_props)
 			for p in script_props:
