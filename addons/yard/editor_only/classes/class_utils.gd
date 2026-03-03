@@ -92,23 +92,7 @@ static func get_type_name(obj: Variant) -> String:
 	if (obj is Node or obj is Resource) and obj.get_script():
 		obj = obj.get_script()
 
-	if obj is GDScript:
-		if is_engine_version_equal_or_newer(4, 3):
-			class_type_name = obj.get_global_name()
-		else:
-			for inner_script in ProjectSettings.get_global_class_list():
-				if inner_script["path"] == obj.resource_path:
-					class_type_name = inner_script["class"]
-					break
-
-		if class_type_name.is_empty() and obj.get_base_script():
-			# recursion until we get a global name or hit a built-in class
-			class_type_name = get_type_name(obj.get_base_script())
-
-		if class_type_name.is_empty():
-			class_type_name = obj.get_class()
-
-	elif obj is CSharpScript:
+	if obj is Script:
 		if is_engine_version_equal_or_newer(4, 3):
 			class_type_name = obj.get_global_name()
 		else:
@@ -228,10 +212,9 @@ static func is_native(class_type: Variant) -> bool:
 static func is_script(script: Variant) -> bool:
 	var script_name: String
 
-	if script is GDScript:
+	if script is Script:
 		return true
-	elif script is CSharpScript:
-		return true
+
 	elif script is String:
 		script_name = script
 
@@ -264,24 +247,9 @@ static func get_class_property_names(class_type: Variant) -> Array[String]:
 				prop_names.append(p.name)
 
 	elif is_script(class_type):
-		var obj: CSharpScript = class_type if class_type is CSharpScript else get_type(class_type)
-		if obj is CSharpScript:
-			var script := obj as CSharpScript
-			var script_props := script.get_script_property_list()
-			#print(script_props)
-			for p in script_props:
-				if not p.name.is_empty() and not p.type == TYPE_NIL:
-					prop_names.append(p.name)
-
-		var props := obj.get_property_list()
-		for p in props:
-			if not p.name.is_empty() and not p.type == TYPE_NIL:
-				prop_names.append(p.name)
-
-	elif is_script(class_type):
-		var obj: GDScript = class_type if class_type is GDScript else get_type(class_type)
-		if obj is GDScript:
-			var script := obj as GDScript
+		var obj: Script = class_type if class_type is Script else get_type(class_type)
+		if obj is Script:
+			var script := obj as Script
 			var script_props := script.get_script_property_list()
 			#print(script_props)
 			for p in script_props:
