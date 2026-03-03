@@ -108,7 +108,7 @@ static func get_type_name(obj: Variant) -> String:
 		if class_type_name.is_empty():
 			class_type_name = obj.get_class()
 
-	if obj is CSharpScript:
+	elif obj is CSharpScript:
 		if is_engine_version_equal_or_newer(4, 3):
 			class_type_name = obj.get_global_name()
 		else:
@@ -230,7 +230,7 @@ static func is_script(script: Variant) -> bool:
 
 	if script is GDScript:
 		return true
-	if script is CSharpScript:
+	elif script is CSharpScript:
 		return true
 	elif script is String:
 		script_name = script
