@@ -305,12 +305,21 @@ func _on_class_restriction_line_edit_text_changed(_new_text: String) -> void:
 
 
 func _on_class_list_dialog_button_pressed() -> void:
-	print_rich("Please upvote the following proposal to see it implemented :")
-	print_rich(
-		"[color=SKY_BLUE][url]",
-		"https://github.com/godotengine/godot-proposals/discussions/14041",
-		"[/url][/color]",
+	exclusive = false
+	var class_restriction := class_restriction_line_edit.text
+	EditorInterface.popup_create_dialog(
+		_on_class_list_dialog_confirmed,
+		&"Resource",
+		class_restriction,
+		"Choose Class Restriction",
 	)
+
+
+func _on_class_list_dialog_confirmed(type_name: StringName) -> void:
+	exclusive = true
+	if type_name:
+		class_restriction_line_edit.text = type_name
+		_validate_fields()
 
 
 func _on_class_filesystem_button_pressed() -> void:
