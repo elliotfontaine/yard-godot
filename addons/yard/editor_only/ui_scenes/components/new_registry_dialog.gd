@@ -18,7 +18,7 @@ const ERROR_COLOR = Color(1, 0.47, 0.42)
 const INFO_MESSAGES: Dictionary[StringName, Array] = {
 	# --- Class restriction ---
 	&"class_valid": ["Class/script is a Resource subclass.", SUCCESS_COLOR],
-	&"class_invalid": ["Invalid class/script. Expected a Resource subclass (built-in, class_name, or script path).", ERROR_COLOR],
+	&"class_invalid": ["Invalid class/script. Expected a Resource subclass (built-in, class_name, or [u]quoted[/u] script path).", ERROR_COLOR],
 	&"class_empty": ["No class filter, all Resource files will be accepted to the registry.", WARNING_COLOR],
 
 	# --- Scan directory ---
