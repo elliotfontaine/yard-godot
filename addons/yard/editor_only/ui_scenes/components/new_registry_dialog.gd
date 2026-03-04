@@ -318,8 +318,7 @@ func _on_class_list_dialog_button_pressed() -> void:
 func _on_class_list_dialog_confirmed(type_name: StringName) -> void:
 	exclusive = true
 	if type_name:
-		var type_nameFile = type_name.get_basename().get_file()
-		class_restriction_line_edit.text = type_nameFile
+		class_restriction_line_edit.text = "\"" + type_name + "\""
 		_validate_fields()
 
 
