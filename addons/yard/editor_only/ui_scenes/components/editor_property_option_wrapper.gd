@@ -1,8 +1,6 @@
 ## Source: String Wrangler
 ## Created by Matthew Janes (IndieGameDad) - MIT 2025
 
-## Editor wrapper for OptionButton controls used in suffix-handled dropdowns.
-## Handles value sync between editor property and selected item.
 @tool
 extends EditorProperty
 
@@ -47,16 +45,12 @@ func _on_option_selected(index: int) -> void:
 	emit_changed(get_edited_property(), value)
 
 
-## Description: Synchronizes the dropdown selection with the property value.
-## Usage: Internal only — matches selected index to current property state.
-func _refresh_value() -> void:
+func _update_property() -> void:
 	var current: String = get_edited_object().get(get_edited_property())
-	var selected_idx: int = 0
 
 	for i in range(inner_control.item_count):
 		if inner_control.get_item_text(i) == current:
-			selected_idx = i
+			inner_control.select(i)
 			break
 
-	inner_control.select(selected_idx)
-	inner_control.text = inner_control.get_item_text(selected_idx)
+	inner_control.text = current
