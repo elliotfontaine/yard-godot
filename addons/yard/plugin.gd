@@ -3,9 +3,10 @@ extends EditorPlugin
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const RegistryEditor := Namespace.RegistryEditor
-const REGISTRY_EDITOR_SCENE = Namespace.REGISTRY_EDITOR_SCENE
-const TRANSLATION_DOMAIN = Namespace.TRANSLATION_DOMAIN
-const FILESYSTEM_CREATE_CONTEXT_MENU_PLUGIN = Namespace.FILESYSTEM_CREATE_CONTEXT_MENU_PLUGIN
+const REGISTRY_EDITOR_SCENE := Namespace.REGISTRY_EDITOR_SCENE
+const TRANSLATION_DOMAIN := Namespace.TRANSLATION_DOMAIN
+const FILESYSTEM_CREATE_CONTEXT_MENU_PLUGIN := Namespace.FILESYSTEM_CREATE_CONTEXT_MENU_PLUGIN
+const EDITOR_INSPECTOR_PLUGIN := Namespace.EDITOR_INSPECTOR_PLUGIN
 
 var _registry_editor: RegistryEditor
 var _filesystem_create_context_menu_plugin: EditorContextMenuPlugin
@@ -21,6 +22,8 @@ func _enter_tree() -> void:
 
 	_filesystem_create_context_menu_plugin = FILESYSTEM_CREATE_CONTEXT_MENU_PLUGIN.new(_filesystem_create_context_menu_plugin_callback)
 	add_context_menu_plugin(EditorContextMenuPlugin.CONTEXT_SLOT_FILESYSTEM_CREATE, _filesystem_create_context_menu_plugin)
+
+	add_inspector_plugin(EDITOR_INSPECTOR_PLUGIN.new())
 
 	_registry_editor = REGISTRY_EDITOR_SCENE.instantiate()
 	EditorInterface.get_editor_main_screen().add_child(_registry_editor)
