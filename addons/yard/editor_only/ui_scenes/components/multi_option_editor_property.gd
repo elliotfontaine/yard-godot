@@ -145,11 +145,11 @@ func _build_row(index: int) -> void:
 
 	dropdown.item_selected.connect(
 		func(i: int) -> void:
-			var selected: String = available_options[i]
-			if selected in selected_options and selected_options[index] != selected:
+			var selected_value: String = available_options[i]
+			if not include_duplicates and selected_value in selected_options and selected_options[index] != selected_value:
 				dropdown.select(available_options.find(selected_options[index]))
 				return
-			selected_options[index] = selected
+			selected_options[index] = selected_value
 			_emit_changed()
 			call_deferred(&"_refresh")
 	)
@@ -174,10 +174,9 @@ func _build_row(index: int) -> void:
 ## Used to serialize the current dropdown values to the target resource.
 func _emit_changed() -> void:
 	if element_type == TYPE_STRING_NAME:
-		var result: Array[StringName] = []
-		for s in selected_options:
-			result.append(StringName(s))
-		emit_changed(get_edited_property(), result)
+		var type_converted: Array[StringName] = []
+		type_converted.assign(selected_options)
+		emit_changed(get_edited_property(), type_converted)
 	else:
 		emit_changed(get_edited_property(), selected_options.duplicate())
 
@@ -208,7 +207,7 @@ func _get_unused_options() -> Array[String]:
 ## Called when external values change or the editor is reloaded.
 ## Ensures the selected options match the underlying array property.
 func _update_property() -> void:
-	var raw: Variant = get_edited_object().get(get_edited_property())
+	var raw: Variant = selected_options
 	if raw == null or not raw is Array:
 		return
 
