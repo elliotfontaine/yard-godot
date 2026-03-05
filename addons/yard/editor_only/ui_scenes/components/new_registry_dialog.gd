@@ -65,7 +65,7 @@ func _ready() -> void:
 
 	about_to_popup.connect(_on_about_to_popup)
 	_file_dialog = EditorFileDialog.new()
-	_file_dialog.confirmed.connect(_on_file_dialog_file_selected)
+	_file_dialog.file_selected.connect(_on_file_dialog_file_selected)
 	_file_dialog.dir_selected.connect(_on_file_dialog_dir_selected)
 	add_child(_file_dialog)
 	hide()
@@ -355,13 +355,12 @@ func _on_registry_path_filesystem_button_pressed() -> void:
 			fs.navigate_to_path(registry_path_line_edit.text)
 
 
-func _on_file_dialog_file_selected() -> void:
-	var path: String = _file_dialog.current_path
+func _on_file_dialog_file_selected(file: String) -> void:
 	if _file_dialog_state == FileDialogState.CLASS_RESTRICTION:
-		class_restriction_line_edit.text = '"%s"' % path
+		class_restriction_line_edit.text = '"%s"' % file
 		_validate_fields()
 	elif _file_dialog_state == FileDialogState.REGISTRY_PATH:
-		registry_path_line_edit.text = path
+		registry_path_line_edit.text = file
 		_validate_fields()
 
 
