@@ -315,11 +315,16 @@ func _on_class_list_dialog_button_pressed() -> void:
 	)
 
 
-func _on_class_list_dialog_confirmed(type_name: StringName) -> void:
+func _on_class_list_dialog_confirmed(type_name: String) -> void:
 	exclusive = true
-	if type_name:
-		class_restriction_line_edit.text = type_name
-		_validate_fields()
+	if not type_name:
+		return
+
+	if type_name.begins_with("res://") or type_name.begins_with("uid://"):
+		type_name = '"%s"' % type_name
+
+	class_restriction_line_edit.text = type_name
+	_validate_fields()
 
 
 func _on_class_filesystem_button_pressed() -> void:
