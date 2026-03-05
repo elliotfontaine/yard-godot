@@ -13,8 +13,7 @@ var is_expanded: bool = false
 var _refreshing: bool = false
 
 var fold_button: Button
-var container: VBoxContainer
-var main_container: VBoxContainer
+var dropdown_container: PanelContainer
 
 var list_display_name: String = ""
 var include_duplicates: bool = false
@@ -53,33 +52,34 @@ func initialize(initial_values: Array[Variant], options: Array[Variant], list_na
 	call_deferred(&"_refresh")
 
 
-## Creates and adds the fold button and container layout.
-## The fold button toggles visibility of the dropdown list.
+## Creates and adds the fold button and dropdown_container layout.
+## The fold button toggles visibility of the dropdown list of option buttons.
 func _setup_ui() -> void:
-	main_container = VBoxContainer.new()
-	main_container.custom_minimum_size = Vector2(0, 48)
-	add_child(main_container)
-
 	fold_button = Button.new()
 	fold_button.clip_text = true
 	fold_button.toggle_mode = true
-	fold_button.focus_mode = Control.FOCUS_NONE
 	fold_button.set_pressed_no_signal(is_expanded)
 	fold_button.toggled.connect(_on_fold_button_toggled)
 	_update_fold_button_text()
 
-	main_container.add_child(fold_button)
+	add_child(fold_button)
 
-	container = VBoxContainer.new()
-	container.visible = is_expanded
-	main_container.add_child(container)
+	dropdown_container = PanelContainer.new()
+	dropdown_container.add_theme_stylebox_override(
+		&"panel",
+		EditorInterface.get_editor_theme().get_stylebox(&"sub_inspector_bg1", &"EditorStyles"),
+	)
+	dropdown_container.add_child(VBoxContainer.new())
+	dropdown_container.visible = is_expanded
+	add_child(dropdown_container)
 
 
 ## Called when the fold toggle is pressed to show/hide tag rows.
 ## Updates the visibility of the dropdown container and button label.
 func _on_fold_button_toggled(pressed: bool) -> void:
 	is_expanded = pressed
-	container.visible = pressed
+	dropdown_container.visible = pressed
+	set_bottom_editor(dropdown_container if is_expanded else null)
 	_update_fold_button_text()
 
 
@@ -89,16 +89,16 @@ func _update_fold_button_text() -> void:
 	fold_button.text = "Array[%s] (size %d)" % [type_string(element_type), selected_options.size()]
 
 
-## Rebuilds all dropdown rows and updates Add button.
+## Rebuilds all rows and updates Add button.
 ## Called during initialization or when values change.
 func _refresh() -> void:
 	if _refreshing:
 		return
 	_refreshing = true
 
-	# Remove all children from container
-	for child in container.get_children():
-		container.remove_child(child)
+	var vbox: VBoxContainer = dropdown_container.get_child(0)
+	for child in vbox.get_children():
+		vbox.remove_child(child)
 		child.queue_free()
 
 	for i in range(selected_options.size()):
@@ -107,47 +107,56 @@ func _refresh() -> void:
 	var add_button: Button = Button.new()
 	add_button.icon = get_theme_icon(&"Add", &"EditorIcons")
 	add_button.text = "Add Element"
-	add_button.focus_mode = Control.FOCUS_NONE
-	# Doesn't look good with the black background (coming from VBoxContainer ?)
-	#add_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	add_button.add_theme_constant_override("h_separation", get_theme_constant(&"h_separation", &"InspectorActionButton"))
+	add_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	add_button.disabled = _get_unused_options().is_empty()
 	add_button.pressed.connect(_on_add_pressed)
-	container.add_child(add_button)
+	vbox.add_child(add_button)
 
 	call_deferred(&"_update_property")
 	_update_fold_button_text()
 	_refreshing = false
 
 
-## Builds a single dropdown row at the specified index.
-## Each row includes a dropdown for item selection and a remove button.
+## Builds a single option_button row at the specified index.
+## Each row includes a option_button for item selection and a remove button.
 func _build_row(index: int) -> void:
+	var vbox: VBoxContainer = dropdown_container.get_child(0)
 	var row: HBoxContainer = HBoxContainer.new()
 
-	var dropdown: OptionButton = OptionButton.new()
-	dropdown.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	dropdown.flat = true
-	dropdown.fit_to_longest_item = false
-	dropdown.clip_text = true
+	var idx_label := Label.new()
+	idx_label.text = str(index)
+	idx_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(idx_label)
+
+	var option_button: OptionButton = OptionButton.new()
+	option_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	option_button.fit_to_longest_item = false
+	option_button.clip_text = true
+	var stylebox := EditorInterface.get_editor_theme().get_stylebox(&"child_bg", &"EditorProperty")
+	option_button.add_theme_stylebox_override(&"normal", stylebox)
+	option_button.add_theme_stylebox_override(&"hover", stylebox)
+	option_button.add_theme_stylebox_override(&"pressed", stylebox)
+	option_button.add_theme_stylebox_override(&"focus", stylebox)
 
 	var used: Array[String] = selected_options.duplicate()
 	used.remove_at(index)
 
 	for option in available_options:
-		var idx: int = dropdown.item_count
-		dropdown.add_item(option)
+		var idx: int = option_button.item_count
+		option_button.add_item(option)
 		if not include_duplicates and used.has(option):
-			dropdown.set_item_disabled(idx, true)
+			option_button.set_item_disabled(idx, true)
 
 	var current_index: int = available_options.find(selected_options[index])
 	if current_index >= 0:
-		dropdown.select(current_index)
+		option_button.select(current_index)
 
-	dropdown.item_selected.connect(
+	option_button.item_selected.connect(
 		func(i: int) -> void:
 			var selected_value: String = available_options[i]
 			if not include_duplicates and selected_value in selected_options and selected_options[index] != selected_value:
-				dropdown.select(available_options.find(selected_options[index]))
+				option_button.select(available_options.find(selected_options[index]))
 				return
 			selected_options[index] = selected_value
 			_emit_changed()
@@ -165,9 +174,9 @@ func _build_row(index: int) -> void:
 			call_deferred(&"_refresh")
 	)
 
-	row.add_child(dropdown)
+	row.add_child(option_button)
 	row.add_child(remove)
-	container.add_child(row)
+	vbox.add_child(row)
 
 
 ## Emits the updated list of selected options to the inspector.
