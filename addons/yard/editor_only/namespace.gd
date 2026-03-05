@@ -15,11 +15,14 @@ const MarkdownLabel := preload("res://addons/yard/editor_only/classes/markdownla
 const DynamicTable := preload("res://addons/yard/editor_only/ui_scenes/components/dynamic_table.gd")
 const RegistriesItemList := preload("res://addons/yard/editor_only/ui_scenes/components/registries_itemlist.gd")
 const NewRegistryDialog := preload("res://addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd")
+const EditorPropertyOptionWrapper := preload("res://addons/yard/editor_only/ui_scenes/components/editor_property_option_wrapper.gd")
+const MultiOptionEditorProperty = preload("res://addons/yard/editor_only/ui_scenes/components/multi_option_editor_property.gd")
 const REGISTRY_EDITOR_SCENE := preload("res://addons/yard/editor_only/ui_scenes/registry_editor.tscn")
 const REGISTRY_TABLE_VIEW_SCENE := preload("res://addons/yard/editor_only/ui_scenes/registry_table_view.tscn")
 
 # Misc
 const FILESYSTEM_CREATE_CONTEXT_MENU_PLUGIN = preload("res://addons/yard/editor_only/editor_context_menu_plugin.gd")
+const EDITOR_INSPECTOR_PLUGIN = preload("res://addons/yard/editor_only/editor_inspector_plugin.gd")
 const TRANSLATION_DOMAIN := "com.elliotfontaine.yard"
 const TRANSLATIONS := {
 	"fr_FR": "res://addons/yard/editor_only/locale/fr_FR.po",

@@ -1,5 +1,6 @@
 @tool
 @icon("res://addons/yard/editor_only/assets/yard.svg")
+@warning_ignore_start("unused_private_class_variable")
 class_name Registry
 extends Resource
 ## A registry associating resources with stable, human-readable string IDs.
@@ -36,13 +37,27 @@ extends Resource
 ## • [Resource] - [i]Base class for serializable objects.[/i][br]
 ## • [ResourceLoader] - [i]A singleton for loading resource files.[/i][br]
 
-@warning_ignore_start("unused_private_class_variable")
+## Constant to be used with [annotation @GDScript.@export_custom] instead of a [enum PropertyHint] value.
+## Enables a dropdown in the inspector for any [StringName], [String], [Array][lb]StringName[rb] or
+## [Array][lb]String[rb] property, populated with the string IDs of a [Registry].
+## [br][br]
+## The hint string accepts up to three comma-separated values:
+## [br] • [b]registry path[/b] (required): [code]res://[/code] or [code]uid://[/code] path to the registry
+## [br] • [b]show_empty[/b] (optional, default [code]false[/code]): adds a [code]<empty>[/code] option mapping to an empty string
+## [br] • [b]allow_duplicates[/b] (optional, default [code]true[/code]): allows the same ID to appear multiple times in an
+## [Array][lb]StringName[rb] or
+## [Array][lb]String[rb]
+## [codeblock]
+## @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres") var item: StringName
+## @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres,true") var item_or_empty: StringName
+## @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres,true,false") var items: Array[StringName]
+## [/codeblock]
+const PROPERTY_HINT_CUSTOM: int = 1024
+
 @export_storage var _registry_version: int = 0
 @export_storage var _class_restriction: StringName = &""
 @export_storage var _scan_directory: String = ""
 @export_storage var _recursive_scan: bool = false
-@warning_ignore_restore("unused_private_class_variable")
-
 # Bidirectional map. Populated by RegistryIO in the editor, read-only at runtime.
 @export_storage var _uids_to_string_ids: Dictionary[StringName, StringName]
 @export_storage var _string_ids_to_uids: Dictionary[StringName, StringName]
