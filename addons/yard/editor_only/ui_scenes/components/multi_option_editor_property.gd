@@ -216,17 +216,12 @@ func _get_unused_options() -> Array[String]:
 ## Called when external values change or the editor is reloaded.
 ## Ensures the selected options match the underlying array property.
 func _update_property() -> void:
-	var raw: Variant = selected_options
-	if raw == null or not raw is Array:
+	var raw: Variant = get_edited_object().get(get_edited_property())
+	if raw == null or not raw is Array[StringName] or raw is Array[String]:
 		return
 
-	for item in raw:
-		if typeof(item) not in [TYPE_STRING, TYPE_STRING_NAME]:
-			return
-
-	var as_strings: Array[String] = []
-	for item in raw:
-		as_strings.append(str(item))
+	var as_strings: Array[String]
+	as_strings.assign(raw)
 
 	var sanitized: Array[String] = _sanitize_options(as_strings)
 	if selected_options != sanitized:
