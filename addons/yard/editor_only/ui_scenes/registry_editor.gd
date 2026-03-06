@@ -33,10 +33,18 @@ const AnyIcon := Namespace.AnyIcon
 const FuzzySearch := Namespace.FuzzySearch
 const FuzzySearchResult := FuzzySearch.FuzzySearchResult
 
-const ACCELERATORS: Dictionary = {
-	FileMenuAction.NEW: KEY_MASK_CMD_OR_CTRL | KEY_N,
-	FileMenuAction.REOPEN_CLOSED: KEY_MASK_SHIFT | KEY_MASK_CMD_OR_CTRL | KEY_T,
-	FileMenuAction.CLOSE: KEY_MASK_CMD_OR_CTRL | KEY_W,
+const ACCELERATORS_WIN: Dictionary = {
+	FileMenuAction.NEW: KEY_MASK_CTRL | KEY_N,
+	FileMenuAction.REOPEN_CLOSED: KEY_MASK_SHIFT | KEY_MASK_CTRL | KEY_T,
+	FileMenuAction.CLOSE: KEY_MASK_CTRL | KEY_W,
+	FileMenuAction.MOVE_UP: KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP,
+	FileMenuAction.MOVE_DOWN: KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN,
+}
+
+const ACCELERATORS_MAC: Dictionary = {
+	FileMenuAction.NEW: KEY_MASK_META | KEY_N,
+	FileMenuAction.REOPEN_CLOSED: KEY_MASK_SHIFT | KEY_MASK_META | KEY_T,
+	FileMenuAction.CLOSE: KEY_MASK_META | KEY_W,
 	FileMenuAction.MOVE_UP: KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP,
 	FileMenuAction.MOVE_DOWN: KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN,
 }
@@ -183,16 +191,19 @@ func _setup_accelerators() -> void:
 	# and reuse already registered ones using `EditorSettings.get_shortcut()`
 	# https://github.com/godotengine/godot/pull/102889
 	var file_menu := file_menu_button.get_popup()
-	for action: FileMenuAction in ACCELERATORS:
+	var is_mac := OS.get_name() == "macOS"
+	var accelerators := ACCELERATORS_MAC if is_mac else ACCELERATORS_WIN
+	var edit_accelerators := RegistryTableView.ACCELERATORS_MAC if is_mac else RegistryTableView.ACCELERATORS_WIN
+	for action: FileMenuAction in accelerators:
 		if file_menu.get_item_index(action) != -1:
-			file_menu.set_item_accelerator(file_menu.get_item_index(action), ACCELERATORS.get(action))
+			file_menu.set_item_accelerator(file_menu.get_item_index(action), accelerators.get(action))
 		if registry_context_menu.get_item_index(action) != -1:
-			registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(action), ACCELERATORS.get(action))
+			registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(action), accelerators.get(action))
 
 	var edit_menu := edit_menu_button.get_popup()
-	for action: EditMenuAction in registry_table_view.ACCELERATORS:
+	for action: EditMenuAction in edit_accelerators:
 		if edit_menu.get_item_index(action) != -1:
-			edit_menu.set_item_accelerator(edit_menu.get_item_index(action), registry_table_view.ACCELERATORS.get(action))
+			edit_menu.set_item_accelerator(edit_menu.get_item_index(action), edit_accelerators.get(action))
 
 
 func _populate_open_recent_submenu() -> void:

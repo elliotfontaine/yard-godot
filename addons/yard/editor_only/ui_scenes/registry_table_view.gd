@@ -23,11 +23,18 @@ const EditorThemeUtils := Namespace.EditorThemeUtils
 const DynamicTable := Namespace.DynamicTable
 const RegistryCacheData := Namespace.YardEditorCache.RegistryCacheData
 
-const ACCELERATORS: Dictionary = {
-	EditMenuAction.DELETE_ENTRIES: KEY_MASK_CMD_OR_CTRL | KEY_BACKSPACE,
-	EditMenuAction.CUT_CELL_VALUE: KEY_MASK_CMD_OR_CTRL | KEY_X,
-	EditMenuAction.COPY_CELL_VALUE: KEY_MASK_CMD_OR_CTRL | KEY_C,
-	EditMenuAction.PASTE_TO_CELL: KEY_MASK_CMD_OR_CTRL | KEY_V,
+const ACCELERATORS_WIN: Dictionary = {
+	EditMenuAction.DELETE_ENTRIES: KEY_MASK_CTRL | KEY_BACKSPACE,
+	EditMenuAction.CUT_CELL_VALUE: KEY_MASK_CTRL | KEY_X,
+	EditMenuAction.COPY_CELL_VALUE: KEY_MASK_CTRL | KEY_C,
+	EditMenuAction.PASTE_TO_CELL: KEY_MASK_CTRL | KEY_V,
+}
+
+const ACCELERATORS_MAC: Dictionary = {
+	EditMenuAction.DELETE_ENTRIES: KEY_MASK_META | KEY_BACKSPACE,
+	EditMenuAction.CUT_CELL_VALUE: KEY_MASK_META | KEY_X,
+	EditMenuAction.COPY_CELL_VALUE: KEY_MASK_META | KEY_C,
+	EditMenuAction.PASTE_TO_CELL: KEY_MASK_META | KEY_V,
 }
 
 const LOGGING_INFO_COLOR := "lightslategray"
@@ -89,9 +96,11 @@ func _ready() -> void:
 	dynamic_table.column_resized.connect(_on_column_resized)
 	dynamic_table.multiple_rows_selected.connect(_on_multiple_rows_selected)
 
-	for action: EditMenuAction in ACCELERATORS:
+	print(OS.get_name())
+	var accelerators := ACCELERATORS_MAC if OS.get_name() == "macOS" else ACCELERATORS_WIN
+	for action: EditMenuAction in accelerators:
 		if edit_context_menu.get_item_index(action) != -1:
-			edit_context_menu.set_item_accelerator(edit_context_menu.get_item_index(action), ACCELERATORS.get(action))
+			edit_context_menu.set_item_accelerator(edit_context_menu.get_item_index(action), accelerators.get(action))
 
 	# Resource Picker Theming
 	resource_picker_container.add_theme_stylebox_override(
