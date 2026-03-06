@@ -416,10 +416,14 @@ func _setup_add_entry() -> void:
 		_res_picker.queue_free()
 	_res_picker = EditorResourcePicker.new()
 	_res_picker.custom_minimum_size = Vector2(240, 0)
-	if current_registry._class_restriction:
-		_res_picker.base_type = current_registry._class_restriction
-	else:
+	var restriction := current_registry._class_restriction
+	if not restriction:
 		_res_picker.base_type = "Resource"
+	elif not RegistryIO.is_quoted_string(restriction):
+		_res_picker.base_type = restriction
+	else:
+		var script: Script = load(RegistryIO.unquote(restriction))
+		_res_picker.base_type = ClassUtils.get_type_name(script)
 	resource_picker_container.add_child(_res_picker)
 	_texture_rect_parent = _res_picker.get_child(0)
 	_res_picker.resource_changed.connect(_on_res_picker_resource_changed)
