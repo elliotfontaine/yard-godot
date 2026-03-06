@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://dsg55mejcqgyb"]
+[gd_scene load_steps=14 format=3 uid="uid://dsg55mejcqgyb"]
 
 [ext_resource type="Script" uid="uid://pbm1netkyiqy" path="res://addons/yard/editor_only/ui_scenes/registry_editor.gd" id="1_tv1od"]
 [ext_resource type="Script" uid="uid://caby6h435lr2g" path="res://addons/yard/editor_only/classes/editor_icon_menu_button.gd" id="3_m1qax"]
@@ -9,6 +9,23 @@
 [ext_resource type="PackedScene" uid="uid://crnac01bnyk3" path="res://addons/yard/editor_only/ui_scenes/registry_table_view.tscn" id="7_w3c1k"]
 [ext_resource type="PackedScene" uid="uid://b3g3e36v7g6kr" path="res://addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn" id="8_drmf8"]
 [ext_resource type="PackedScene" uid="uid://woa50nl7s75b" path="res://addons/yard/editor_only/ui_scenes/components/readme_window.tscn" id="9_6e4lp"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_6e4lp"]
+command_or_control_autoremap = true
+shift_pressed = true
+keycode = 83
+
+[sub_resource type="Shortcut" id="Shortcut_g1ejb"]
+events = [SubResource("InputEventKey_6e4lp")]
+
+[sub_resource type="InputEventKey" id="InputEventKey_g1ejb"]
+device = -1
+command_or_control_autoremap = true
+shift_pressed = true
+keycode = 82
+
+[sub_resource type="Shortcut" id="Shortcut_gl5oh"]
+events = [SubResource("InputEventKey_g1ejb")]
 
 [node name="RegistryEditor" type="MarginContainer"]
 anchors_preset = 15
@@ -82,7 +99,7 @@ popup/item_2/text = "Copy UID"
 popup/item_2/id = 2
 popup/item_3/text = "Show In Filesystem"
 popup/item_3/id = 3
-popup/item_4/id = 9
+popup/item_4/id = 100
 popup/item_4/separator = true
 popup/item_5/text = "Cut Cell Value"
 popup/item_5/id = 5
@@ -90,7 +107,7 @@ popup/item_6/text = "Copy Cell Value"
 popup/item_6/id = 6
 popup/item_7/text = "Paste to Cell"
 popup/item_7/id = 7
-popup/item_8/id = 8
+popup/item_8/id = 100
 popup/item_8/separator = true
 popup/item_9/text = "Select All"
 popup/item_9/id = 9
@@ -101,22 +118,21 @@ popup/item_11/id = 11
 
 [node name="RegistryButtonsVSeparator" type="VSeparator" parent="VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 
 [node name="RegistrySettingsButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
+tooltip_text = "Edit Registry Settings"
 focus_mode = 3
 theme_type_variation = &"FlatButton"
+shortcut = SubResource("Shortcut_g1ejb")
 text = "Registry Settings"
 script = ExtResource("4_dd5h4")
 icon_name = "GDScript"
 
 [node name="ColumnsMenuButton" type="MenuButton" parent="VBoxContainer/HBoxContainer"]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 tooltip_text = "Select shown columns."
 theme_type_variation = &"FlatMenuButton"
@@ -141,10 +157,10 @@ icon_name = "Loop"
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
-tooltip_text = "Rebuild property index."
+tooltip_text = "Rebuild Property Index"
 focus_mode = 3
 theme_type_variation = &"FlatButton"
-disabled = true
+shortcut = SubResource("Shortcut_gl5oh")
 text = "Reindex"
 script = ExtResource("4_dd5h4")
 icon_name = "Loop"

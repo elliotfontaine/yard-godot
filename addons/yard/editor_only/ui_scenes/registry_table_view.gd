@@ -28,6 +28,7 @@ const ACCELERATORS_WIN: Dictionary = {
 	EditMenuAction.CUT_CELL_VALUE: KEY_MASK_CTRL | KEY_X,
 	EditMenuAction.COPY_CELL_VALUE: KEY_MASK_CTRL | KEY_C,
 	EditMenuAction.PASTE_TO_CELL: KEY_MASK_CTRL | KEY_V,
+	EditMenuAction.SELECT_ALL: KEY_MASK_CTRL | KEY_A,
 }
 
 const ACCELERATORS_MAC: Dictionary = {
@@ -35,6 +36,7 @@ const ACCELERATORS_MAC: Dictionary = {
 	EditMenuAction.CUT_CELL_VALUE: KEY_MASK_META | KEY_X,
 	EditMenuAction.COPY_CELL_VALUE: KEY_MASK_META | KEY_C,
 	EditMenuAction.PASTE_TO_CELL: KEY_MASK_META | KEY_V,
+	EditMenuAction.SELECT_ALL: KEY_MASK_META | KEY_A,
 }
 
 const LOGGING_INFO_COLOR := "lightslategray"
@@ -96,7 +98,6 @@ func _ready() -> void:
 	dynamic_table.column_resized.connect(_on_column_resized)
 	dynamic_table.multiple_rows_selected.connect(_on_multiple_rows_selected)
 
-	print(OS.get_name())
 	var accelerators := ACCELERATORS_MAC if OS.get_name() == "macOS" else ACCELERATORS_WIN
 	for action: EditMenuAction in accelerators:
 		if edit_context_menu.get_item_index(action) != -1:
@@ -117,6 +118,11 @@ func _ready() -> void:
 	)
 	drag_and_drop_info_panel.get_theme_stylebox(&"panel").bg_color.a = 0.8
 	focus_panel.add_theme_stylebox_override(&"panel", get_theme_stylebox("Focus", "EditorStyles"))
+
+	if ClassUtils.is_engine_version_equal_or_newer(4, 6):
+		var files_shortcut: Shortcut = EditorInterface.get_editor_settings().get_shortcut("script_editor/toggle_files_panel")
+		if files_shortcut:
+			toggle_registry_panel_button.shortcut = files_shortcut
 
 	grow_horizontal = Control.GROW_DIRECTION_END
 	grow_vertical = Control.GROW_DIRECTION_END
@@ -527,7 +533,7 @@ func _delete_selected_entries() -> void:
 
 
 func _select_all() -> void:
-	dynamic_table.selected_rows = range(dynamic_table._total_rows)
+	dynamic_table.select_all_rows()
 	dynamic_table.queue_redraw()
 
 

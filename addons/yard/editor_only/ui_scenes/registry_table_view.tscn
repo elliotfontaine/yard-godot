@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://crnac01bnyk3"]
+[gd_scene load_steps=12 format=3 uid="uid://crnac01bnyk3"]
 
 [ext_resource type="Script" uid="uid://tahli441tq7q" path="res://addons/yard/editor_only/ui_scenes/registry_table_view.gd" id="1_isv8r"]
 [ext_resource type="Script" uid="uid://0fmlvbrxn2lf" path="res://addons/yard/editor_only/classes/editor_icon_popup_menu.gd" id="2_8g0vx"]
@@ -38,6 +38,16 @@ border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 corner_detail = 1
+
+[sub_resource type="InputEventKey" id="InputEventKey_ae6j4"]
+command_or_control_autoremap = true
+keycode = 92
+unicode = 92
+
+[sub_resource type="Shortcut" id="Shortcut_8bvbn"]
+resource_name = "Toggle Files Panel"
+events = [SubResource("InputEventKey_ae6j4")]
+metadata/original = [SubResource("InputEventKey_ae6j4")]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3v8u8"]
 content_margin_left = 0.0
@@ -180,7 +190,9 @@ layout_mode = 2
 [node name="ToggleRegistryPanelButton" type="Button" parent="VBoxContainer/PanelContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+tooltip_text = "Toggle Files Panel"
 theme_type_variation = &"FlatButton"
+shortcut = SubResource("Shortcut_8bvbn")
 script = ExtResource("3_5vsn3")
 icon_name = "Back"
 

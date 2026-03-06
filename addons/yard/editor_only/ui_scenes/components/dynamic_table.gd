@@ -377,6 +377,22 @@ func set_progress_colors(bar_start_color: Color, bar_middle_color: Color, bar_en
 	progress_text_color = text_c
 	queue_redraw()
 
+
+func select_all_rows() -> void:
+	if not _total_rows > 0:
+		return
+
+	selected_rows = range(_total_rows)
+	if focused_row == -1:
+		focused_row = 0
+		_anchor_row = 0
+		focused_col = 0 if _columns.size() > 0 else -1
+	else:
+		_anchor_row = focused_row
+
+	_ensure_row_visible(focused_row)
+	_ensure_col_visible(focused_col)
+
 #endregion
 
 #region PRIVATE METHODS
@@ -1300,21 +1316,8 @@ func _handle_key_input(event: InputEventKey) -> void:
 
 	if is_ctrl_cmd and keycode == KEY_A:
 		if _total_rows > 0:
-			selected_rows.clear()
-			for i in range(_total_rows):
-				selected_rows.append(i)
+			select_all_rows()
 			emit_multiple_selection_signal = true
-
-			# Set or keep focus and anchor
-			if current_focused_r == -1: # If there is no focus, go to the first row
-				focused_row = 0
-				focused_col = 0 if _columns.size() > 0 else -1
-				_anchor_row = 0
-			else: # Otherwise, keep the current focus as anchor
-				_anchor_row = focused_row
-
-			_ensure_row_visible(focused_row)
-			_ensure_col_visible(focused_col)
 		key_operation_performed = true
 
 	elif keycode == KEY_HOME:
