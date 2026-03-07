@@ -25,5 +25,11 @@ const FILESYSTEM_CREATE_CONTEXT_MENU_PLUGIN = preload("res://addons/yard/editor_
 const EDITOR_INSPECTOR_PLUGIN = preload("res://addons/yard/editor_only/editor_inspector_plugin.gd")
 const TRANSLATION_DOMAIN := "com.elliotfontaine.yard"
 const TRANSLATIONS := {
+	"de_DE": "res://addons/yard/editor_only/locale/de_DE.po",
+	"es_ES": "res://addons/yard/editor_only/locale/es_ES.po",
 	"fr_FR": "res://addons/yard/editor_only/locale/fr_FR.po",
+	"it_IT": "res://addons/yard/editor_only/locale/it_IT.po",
+	"pt_BR": "res://addons/yard/editor_only/locale/pt_BR.po",
+	"ru_RU": "res://addons/yard/editor_only/locale/ru_RU.po",
+	"zh_CN": "res://addons/yard/editor_only/locale/zh_CN.po",
 }

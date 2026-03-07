@@ -12,7 +12,7 @@ msgstr ""
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
-"Language: fr_FR\n"
+"Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -23,173 +23,173 @@ msgstr ""
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Delete Entry"
-msgstr "Supprimer l'entrée"
+msgstr "删除条目"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Copy String ID"
-msgstr "Copier l'ID textuel"
+msgstr "复制字符串 ID"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Copy UID"
-msgstr "Copier l'UID"
+msgstr "复制 UID"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Show in FileSystem"
-msgstr "Montrer dans le système de fichiers"
+msgstr "在文件系统中显示"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 msgid "Edit Resource"
-msgstr "Modifier la ressource"
+msgstr "编辑资源"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Cut Cell Value"
-msgstr "Couper la valeur"
+msgstr "剪切值"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Copy Cell Value"
-msgstr "Copier la valeur"
+msgstr "复制值"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Paste to Cell"
-msgstr "Coller dans la cellule"
+msgstr "粘贴到单元格"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Select All"
-msgstr "Tout sélectionner"
+msgstr "全选"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Invert Selection"
-msgstr "Inverser la sélection"
+msgstr "反选"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Unselect"
-msgstr "Désélectionner"
+msgstr "取消选择"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 msgid "Please Confirm"
-msgstr "Confirmer"
+msgstr "确认"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 msgid "Yes"
-msgstr "Oui"
+msgstr "是"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 msgid "Drop resource files here to add them to the registry."
-msgstr "Déposez des fichiers de ressource ici pour les ajouter au registre."
+msgstr "将资源文件拖放到此处以添加至注册表。"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 msgid "Toggle Files Panel"
-msgstr "Afficher/masquer le panneau de fichiers"
+msgstr "显示/隐藏文件面板"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 msgid "String ID"
-msgstr "ID textuel"
+msgstr "字符串 ID"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 msgid "Add Entry"
-msgstr "Ajouter"
+msgstr "添加条目"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Class/script is a Resource subclass."
-msgstr "La classe/le script est une sous-classe de Resource."
+msgstr "类/脚本是 Resource 的子类。"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid ""
 "Invalid class/script. Expected a Resource subclass (built-in, class_name, or "
 "[u]quoted[/u] script path)."
 msgstr ""
-"Classe/script invalide. Une sous-classe de Resource est attendue (intégrée, class_name, ou "
-"chemin de script [u]entre guillemets[/u])."
+"无效的类/脚本。需要 Resource 的子类（内置类、class_name 或"
+"[u]带引号的[/u]脚本路径）。"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "No class filter, all Resource files will be accepted to the registry."
-msgstr "Aucun filtre de classe, tous les fichiers Resource seront acceptés dans le registre."
+msgstr "无类过滤器，所有 Resource 文件都将被接受到注册表中。"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Scan directory valid. Will watch for new Resources…"
-msgstr "Répertoire valide. Les nouvelles ressources seront détectées automatiquement…"
+msgstr "目录有效。将自动检测新资源…"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Scan directory invalid. Pick an existing directory."
-msgstr "Répertoire invalide. Choisissez un répertoire existant."
+msgstr "目录无效。请选择一个已存在的目录。"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "No scan directory, resources auto-discovery is disabled."
-msgstr "Aucun répertoire défini, la détection automatique est désactivée."
+msgstr "未定义目录，自动检测已禁用。"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Indexed properties are optional. Separate multiple properties with commas."
-msgstr "Les propriétés indexées sont optionnelles. Séparez plusieurs propriétés par des virgules."
+msgstr "索引属性是可选的。多个属性之间用逗号分隔。"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "All properties found on the specified resource class."
-msgstr "Toutes les propriétés ont été trouvées sur la classe de ressource."
+msgstr "已找到该资源类的所有属性。"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Empty property name detected. Remove extra commas."
-msgstr "Nom de propriété vide détecté. Supprimez les virgules superflues."
+msgstr "检测到空属性名。请删除多余的逗号。"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Property '{prop}' may not exist on the resource class."
-msgstr "La propriété '{prop}' n'existe peut-être pas sur la classe de ressource."
+msgstr "属性 '{prop}' 可能不存在于该资源类中。"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Will create a new registry file."
-msgstr "Un nouveau fichier de registre sera créé."
+msgstr "将创建一个新的注册表文件。"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Filename is invalid."
-msgstr "Nom de fichier invalide."
+msgstr "文件名无效。"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Invalid extension."
-msgstr "Extension invalide."
+msgstr "扩展名无效。"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Filename is empty."
-msgstr "Le nom de fichier est vide."
+msgstr "文件名为空。"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Registry file already exists."
-msgstr "Un fichier de registre existe déjà à cet emplacement."
+msgstr "该位置已存在注册表文件。"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Choose Custom Resource Script"
-msgstr "Choisir le script de ressource personnalisé"
+msgstr "选择自定义资源脚本"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Choose Directory to Scan"
-msgstr "Choisir le répertoire à analyser"
+msgstr "选择扫描目录"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Choose Registry Location"
-msgstr "Choisir le chemin du registre"
+msgstr "选择注册表位置"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Choose Class Restriction"
-msgstr "Choisir la restriction de classe"
+msgstr "选择类限制"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Create Registry"
-msgstr "Créer un registre"
+msgstr "创建注册表"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Create"
-msgstr "Créer"
+msgstr "创建"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Remove"
-msgstr "Supprimer"
+msgstr "移除"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid ""
@@ -198,179 +198,179 @@ msgid ""
 "\n"
 "Do you want to proceed ?"
 msgstr ""
-"Certaines entrées du registre ne correspondent pas à la\n"
-"nouvelle restriction de classe et seraient supprimées.\n"
+"注册表中部分条目不符合\n"
+"新的类限制，将被移除。\n"
 "\n"
-"Voulez-vous continuer ?"
+"是否继续？"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Class Restriction:"
-msgstr "Restriction de classe :"
+msgstr "类限制："
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Resource"
-msgstr "Ressource"
+msgstr "资源"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Scan Directory:"
-msgstr "Répertoire à analyser :"
+msgstr "扫描目录："
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Recursive Scan:"
-msgstr "Analyse récursive :"
+msgstr "递归扫描："
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "On"
-msgstr "Activé"
+msgstr "开启"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Indexed Properties:"
-msgstr "Propriétés indexées :"
+msgstr "索引属性："
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Path:"
-msgstr "Chemin :"
+msgstr "路径："
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "Clear Recent Registries"
-msgstr "Effacer la liste des registres récents"
+msgstr "清空最近注册表列表"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "Open Registry"
-msgstr "Ouvrir le registre"
+msgstr "打开注册表"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "None of the closed resources exist anymore"
-msgstr "Aucun des registres récemment fermés n'existe plus"
+msgstr "最近关闭的注册表均已不存在"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "Select a registry first"
-msgstr "Sélectionnez d'abord un registre"
+msgstr "请先选择一个注册表"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "Freeze ID Columns"
-msgstr "Figer les colonnes d'ID"
+msgstr "固定 ID 列"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "File"
-msgstr "Fichier"
+msgstr "文件"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "New Registry..."
-msgstr "Nouveau registre…"
+msgstr "新建注册表…"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Open..."
-msgstr "Ouvrir…"
+msgstr "打开…"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Reopen Closed Registry"
-msgstr "Rouvrir le registre fermé"
+msgstr "重新打开已关闭的注册表"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Open Recent"
-msgstr "Registres récents"
+msgstr "最近使用"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Copy Registry Path"
-msgstr "Copier le chemin du registre"
+msgstr "复制注册表路径"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Copy Registry UID"
-msgstr "Copier l'UID du registre"
+msgstr "复制注册表 UID"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Close"
-msgstr "Fermer"
+msgstr "关闭"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Close All"
-msgstr "Fermer tout"
+msgstr "全部关闭"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Close Other Tabs"
-msgstr "Fermer les autres onglets"
+msgstr "关闭其他标签页"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Close Tabs Below"
-msgstr "Fermer les onglets en dessous"
+msgstr "关闭下方标签页"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Edit"
-msgstr "Édition"
+msgstr "编辑"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Edit Registry Settings"
-msgstr "Modifier les paramètres du registre"
+msgstr "编辑注册表设置"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Registry Settings"
-msgstr "Paramètres"
+msgstr "注册表设置"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Select shown columns."
-msgstr "Sélectionner les colonnes affichées."
+msgstr "选择显示的列。"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Columns"
-msgstr "Colonnes"
+msgstr "列"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Refresh table view from the underlying registry."
-msgstr "Actualiser la vue depuis le registre."
+msgstr "从注册表刷新视图。"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Refresh"
-msgstr "Actualiser"
+msgstr "刷新"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Rebuild Property Index"
-msgstr "Re-générer l'index des propriétés"
+msgstr "重建属性索引"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Reindex"
-msgstr "Réindexer"
+msgstr "重新索引"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Open project's issues in your browser."
-msgstr "Ouvrir le suivi de bugs dans le navigateur."
+msgstr "在浏览器中打开项目问题追踪器。"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Report Issue"
-msgstr "Signaler un problème"
+msgstr "报告问题"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Open the Registry class documentation."
-msgstr "Ouvrir la documentation de la classe Registry."
+msgstr "打开 Registry 类文档。"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Open Docs"
-msgstr "Ouvrir la documentation"
+msgstr "打开文档"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Open the README.md popup."
-msgstr "Afficher l'aide."
+msgstr "显示帮助。"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Make the registry editor floating."
-msgstr "Rendre l'éditeur de registre flottant."
+msgstr "将注册表编辑器设为浮动窗口。"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Filter Registries"
-msgstr "Filtrer les registres"
+msgstr "筛选注册表"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Move Up"
-msgstr "Déplacer vers le haut"
+msgstr "上移"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Move Down"
-msgstr "Déplacer vers le bas"
+msgstr "下移"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Sort"
-msgstr "Trier"
+msgstr "排序"
 
 #: addons/yard/plugin.gd
 msgid "Registry"
-msgstr "Registre"
+msgstr "注册表"
