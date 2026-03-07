@@ -734,7 +734,7 @@ func _on_report_issue_button_pressed() -> void:
 	cfg.load(PluginCFG)
 	var repo: String = cfg.get_value("plugin", "repository", "")
 	if repo:
-		OS.shell_open(repo + "/issues/new")
+		OS.shell_open(repo + "/issues/new?template=bug_report.yml")
 
 
 func _on_make_floating_button_pressed() -> void:
