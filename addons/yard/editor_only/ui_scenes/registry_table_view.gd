@@ -46,17 +46,20 @@ const NON_PROP_COLUMNS_COUNT := 2
 const STRINGID_COLUMN := 0
 const UID_COLUMN := 1
 
-var current_registry: Registry:
-	set(new):
-		current_registry = new
-		current_cache_data = RegistryCacheData.load_or_default(new) if current_registry else null
-		dynamic_table.ordering_data(STRINGID_COLUMN, true)
-		update_view()
 var current_cache_data: RegistryCacheData
-
 var properties_column_info: Array[Dictionary]
 var entries_data: Array[Array] # inner arrays are rows, their content is columns
 var clipboard: Variant
+
+var current_registry: Registry:
+	set(new):
+		var is_another := new != current_registry
+		current_registry = new
+		current_cache_data = RegistryCacheData.load_or_default(new) if new else null
+		if is_another and current_cache_data:
+			_setup_add_entry()
+			dynamic_table.ordering_data(STRINGID_COLUMN, true)
+		update_view()
 
 var toggle_button_forward := false:
 	set(forward):
@@ -218,7 +221,6 @@ func update_view() -> void:
 	var table_had_focus := focus_owner and (dynamic_table == focus_owner or dynamic_table.is_ancestor_of(focus_owner))
 
 	add_entry_container.visible = true
-	_setup_add_entry()
 
 	var resources: Dictionary[StringName, Resource] = current_registry.load_all_blocking() # WARNING: Blocking! # Source erreur
 	set_columns_data(resources.values())
