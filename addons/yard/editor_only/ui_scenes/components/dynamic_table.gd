@@ -587,9 +587,11 @@ func _open_resource_editor(row: int, col: int) -> void:
 		var valid_types := Array(column.hint_string.split(",", false)).filter(ClassUtils.is_valid)
 		if not valid_types.is_empty():
 			_resource_editor.base_type = ",".join(valid_types)
-	var quick_load: Button = _resource_editor.get_child(1, true)
-	if quick_load:
-		quick_load.pressed.emit()
+
+	for child in _resource_editor.get_children(true):
+		if child is Button and child.tooltip_text == tr("Quick Load"):
+			child.pressed.emit()
+			break
 
 
 func _open_path_editor(row: int, col: int) -> void:
