@@ -1,0 +1,52 @@
+name: Bug report
+description: Report a bug in the YARD plugin
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        - Write a descriptive issue title above.
+        - Search [open](../../issues) and [closed](../../issues?q=is%3Aissue+is%3Aclosed) issues to ensure it has not already been reported.
+        - Make sure you are using the latest plugin version before reporting.
+
+  - type: input
+    attributes:
+      label: Plugin version
+      placeholder: e.g. 1.2.0
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: Godot version
+      placeholder: e.g. 4.3, 4.6
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Describe the bug
+      description: What doesn't work, and how do you expect it to work instead?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      description: List of steps that reproduce the issue.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem.
+
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem here.
