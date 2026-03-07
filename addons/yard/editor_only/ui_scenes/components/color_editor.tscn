@@ -6,6 +6,7 @@
 bg_color = Color(0.152, 0.1748, 0.2356, 1)
 
 [node name="ColorEditor" type="PanelContainer"]
+top_level = true
 offset_right = 298.0
 offset_bottom = 572.0
 focus_mode = 1

@@ -568,7 +568,7 @@ func _open_color_editor(row: int, col: int) -> void:
 
 	var cell_value: Color = get_cell_value(row, col)
 	_editing_cell = [row, col]
-	_color_editor.position = cell_rect.get_center()
+	_color_editor.position = cell_rect.get_center() + global_position
 	_color_editor.color = cell_value
 	_color_editor.show()
 	_color_editor.grab_focus()
