@@ -12,14 +12,15 @@ class RegistryCacheData:
 	const _REGISTRIES_DIR := _BASE_DIR + "registries/"
 	const _SECTION_GENERAL := "general"
 	const _SECTION_TABLE := "table"
-	const DISABLED_BY_DEFAULT_PROPERTIES: Array[StringName] = [
+	const DISABLED_BY_DEFAULT_COLUMNS: Array[StringName] = [
 		&"script",
 		&"resource_local_to_scene",
 		&"resource_path",
 		&"resource_name",
+		&"metadata/_custom_type_script",
 	]
 	var version: int = _REGISTRY_CACHE_VERSION
-	var disabled_columns: Array[StringName] = DISABLED_BY_DEFAULT_PROPERTIES.duplicate()
+	var disabled_columns: Array[StringName] = DISABLED_BY_DEFAULT_COLUMNS.duplicate()
 	var uid_column_width: float = 200.0
 	var string_id_column_width: float = 200.0
 	var property_columns_widths: Dictionary[StringName, float] = { }

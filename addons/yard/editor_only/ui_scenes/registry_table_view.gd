@@ -45,7 +45,6 @@ const STRINGID_COLUMN_CONFIG := ["string_id", "String ID", TYPE_STRING]
 const NON_PROP_COLUMNS_COUNT := 2
 const STRINGID_COLUMN := 0
 const UID_COLUMN := 1
-const DISABLED_BY_DEFAULT_PROPERTIES: Array[StringName] = RegistryCacheData.DISABLED_BY_DEFAULT_PROPERTIES
 
 var current_registry: Registry:
 	set(new):

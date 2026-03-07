@@ -26,12 +26,14 @@ const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const PluginCFG := Namespace.PluginCFG
 const RegistryIO := Namespace.RegistryIO
 const EditorStateData := Namespace.YardEditorCache.EditorStateData
+const RegistryCacheData := Namespace.YardEditorCache.RegistryCacheData
 const RegistriesItemList := Namespace.RegistriesItemList
 const RegistryTableView := Namespace.RegistryTableView
 const NewRegistryDialog := Namespace.NewRegistryDialog
 const AnyIcon := Namespace.AnyIcon
 const FuzzySearch := Namespace.FuzzySearch
 const FuzzySearchResult := FuzzySearch.FuzzySearchResult
+const DISABLED_BY_DEFAULT_COLUMNS: Array[StringName] = RegistryCacheData.DISABLED_BY_DEFAULT_COLUMNS
 
 const ACCELERATORS_WIN: Dictionary = {
 	FileMenuAction.NEW: KEY_MASK_CTRL | KEY_N,
@@ -761,7 +763,7 @@ func _on_columns_menu_button_about_to_popup() -> void:
 
 	for prop: Dictionary in registry_table_view.properties_column_info:
 		var prop_name: String = prop[&"name"]
-		if prop_name not in registry_table_view.DISABLED_BY_DEFAULT_PROPERTIES:
+		if prop_name not in DISABLED_BY_DEFAULT_COLUMNS:
 			popup.add_check_item(prop_name.capitalize())
 			popup.set_item_tooltip(popup.item_count - 1, prop_name)
 			popup.set_item_icon(popup.item_count - 1, AnyIcon.get_property_icon_from_dict(prop))
@@ -771,7 +773,7 @@ func _on_columns_menu_button_about_to_popup() -> void:
 
 	for prop: Dictionary in registry_table_view.properties_column_info:
 		var prop_name: String = prop[&"name"]
-		if prop_name in registry_table_view.DISABLED_BY_DEFAULT_PROPERTIES:
+		if prop_name in DISABLED_BY_DEFAULT_COLUMNS:
 			popup.add_check_item(prop_name.capitalize())
 			popup.set_item_tooltip(popup.item_count - 1, prop_name)
 			popup.set_item_icon(popup.item_count - 1, AnyIcon.get_property_icon_from_dict(prop))
