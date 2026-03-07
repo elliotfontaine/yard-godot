@@ -10,15 +10,23 @@ const EDITOR_INSPECTOR_PLUGIN := Namespace.EDITOR_INSPECTOR_PLUGIN
 
 var _registry_editor: RegistryEditor
 var _filesystem_create_context_menu_plugin: EditorContextMenuPlugin
+var _cached_plugin_name: String
 
 
-func _enter_tree() -> void:
+func _init() -> void:
 	if not Engine.is_editor_hint():
 		return
 
 	print("YARD - Yet Another Resource Database")
 	var domain := TranslationServer.get_or_add_domain(TRANSLATION_DOMAIN)
-	domain.add_translation(preload(Namespace.TRANSLATIONS.fr_FR))
+	for locale: String in Namespace.TRANSLATIONS.keys():
+		domain.add_translation(load(Namespace.TRANSLATIONS[locale]))
+	set_translation_domain(TRANSLATION_DOMAIN)
+
+
+func _enter_tree() -> void:
+	if not Engine.is_editor_hint():
+		return
 
 	_filesystem_create_context_menu_plugin = FILESYSTEM_CREATE_CONTEXT_MENU_PLUGIN.new(_filesystem_create_context_menu_plugin_callback)
 	add_context_menu_plugin(EditorContextMenuPlugin.CONTEXT_SLOT_FILESYSTEM_CREATE, _filesystem_create_context_menu_plugin)
@@ -28,21 +36,9 @@ func _enter_tree() -> void:
 	_registry_editor = REGISTRY_EDITOR_SCENE.instantiate()
 	EditorInterface.get_editor_main_screen().add_child(_registry_editor)
 	_registry_editor.set_translation_domain(TRANSLATION_DOMAIN)
-	_make_visible(false)
 
-	# Force reimport of icons if it doesn't match the editor scale
-	var icon: CompressedTexture2D = load("res://addons/yard/editor_only/assets/github_icon.svg")
-	var scale := EditorInterface.get_editor_scale()
-	if float(icon.get_width()) != scale * 16:
-		print("YARD - Editor scale changed, reimporting icons. This might throw an error. Disregard.")
-		EditorInterface.get_resource_filesystem().reimport_files(
-			PackedStringArray(
-				[
-					"res://addons/yard/editor_only/assets/github_icon.svg",
-					"res://addons/yard/editor_only/assets/yard.svg",
-				],
-			),
-		)
+	_reimport_icons()
+	_make_visible(false)
 
 
 func _exit_tree() -> void:
@@ -76,11 +72,29 @@ func _edit(object: Object) -> void:
 
 
 func _get_plugin_name() -> String:
-	return "Registry"
+	if not _cached_plugin_name:
+		_cached_plugin_name = tr("Registry")
+	return _cached_plugin_name
 
 
 func _get_plugin_icon() -> Texture2D:
 	return preload("res://addons/yard/editor_only/assets/yard.svg")
+
+
+# Force reimport of icons if it doesn't match the editor scale
+func _reimport_icons() -> void:
+	var icon: CompressedTexture2D = load("res://addons/yard/editor_only/assets/github_icon.svg")
+	var scale := EditorInterface.get_editor_scale()
+	if float(icon.get_width()) != scale * 16:
+		print("YARD - Editor scale changed, reimporting icons. This might throw an error. Disregard.")
+		EditorInterface.get_resource_filesystem().reimport_files(
+			PackedStringArray(
+				[
+					"res://addons/yard/editor_only/assets/github_icon.svg",
+					"res://addons/yard/editor_only/assets/yard.svg",
+				],
+			),
+		)
 
 
 func _filesystem_create_context_menu_plugin_callback(context: Array) -> void:

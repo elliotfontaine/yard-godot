@@ -15,29 +15,31 @@ const DEFAULT_COLOR = Color(0.71, 0.722, 0.745, 1.0)
 const SUCCESS_COLOR = Color(0.45, 0.95, 0.5)
 const WARNING_COLOR = Color(0.83, 0.78, 0.62)
 const ERROR_COLOR = Color(1, 0.47, 0.42)
-const INFO_MESSAGES: Dictionary[StringName, Array] = {
+
+# would be a constant if not for the `tr()`
+var INFO_MESSAGES: Dictionary[StringName, Array] = {
 	# --- Class restriction ---
-	&"class_valid": ["Class/script is a Resource subclass.", SUCCESS_COLOR],
-	&"class_invalid": ["Invalid class/script. Expected a Resource subclass (built-in, class_name, or [u]quoted[/u] script path).", ERROR_COLOR],
-	&"class_empty": ["No class filter, all Resource files will be accepted to the registry.", WARNING_COLOR],
+	&"class_valid": [tr("Class/script is a Resource subclass."), SUCCESS_COLOR],
+	&"class_invalid": [tr("Invalid class/script. Expected a Resource subclass (built-in, class_name, or [u]quoted[/u] script path)."), ERROR_COLOR],
+	&"class_empty": [tr("No class filter, all Resource files will be accepted to the registry."), WARNING_COLOR],
 
 	# --- Scan directory ---
-	&"scan_valid": ["Scan directory valid. Will watch for new Resources…", SUCCESS_COLOR],
-	&"scan_invalid": ["Scan directory invalid. Pick an existing directory.", ERROR_COLOR],
-	&"scan_empty": ["No scan directory, resources auto-discovery is disabled.", DEFAULT_COLOR],
+	&"scan_valid": [tr("Scan directory valid. Will watch for new Resources…"), SUCCESS_COLOR],
+	&"scan_invalid": [tr("Scan directory invalid. Pick an existing directory."), ERROR_COLOR],
+	&"scan_empty": [tr("No scan directory, resources auto-discovery is disabled."), DEFAULT_COLOR],
 
 	# --- Indexed properties ---
-	&"properties_none": ["Indexed properties are optional. Separate multiple properties with commas.", DEFAULT_COLOR],
-	&"properties_valid": ["All properties found on the specified resource class.", SUCCESS_COLOR],
-	&"properties_empty_prop": ["Empty property name detected. Remove extra commas.", ERROR_COLOR],
-	&"properties_cant_verify": ["Property '{prop}' may not exist on the resource class.", WARNING_COLOR],
+	&"properties_none": [tr("Indexed properties are optional. Separate multiple properties with commas."), DEFAULT_COLOR],
+	&"properties_valid": [tr("All properties found on the specified resource class."), SUCCESS_COLOR],
+	&"properties_empty_prop": [tr("Empty property name detected. Remove extra commas."), ERROR_COLOR],
+	&"properties_cant_verify": [tr("Property '{prop}' may not exist on the resource class."), WARNING_COLOR],
 
 	# --- Registry path ---
-	&"path_available": ["Will create a new registry file.", SUCCESS_COLOR],
-	&"path_invalid": ["Filename is invalid", ERROR_COLOR],
-	&"extension_invalid": ["Invalid extension.", ERROR_COLOR],
-	&"filename_empty": ["Filename is empty.", ERROR_COLOR],
-	&"path_already_used": ["Registry file already exists.", ERROR_COLOR],
+	&"path_available": [tr("Will create a new registry file."), SUCCESS_COLOR],
+	&"path_invalid": [tr("Filename is invalid."), ERROR_COLOR],
+	&"extension_invalid": [tr("Invalid extension."), ERROR_COLOR],
+	&"filename_empty": [tr("Filename is empty."), ERROR_COLOR],
+	&"path_already_used": [tr("Registry file already exists."), ERROR_COLOR],
 }
 
 var edited_registry: Registry
@@ -86,7 +88,7 @@ func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 		registry_path_filesystem_button.icon = AnyIcon.get_icon(&"Folder")
 		registry_path_filesystem_button.tooltip_text = ""
 	elif edited_registry and state == RegistryDialogState.REGISTRY_SETTINGS:
-		title = "Edit Registry Settings"
+		title = "Registry Settings"
 		ok_button_text = "Save"
 		class_restriction_line_edit.text = edited_registry._class_restriction
 		scan_directory_line_edit.text = edited_registry._scan_directory
@@ -96,7 +98,7 @@ func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 		registry_path_line_edit.editable = false
 		registry_path_line_edit.focus_mode = Control.FOCUS_NONE
 		registry_path_filesystem_button.icon = AnyIcon.get_icon(&"ShowInFileSystem")
-		registry_path_filesystem_button.tooltip_text = "Show in filesystem."
+		registry_path_filesystem_button.tooltip_text = "Show in FileSystem"
 	else:
 		return
 
@@ -151,7 +153,7 @@ func _validate_fields() -> void:
 			for p: String in properties:
 				if not class_props.has(p.strip_edges()):
 					var msg := INFO_MESSAGES.properties_cant_verify.duplicate()
-					msg[0] = msg[0].format({ "prop": p })
+					msg[0] = tr(msg[0]).format({ "prop": p })
 					info_messages.append(msg)
 			if info_messages.size() == msgs_before:
 				info_messages.append(INFO_MESSAGES.properties_valid)
@@ -197,7 +199,7 @@ func _fill_info_label(info_messages: Array[Array]) -> void:
 		var text: String = message[0]
 		var color: Color = message[1]
 		info_label.push_color(color)
-		info_label.append_text("• " + text)
+		info_label.append_text("• " + tr(text))
 		info_label.pop()
 
 
@@ -311,7 +313,7 @@ func _on_class_list_dialog_button_pressed() -> void:
 		_on_class_list_dialog_confirmed,
 		&"Resource",
 		class_restriction,
-		"Choose Class Restriction",
+		tr("Choose Class Restriction"),
 	)
 
 
