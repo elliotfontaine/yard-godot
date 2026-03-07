@@ -29,7 +29,9 @@ const TRANSLATIONS := {
 	"es_ES": "res://addons/yard/editor_only/locale/es_ES.po",
 	"fr_FR": "res://addons/yard/editor_only/locale/fr_FR.po",
 	"it_IT": "res://addons/yard/editor_only/locale/it_IT.po",
+	"pl_PL": "res://addons/yard/editor_only/locale/pl_PL.po",
 	"pt_BR": "res://addons/yard/editor_only/locale/pt_BR.po",
 	"ru_RU": "res://addons/yard/editor_only/locale/ru_RU.po",
+	"tr_TR": "res://addons/yard/editor_only/locale/tr_TR.po",
 	"zh_CN": "res://addons/yard/editor_only/locale/zh_CN.po",
 }
