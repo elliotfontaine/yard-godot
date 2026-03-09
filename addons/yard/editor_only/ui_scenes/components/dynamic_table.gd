@@ -109,6 +109,8 @@ var _text_editor_line_edit: LineEdit
 var _color_editor: Control
 var _resource_editor: EditorResourcePicker
 var _path_editor: EditorFileDialog
+var _enum_editor: PopupMenu
+var _enum_editor_last_idx: int = -1
 var _double_click_timer: Timer
 var _click_count := 0
 var _last_click_pos := Vector2.ZERO
@@ -439,6 +441,11 @@ func _setup_editing_components() -> void:
 	_path_editor.file_selected.connect(_on_path_editor_path_selected)
 	add_child(_path_editor)
 
+	_enum_editor = PopupMenu.new()
+	_enum_editor.index_pressed.connect(_on_enum_editor_index_pressed)
+	_enum_editor.popup_hide.connect(_on_enum_editor_popup_hide)
+	add_child(_enum_editor)
+
 	_double_click_timer = Timer.new()
 	_double_click_timer.wait_time = _double_click_threshold / 1000.0
 	_double_click_timer.one_shot = true
@@ -541,6 +548,8 @@ func _start_cell_editing(row: int, col: int) -> void:
 		_open_resource_editor(row, col)
 	elif column.is_path_column():
 		_open_path_editor(row, col)
+	elif column.is_enum_column():
+		_open_enum_editor(row, col)
 	elif column.is_numeric_column():
 		_open_text_editor(row, col)
 	elif column.is_string_column():
@@ -610,6 +619,35 @@ func _open_path_editor(row: int, col: int) -> void:
 	_path_editor.popup_centered_ratio(0.55)
 
 
+func _open_enum_editor(row: int, col: int) -> void:
+	_editing_cell = [row, col]
+	var current_value: Variant = get_cell_value(row, col)
+	var column := get_column(col)
+	var is_numeric := column.is_numeric_column()
+
+	@warning_ignore("incompatible_ternary")
+	var value_iter: Variant = -1 if is_numeric else ""
+
+	_enum_editor.clear()
+	for choice: String in column.hint_string.split(",", false):
+		var colon := choice.rfind(":")
+		var text: String
+		if colon != -1:
+			text = choice.substr(0, colon)
+			value_iter = choice.substr(colon + 1).to_int()
+		else:
+			text = choice
+			value_iter = value_iter + 1 if is_numeric else text
+
+		_enum_editor.add_radio_check_item(text)
+		_enum_editor.set_item_metadata(_enum_editor.item_count - 1, value_iter)
+		if current_value == value_iter:
+			_enum_editor.toggle_item_checked(_enum_editor.item_count - 1)
+
+	_enum_editor.position = DisplayServer.mouse_get_position()
+	_enum_editor.popup()
+
+
 func _finish_editing(save_changes: bool = true) -> void:
 	if _editing_cell[0] == -1 and _editing_cell[1] == -1:
 		return
@@ -637,6 +675,13 @@ func _get_editor_value_for_column(column: ColumnConfig) -> Variant:
 		return _resource_editor.edited_resource
 	elif column.is_path_column():
 		return _path_editor.current_path
+	elif column.is_enum_column():
+		if _enum_editor_last_idx != -1:
+			var new: Variant = _enum_editor.get_item_metadata(_enum_editor_last_idx)
+			_enum_editor_last_idx = -1
+			return new
+		else:
+			return null
 
 	var text := _text_editor_line_edit.text
 	if column.is_string_column():
@@ -1636,7 +1681,7 @@ func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> voi
 	# TODO: clean / refactor method
 	if _editing_cell[1] >= 0:
 		var column := get_column(_editing_cell[1])
-		if column.is_resource_column() or column.is_path_column():
+		if column.is_resource_column() or column.is_path_column() or column.is_enum_column():
 			_finish_editing(false)
 		else:
 			_finish_editing(true)
@@ -1782,6 +1827,17 @@ func _on_path_editor_path_selected(path: String) -> void:
 	_finish_editing(true)
 
 
+func _on_enum_editor_index_pressed(idx: int) -> void:
+	_enum_editor_last_idx = idx
+	_finish_editing(true)
+
+
+func _on_enum_editor_popup_hide() -> void:
+	# for '_on_enum_editor_id_pressed' to trigger first
+	await get_tree().create_timer(0.05).timeout
+	_finish_editing(false)
+
+
 func _on_double_click_timeout() -> void:
 	_click_count = 0
 
@@ -1917,7 +1973,7 @@ class ColumnConfig:
 
 
 	func is_enum_column() -> bool:
-		return type == TYPE_INT and property_hint == PROPERTY_HINT_ENUM
+		return property_hint == PROPERTY_HINT_ENUM
 
 
 	func is_resource_column() -> bool:
