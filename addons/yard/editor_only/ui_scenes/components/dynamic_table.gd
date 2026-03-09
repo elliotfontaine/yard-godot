@@ -927,24 +927,32 @@ func _draw_cell_text(rect: Rect2, row: int, col: int) -> void:
 
 func _draw_cell_enum(rect: Rect2, row: int, col: int) -> void:
 	var cell_value: Variant = get_cell_value(row, col)
-	if not cell_value is int:
-		_draw_cell_text(rect, row, col)
-		return
-
-	var value_str: String
-	var key_found := -1
 	var column := _columns[col]
 	var hint_arr: Array = column.hint_string.split(",", false)
-	for i in hint_arr.size():
-		var colon_found: int = hint_arr[i].rfind(":")
-		if colon_found == -1:
-			key_found = cell_value
-			break
-		if hint_arr[i].substr(colon_found + 1).to_int() == cell_value:
-			key_found = i
-			break
+	var value_str := ""
 
-	value_str = hint_arr[key_found] if key_found != -1 and key_found < hint_arr.size() else "?:%s" % cell_value
+	if not column.is_numeric_column():
+		var label := str(cell_value)
+		for entry: String in hint_arr:
+			var colon := entry.rfind(":")
+			var entry_label := entry.substr(0, colon) if colon != -1 else entry
+			if entry_label == label:
+				value_str = label
+	else:
+		var value_map: Dictionary = { }
+		var next_implicit := 0
+		for entry: String in hint_arr:
+			var colon := entry.rfind(":")
+			if colon == -1:
+				value_map[next_implicit] = entry
+				next_implicit += 1
+			else:
+				var explicit_val := entry.substr(colon + 1).to_int()
+				value_map[explicit_val] = entry.substr(0, colon)
+				next_implicit = explicit_val + 1
+
+		var int_value := cell_value as int
+		value_str = "%s:%s" % [value_map[int_value], int_value] if value_map.has(int_value) else "?:%d" % int_value
 
 	var text_font: Font = column.custom_font if column.custom_font else font
 	var h_alignment := HORIZONTAL_ALIGNMENT_CENTER
