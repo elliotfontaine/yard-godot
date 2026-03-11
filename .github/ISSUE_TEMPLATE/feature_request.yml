@@ -19,7 +19,10 @@ body:
   - type: textarea
     attributes:
       label: Proposed solution
-      description: Describe what you'd like to happen. Be as specific as you can.
+      description: Describe how to overcome the limitation you described above.
+        Your proposal should make all the necessary design decisions such that they can be discussed by contributors.
+        Include images, mock-ups, diagrams, code, if applicable.
+      placeholder: e.g. I propose to add a new topbar button that allows to do X, which would work like this...
     validations:
       required: true
 
