@@ -59,7 +59,8 @@ const CELL_INVALID := "<INVALID>"
 @export var progress_bar_end_color: Color = Color.FOREST_GREEN
 @export var progress_background_color: Color = Color(0.3, 0.3, 0.3, 1.0)
 @export var progress_border_color: Color = Color(0.6, 0.6, 0.6, 1.0)
-@export var progress_text_color: Color = Color(1.0, 1.0, 1.0, 1.0)
+@export var progress_text_color_light: Color = Color(1.0, 1.0, 1.0, 1.0)
+@export var progress_text_color_dark: Color = Color.BLACK
 @export_group("Invalid cell")
 @export var invalid_cell_color: Color = Color("252b3aff")
 
@@ -90,6 +91,7 @@ var _icon_sort := " ▼ "
 var _last_column_sorted := -1
 var _ascending := true
 var _dragging_progress := false
+var _dragging_start_value: Variant # int/float
 var _progress_drag_row := -1
 var _progress_drag_col := -1
 
@@ -244,18 +246,25 @@ func set_native_theming(delay: int = 0) -> void:
 		await get_tree().create_timer(delay).timeout
 
 	var root := EditorInterface.get_base_control()
+	font = root.get_theme_font(&"main", &"EditorFonts")
+	default_font_color = root.get_theme_color(&"font_color", &"Editor")
+	font_size = root.get_theme_font_size(&"main_size", &"EditorFonts")
 	header_color = root.get_theme_color(&"dark_color_1", &"Editor")
 	row_color = root.get_theme_color(&"base_color", &"Editor")
 	alternate_row_color = root.get_theme_color(&"dark_color_3", &"Editor")
-	#selected_row_back_color = root.get_theme_color(&"highlight_color", &"Editor")
 	selected_row_back_color = Color(1, 1, 1, 0.20)
 	selected_cell_back_color = root.get_theme_color(&"accent_color", &"Editor")
 	header_filter_active_font_color = root.get_theme_color(&"accent_color", &"Editor")
 	grid_color = root.get_theme_color(&"dark_color_1", &"Editor").darkened(0.4)
 	invalid_cell_color = EditorThemeUtils.get_base_color(0.9)
-	font = root.get_theme_font(&"main", &"EditorFonts")
-	default_font_color = root.get_theme_color(&"font_color", &"Editor")
-	font_size = root.get_theme_font_size(&"main_size", &"EditorFonts")
+	progress_background_color = root.get_theme_color(&"prop_category", &"Editor")
+	progress_border_color = root.get_theme_color(&"extra_border_color_2", &"Editor")
+	progress_text_color_light = default_font_color
+	progress_text_color_dark = root.get_theme_color(&"dark_color_1", &"Editor")
+	progress_bar_start_color = root.get_theme_color(&"axis_x_color", &"Editor")
+	progress_bar_middle_color = root.get_theme_color(&"executing_line_color", &"CodeEdit")
+	progress_bar_end_color = root.get_theme_color(&"success_color", &"Editor")
+
 	row_height = font_size * 2
 	header_height = font_size * 2
 
@@ -344,7 +353,11 @@ func update_cell(row: int, col: int, value: Variant) -> void:
 
 func get_cell_value(row: int, col: int) -> Variant:
 	if row >= 0 and row < _data.size() and col >= 0 and col < _data[row].size():
-		return _data[row][col]
+		var raw: Variant = _data[row][col]
+		if get_column(col).is_numeric_column() and not _is_numeric_value(raw):
+			return 0
+		else:
+			return raw
 	return null
 
 
@@ -369,19 +382,11 @@ func set_selected_cell(row: int, col: int) -> void:
 
 func set_progress_value(row: int, col: int, value: float) -> void:
 	if row >= 0 and row < _data.size() and col >= 0 and col < _columns.size():
-		if _columns[col].is_progress_column():
-			_data[row][col] = clamp(value, 0.0, 1.0)
+		var column := get_column(col)
+		if column.is_range_column():
+			var range_cfg := column.get_range_config()
+			_data[row][col] = clamp(value, range_cfg.get(&"min"), range_cfg.get(&"max"))
 			queue_redraw()
-
-
-func set_progress_colors(bar_start_color: Color, bar_middle_color: Color, bar_end_color: Color, bg_color: Color, border_c: Color, text_c: Color) -> void:
-	progress_bar_start_color = bar_start_color
-	progress_bar_middle_color = bar_middle_color
-	progress_bar_end_color = bar_end_color
-	progress_background_color = bg_color
-	progress_border_color = border_c
-	progress_text_color = text_c
-	queue_redraw()
 
 
 func select_all_rows() -> void:
@@ -502,21 +507,6 @@ func _is_numeric_value(value: Variant) -> bool:
 		return false
 	var str_val := str(value)
 	return str_val.is_valid_float() or str_val.is_valid_int()
-
-
-# TODO: refactor when rebuilding the range-type cell
-func _get_progress_value(value: Variant) -> float:
-	if value == null:
-		return 0.0
-	var num_val := 0.0
-	if _is_numeric_value(value):
-		num_val = float(str(value))
-	if num_val >= 0.0 and num_val <= 1.0:
-		return num_val
-	elif num_val >= 0.0 and num_val <= 100.0:
-		return num_val / 100.0
-	else:
-		return clamp(num_val, 0.0, 1.0)
 
 
 func _store_selected_rows() -> void:
@@ -708,7 +698,7 @@ func _get_cell_rect(row: int, col: int) -> Rect2:
 ## Dispatches drawing of a single data cell to the correct typed draw function.
 func _dispatch_cell_draw(cell_rect: Rect2, row: int, col_idx: int) -> void:
 	var col := _columns[col_idx]
-	if col.is_progress_column():
+	if col.is_range_column():
 		_draw_cell_progress(cell_rect, row, col_idx)
 	elif col.is_boolean_column():
 		_draw_cell_bool(cell_rect, row, col_idx)
@@ -807,22 +797,28 @@ func _draw_cells_column_range(row: int, row_y: float, col_from: int, col_to: int
 
 
 func _draw_cell_progress(rect: Rect2, row: int, col: int) -> void:
-	var cell_value := 0.0
-	if row < _data.size() and col < _data[row].size():
-		cell_value = _get_progress_value(_data[row][col])
+	var cell_value: float = get_cell_value(row, col)
+	var range_cfg := get_column(col).get_range_config()
+	var progress: float = inverse_lerp(range_cfg.get(&"min"), range_cfg.get(&"max"), cell_value)
+	var progress_color := _get_interpolated_three_colors(progress_bar_start_color, progress_bar_middle_color, progress_bar_end_color, progress)
 
-	var bar := rect.grow(-4.0)
+	var bar := rect.grow(-2.0 * EditorThemeUtils.scale)
+	var fill := Rect2(bar.position, Vector2(bar.size.x * minf(progress, 1.0), bar.size.y))
+
+	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_CENTER)
+	var numeric_text := str(snappedf(cell_value, 0.001))
+	var display_text := _get_display_text(numeric_text, font, rect.size.x - absf(x_margin_val))
+	var text_width := font.get_string_size(display_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	var text_pos := Vector2(rect.position.x + (rect.size.x - text_width) / 2.0, _get_text_baseline_y(rect.position.y))
+	var fill_width: float = maxf(0.001, fill.position.x + fill.size.x - text_pos.x - abs(x_margin_val) + 5 * EditorThemeUtils.scale)
 
 	draw_rect(bar, progress_background_color)
-	draw_rect(bar, progress_border_color, false, 1.0)
-
-	if bar.size.x * cell_value > 0:
-		var fill := Rect2(bar.position, Vector2(bar.size.x * cell_value, bar.size.y))
-		draw_rect(fill, _get_interpolated_three_colors(progress_bar_start_color, progress_bar_middle_color, progress_bar_end_color, cell_value))
-
-	var perc_text := str(int(round(cell_value * 100.0))) + "%"
-	var text_size := font.get_string_size(perc_text, HORIZONTAL_ALIGNMENT_CENTER, bar.size.x, font_size)
-	draw_string(font, Vector2(bar.position.x + bar.size.x / 2.0 - text_size.x / 2.0, bar.position.y + bar.size.y / 2.0 + text_size.y / 2.0 - 5.0), perc_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, progress_text_color)
+	draw_string(font, text_pos, display_text, HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - abs(x_margin_val), font_size, progress_text_color_light)
+	draw_rect(fill, progress_color)
+	@warning_ignore("integer_division")
+	draw_string_outline(font, text_pos, display_text, HORIZONTAL_ALIGNMENT_LEFT, fill_width, font_size, font_size / 3, progress_color)
+	draw_string(font, text_pos, display_text, HORIZONTAL_ALIGNMENT_LEFT, fill_width, font_size, Color.BLACK)
+	draw_rect(bar, progress_border_color, false, 1.0 * EditorThemeUtils.scale)
 
 
 func _draw_cell_bool(rect: Rect2, row: int, col: int) -> void:
@@ -1149,7 +1145,7 @@ func _apply_filter(search_key: String) -> void:
 func _key_for_sort(value: Variant, column: ColumnConfig) -> Variant:
 	if value == null:
 		return null
-	if column.is_progress_column() or column.is_numeric_column():
+	if column.is_range_column() or column.is_numeric_column():
 		return float(value)
 	if column.is_boolean_column():
 		return (1 if bool(value) else 0)
@@ -1199,7 +1195,9 @@ func _get_row_at_y(y: float) -> int:
 ## Returns the baseline Y for drawing text vertically centered in a cell.
 func _get_text_baseline_y(cell_y: float, cell_height: float = -1.0) -> float:
 	var h := cell_height if cell_height >= 0.0 else row_height
-	return cell_y + (h / 2.0) + (font.get_height(font_size) / 2.0) - font.get_descent(font_size)
+	var ascent := font.get_ascent(font_size)
+	var descent := font.get_descent(font_size)
+	return cell_y + (h + ascent - descent) / 2.0
 
 
 ## Total width of frozen (pinned) columns.
@@ -1262,7 +1260,7 @@ func _update_tooltip(mouse_pos: Vector2) -> void:
 		var row_idx := _get_row_at_y(mouse_pos.y)
 		if row_idx >= 0:
 			var column := _columns[col_idx]
-			if not column.is_progress_column() and not column.is_boolean_column():
+			if not column.is_range_column() and not column.is_boolean_column():
 				new_tooltip = str(get_cell_value(row_idx, col_idx))
 			current_cell = [row_idx, col_idx]
 
@@ -1273,30 +1271,14 @@ func _update_tooltip(mouse_pos: Vector2) -> void:
 
 func _is_clicking_progress_bar(mouse_pos: Vector2) -> bool:
 	var row := _get_row_at_y(mouse_pos.y)
-	if row < 0:
+	var col := _get_col_at_x(mouse_pos.x)
+	if -1 in [row, col]:
 		return false
 
-	var clicked_col_idx := _get_col_at_x(mouse_pos.x)
-	if clicked_col_idx < 0:
-		return false
-
-	var column := _columns[clicked_col_idx]
-	if not column.is_progress_column():
-		return false
-
-	if focused_row != row or focused_col != clicked_col_idx:
-		focused_row = row
-		focused_col = clicked_col_idx
-		if not selected_rows.has(row):
-			selected_rows.clear()
-			selected_rows.append(row)
-			_anchor_row = row
-		cell_selected.emit(focused_row, focused_col)
-		queue_redraw()
-
-	_progress_drag_row = row
-	_progress_drag_col = clicked_col_idx
-	return true
+	var column := _columns[col]
+	if column.is_range_column():
+		return true
+	return false
 
 
 func _toggle_checkbox(row: int, col: int) -> void:
@@ -1391,8 +1373,8 @@ func _handle_key_input(event: InputEventKey) -> void:
 			if get_column(current_focused_c).is_boolean_column():
 				_toggle_checkbox(current_focused_r, current_focused_c)
 			else:
-			_start_cell_editing(current_focused_r, current_focused_c)
-			key_operation_performed = true
+				_start_cell_editing(current_focused_r, current_focused_c)
+				key_operation_performed = true
 		else:
 			event_consumed = false
 
@@ -1574,9 +1556,8 @@ func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
 
 func _handle_mouse_button(event: InputEventMouseButton) -> void:
 	if event.button_index == MOUSE_BUTTON_LEFT:
+		var m_pos := event.position
 		if event.pressed:
-			var m_pos := event.position
-
 			# Double-click handling
 			if (
 				_click_count == 1
@@ -1605,15 +1586,23 @@ func _handle_mouse_button(event: InputEventMouseButton) -> void:
 					_handle_cell_click(m_pos, event)
 
 					if _is_clicking_progress_bar(m_pos):
+						var row := _get_row_at_y(m_pos.y)
+						var col := _get_col_at_x(m_pos.x)
+						_dragging_start_value = get_cell_value(row, col)
 						_dragging_progress = true
+						_progress_drag_row = row
+						_progress_drag_col = col
 
 				if _mouse_over_divider >= 0:
 					_resizing_column = _mouse_over_divider
 					_resizing_start_pos = int(m_pos.x)
 					_resizing_start_width = int(_columns[_resizing_column].current_width)
 
-		else:
-			# Mouse button released
+		else: # Mouse button released
+			if _dragging_progress:
+				var new_val: Variant = get_cell_value(_progress_drag_row, _progress_drag_col)
+				update_cell(_progress_drag_row, _progress_drag_col, new_val)
+				cell_edited.emit(_progress_drag_row, _progress_drag_col, _dragging_start_value, new_val)
 			_resizing_column = -1
 			_dragging_progress = false
 			_progress_drag_row = -1
@@ -1651,7 +1640,18 @@ func _handle_progress_drag(mouse_pos: Vector2) -> void:
 	if bar_w <= 0:
 		return
 
-	var new_progress := clampf((mouse_pos.x - bar_x) / bar_w, 0.0, 1.0)
+	var column := get_column(_progress_drag_col)
+	var range_cfg := column.get_range_config()
+	var weight := (mouse_pos.x - bar_x) / bar_w
+	var new_progress: float = snappedf(
+		lerpf(range_cfg.get(&"min"), range_cfg.get(&"max"), weight),
+		range_cfg.get(&"step"),
+	)
+	if not range_cfg.has(&"or_greater"):
+		new_progress = min(new_progress, range_cfg.get(&"max"))
+	if not range_cfg.has(&"or_less"):
+		new_progress = max(new_progress, range_cfg.get(&"min"))
+
 	if _progress_drag_row < _data.size() and _progress_drag_col < _data[_progress_drag_row].size():
 		_data[_progress_drag_row][_progress_drag_col] = new_progress
 		progress_changed.emit(_progress_drag_row, _progress_drag_col, new_progress)
@@ -1675,7 +1675,7 @@ func _handle_checkbox_click(mouse_pos: Vector2) -> bool:
 		_toggle_checkbox(row, col)
 		return true
 
-		return false
+	return false
 
 
 func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> void:
@@ -1944,9 +1944,8 @@ class ColumnConfig:
 		return type == TYPE_STRING and is_filesystem_hint
 
 
-	func is_progress_column() -> bool:
-		#return type in [TYPE_FLOAT, TYPE_INT] and property_hint == PROPERTY_HINT_RANGE
-		return false
+	func is_range_column() -> bool:
+		return type in [TYPE_FLOAT, TYPE_INT] and property_hint == PROPERTY_HINT_RANGE
 
 
 	func is_boolean_column() -> bool:
@@ -1987,3 +1986,21 @@ class ColumnConfig:
 
 	func is_dictionary_column() -> bool:
 		return type == TYPE_DICTIONARY
+
+
+	func get_range_config() -> Dictionary[StringName, Variant]:
+		if not is_range_column():
+			return { }
+		var hint_elements := hint_string.split(",", false)
+		var r_min := float(hint_elements[0]) if hint_elements.size() > 0 else 0.0
+		var r_max := float(hint_elements[1]) if hint_elements.size() > 1 else 1.0
+		var r_step := float(hint_elements[2]) if hint_elements.size() > 2 else (0.001 if is_float_column() else 1.0)
+		var result: Dictionary[StringName, Variant] = { &"min": r_min, &"max": r_max, &"step": r_step }
+		for hint_str in hint_elements.slice(3):
+			match hint_str:
+				"or_greater":
+					result.set(&"or_greater", true)
+				"or_less":
+					result.set(&"or_less", true)
+
+		return result

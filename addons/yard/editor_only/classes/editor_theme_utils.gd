@@ -13,9 +13,9 @@ static var class_icon_size: int:
 	get:
 		return editor_theme.get_constant("class_icon_size", "Editor")
 
-static var scale: int:
+static var scale: float:
 	get:
-		return editor_theme.get_constant("scale", "Editor")
+		return EditorInterface.get_editor_scale()
 
 static var color_error: Color:
 	get:
