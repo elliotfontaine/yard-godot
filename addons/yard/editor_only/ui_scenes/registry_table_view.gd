@@ -350,6 +350,37 @@ func get_row_resource_string_id(row: int) -> StringName:
 	return string_id
 
 
+func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
+	var row := dynamic_table.focused_row
+	var col := dynamic_table.focused_col
+	var has_selected_cell := -1 not in [row, col]
+	var has_selected_row: = row != -1
+	var cell_value: Variant = dynamic_table.get_cell_value(row, col) if has_selected_cell else null
+	var cant_be_cut := col in [UID_COLUMN, STRINGID_COLUMN]
+	var is_cell_invalid: bool = cell_value is String and cell_value == dynamic_table.CELL_INVALID
+	var is_resource_cell := has_selected_cell and cell_value is Resource
+
+	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), !has_selected_row)
+	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.COPY_STRING_ID), !has_selected_row)
+	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.COPY_UID), !has_selected_row)
+	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.SHOW_IN_FILESYSTEM), !has_selected_row)
+	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.CUT_CELL_VALUE), !has_selected_cell or cant_be_cut or is_cell_invalid)
+	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.COPY_CELL_VALUE), !has_selected_cell or is_cell_invalid)
+	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.PASTE_TO_CELL), !has_selected_cell or is_cell_invalid)
+	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.INSPECT_RESOURCE), !is_resource_cell)
+
+	for select_action: int in [EditMenuAction.SELECT_ALL, EditMenuAction.INVERT_SELECTION, EditMenuAction.UNSELECT]:
+		edit_menu.set_item_disabled(edit_menu.get_item_index(select_action), false)
+
+	if dynamic_table.selected_rows.size() > 1:
+		edit_menu.set_item_text(
+			edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES),
+			"Delete Entries (%s)" % dynamic_table.selected_rows.size(),
+		)
+	else:
+		edit_menu.set_item_text(edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), "Delete Entry")
+
+
 func _on_drag_begin() -> void:
 	if not current_registry:
 		drag_and_drop_info_panel.visible = false
@@ -509,30 +540,7 @@ func _toggle_add_entry_button() -> void:
 
 
 func _toggle_edit_context_menu_items() -> void:
-	var row := dynamic_table.focused_row
-	var col := dynamic_table.focused_col
-	var has_selected_cell := -1 not in [row, col]
-	var has_selected_row: = row != -1
-	var cell_value: Variant = dynamic_table.get_cell_value(row, col) if has_selected_cell else null
-	var cant_be_cut := col in [UID_COLUMN, STRINGID_COLUMN]
-	var is_resource_cell := has_selected_cell and cell_value is Resource
-
-	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), !has_selected_row)
-	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.COPY_STRING_ID), !has_selected_row)
-	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.COPY_UID), !has_selected_row)
-	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.SHOW_IN_FILESYSTEM), !has_selected_row)
-	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.CUT_CELL_VALUE), !has_selected_cell or cant_be_cut)
-	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.COPY_CELL_VALUE), !has_selected_cell)
-	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.PASTE_TO_CELL), !has_selected_cell)
-	edit_context_menu.set_item_disabled(edit_context_menu.get_item_index(EditMenuAction.INSPECT_RESOURCE), !is_resource_cell)
-
-	if dynamic_table.selected_rows.size() > 1:
-		edit_context_menu.set_item_text(
-			edit_context_menu.get_item_index(EditMenuAction.DELETE_ENTRIES),
-			"Delete Entries (%s)" % dynamic_table.selected_rows.size(),
-		)
-	else:
-		edit_context_menu.set_item_text(edit_context_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), "Delete Entry")
+	toggle_edit_menu_items(edit_context_menu)
 
 
 func _delete_selected_entries() -> void:

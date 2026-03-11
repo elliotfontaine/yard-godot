@@ -208,32 +208,6 @@ func _setup_accelerators() -> void:
 			edit_menu.set_item_accelerator(edit_menu.get_item_index(action), edit_accelerators.get(action))
 
 
-func _populate_open_recent_submenu() -> void:
-	var file_menu := file_menu_button.get_popup()
-
-	var recent := PopupMenu.new()
-	for entry in _editor_state_data.recent_registry_uids:
-		if ResourceUID.has_id(ResourceUID.text_to_id(entry)):
-			recent.add_item(ResourceUID.uid_to_path(entry))
-	recent.add_separator()
-	recent.add_item(tr("Clear Recent Registries"), FileMenuAction.CLEAR_RECENT)
-	recent.set_item_disabled(recent.get_item_index(FileMenuAction.CLEAR_RECENT), recent.get_item_count() == 2) # only the "Clear" item
-	recent.id_pressed.connect(
-		func(id: int) -> void:
-			if id == FileMenuAction.CLEAR_RECENT:
-				_editor_state_data.clear_recent()
-				return
-			var uid := _editor_state_data.recent_registry_uids[id]
-			if RegistryIO.is_uid_valid(uid):
-				select_registry(uid) if _editor_state_data.opened_registries.has(uid) else open_registry(load(uid))
-	)
-
-	file_menu.set_item_submenu_node(
-		file_menu.get_item_index(FileMenuAction.OPEN_RECENT),
-		recent,
-	)
-
-
 ## Returns the index in the ItemList of the specified registry (by uid)
 ## -1 if not found
 func _get_registry_list_index(uid: String) -> int:
@@ -405,72 +379,36 @@ func _build_registry_display_names(uids: Array[String]) -> Dictionary:
 
 func _toggle_file_menu_items() -> void:
 	var file_menu := file_menu_button.get_popup()
-	var disabled := !is_any_registry_selected()
-	file_menu.set_item_disabled(file_menu.get_item_index(FileMenuAction.COPY_PATH), disabled)
-	file_menu.set_item_disabled(file_menu.get_item_index(FileMenuAction.COPY_UID), disabled)
-	file_menu.set_item_disabled(file_menu.get_item_index(FileMenuAction.SHOW_IN_FILESYSTEM), disabled)
-	file_menu.set_item_disabled(file_menu.get_item_index(FileMenuAction.COPY_UID), disabled)
-	file_menu.set_item_disabled(file_menu.get_item_index(FileMenuAction.CLOSE), disabled)
-	file_menu.set_item_disabled(file_menu.get_item_index(FileMenuAction.CLOSE_ALL), disabled)
-	file_menu.set_item_disabled(file_menu.get_item_index(FileMenuAction.CLOSE_OTHER_TABS), disabled)
-	file_menu.set_item_disabled(file_menu.get_item_index(FileMenuAction.CLOSE_TABS_BELOW), disabled)
+	_toggle_generic_file_menu_items(file_menu)
 
-	var no_closed_uids := _session_closed_uids.is_empty()
 	file_menu.set_item_disabled(
 		file_menu.get_item_index(FileMenuAction.REOPEN_CLOSED),
-		no_closed_uids,
+		_session_closed_uids.is_empty(),
 	)
-
-	var idx := _get_registry_list_index(_current_registry_uid)
-	var is_last := idx == registries_itemlist.item_count - 1
-	var has_single_file := registries_itemlist.item_count == 1
-	var has_no_file := registries_itemlist.item_count == 0
-	file_menu.set_item_disabled(
-		file_menu.get_item_index(FileMenuAction.CLOSE_TABS_BELOW),
-		is_last,
-	)
-	file_menu.set_item_disabled(
-		file_menu.get_item_index(FileMenuAction.CLOSE_OTHER_TABS),
-		has_single_file or has_no_file,
-	)
-	file_menu.set_item_disabled(
-		file_menu.get_item_index(FileMenuAction.CLOSE_ALL),
-		has_no_file,
-	)
-
 	_populate_open_recent_submenu()
 
 
 func _toggle_registry_context_menu_items() -> void:
+	_toggle_generic_file_menu_items(registry_context_menu)
+
+
+func _toggle_generic_file_menu_items(menu: PopupMenu) -> void:
+	var no_registry := !is_any_registry_selected()
+	for action: FileMenuAction in [
+		FileMenuAction.COPY_PATH,
+		FileMenuAction.COPY_UID,
+		FileMenuAction.SHOW_IN_FILESYSTEM,
+		FileMenuAction.CLOSE,
+	]:
+		menu.set_item_disabled(menu.get_item_index(action), no_registry)
+
 	var idx := _get_registry_list_index(_current_registry_uid)
-	var is_first := idx == 0
-	var is_last := idx == registries_itemlist.item_count - 1
-	var has_single_file := registries_itemlist.item_count == 1
-	var has_no_file := registries_itemlist.item_count == 0
-	registry_context_menu.set_item_disabled(
-		registry_context_menu.get_item_index(FileMenuAction.MOVE_UP),
-		is_first,
-	)
-	registry_context_menu.set_item_disabled(
-		registry_context_menu.get_item_index(FileMenuAction.MOVE_DOWN),
-		is_last,
-	)
-	registry_context_menu.set_item_disabled(
-		registry_context_menu.get_item_index(FileMenuAction.CLOSE_TABS_BELOW),
-		is_last,
-	)
-	registry_context_menu.set_item_disabled(
-		registry_context_menu.get_item_index(FileMenuAction.CLOSE_TABS_BELOW),
-		is_last,
-	)
-	registry_context_menu.set_item_disabled(
-		registry_context_menu.get_item_index(FileMenuAction.CLOSE_OTHER_TABS),
-		has_single_file or has_no_file,
-	)
-	registry_context_menu.set_item_disabled(
-		registry_context_menu.get_item_index(FileMenuAction.CLOSE_ALL),
-		has_no_file,
-	)
+	var count := registries_itemlist.item_count
+	menu.set_item_disabled(menu.get_item_index(FileMenuAction.MOVE_UP), idx == 0)
+	menu.set_item_disabled(menu.get_item_index(FileMenuAction.MOVE_DOWN), idx == count - 1)
+	menu.set_item_disabled(menu.get_item_index(FileMenuAction.CLOSE_TABS_BELOW), idx == count - 1)
+	menu.set_item_disabled(menu.get_item_index(FileMenuAction.CLOSE_OTHER_TABS), count <= 1)
+	menu.set_item_disabled(menu.get_item_index(FileMenuAction.CLOSE_ALL), count == 0)
 
 
 func _toggle_edit_menu_items() -> void:
@@ -480,30 +418,33 @@ func _toggle_edit_menu_items() -> void:
 			edit_menu.set_item_disabled(idx, true)
 		return
 
-	var dynamic_table := registry_table_view.dynamic_table
-	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), dynamic_table.focused_row == -1)
+	registry_table_view.toggle_edit_menu_items(edit_menu)
 
-	if dynamic_table.selected_rows.size() > 1:
-		edit_menu.set_item_text(
-			edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES),
-			"Delete Entries (%s)" % dynamic_table.selected_rows.size(),
-		)
-	else:
-		edit_menu.set_item_text(edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), "Delete Entry")
 
-	var has_selected_cell := -1 not in [dynamic_table.focused_row, dynamic_table.focused_col]
-	var cant_be_cut := dynamic_table.focused_col in [registry_table_view.UID_COLUMN, registry_table_view.STRINGID_COLUMN]
-	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.CUT_CELL_VALUE), !has_selected_cell or cant_be_cut)
-	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.COPY_CELL_VALUE), !has_selected_cell)
-	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.PASTE_TO_CELL), !has_selected_cell)
+func _populate_open_recent_submenu() -> void:
+	var file_menu := file_menu_button.get_popup()
 
-	var is_resource_cell := has_selected_cell and dynamic_table.get_column(dynamic_table.focused_col).is_resource_column()
-	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.INSPECT_RESOURCE), !is_resource_cell)
+	var recent := PopupMenu.new()
+	for entry in _editor_state_data.recent_registry_uids:
+		if ResourceUID.has_id(ResourceUID.text_to_id(entry)):
+			recent.add_item(ResourceUID.uid_to_path(entry))
+	recent.add_separator()
+	recent.add_item(tr("Clear Recent Registries"), FileMenuAction.CLEAR_RECENT)
+	recent.set_item_disabled(recent.get_item_index(FileMenuAction.CLEAR_RECENT), recent.get_item_count() == 2) # only the "Clear" item
+	recent.id_pressed.connect(
+		func(id: int) -> void:
+			if id == FileMenuAction.CLEAR_RECENT:
+				_editor_state_data.clear_recent()
+				return
+			var uid := _editor_state_data.recent_registry_uids[id]
+			if RegistryIO.is_uid_valid(uid):
+				select_registry(uid) if _editor_state_data.opened_registries.has(uid) else open_registry(load(uid))
+	)
 
-	var has_selected_row: = dynamic_table.focused_row != -1
-	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.COPY_STRING_ID), !has_selected_row)
-	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.COPY_UID), !has_selected_row)
-	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.SHOW_IN_FILESYSTEM), !has_selected_row)
+	file_menu.set_item_submenu_node(
+		file_menu.get_item_index(FileMenuAction.OPEN_RECENT),
+		recent,
+	)
 
 
 func _do_file_menu_action(action_id: int) -> void:
