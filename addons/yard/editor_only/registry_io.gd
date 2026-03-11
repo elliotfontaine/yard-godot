@@ -255,9 +255,9 @@ static func rebuild_property_index(registry: Registry) -> Error:
 			continue
 		var string_id := registry.get_string_id(uid)
 		for property: StringName in registry._property_index.keys():
-			if not property in res:
+			var value: Variant = _resolve_property_path(res, property)
+			if value == null:
 				continue
-			var value: Variant = res.get(property)
 			if not registry._property_index[property].has(value):
 				registry._property_index[property][value] = { }
 			registry._property_index[property][value][string_id] = true
@@ -446,3 +446,15 @@ static func _replace_indexed_properties_list(registry: Registry, properties: Arr
 	for p in properties:
 		if not registry._property_index.has(p):
 			registry._property_index[p] = { }
+
+
+static func _resolve_property_path(obj: Object, path: StringName) -> Variant:
+	var parts := String(path).split(".", false)
+	var current: Variant = obj
+	for part: String in parts:
+		if not current is Object:
+			return null
+		current = (current as Object).get(part)
+		if current == null:
+			return null
+	return current
