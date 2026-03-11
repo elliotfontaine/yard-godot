@@ -236,6 +236,35 @@ static func sync_registry_entries_from_scan_dir(registry: Registry) -> void:
 	_log.call("removed", "from", n_removed, first_removed)
 
 
+## Rebuilds the property index by loading every registered resource and reading
+## the currently indexed properties.[br][br]
+##
+## This is a blocking operation — it loads all resources synchronously.
+## Only properties already registered via [method add_indexed_property] are indexed.
+## Entries whose resource cannot be loaded are skipped.
+static func rebuild_property_index(registry: Registry) -> Error:
+	# Clear existing values while keeping registered property keys
+	for property: StringName in registry._property_index:
+		registry._property_index[property] = { }
+
+	for uid: StringName in registry.get_all_uids():
+		if not is_uid_valid(uid):
+			continue
+		var res := load(uid)
+		if res == null:
+			continue
+		var string_id := registry.get_string_id(uid)
+		for property: StringName in registry._property_index.keys():
+			if not property in res:
+				continue
+			var value: Variant = res.get(property)
+			if not registry._property_index[property].has(value):
+				registry._property_index[property][value] = { }
+			registry._property_index[property][value][string_id] = true
+
+	return ResourceSaver.save(registry)
+
+
 static func dir_has_matching_resource(registry: Registry, path: String, recursive: bool = false) -> bool:
 	var dir := DirAccess.open(path)
 	if dir == null:
@@ -286,35 +315,6 @@ static func dir_get_matching_resources(registry: Registry, path: String, recursi
 
 	dir.list_dir_end()
 	return matching_resources
-
-
-## Rebuilds the property index by loading every registered resource and reading
-## the currently indexed properties.[br][br]
-##
-## This is a blocking operation — it loads all resources synchronously.
-## Only properties already registered via [method add_indexed_property] are indexed.
-## Entries whose resource cannot be loaded are skipped.
-static func rebuild_property_index(registry: Registry) -> Error:
-	# Clear existing values while keeping registered property keys
-	for property: StringName in registry._property_index:
-		registry._property_index[property] = { }
-
-	for uid: StringName in registry.get_all_uids():
-		if not is_uid_valid(uid):
-			continue
-		var res := load(uid)
-		if res == null:
-			continue
-		var string_id := registry.get_string_id(uid)
-		for property: StringName in registry._property_index.keys():
-			if not property in res:
-				continue
-			var value: Variant = res.get(property)
-			if not registry._property_index[property].has(value):
-				registry._property_index[property][value] = { }
-			registry._property_index[property][value][string_id] = true
-
-	return ResourceSaver.save(registry)
 
 
 static func is_valid_registry_output_path(path: String) -> bool:
@@ -385,13 +385,8 @@ static func is_resource_class_string(class_string: String) -> bool:
 		return ClassUtils.is_class_of(class_string, "Resource")
 
 
-static func would_erase_entries(registry: Registry, new_restriction: String) -> bool:
-	for uid: StringName in registry.get_all_uids():
-		if not is_uid_valid(uid):
-			continue
-		if not is_resource_matching_restriction(registry, load(uid), new_restriction):
-			return true
-	return false
+static func is_uid_valid(uid: String) -> bool:
+	return ResourceUID.has_id(ResourceUID.text_to_id(uid))
 
 
 ## Returns true if [param string] is wrapped in matching single or double quotes.
@@ -403,14 +398,19 @@ static func is_quoted_string(string: String) -> bool:
 	return (first == "\"" and last == "\"") or (first == "'" and last == "'")
 
 
+static func would_erase_entries(registry: Registry, new_restriction: String) -> bool:
+	for uid: StringName in registry.get_all_uids():
+		if not is_uid_valid(uid):
+			continue
+		if not is_resource_matching_restriction(registry, load(uid), new_restriction):
+			return true
+	return false
+
+
 ## Strips the surrounding quotes from a quoted string.
 ## Call [method is_quoted_string] first to ensure the input is valid.
 static func unquote(string: String) -> String:
 	return string.substr(1, string.length() - 2)
-
-
-static func is_uid_valid(uid: String) -> bool:
-	return ResourceUID.has_id(ResourceUID.text_to_id(uid))
 
 
 static func _make_string_unique(registry: Registry, string_id: String) -> String:

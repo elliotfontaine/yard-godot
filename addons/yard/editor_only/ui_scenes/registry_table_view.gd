@@ -222,7 +222,7 @@ func update_view() -> void:
 
 	add_entry_container.visible = true
 
-	var resources: Dictionary[StringName, Resource] = current_registry.load_all_blocking() # WARNING: Blocking! # Source erreur
+	var resources: Dictionary[StringName, Resource] = current_registry.load_all_blocking()
 	set_columns_data(resources.values())
 	entries_data.clear()
 	for uid in current_registry.get_all_uids():
@@ -255,6 +255,51 @@ func update_view() -> void:
 		dynamic_table.grab_focus()
 		dynamic_table.set_selected_cell(table_state[0], table_state[1])
 		dynamic_table.selected_rows = table_state[2]
+
+
+func do_edit_menu_action(action_id: int) -> void:
+	if not current_registry:
+		return
+	match action_id:
+		EditMenuAction.DELETE_ENTRIES:
+			_ask_confirm_delete_entries()
+		EditMenuAction.COPY_STRING_ID:
+			DisplayServer.clipboard_set(get_row_resource_string_id(dynamic_table.focused_row))
+		EditMenuAction.COPY_UID:
+			DisplayServer.clipboard_set(get_row_resource_uid(dynamic_table.focused_row))
+		EditMenuAction.SHOW_IN_FILESYSTEM:
+			var uid := get_row_resource_uid(dynamic_table.focused_row)
+			var path := ResourceUID.uid_to_path(uid)
+			EditorInterface.get_file_system_dock().navigate_to_path(path)
+		EditMenuAction.INSPECT_RESOURCE:
+			var row := dynamic_table.focused_row
+			var col := dynamic_table.focused_col
+			if -1 not in [row, col]:
+				var value: Variant = dynamic_table.get_cell_value(row, col)
+				if value is Resource:
+					EditorInterface.edit_resource(value)
+		EditMenuAction.CUT_CELL_VALUE:
+			var row := dynamic_table.focused_row
+			var col := dynamic_table.focused_col
+			var value: Variant = dynamic_table.get_cell_value(row, col)
+			clipboard = value
+			_on_cell_edited(row, col, value, null)
+		EditMenuAction.COPY_CELL_VALUE:
+			var row := dynamic_table.focused_row
+			var col := dynamic_table.focused_col
+			var value: Variant = dynamic_table.get_cell_value(row, col)
+			clipboard = value
+		EditMenuAction.PASTE_TO_CELL:
+			var row := dynamic_table.focused_row
+			var col := dynamic_table.focused_col
+			var value: Variant = dynamic_table.get_cell_value(row, col)
+			_on_cell_edited(row, col, value, clipboard)
+		EditMenuAction.SELECT_ALL:
+			_select_all()
+		EditMenuAction.INVERT_SELECTION:
+			_invert_selection()
+		EditMenuAction.UNSELECT:
+			_unselect()
 
 
 func is_property_disabled(property_info: Dictionary) -> bool:
@@ -324,12 +369,12 @@ func _build_columns() -> Array[DynamicTable.ColumnConfig]:
 	var columns: Array[DynamicTable.ColumnConfig] = []
 
 	var string_id_column: DynamicTable.ColumnConfig = DynamicTable.ColumnConfig.new.callv(STRINGID_COLUMN_CONFIG)
-	string_id_column.custom_font_color = get_theme_color("font_hover_pressed_color", "Editor")
+	string_id_column.custom_font_color = get_theme_color(&"font_hover_pressed_color", &"Editor")
 	string_id_column.h_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	columns.append(string_id_column) #0
 
 	var uid_column: DynamicTable.ColumnConfig = DynamicTable.ColumnConfig.new.callv(UID_COLUMN_CONFIG)
-	uid_column.custom_font_color = get_theme_color("disabled_font_color", "Editor")
+	uid_column.custom_font_color = get_theme_color(&"disabled_font_color", &"Editor")
 	uid_column.property_hint = PROPERTY_HINT_FILE
 	columns.append(uid_column) #1
 
@@ -488,51 +533,6 @@ func _toggle_edit_context_menu_items() -> void:
 		)
 	else:
 		edit_context_menu.set_item_text(edit_context_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), "Delete Entry")
-
-
-func do_edit_menu_action(action_id: int) -> void:
-	if not current_registry:
-		return
-	match action_id:
-		EditMenuAction.DELETE_ENTRIES:
-			_ask_confirm_delete_entries()
-		EditMenuAction.COPY_STRING_ID:
-			DisplayServer.clipboard_set(get_row_resource_string_id(dynamic_table.focused_row))
-		EditMenuAction.COPY_UID:
-			DisplayServer.clipboard_set(get_row_resource_uid(dynamic_table.focused_row))
-		EditMenuAction.SHOW_IN_FILESYSTEM:
-			var uid := get_row_resource_uid(dynamic_table.focused_row)
-			var path := ResourceUID.uid_to_path(uid)
-			EditorInterface.get_file_system_dock().navigate_to_path(path)
-		EditMenuAction.INSPECT_RESOURCE:
-			var row := dynamic_table.focused_row
-			var col := dynamic_table.focused_col
-			if -1 not in [row, col]:
-				var value: Variant = dynamic_table.get_cell_value(row, col)
-				if value is Resource:
-					EditorInterface.edit_resource(value)
-		EditMenuAction.CUT_CELL_VALUE:
-			var row := dynamic_table.focused_row
-			var col := dynamic_table.focused_col
-			var value: Variant = dynamic_table.get_cell_value(row, col)
-			clipboard = value
-			_on_cell_edited(row, col, value, null)
-		EditMenuAction.COPY_CELL_VALUE:
-			var row := dynamic_table.focused_row
-			var col := dynamic_table.focused_col
-			var value: Variant = dynamic_table.get_cell_value(row, col)
-			clipboard = value
-		EditMenuAction.PASTE_TO_CELL:
-			var row := dynamic_table.focused_row
-			var col := dynamic_table.focused_col
-			var value: Variant = dynamic_table.get_cell_value(row, col)
-			_on_cell_edited(row, col, value, clipboard)
-		EditMenuAction.SELECT_ALL:
-			_select_all()
-		EditMenuAction.INVERT_SELECTION:
-			_invert_selection()
-		EditMenuAction.UNSELECT:
-			_unselect()
 
 
 func _delete_selected_entries() -> void:
