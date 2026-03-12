@@ -498,8 +498,9 @@ func _edit_entry_property(entry: StringName, property: StringName, old_value: Va
 
 	res.set(property, new_value)
 	print_rich(
-		"[color=%s]Set %s from %s to %s[/color]" % [
+		"[color=%s]Set %s—>%s from %s to %s[/color]" % [
 			LOGGING_INFO_COLOR,
+			current_registry.get_string_id(uid),
 			property,
 			old_value,
 			res.get(property),
