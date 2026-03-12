@@ -590,13 +590,12 @@ func _on_cell_selected(row: int, column: int) -> void:
 			_uid_resource_to_inspect = uid
 
 
-func _on_cell_right_selected(row: int, column: int, mouse_pos: Vector2) -> void:
-	#print("Cell right selected on row ", row, ", column ", column, " Mouse position x: ", mouse_pos.x, " y: ", mouse_pos.y)
+func _on_cell_right_selected(row: int, _column: int, _mouse_pos: Vector2) -> void:
 	if (row >= 0): # ignore header cells
 		edit_context_menu.popup(Rect2(DisplayServer.mouse_get_position(), Vector2.ZERO))
 
 
-func _on_multiple_rows_selected(rows: Array) -> void:
+func _on_multiple_rows_selected(_rows: Array) -> void:
 	#print("Multiple row selected : ", rows)
 	pass
 
@@ -616,9 +615,9 @@ func _on_cell_edited(row: int, column: int, old_value: Variant, new_value: Varia
 	update_view()
 
 
-func _on_header_clicked(column: int) -> void:
-	pass
+func _on_header_clicked(_column: int) -> void:
 	#print("Header clicked on column ", column)
+	pass
 
 
 func _on_column_resized(column: int, new_width: float) -> void:
@@ -635,7 +634,7 @@ func _on_column_resized(column: int, new_width: float) -> void:
 	current_cache_data.save()
 
 
-func _on_inspector_property_edited(property: StringName) -> void:
+func _on_inspector_property_edited(_property: StringName) -> void:
 	var object := EditorInterface.get_inspector().get_edited_object()
 	if object is not Resource or not current_registry:
 		return

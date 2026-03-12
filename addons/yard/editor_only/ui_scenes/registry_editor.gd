@@ -171,7 +171,6 @@ func select_registry(uid: String) -> void:
 	if EditorInterface.get_inspector().get_edited_object() != registry:
 		EditorInterface.inspect_object(registry, "", true)
 
-	#print("registry selected:  ", registry.resource_path, " (", uid, ")")
 	RegistryIO.sync_registry_entries_from_scan_dir(registry)
 	registry_table_view.current_registry = registry
 	_toggle_visibility_topbar_buttons()
@@ -440,6 +439,7 @@ func _populate_open_recent_submenu() -> void:
 				return
 			var uid := _editor_state_data.recent_registry_uids[id]
 			if RegistryIO.is_uid_valid(uid):
+				@warning_ignore("standalone_ternary")
 				select_registry(uid) if _editor_state_data.opened_registries.has(uid) else open_registry(load(uid))
 	)
 
