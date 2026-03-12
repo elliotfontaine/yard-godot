@@ -684,7 +684,7 @@ func _on_add_entry_button_pressed() -> void:
 		update_view()
 	else:
 		print_rich(
-			"[color=%s]● [b]ERROR:[/b] Invalid Resource Error: are you sure it is saved as a file ?[/color]" % [
+			"[color=%s]● [b]ERROR:[/b] This resource is not saved as a file. Click [b]⌄[/b] then [b]Save[/b] on the resource picker to save it first.[/color]" % [
 				EditorThemeUtils.color_error.to_html(false),
 			],
 		)
