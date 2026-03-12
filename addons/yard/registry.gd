@@ -24,6 +24,10 @@ extends Resource
 ##
 ## func _get_legendary_weapons() -> Array[StringName]:
 ##     return WEAPONS.filter_by_value(&"rarity", Rarity.LEGENDARY)
+##
+## # You can index and filter by the properties of inner resources, using dot notation.
+## func _get_enemies_with_legendary_weapons() -> Array[StringName]:
+##     return ENEMIES.filter_by_value(&"weapon.rarity", Rarity.LEGENDARY)
 ## [/codeblock][br]
 ##
 ## Registries and their entries are read-only at runtime and must be managed through
