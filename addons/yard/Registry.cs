@@ -157,13 +157,8 @@ public class Registry<[MustBeVariant] TResource> where TResource : Resource
 	/// <param name="cacheMode">ResourceLoader cache mode.</param>
 	public Dictionary<StringName, TResource> LoadAllBlocking(string typeHint = "", ResourceLoader.CacheMode cacheMode = ResourceLoader.CacheMode.Reuse)
 	{
-		var rawDict = (Dictionary<StringName, Resource>)_registry.Call("load_all_blocking", typeHint, (int)cacheMode);
-		var typedDict = new Dictionary<StringName, TResource>();
-		foreach (var key in rawDict.Keys)
-		{
-			typedDict[key] = (TResource) rawDict[key];
-		}
-		return typedDict;
+		var rawDict = (Dictionary)_registry.Call("load_all_blocking", typeHint, (int)cacheMode);
+		return new Dictionary<StringName, TResource>(rawDict);
 	}
 
 	/// <summary>
@@ -251,16 +246,8 @@ public class Registry<[MustBeVariant] TResource> where TResource : Resource
 
 		public Dictionary<StringName, TResource> GetLoadedResources()
 		{
-			var rawResources = (Dictionary<StringName, Resource>)_tracker.Get("resources");
-			var typedResources = new Dictionary<StringName, TResource>();
-			foreach (var key in rawResources.Keys)
-			{
-				if (rawResources[key] != null)
-				{
-					typedResources[key] = (TResource)rawResources[key];
-				}
-			}
-			return typedResources;
+			var rawResources = (Dictionary)_tracker.Get("resources");
+			return new Dictionary<StringName, TResource>(rawResources);
 		}
 
 		public Dictionary<StringName, bool> Requested => (Dictionary<StringName, bool>) _tracker.Get("requested");
