@@ -111,6 +111,14 @@ public class Registry<[MustBeVariant] TResource> where TResource : Resource
 	public Array<StringName> GetAllUids() => (Array<StringName>) _registry.Call("get_all_uids");
 
 	/// <summary>
+	/// Returns an Array of all property names that have been baked into the property index.
+	/// <para>Each entry in the returned array is a <c>StringName</c> corresponding to a property key that can be queried using 
+	/// <c>Registry.filter_by</c>, <c>Registry.filter_by_value</c>, or <c>Registry.filter_by_values</c></para>
+	/// <para>Use this method to inspect which properties are available for fast lookup at runtime, without loading the underlying resources.</para>
+	/// </summary>
+	public Array<StringName> GetIndexedProperties() => (Array<StringName>) _registry.Call("get_indexed_properties");
+
+	/// <summary>
 	/// Returns the number of entries in the registry. Empty registries always return 0.
 	/// See also IsEmpty.
 	/// </summary>
