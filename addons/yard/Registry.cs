@@ -139,13 +139,13 @@ public class Registry<[MustBeVariant] TResource> where TResource : Resource
 	/// Returns null if the entry does not exist or cannot be loaded.
 	/// typeHint and cacheMode are passed down to ResourceLoader.Load.
 	/// </summary>
-	   /// <param name="id">String ID or UID to load.</param>
-	   /// <param name="typeHint">Optional type hint for ResourceLoader.</param>
-	   /// <param name="cacheMode">ResourceLoader cache mode.</param>
-	   public TResource LoadEntry(StringName id, string typeHint = "", ResourceLoader.CacheMode cacheMode = ResourceLoader.CacheMode.Reuse)
-	   {
-		   return _registry.Call("load_entry", id, typeHint, (int)cacheMode).As<TResource>();
-	   }
+	/// <param name="id">String ID or UID to load.</param>
+	/// <param name="typeHint">Optional type hint for ResourceLoader.</param>
+	/// <param name="cacheMode">ResourceLoader cache mode.</param>
+	public TResource LoadEntry(StringName id, string typeHint = "", ResourceLoader.CacheMode cacheMode = ResourceLoader.CacheMode.Reuse)
+	{
+		return _registry.Call("load_entry", id, typeHint, (int)cacheMode).As<TResource>();
+	}
 
 	/// <summary>
 	/// Loads all registered resources in a blocking manner.
@@ -153,18 +153,18 @@ public class Registry<[MustBeVariant] TResource> where TResource : Resource
 	/// <para>Missing or invalid entries are skipped.</para>
 	/// <para><paramref name="typeHint"/> and <paramref name="cacheMode"/> are passed down to <see cref="ResourceLoader.Load"/>.</para>
 	/// </summary>
-	   /// <param name="typeHint">Optional type hint for ResourceLoader.</param>
-	   /// <param name="cacheMode">ResourceLoader cache mode.</param>
-	   public Dictionary<StringName, TResource> LoadAllBlocking(string typeHint = "", ResourceLoader.CacheMode cacheMode = ResourceLoader.CacheMode.Reuse)
-	   {
-		   var rawDict = (Dictionary<StringName, Resource>)_registry.Call("load_all_blocking", typeHint, (int)cacheMode);
-		   var typedDict = new Dictionary<StringName, TResource>();
-		   foreach (var key in rawDict.Keys)
-		   {
-			   typedDict[key] = (TResource) rawDict[key];
-		   }
-		   return typedDict;
-	   }
+	/// <param name="typeHint">Optional type hint for ResourceLoader.</param>
+	/// <param name="cacheMode">ResourceLoader cache mode.</param>
+	public Dictionary<StringName, TResource> LoadAllBlocking(string typeHint = "", ResourceLoader.CacheMode cacheMode = ResourceLoader.CacheMode.Reuse)
+	{
+		var rawDict = (Dictionary<StringName, Resource>)_registry.Call("load_all_blocking", typeHint, (int)cacheMode);
+		var typedDict = new Dictionary<StringName, TResource>();
+		foreach (var key in rawDict.Keys)
+		{
+			typedDict[key] = (TResource) rawDict[key];
+		}
+		return typedDict;
+	}
 
 	/// <summary>
 	/// Requests threaded loading for all entries and returns a <see cref="RegistryLoadTracker"/>.
@@ -172,14 +172,14 @@ public class Registry<[MustBeVariant] TResource> where TResource : Resource
 	/// and retrieve loaded resources as they become available.</para>
 	/// <para>See also <see cref="ResourceLoader.LoadThreadedRequest"/>.</para>
 	/// </summary>
-	   /// <param name="typeHint">Optional type hint for ResourceLoader.</param>
-	   /// <param name="useSubThreads">Whether to use sub-threads for loading.</param>
-	   /// <param name="cacheMode">ResourceLoader cache mode.</param>
-	   public RegistryLoadTracker LoadAllThreadedRequest(string typeHint = "", bool useSubThreads = false, ResourceLoader.CacheMode cacheMode = ResourceLoader.CacheMode.Reuse)
-	   {
-		   var tracker = (GodotObject) _registry.Call("load_all_threaded_request", typeHint, useSubThreads, (int)cacheMode);
-		   return new RegistryLoadTracker(tracker);
-	   }
+	/// <param name="typeHint">Optional type hint for ResourceLoader.</param>
+	/// <param name="useSubThreads">Whether to use sub-threads for loading.</param>
+	/// <param name="cacheMode">ResourceLoader cache mode.</param>
+	public RegistryLoadTracker LoadAllThreadedRequest(string typeHint = "", bool useSubThreads = false, ResourceLoader.CacheMode cacheMode = ResourceLoader.CacheMode.Reuse)
+	{
+		var tracker = (GodotObject) _registry.Call("load_all_threaded_request", typeHint, useSubThreads, (int)cacheMode);
+		return new RegistryLoadTracker(tracker);
+	}
 
 	// -----------------------------
 	// Filtering
