@@ -62,6 +62,10 @@ const PROPERTY_HINT_CUSTOM: int = 1024
 @export_storage var _class_restriction: StringName = &""
 @export_storage var _scan_directory: String = ""
 @export_storage var _recursive_scan: bool = false
+@export_storage var _scan_auto: bool = true
+@export_storage var _scan_remove: bool = true
+@export_storage var _scan_regex_include: String = ""
+@export_storage var _scan_regex_exclude: String = ""
 # Bidirectional map. Populated by RegistryIO in the editor, read-only at runtime.
 @export_storage var _uids_to_string_ids: Dictionary[StringName, StringName]
 @export_storage var _string_ids_to_uids: Dictionary[StringName, StringName]

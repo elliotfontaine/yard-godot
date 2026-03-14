@@ -1,7 +1,44 @@
-[gd_scene load_steps=3 format=3 uid="uid://b3g3e36v7g6kr"]
+[gd_scene load_steps=6 format=3 uid="uid://b3g3e36v7g6kr"]
 
 [ext_resource type="Script" uid="uid://ci6vvg34c6b6o" path="res://addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd" id="1_uots1"]
 [ext_resource type="Script" uid="uid://djrr6b7fc76rw" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="2_8x47h"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_v4rg0"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_khhqm"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 0.6)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_srqmm"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(1, 1, 1, 0.75)
+draw_center = false
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+expand_margin_left = 2.0
+expand_margin_top = 2.0
+expand_margin_right = 2.0
+expand_margin_bottom = 2.0
 
 [node name="NewRegistryDialog" type="ConfirmationDialog"]
 oversampling_override = 1.0
@@ -67,6 +104,15 @@ layout_mode = 2
 script = ExtResource("2_8x47h")
 icon_name = "Folder"
 
+[node name="IndexedPropertiesLabel" type="Label" parent="VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Indexed Properties:"
+
+[node name="IndexedPropertiesLineEdit" type="LineEdit" parent="VBoxContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
 [node name="ScanDirectoryLabel" type="Label" parent="VBoxContainer/GridContainer"]
 layout_mode = 2
 text = "Scan Directory:"
@@ -85,24 +131,97 @@ layout_mode = 2
 script = ExtResource("2_8x47h")
 icon_name = "Folder"
 
-[node name="RecursiveScanLabel" type="Label" parent="VBoxContainer/GridContainer"]
+[node name="AdvancedScanOptionsContainer" type="FoldableContainer" parent="VBoxContainer"]
 layout_mode = 2
-text = "Recursive Scan:"
+focus_neighbor_bottom = NodePath("MarginContainer/GridContainer/RecursiveScanCheckBox")
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/collapsed_font_color = Color(0, 0, 0, 1)
+theme_override_styles/title_panel = SubResource("StyleBoxEmpty_v4rg0")
+theme_override_styles/title_hover_panel = SubResource("StyleBoxEmpty_v4rg0")
+theme_override_styles/title_collapsed_panel = SubResource("StyleBoxEmpty_v4rg0")
+theme_override_styles/title_collapsed_hover_panel = SubResource("StyleBoxEmpty_v4rg0")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_v4rg0")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_v4rg0")
+folded = true
+title = "Advanced Scan Options"
 
-[node name="RecursiveScanCheckBox" type="CheckBox" parent="VBoxContainer/GridContainer"]
-unique_name_in_owner = true
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/AdvancedScanOptionsContainer"]
+visible = false
 layout_mode = 2
-text = "On"
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
-[node name="IndexedPropertiesLabel" type="Label" parent="VBoxContainer/GridContainer"]
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer"]
 layout_mode = 2
-text = "Indexed Properties:"
+theme_override_constants/h_separation = 12
+columns = 2
 
-[node name="IndexedPropertiesLineEdit" type="LineEdit" parent="VBoxContainer/GridContainer"]
+[node name="RecursiveScanLabel" type="Label" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
+layout_mode = 2
+text = "Recursive:"
+
+[node name="RecursiveScanCheckBox" type="CheckBox" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "category,price,texture"
+theme_override_styles/normal = SubResource("StyleBoxFlat_khhqm")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_khhqm")
+theme_override_styles/hover = SubResource("StyleBoxFlat_khhqm")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_khhqm")
+theme_override_styles/focus = SubResource("StyleBoxFlat_srqmm")
+text = "On"
+
+[node name="AutoRescanLabel" type="Label" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
+layout_mode = 2
+text = "Auto Rescan:"
+
+[node name="AutoRescanCheckBox" type="CheckBox" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_khhqm")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_khhqm")
+theme_override_styles/hover = SubResource("StyleBoxFlat_khhqm")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_khhqm")
+theme_override_styles/focus = SubResource("StyleBoxFlat_srqmm")
+text = "On"
+
+[node name="ScanRemoveUnlistedLabel" type="Label" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
+layout_mode = 2
+text = "Remove Unlisted:"
+
+[node name="ScanRemoveUnlistedCheckBox" type="CheckBox" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_khhqm")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_khhqm")
+theme_override_styles/hover = SubResource("StyleBoxFlat_khhqm")
+theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_khhqm")
+theme_override_styles/focus = SubResource("StyleBoxFlat_srqmm")
+text = "On"
+
+[node name="ScanRegexIncludeLabel" type="Label" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
+visible = false
+layout_mode = 2
+text = "RegEx Include:"
+
+[node name="ScanRegexIncludeLineEdit" type="LineEdit" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ScanRegexExcludeLabel" type="Label" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
+visible = false
+layout_mode = 2
+text = "RegEx Exclude:"
+
+[node name="ScanRegexExcludeLineEdit" type="LineEdit" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
 layout_mode = 2
@@ -147,9 +266,9 @@ scroll_active = false
 [connection signal="text_changed" from="VBoxContainer/GridContainer/ClassRestriction/ClassRestrictionLineEdit" to="." method="_on_class_restriction_line_edit_text_changed"]
 [connection signal="pressed" from="VBoxContainer/GridContainer/ClassRestriction/ClassListDialogButton" to="." method="_on_class_list_dialog_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/GridContainer/ClassRestriction/ClassFilesystemButton" to="." method="_on_class_filesystem_button_pressed"]
+[connection signal="text_changed" from="VBoxContainer/GridContainer/IndexedPropertiesLineEdit" to="." method="_on_indexed_properties_line_edit_text_changed"]
 [connection signal="text_changed" from="VBoxContainer/GridContainer/ScanDirectory/ScanDirectoryLineEdit" to="." method="_on_scan_directory_line_edit_text_changed"]
 [connection signal="pressed" from="VBoxContainer/GridContainer/ScanDirectory/ScanDirectoryFilesystemButton" to="." method="_on_scan_directory_filesystem_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/GridContainer/RecursiveScanCheckBox" to="." method="_on_recursive_scan_check_box_pressed"]
-[connection signal="text_changed" from="VBoxContainer/GridContainer/IndexedPropertiesLineEdit" to="." method="_on_indexed_properties_line_edit_text_changed"]
+[connection signal="folding_changed" from="VBoxContainer/AdvancedScanOptionsContainer" to="." method="_on_foldable_container_folding_changed"]
 [connection signal="text_changed" from="VBoxContainer/HBoxContainer/RegistryPath/RegistryPathLineEdit" to="." method="_on_registry_path_line_edit_text_changed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/RegistryPath/RegistryPathFilesystemButton" to="." method="_on_registry_path_filesystem_button_pressed"]

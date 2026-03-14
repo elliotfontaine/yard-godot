@@ -167,6 +167,16 @@ text = "Reindex"
 script = ExtResource("4_dd5h4")
 icon_name = "Loop"
 
+[node name="RescanButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Scan FileSystem for matching resources."
+focus_mode = 3
+theme_type_variation = &"FlatButton"
+text = "Rescan"
+script = ExtResource("4_dd5h4")
+icon_name = "FilenameFilter"
+
 [node name="ReportIssueButton" type="Button" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 10
@@ -273,6 +283,7 @@ unique_name_in_owner = true
 [connection signal="about_to_popup" from="VBoxContainer/HBoxContainer/ColumnsMenuButton" to="." method="_on_columns_menu_button_about_to_popup"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/RefreshViewButton" to="." method="_on_refresh_view_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/ReindexButton" to="." method="_on_reindex_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/RescanButton" to="." method="_on_rescan_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/ReportIssueButton" to="." method="_on_report_issue_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/OpenDocumentationButton" to="." method="_on_open_documentation_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/ReadMeButton" to="." method="_on_read_me_button_pressed"]

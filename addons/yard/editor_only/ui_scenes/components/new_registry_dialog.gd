@@ -54,16 +54,29 @@ var _file_dialog_state: FileDialogState
 @onready var class_filesystem_button: Button = %ClassFilesystemButton
 @onready var scan_directory_line_edit: LineEdit = %ScanDirectoryLineEdit
 @onready var scan_directory_filesystem_button: Button = %ScanDirectoryFilesystemButton
-@onready var recursive_scan_check_box: CheckBox = %RecursiveScanCheckBox
 @onready var registry_path_line_edit: LineEdit = %RegistryPathLineEdit
 @onready var registry_path_filesystem_button: Button = %RegistryPathFilesystemButton
 @onready var indexed_properties_line_edit: LineEdit = %IndexedPropertiesLineEdit
 @onready var info_label: RichTextLabel = %InfoLabel
+@onready var advanced_scan_options_container: FoldableContainer = $VBoxContainer/AdvancedScanOptionsContainer
+@onready var scan_recursive_check_box: CheckBox = %RecursiveScanCheckBox
+@onready var auto_rescan_check_box: CheckBox = %AutoRescanCheckBox
+@onready var scan_remove_unlisted_check_box: CheckBox = %ScanRemoveUnlistedCheckBox
+@onready var scan_regex_include_line_edit: LineEdit = %ScanRegexIncludeLineEdit
+@onready var scan_regex_exclude_line_edit: LineEdit = %ScanRegexExcludeLineEdit
 
 
 func _ready() -> void:
 	if not Engine.is_editor_hint():
 		return
+
+	var base_font_color := get_theme_color(&"font_color", &"Editor")
+	advanced_scan_options_container.add_theme_color_override(&"font_color", base_font_color)
+	advanced_scan_options_container.add_theme_color_override(&"collapsed_font_color", base_font_color)
+	for check_box: CheckBox in [scan_recursive_check_box, auto_rescan_check_box, scan_remove_unlisted_check_box]:
+		check_box.add_theme_stylebox_override(&"focus", get_theme_stylebox(&"focus", &"LineEdit"))
+		for override: StringName in [&"normal", &"hover", &"pressed", &"hover_pressed"]:
+			check_box.add_theme_stylebox_override(override, get_theme_stylebox(&"normal", &"LineEdit"))
 
 	about_to_popup.connect(_on_about_to_popup)
 	_file_dialog = EditorFileDialog.new()
@@ -76,25 +89,35 @@ func _ready() -> void:
 func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 	_state = state
 	if state == RegistryDialogState.NEW_REGISTRY:
+		var default_settings := RegistryIO.RegistrySettings.new() # to use default values
+		class_restriction_line_edit.text = default_settings.class_restriction
+		scan_directory_line_edit.text = default_settings.scan_directory
+		scan_recursive_check_box.button_pressed = default_settings.recursive_scan
+		auto_rescan_check_box.button_pressed = default_settings.auto_rescan
+		scan_remove_unlisted_check_box.button_pressed = default_settings.remove_unmatched
+		scan_regex_include_line_edit.text = default_settings.scan_regex_include
+		scan_regex_exclude_line_edit.text = default_settings.scan_regex_exclude
+		indexed_properties_line_edit.text = default_settings.indexed_props
 		title = "Create Registry"
 		ok_button_text = "Create"
-		class_restriction_line_edit.text = ""
-		scan_directory_line_edit.text = ""
-		recursive_scan_check_box.button_pressed = false
-		indexed_properties_line_edit.text = ""
 		registry_path_line_edit.editable = true
 		registry_path_line_edit.focus_mode = Control.FOCUS_ALL
 		registry_path_line_edit.text = dir.path_join("new_registry.tres")
 		registry_path_filesystem_button.icon = AnyIcon.get_icon(&"Folder")
 		registry_path_filesystem_button.tooltip_text = ""
 	elif edited_registry and state == RegistryDialogState.REGISTRY_SETTINGS:
+		var settings := RegistryIO.get_registry_settings(edited_registry)
+		class_restriction_line_edit.text = settings.class_restriction
+		scan_directory_line_edit.text = settings.scan_directory
+		scan_recursive_check_box.button_pressed = settings.recursive_scan
+		auto_rescan_check_box.button_pressed = settings.auto_rescan
+		scan_remove_unlisted_check_box.button_pressed = settings.remove_unmatched
+		scan_regex_include_line_edit.text = settings.scan_regex_include
+		scan_regex_exclude_line_edit.text = settings.scan_regex_exclude
+		indexed_properties_line_edit.text = settings.indexed_props
+		registry_path_line_edit.text = edited_registry.resource_path
 		title = "Registry Settings"
 		ok_button_text = "Save"
-		class_restriction_line_edit.text = edited_registry._class_restriction
-		scan_directory_line_edit.text = edited_registry._scan_directory
-		recursive_scan_check_box.button_pressed = edited_registry._recursive_scan
-		indexed_properties_line_edit.text = ",".join(edited_registry._property_index.keys())
-		registry_path_line_edit.text = edited_registry.resource_path
 		registry_path_line_edit.editable = false
 		registry_path_line_edit.focus_mode = Control.FOCUS_NONE
 		registry_path_filesystem_button.icon = AnyIcon.get_icon(&"ShowInFileSystem")
@@ -103,6 +126,19 @@ func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 		return
 
 	popup()
+
+
+func _build_settings() -> RegistryIO.RegistrySettings:
+	var settings := RegistryIO.RegistrySettings.new()
+	settings.class_restriction = class_restriction_line_edit.text.strip_edges()
+	settings.scan_directory = scan_directory_line_edit.text.strip_edges()
+	settings.recursive_scan = scan_recursive_check_box.button_pressed
+	settings.auto_rescan = auto_rescan_check_box.button_pressed
+	settings.remove_unmatched = scan_remove_unlisted_check_box.button_pressed
+	settings.scan_regex_include = scan_regex_include_line_edit.text.strip_edges()
+	settings.scan_regex_exclude = scan_regex_exclude_line_edit.text.strip_edges()
+	settings.indexed_props = indexed_properties_line_edit.text.strip_edges()
+	return settings
 
 
 func _validate_fields() -> void:
@@ -243,13 +279,7 @@ func _open_file_dialog_as_registry_path() -> void:
 
 
 func _edit_settings_and_rebuild_index() -> void:
-	var err := RegistryIO.edit_registry_settings(
-		edited_registry,
-		class_restriction_line_edit.text.strip_edges(),
-		scan_directory_line_edit.text.strip_edges(),
-		recursive_scan_check_box.button_pressed,
-		indexed_properties_line_edit.text.strip_edges(),
-	)
+	var err := RegistryIO.set_registry_settings(edited_registry, _build_settings())
 	if err != OK:
 		print_debug(error_string(err))
 
@@ -275,13 +305,7 @@ func _on_confirmed() -> void:
 		RegistryDialogState.NEW_REGISTRY:
 			hide()
 			var registry_path := registry_path_line_edit.text.strip_edges()
-			var err := RegistryIO.create_registry_file(
-				registry_path,
-				class_restriction_line_edit.text.strip_edges(),
-				scan_directory_line_edit.text.strip_edges(),
-				recursive_scan_check_box.button_pressed,
-				indexed_properties_line_edit.text.strip_edges(),
-			)
+			var err := RegistryIO.create_registry_file(registry_path, _build_settings())
 			if err != OK:
 				print_debug(error_string(err))
 				return
@@ -341,10 +365,6 @@ func _on_scan_directory_filesystem_button_pressed() -> void:
 	_open_file_dialog_as_scan_directory()
 
 
-func _on_recursive_scan_check_box_pressed() -> void:
-	pass
-
-
 func _on_indexed_properties_line_edit_text_changed(_new_text: String) -> void:
 	_validate_fields()
 
@@ -380,3 +400,9 @@ func _on_file_dialog_dir_selected(path: String) -> void:
 func _on_new_restriction_confirmation_dialog_confirmed() -> void:
 	hide()
 	_edit_settings_and_rebuild_index()
+
+
+func _on_foldable_container_folding_changed(is_folded: bool) -> void:
+	if is_folded:
+		info_label.reset_size()
+		reset_size()

@@ -65,6 +65,7 @@ var _fuz := FuzzySearch.new()
 @onready var registry_settings_button: Button = %RegistrySettingsButton
 @onready var refresh_view_button: Button = %RefreshViewButton
 @onready var reindex_button: Button = %ReindexButton
+@onready var rescan_button: Button = %RescanButton
 @onready var registries_filter: LineEdit = %RegistriesFilter
 @onready var registries_container: VBoxContainer = %RegistriesContainer
 @onready var registries_itemlist: RegistriesItemList = %RegistriesItemList
@@ -171,7 +172,8 @@ func select_registry(uid: String) -> void:
 	if EditorInterface.get_inspector().get_edited_object() != registry:
 		EditorInterface.inspect_object(registry, "", true)
 
-	RegistryIO.sync_registry_entries_from_scan_dir(registry)
+	if RegistryIO.get_registry_settings(registry).auto_rescan:
+		RegistryIO.sync_registry_entries_from_scan_dir(registry)
 	registry_table_view.current_registry = registry
 	_toggle_visibility_topbar_buttons()
 	_toggle_file_menu_items()
@@ -308,6 +310,9 @@ func _toggle_visibility_topbar_buttons() -> void:
 	refresh_view_button.visible = false #has_registry # TODO: add project setting for showing it based on user preference
 	reindex_button.visible = has_registry
 	reindex_button.disabled = not has_registry or registry_table_view.current_registry.get_indexed_properties().is_empty()
+	var show_rescan := has_registry and not RegistryIO.get_registry_settings(registry_table_view.current_registry).auto_rescan
+	rescan_button.visible = show_rescan
+	rescan_button.disabled = not show_rescan
 
 
 ## Returns: uid -> display name in list.
@@ -674,6 +679,13 @@ func _on_reindex_button_pressed() -> void:
 		print("Registry reindexed for %s." % ", ".join(registry.get_indexed_properties()))
 
 
+func _on_rescan_button_pressed() -> void:
+	var registry := registry_table_view.current_registry
+	if registry:
+		RegistryIO.sync_registry_entries_from_scan_dir(registry)
+	registry_table_view.update_view()
+
+
 func _on_report_issue_button_pressed() -> void:
 	var cfg := ConfigFile.new()
 	cfg.load(PluginCFG)
@@ -748,7 +760,8 @@ func _on_new_registry_dialog_confirmed() -> void:
 
 func _on_filesystem_changed() -> void:
 	for registry: Registry in _editor_state_data.opened_registries.values():
-		RegistryIO.sync_registry_entries_from_scan_dir(registry)
+		if RegistryIO.get_registry_settings(registry).auto_rescan:
+			RegistryIO.sync_registry_entries_from_scan_dir(registry)
 	_update_registries_itemlist()
 	registry_table_view.update_view()
 

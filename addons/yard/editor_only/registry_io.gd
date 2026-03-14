@@ -8,13 +8,7 @@ const REGISTRY_FILE_EXTENSIONS := ["tres"]
 const LOGGING_INFO_COLOR := "lightslategray"
 
 
-static func create_registry_file(
-		path: String,
-		class_restriction: String = "",
-		scan_dir: String = "",
-		recursive: bool = false,
-		indexed_props: String = "",
-) -> Error:
+static func create_registry_file(path: String, settings: RegistrySettings = null) -> Error:
 	path = path.strip_edges()
 
 	if path.is_empty() or not is_valid_registry_output_path(path):
@@ -25,20 +19,10 @@ static func create_registry_file(
 
 	var registry := Registry.new()
 
-	if class_restriction and not is_resource_class_string(class_restriction):
-		return ERR_DOES_NOT_EXIST
-
-	if scan_dir and not DirAccess.dir_exists_absolute(scan_dir):
-		return ERR_DOES_NOT_EXIST
-
-	registry._class_restriction = class_restriction
-	registry._scan_directory = scan_dir
-	registry._recursive_scan = recursive
-
-	var props: Array[StringName] = []
-	for p: String in indexed_props.split(",", false):
-		props.append(StringName(p.strip_edges()))
-	_replace_indexed_properties_list(registry, props)
+	if settings:
+		var err := _apply_settings(registry, settings)
+		if err != OK:
+			return err
 
 	var save_err := ResourceSaver.save(registry, path, ResourceSaver.FLAG_CHANGE_PATH)
 
@@ -52,31 +36,27 @@ static func create_registry_file(
 	return save_err
 
 
-static func edit_registry_settings(
-		registry: Registry,
-		class_restriction: String,
-		scan_dir: String,
-		recursive: bool,
-		indexed_props: String,
-) -> Error:
-	if class_restriction and not is_resource_class_string(class_restriction):
-		return ERR_DOES_NOT_EXIST
+static func get_registry_settings(registry: Registry) -> RegistrySettings:
+	var settings := RegistrySettings.new()
+	settings.class_restriction = registry._class_restriction
+	settings.scan_directory = registry._scan_directory
+	settings.recursive_scan = registry._recursive_scan
+	settings.auto_rescan = registry._scan_auto
+	settings.remove_unmatched = registry._scan_remove
+	settings.scan_regex_include = registry._scan_regex_include
+	settings.scan_regex_exclude = registry._scan_regex_exclude
+	settings.indexed_props = ",".join(registry._property_index.keys())
+	return settings
 
-	if scan_dir and not DirAccess.dir_exists_absolute(scan_dir):
-		return ERR_DOES_NOT_EXIST
 
-	registry._class_restriction = class_restriction
+static func set_registry_settings(registry: Registry, settings: RegistrySettings) -> Error:
+	var err := _apply_settings(registry, settings)
+	if err != OK:
+		return err
+
 	for uid in registry.get_all_uids():
 		if not is_resource_matching_restriction(registry, load(uid)):
 			erase_entry(registry, uid)
-
-	registry._recursive_scan = recursive
-	registry._scan_directory = scan_dir
-
-	var props: Array[StringName] = []
-	for p: String in indexed_props.split(",", false):
-		props.append(StringName(p.strip_edges()))
-	_replace_indexed_properties_list(registry, props)
 
 	return ResourceSaver.save(registry)
 
@@ -181,33 +161,6 @@ static func sync_registry_entries_from_scan_dir(registry: Registry) -> void:
 	var first_removed := ""
 	var scanned_uids := { }
 
-	# Add
-	for res in dir_get_matching_resources(registry, registry._scan_directory, registry._recursive_scan):
-		var uid := ResourceUID.path_to_uid(res.resource_path)
-		scanned_uids[uid] = true
-		if add_entry(registry, uid) == OK:
-			n_added += 1
-			if n_added == 1:
-				first_added = registry.get_string_id(uid)
-
-	# Remove
-	for uid in registry.get_all_uids():
-		if scanned_uids.has(uid):
-			continue
-		var string_id := registry.get_string_id(uid)
-		if erase_entry(registry, StringName(uid)) == OK:
-			n_removed += 1
-			if n_removed == 1:
-				first_removed = string_id
-		else:
-			print_rich(
-				"[color=%s]Failed to remove %s from %s.[/color]" % [
-					LOGGING_INFO_COLOR,
-					string_id,
-					registry.resource_path.get_file(),
-				],
-			)
-
 	var _log := func(action: String, prep: String, n: int, first: String) -> void:
 		if n == 1:
 			print_rich(
@@ -232,7 +185,38 @@ static func sync_registry_entries_from_scan_dir(registry: Registry) -> void:
 				],
 			)
 
+	# Add
+	for res in dir_get_matching_resources(registry, registry._scan_directory, registry._recursive_scan):
+		var uid := ResourceUID.path_to_uid(res.resource_path)
+		scanned_uids[uid] = true
+		if add_entry(registry, uid) == OK:
+			n_added += 1
+			if n_added == 1:
+				first_added = registry.get_string_id(uid)
+
 	_log.call("added", "to", n_added, first_added)
+
+	# Remove
+	if not registry._scan_remove:
+		return
+
+	for uid in registry.get_all_uids():
+		if scanned_uids.has(uid):
+			continue
+		var string_id := registry.get_string_id(uid)
+		if erase_entry(registry, StringName(uid)) == OK:
+			n_removed += 1
+			if n_removed == 1:
+				first_removed = string_id
+		else:
+			print_rich(
+				"[color=%s]Failed to remove %s from %s.[/color]" % [
+					LOGGING_INFO_COLOR,
+					string_id,
+					registry.resource_path.get_file(),
+				],
+			)
+
 	_log.call("removed", "from", n_removed, first_removed)
 
 
@@ -413,6 +397,29 @@ static func unquote(string: String) -> String:
 	return string.substr(1, string.length() - 2)
 
 
+static func _apply_settings(registry: Registry, settings: RegistrySettings) -> Error:
+	if settings.class_restriction and not is_resource_class_string(settings.class_restriction):
+		return ERR_DOES_NOT_EXIST
+
+	if settings.scan_directory and not DirAccess.dir_exists_absolute(settings.scan_directory):
+		return ERR_DOES_NOT_EXIST
+
+	registry._class_restriction = settings.class_restriction
+	registry._scan_directory = settings.scan_directory
+	registry._recursive_scan = settings.recursive_scan
+	registry._scan_auto = settings.auto_rescan
+	registry._scan_remove = settings.remove_unmatched
+	registry._scan_regex_include = settings.scan_regex_include
+	registry._scan_regex_exclude = settings.scan_regex_exclude
+
+	var props: Array[StringName] = []
+	for p: String in settings.indexed_props.split(",", false):
+		props.append(StringName(p.strip_edges()))
+	_replace_indexed_properties_list(registry, props)
+
+	return OK
+
+
 static func _make_string_unique(registry: Registry, string_id: String) -> String:
 	if not string_id in registry._string_ids_to_uids:
 		return string_id
@@ -458,3 +465,14 @@ static func _resolve_property_path(obj: Object, path: StringName) -> Variant:
 		if current == null:
 			return null
 	return current
+
+
+class RegistrySettings:
+	var class_restriction: StringName = &""
+	var scan_directory: String = ""
+	var recursive_scan: bool = false
+	var auto_rescan: bool = true
+	var remove_unmatched: bool = true
+	var scan_regex_include: String = ""
+	var scan_regex_exclude: String = ""
+	var indexed_props: String = ""
