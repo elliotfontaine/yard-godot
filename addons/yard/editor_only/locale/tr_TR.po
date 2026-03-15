@@ -16,11 +16,10 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.8\n"
+"X-Generator: Poedit 3.9\n"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.gd
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
-#: addons/yard/editor_only/ui_scenes/registry_editor.gd
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Delete Entry"
 msgstr "Girişi sil"
@@ -42,6 +41,7 @@ msgid "Show in FileSystem"
 msgstr "Dosya sisteminde göster"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Edit Resource"
 msgstr "Kaynağı düzenle"
 
@@ -108,12 +108,13 @@ msgid ""
 "Invalid class/script. Expected a Resource subclass (built-in, class_name, or "
 "[u]quoted[/u] script path)."
 msgstr ""
-"Geçersiz sınıf/betik. Bir Resource alt sınıfı bekleniyor (yerleşik, class_name veya "
-"[u]tırnak içinde[/u] betik yolu)."
+"Geçersiz sınıf/betik. Bir Resource alt sınıfı bekleniyor (yerleşik, "
+"class_name veya [u]tırnak içinde[/u] betik yolu)."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "No class filter, all Resource files will be accepted to the registry."
-msgstr "Sınıf filtresi yok, tüm Resource dosyaları kayıt defterine kabul edilecek."
+msgstr ""
+"Sınıf filtresi yok, tüm Resource dosyaları kayıt defterine kabul edilecek."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Scan directory valid. Will watch for new Resources…"
@@ -128,8 +129,10 @@ msgid "No scan directory, resources auto-discovery is disabled."
 msgstr "Dizin tanımlanmadı, otomatik algılama devre dışı."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
-msgid "Indexed properties are optional. Separate multiple properties with commas."
-msgstr "İndeksli özellikler isteğe bağlıdır. Birden fazla özelliği virgülle ayırın."
+msgid ""
+"Indexed properties are optional. Separate multiple properties with commas."
+msgstr ""
+"İndeksli özellikler isteğe bağlıdır. Birden fazla özelliği virgülle ayırın."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "All properties found on the specified resource class."
@@ -162,6 +165,22 @@ msgstr "Dosya adı boş."
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Registry file already exists."
 msgstr "Bu konumda zaten bir kayıt defteri dosyası mevcut."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Include filter active. Only matching paths will be scanned."
+msgstr "Dahil etme filtresi etkin. Yalnızca eşleşen yollar taranacak."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Invalid include regex pattern."
+msgstr "Geçersiz dahil etme regex ifadesi."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Exclude filter active. Matching paths will be skipped."
+msgstr "Hariç tutma filtresi etkin. Eşleşen yollar atlanacak."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Invalid exclude regex pattern."
+msgstr "Geçersiz hariç tutma regex ifadesi."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Choose Custom Resource Script"
@@ -212,20 +231,40 @@ msgid "Resource"
 msgstr "Kaynak"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "Indexed Properties:"
+msgstr "İndeksli özellikler:"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Scan Directory:"
 msgstr "Taranacak dizin:"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-msgid "Recursive Scan:"
-msgstr "Özyinelemeli tarama:"
+msgid "Advanced Scan Options"
+msgstr "Gelişmiş Tarama Seçenekleri"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "Recursive:"
+msgstr "Özyinelemeli:"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "On"
 msgstr "Açık"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-msgid "Indexed Properties:"
-msgstr "İndeksli özellikler:"
+msgid "Auto Rescan:"
+msgstr "Otomatik Yeniden Tara:"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "Remove Unlisted:"
+msgstr "Listelenmeyenleri Kaldır:"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "RegEx Include:"
+msgstr "RegEx Dahil Et:"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "RegEx Exclude:"
+msgstr "RegEx Hariç Tut:"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Path:"
@@ -330,6 +369,14 @@ msgstr "Özellik indeksini yeniden oluştur"
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Reindex"
 msgstr "Yeniden indeksle"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
+msgid "Scan FileSystem for matching resources."
+msgstr "Eşleşen kaynaklar için dosya sistemini tara."
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
+msgid "Rescan"
+msgstr "Yeniden Tara"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Open project's issues in your browser."

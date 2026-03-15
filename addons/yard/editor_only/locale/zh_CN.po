@@ -16,11 +16,10 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.8\n"
+"X-Generator: Poedit 3.9\n"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.gd
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
-#: addons/yard/editor_only/ui_scenes/registry_editor.gd
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Delete Entry"
 msgstr "删除条目"
@@ -42,6 +41,7 @@ msgid "Show in FileSystem"
 msgstr "在文件系统中显示"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Edit Resource"
 msgstr "编辑资源"
 
@@ -108,8 +108,8 @@ msgid ""
 "Invalid class/script. Expected a Resource subclass (built-in, class_name, or "
 "[u]quoted[/u] script path)."
 msgstr ""
-"无效的类/脚本。需要 Resource 的子类（内置类、class_name 或"
-"[u]带引号的[/u]脚本路径）。"
+"无效的类/脚本。需要 Resource 的子类（内置类、class_name 或[u]带引号的[/u]脚本"
+"路径）。"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "No class filter, all Resource files will be accepted to the registry."
@@ -128,7 +128,8 @@ msgid "No scan directory, resources auto-discovery is disabled."
 msgstr "未定义目录，自动检测已禁用。"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
-msgid "Indexed properties are optional. Separate multiple properties with commas."
+msgid ""
+"Indexed properties are optional. Separate multiple properties with commas."
 msgstr "索引属性是可选的。多个属性之间用逗号分隔。"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
@@ -162,6 +163,22 @@ msgstr "文件名为空。"
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Registry file already exists."
 msgstr "该位置已存在注册表文件。"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Include filter active. Only matching paths will be scanned."
+msgstr "包含过滤器已启用。仅扫描匹配的路径。"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Invalid include regex pattern."
+msgstr "无效的包含正则表达式。"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Exclude filter active. Matching paths will be skipped."
+msgstr "排除过滤器已启用。匹配的路径将被跳过。"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Invalid exclude regex pattern."
+msgstr "无效的排除正则表达式。"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Choose Custom Resource Script"
@@ -212,20 +229,40 @@ msgid "Resource"
 msgstr "资源"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "Indexed Properties:"
+msgstr "索引属性："
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Scan Directory:"
 msgstr "扫描目录："
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-msgid "Recursive Scan:"
-msgstr "递归扫描："
+msgid "Advanced Scan Options"
+msgstr "高级扫描选项"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "Recursive:"
+msgstr "递归："
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "On"
 msgstr "开启"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-msgid "Indexed Properties:"
-msgstr "索引属性："
+msgid "Auto Rescan:"
+msgstr "自动重新扫描："
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "Remove Unlisted:"
+msgstr "移除未列出项："
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "RegEx Include:"
+msgstr "RegEx 包含："
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "RegEx Exclude:"
+msgstr "RegEx 排除："
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Path:"
@@ -330,6 +367,14 @@ msgstr "重建属性索引"
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Reindex"
 msgstr "重新索引"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
+msgid "Scan FileSystem for matching resources."
+msgstr "扫描文件系统以查找匹配的资源。"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
+msgid "Rescan"
+msgstr "重新扫描"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Open project's issues in your browser."

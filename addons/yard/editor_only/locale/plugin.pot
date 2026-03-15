@@ -18,15 +18,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.gd
-#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
-msgid ""
+#: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
+msgid "Delete Entry"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.gd
-#: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
-#: addons/yard/editor_only/ui_scenes/registry_editor.gd
-#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
-msgid "Delete Entry"
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid ""
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
@@ -46,6 +45,7 @@ msgid "Show in FileSystem"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Edit Resource"
 msgstr ""
 
@@ -164,6 +164,22 @@ msgid "Registry file already exists."
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Include filter active. Only matching paths will be scanned."
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Invalid include regex pattern."
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Exclude filter active. Matching paths will be skipped."
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Invalid exclude regex pattern."
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Choose Custom Resource Script"
 msgstr ""
 
@@ -208,11 +224,19 @@ msgid "Resource"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "Indexed Properties:"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Scan Directory:"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-msgid "Recursive Scan:"
+msgid "Advanced Scan Options"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "Recursive:"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
@@ -220,7 +244,19 @@ msgid "On"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-msgid "Indexed Properties:"
+msgid "Auto Rescan:"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "Remove Unlisted:"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "RegEx Include:"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "RegEx Exclude:"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
@@ -325,6 +361,14 @@ msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Reindex"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
+msgid "Scan FileSystem for matching resources."
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
+msgid "Rescan"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn

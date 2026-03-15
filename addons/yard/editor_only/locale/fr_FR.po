@@ -16,11 +16,10 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.8\n"
+"X-Generator: Poedit 3.9\n"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.gd
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
-#: addons/yard/editor_only/ui_scenes/registry_editor.gd
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Delete Entry"
 msgstr "Supprimer l'entrée"
@@ -42,6 +41,7 @@ msgid "Show in FileSystem"
 msgstr "Montrer dans le système de fichiers"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Edit Resource"
 msgstr "Modifier la ressource"
 
@@ -108,16 +108,19 @@ msgid ""
 "Invalid class/script. Expected a Resource subclass (built-in, class_name, or "
 "[u]quoted[/u] script path)."
 msgstr ""
-"Classe/script invalide. Une sous-classe de Resource est attendue (intégrée, class_name, ou "
-"chemin de script [u]entre guillemets[/u])."
+"Classe/script invalide. Une sous-classe de Resource est attendue (intégrée, "
+"class_name, ou chemin de script [u]entre guillemets[/u])."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "No class filter, all Resource files will be accepted to the registry."
-msgstr "Aucun filtre de classe, tous les fichiers Resource seront acceptés dans le registre."
+msgstr ""
+"Aucun filtre de classe, tous les fichiers Resource seront acceptés dans le "
+"registre."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Scan directory valid. Will watch for new Resources…"
-msgstr "Répertoire valide. Les nouvelles ressources seront détectées automatiquement…"
+msgstr ""
+"Répertoire valide. Les nouvelles ressources seront détectées automatiquement…"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Scan directory invalid. Pick an existing directory."
@@ -128,8 +131,11 @@ msgid "No scan directory, resources auto-discovery is disabled."
 msgstr "Aucun répertoire défini, la détection automatique est désactivée."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
-msgid "Indexed properties are optional. Separate multiple properties with commas."
-msgstr "Les propriétés indexées sont optionnelles. Séparez plusieurs propriétés par des virgules."
+msgid ""
+"Indexed properties are optional. Separate multiple properties with commas."
+msgstr ""
+"Les propriétés indexées sont optionnelles. Séparez plusieurs propriétés par "
+"des virgules."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "All properties found on the specified resource class."
@@ -141,7 +147,8 @@ msgstr "Nom de propriété vide détecté. Supprimez les virgules superflues."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Property '{prop}' may not exist on the resource class."
-msgstr "La propriété '{prop}' n'existe peut-être pas sur la classe de ressource."
+msgstr ""
+"La propriété '{prop}' n'existe peut-être pas sur la classe de ressource."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Will create a new registry file."
@@ -162,6 +169,22 @@ msgstr "Le nom de fichier est vide."
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Registry file already exists."
 msgstr "Un fichier de registre existe déjà à cet emplacement."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Include filter active. Only matching paths will be scanned."
+msgstr "Filtre d'inclusion actif. Seuls les chemins correspondants seront analysés."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Invalid include regex pattern."
+msgstr "Expression régulière d'inclusion invalide."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Exclude filter active. Matching paths will be skipped."
+msgstr "Filtre d'exclusion actif. Les chemins correspondants seront ignorés."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Invalid exclude regex pattern."
+msgstr "Expression régulière d'exclusion invalide."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Choose Custom Resource Script"
@@ -212,20 +235,40 @@ msgid "Resource"
 msgstr "Ressource"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "Indexed Properties:"
+msgstr "Propriétés indexées :"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Scan Directory:"
 msgstr "Répertoire à analyser :"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-msgid "Recursive Scan:"
-msgstr "Analyse récursive :"
+msgid "Advanced Scan Options"
+msgstr "Options d'analyse avancées"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "Recursive:"
+msgstr "Récursif :"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "On"
 msgstr "Activé"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-msgid "Indexed Properties:"
-msgstr "Propriétés indexées :"
+msgid "Auto Rescan:"
+msgstr "Réanalyse automatique :"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "Remove Unlisted:"
+msgstr "Retirer les absents :"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "RegEx Include:"
+msgstr "RegEx d'inclusion :"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "RegEx Exclude:"
+msgstr "RegEx d'exclusion :"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Path:"
@@ -330,6 +373,14 @@ msgstr "Re-générer l'index des propriétés"
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Reindex"
 msgstr "Réindexer"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
+msgid "Scan FileSystem for matching resources."
+msgstr "Analyser le système de fichiers pour trouver les ressources correspondantes."
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
+msgid "Rescan"
+msgstr "Réanalyser"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Open project's issues in your browser."
