@@ -40,6 +40,12 @@ var INFO_MESSAGES: Dictionary[StringName, Array] = {
 	&"extension_invalid": [tr("Invalid extension."), ERROR_COLOR],
 	&"filename_empty": [tr("Filename is empty."), ERROR_COLOR],
 	&"path_already_used": [tr("Registry file already exists."), ERROR_COLOR],
+
+	# --- Scan regex ---
+	&"regex_include_valid": [tr("Include filter active. Only matching paths will be scanned."), SUCCESS_COLOR],
+	&"regex_include_invalid": [tr("Invalid include regex pattern."), ERROR_COLOR],
+	&"regex_exclude_valid": [tr("Exclude filter active. Matching paths will be skipped."), SUCCESS_COLOR],
+	&"regex_exclude_invalid": [tr("Invalid exclude regex pattern."), ERROR_COLOR],
 }
 
 var edited_registry: Registry
@@ -193,6 +199,21 @@ func _validate_fields() -> void:
 					info_messages.append(msg)
 			if info_messages.size() == msgs_before:
 				info_messages.append(INFO_MESSAGES.properties_valid)
+
+	# Scan regex filters
+	var regex_include := scan_regex_include_line_edit.text.strip_edges()
+	if not regex_include.is_empty():
+		if RegistryIO.is_valid_regex_pattern(regex_include):
+			info_messages.append(INFO_MESSAGES.regex_include_valid)
+		else:
+			_invalidate(info_messages, &"regex_include_invalid")
+
+	var regex_exclude := scan_regex_exclude_line_edit.text.strip_edges()
+	if not regex_exclude.is_empty():
+		if RegistryIO.is_valid_regex_pattern(regex_exclude):
+			info_messages.append(INFO_MESSAGES.regex_exclude_valid)
+		else:
+			_invalidate(info_messages, &"regex_exclude_invalid")
 
 	if _state == RegistryDialogState.REGISTRY_SETTINGS:
 		_fill_info_label(info_messages)
@@ -400,6 +421,14 @@ func _on_file_dialog_dir_selected(path: String) -> void:
 func _on_new_restriction_confirmation_dialog_confirmed() -> void:
 	hide()
 	_edit_settings_and_rebuild_index()
+
+
+func _on_scan_regex_include_line_edit_text_changed(_new_text: String) -> void:
+	_validate_fields()
+
+
+func _on_scan_regex_exclude_line_edit_text_changed(_new_text: String) -> void:
+	_validate_fields()
 
 
 func _on_foldable_container_folding_changed(is_folded: bool) -> void:

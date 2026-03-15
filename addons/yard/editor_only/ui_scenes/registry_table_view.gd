@@ -192,11 +192,7 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 				var status := RegistryIO.add_entry(current_registry, ResourceUID.path_to_uid(path))
 				n_added += int(status == OK)
 		elif path.ends_with("/"):
-			var matching_resources := RegistryIO.dir_get_matching_resources(
-				current_registry,
-				path,
-				true,
-			)
+			var matching_resources := RegistryIO.dir_get_matching_resources(current_registry, path, true)
 			for res in matching_resources:
 				var status := RegistryIO.add_entry(
 					current_registry,

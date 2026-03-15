@@ -186,7 +186,7 @@ static func sync_registry_entries_from_scan_dir(registry: Registry) -> void:
 			)
 
 	# Add
-	for res in dir_get_matching_resources(registry, registry._scan_directory, registry._recursive_scan):
+	for res in dir_get_matching_resources(registry, registry._scan_directory):
 		var uid := ResourceUID.path_to_uid(res.resource_path)
 		scanned_uids[uid] = true
 		if add_entry(registry, uid) == OK:
@@ -249,7 +249,10 @@ static func rebuild_property_index(registry: Registry) -> Error:
 	return ResourceSaver.save(registry)
 
 
-static func dir_has_matching_resource(registry: Registry, path: String, recursive: bool = false) -> bool:
+static func dir_has_matching_resource(registry: Registry, path: String, ignore_scan_filters: bool = false, compiled_re_in: RegEx = null, compiled_re_ex: RegEx = null) -> bool:
+	var recursive := registry._recursive_scan
+	var re_include := compiled_re_in if compiled_re_in else _compile_regex(registry._scan_regex_include)
+	var re_exclude := compiled_re_ex if compiled_re_ex else _compile_regex(registry._scan_regex_exclude)
 	var dir := DirAccess.open(path)
 	if dir == null:
 		return false
@@ -259,24 +262,26 @@ static func dir_has_matching_resource(registry: Registry, path: String, recursiv
 
 	while next != "":
 		var next_path: String = dir.get_current_dir().path_join(next)
+		var passes_scan_filters := ignore_scan_filters or _path_passes_scan_filters(next_path, re_include, re_exclude)
 
-		if recursive and dir.current_is_dir():
-			var has_valid := dir_has_matching_resource(registry, next_path, recursive)
-			if has_valid:
+		if recursive and dir.current_is_dir() and passes_scan_filters:
+			if dir_has_matching_resource(registry, next_path, ignore_scan_filters, re_include, re_exclude):
 				dir.list_dir_end()
 				return true
-		elif (
-			ResourceLoader.exists(next_path)
-			and is_resource_matching_restriction(registry, load(next_path))
-		):
-			dir.list_dir_end()
-			return true
+		elif ResourceLoader.exists(next_path) and passes_scan_filters:
+			var res := load(next_path)
+			if is_resource_matching_restriction(registry, res):
+				dir.list_dir_end()
+				return true
 
 		next = dir.get_next()
 	return false
 
 
-static func dir_get_matching_resources(registry: Registry, path: String, recursive: bool = false) -> Array[Resource]:
+static func dir_get_matching_resources(registry: Registry, path: String, ignore_scan_filters: bool = false, compiled_re_in: RegEx = null, compiled_re_ex: RegEx = null) -> Array[Resource]:
+	var recursive := registry._recursive_scan
+	var re_include := _compile_regex(registry._scan_regex_include) if not compiled_re_in else compiled_re_in
+	var re_exclude := _compile_regex(registry._scan_regex_exclude) if not compiled_re_ex else compiled_re_ex
 	var dir := DirAccess.open(path)
 	if not path or not dir:
 		return []
@@ -287,10 +292,11 @@ static func dir_get_matching_resources(registry: Registry, path: String, recursi
 
 	while next != "":
 		var next_path: String = dir.get_current_dir().path_join(next)
+		var passes_scan_filters := ignore_scan_filters or _path_passes_scan_filters(next_path, re_include, re_exclude)
 
-		if recursive and dir.current_is_dir():
-			matching_resources += dir_get_matching_resources(registry, next_path, recursive)
-		elif ResourceLoader.exists(next_path):
+		if recursive and dir.current_is_dir() and passes_scan_filters:
+			matching_resources += dir_get_matching_resources(registry, next_path, ignore_scan_filters, re_include, re_exclude)
+		elif ResourceLoader.exists(next_path) and passes_scan_filters:
 			var res := load(next_path)
 			if is_resource_matching_restriction(registry, res):
 				matching_resources.append(res)
@@ -373,6 +379,13 @@ static func is_uid_valid(uid: String) -> bool:
 	return ResourceUID.has_id(ResourceUID.text_to_id(uid))
 
 
+static func is_valid_regex_pattern(pattern: String) -> bool:
+	if pattern.is_empty():
+		return true
+	var re := RegEx.new()
+	return re.compile(pattern, false) == OK
+
+
 ## Returns true if [param string] is wrapped in matching single or double quotes.
 static func is_quoted_string(string: String) -> bool:
 	if string.length() < 2:
@@ -395,6 +408,20 @@ static func would_erase_entries(registry: Registry, new_restriction: String) -> 
 ## Call [method is_quoted_string] first to ensure the input is valid.
 static func unquote(string: String) -> String:
 	return string.substr(1, string.length() - 2)
+
+
+static func _compile_regex(pattern: String) -> RegEx:
+	if pattern.is_empty():
+		return null
+	return RegEx.create_from_string(pattern)
+
+
+static func _path_passes_scan_filters(path: String, re_include: RegEx, re_exclude: RegEx) -> bool:
+	if re_include and not re_include.search(path):
+		return false
+	if re_exclude and re_exclude.search(path):
+		return false
+	return true
 
 
 static func _apply_settings(registry: Registry, settings: RegistrySettings) -> Error:

@@ -202,24 +202,20 @@ theme_override_styles/focus = SubResource("StyleBoxFlat_srqmm")
 text = "On"
 
 [node name="ScanRegexIncludeLabel" type="Label" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
-visible = false
 layout_mode = 2
 text = "RegEx Include:"
 
 [node name="ScanRegexIncludeLineEdit" type="LineEdit" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="ScanRegexExcludeLabel" type="Label" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
-visible = false
 layout_mode = 2
 text = "RegEx Exclude:"
 
 [node name="ScanRegexExcludeLineEdit" type="LineEdit" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 
@@ -270,5 +266,7 @@ scroll_active = false
 [connection signal="text_changed" from="VBoxContainer/GridContainer/ScanDirectory/ScanDirectoryLineEdit" to="." method="_on_scan_directory_line_edit_text_changed"]
 [connection signal="pressed" from="VBoxContainer/GridContainer/ScanDirectory/ScanDirectoryFilesystemButton" to="." method="_on_scan_directory_filesystem_button_pressed"]
 [connection signal="folding_changed" from="VBoxContainer/AdvancedScanOptionsContainer" to="." method="_on_foldable_container_folding_changed"]
+[connection signal="text_changed" from="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer/ScanRegexIncludeLineEdit" to="." method="_on_scan_regex_include_line_edit_text_changed"]
+[connection signal="text_changed" from="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer/ScanRegexExcludeLineEdit" to="." method="_on_scan_regex_exclude_line_edit_text_changed"]
 [connection signal="text_changed" from="VBoxContainer/HBoxContainer/RegistryPath/RegistryPathLineEdit" to="." method="_on_registry_path_line_edit_text_changed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/RegistryPath/RegistryPathFilesystemButton" to="." method="_on_registry_path_filesystem_button_pressed"]
