@@ -26,6 +26,7 @@ const EDITOR_INSPECTOR_PLUGIN = preload("res://addons/yard/editor_only/editor_in
 const TRANSLATION_DOMAIN := "com.elliotfontaine.yard"
 const TRANSLATIONS := {
 	"de_DE": "res://addons/yard/editor_only/locale/de_DE.po",
+	"en_US": "res://addons/yard/editor_only/locale/en_US.po",
 	"es_ES": "res://addons/yard/editor_only/locale/es_ES.po",
 	"fr_FR": "res://addons/yard/editor_only/locale/fr_FR.po",
 	"it_IT": "res://addons/yard/editor_only/locale/it_IT.po",
