@@ -709,6 +709,8 @@ func _dispatch_cell_draw(cell_rect: Rect2, row: int, col_idx: int) -> void:
 		_draw_cell_color(cell_rect, row, col_idx)
 	elif col.is_resource_column():
 		_draw_cell_resource(cell_rect, row, col_idx)
+	elif col.is_path_column():
+		_draw_cell_path(cell_rect, row, col_idx)
 	elif col.is_enum_column():
 		_draw_cell_enum(cell_rect, row, col_idx)
 	elif col.is_array_column() or col.is_dictionary_column():
@@ -887,51 +889,43 @@ func _draw_cell_resource(rect: Rect2, row: int, col: int) -> void:
 		_draw_cell_text(rect, row, col)
 		return
 
-	var res: Resource = value
-	var key: String = res.resource_path
-	if key.is_empty():
-		key = "iid:%d" % res.get_instance_id()
+	var inner := rect.grow(-2.0)
+	if inner.size.x <= 0.0 or inner.size.y <= 0.0:
+		return
+
+	var texture := _get_or_queue_thumbnail(value)
+	if texture == null:
+		draw_rect(inner, Color(1, 1, 1, 0.06), true)
+		draw_rect(inner, Color(1, 1, 1, 0.18), false, 1.0)
+		return
+
+	draw_texture_rect(texture, _fit_texture_rect(texture, inner), false)
+
+
+func _draw_cell_path(rect: Rect2, row: int, col: int) -> void:
+	var value: Variant = get_cell_value(row, col)
+	if not (
+		get_column(col).property_hint == PROPERTY_HINT_FILE
+		and ResourceUID.has_id(ResourceUID.text_to_id(value))
+	):
+		_draw_cell_text(rect, row, col)
+		return
 
 	var inner := rect.grow(-2.0)
 	if inner.size.x <= 0.0 or inner.size.y <= 0.0:
 		return
 
-	# Cached thumbnail? draw it
-	if _resource_thumb_cache.has(key):
-		var texture: Texture2D = _resource_thumb_cache[key]
-		if texture == null:
-			return
+	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_LEFT)
+	var thumb_width := 0.0
+	var texture := _get_or_queue_thumbnail(load(value))
+	if texture != null:
+		var thumb_rect := _fit_texture_rect(texture, inner, true)
+		thumb_rect.position.x += x_margin_val
+		draw_texture_rect(texture, thumb_rect, false)
+		thumb_width = thumb_rect.size.x
 
-		var tex_size := texture.get_size()
-		if tex_size.x <= 0.0 or tex_size.y <= 0.0:
-			return
-
-		var tex_aspect := tex_size.x / tex_size.y
-		var cell_aspect := inner.size.x / inner.size.y
-		var drawn_rect := Rect2()
-		if tex_aspect > cell_aspect:
-			drawn_rect.size = Vector2(inner.size.x, inner.size.x / tex_aspect)
-			drawn_rect.position = Vector2(inner.position.x, inner.position.y + (inner.size.y - drawn_rect.size.y) / 2.0)
-		else:
-			drawn_rect.size = Vector2(inner.size.y * tex_aspect, inner.size.y)
-			drawn_rect.position = Vector2(inner.position.x + (inner.size.x - drawn_rect.size.x) / 2.0, inner.position.y)
-
-		draw_texture_rect(texture, drawn_rect, false)
-		return
-
-	# Not cached yet and no pending request: request once
-	if not _resource_thumb_pending.has(key):
-		_resource_thumb_pending[key] = true
-		EditorInterface.get_resource_previewer().queue_edited_resource_preview(
-			res,
-			self,
-			"_on_resource_cell_thumb_ready",
-			{ "key": key, "class": ClassUtils.get_type_name(res) },
-		)
-
-	# Placeholder
-	draw_rect(inner, Color(1, 1, 1, 0.06), true)
-	draw_rect(inner, Color(1, 1, 1, 0.18), false, 1.0)
+	var text_rect := inner.grow_individual(-thumb_width - x_margin_val, 0, 0, 0)
+	_draw_cell_text(text_rect, row, col)
 
 
 func _draw_cell_text(rect: Rect2, row: int, col: int) -> void:
@@ -963,7 +957,7 @@ func _draw_cell_text(rect: Rect2, row: int, col: int) -> void:
 		Vector2(rect.position.x + x_margin_val, baseline_y),
 		display_text,
 		h_alignment,
-		rect.size.x - abs(x_margin_val),
+		max(0.001, rect.size.x - abs(x_margin_val)),
 		font_size,
 		text_color,
 	)
@@ -1108,6 +1102,42 @@ func _start_filtering(col_idx: int) -> void:
 	_filter_line_edit.text = ""
 	_filter_line_edit.visible = true
 	_filter_line_edit.grab_focus()
+
+
+func _get_resource_key(res: Resource) -> String:
+	var key := res.resource_path
+	if key.is_empty():
+		key = "iid:%d" % res.get_instance_id()
+	return key
+
+
+func _get_or_queue_thumbnail(res: Resource) -> Texture2D:
+	var key := _get_resource_key(res)
+	if _resource_thumb_cache.has(key):
+		return _resource_thumb_cache[key]
+	if not _resource_thumb_pending.has(key):
+		_resource_thumb_pending[key] = true
+		EditorInterface.get_resource_previewer().queue_edited_resource_preview(
+			res,
+			self,
+			"_on_resource_cell_thumb_ready",
+			{ "key": key, "class": ClassUtils.get_type_name(res) },
+		)
+	return null
+
+
+func _fit_texture_rect(texture: Texture2D, container: Rect2, anchor_to_left := false) -> Rect2:
+	var tex_size := texture.get_size()
+	var tex_aspect := tex_size.x / tex_size.y
+	var cell_aspect := container.size.x / container.size.y
+	var thumb_size: Vector2
+	if tex_aspect > cell_aspect:
+		thumb_size = Vector2(container.size.x, container.size.x / tex_aspect)
+	else:
+		thumb_size = Vector2(container.size.y * tex_aspect, container.size.y)
+	var offset_x := 0.0 if anchor_to_left else (container.size.x - thumb_size.x) / 2.0
+	var offset_y := (container.size.y - thumb_size.y) / 2.0
+	return Rect2(container.position + Vector2(offset_x, offset_y), thumb_size)
 
 
 func _apply_filter(search_key: String) -> void:
