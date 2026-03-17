@@ -27,7 +27,7 @@ const H_ALIGNMENT_MARGINS = {
 	HORIZONTAL_ALIGNMENT_CENTER: 0,
 	HORIZONTAL_ALIGNMENT_RIGHT: -5,
 }
-const CELL_INVALID := "<INVALID>"
+const CELL_INVALID := "<CELL_INVALID>"
 
 # Theming properties
 @export_group("Custom YARD Properties")
@@ -378,15 +378,6 @@ func set_selected_cell(row: int, col: int) -> void:
 	cell_selected.emit(focused_row, focused_col)
 
 
-func set_progress_value(row: int, col: int, value: float) -> void:
-	if row >= 0 and row < _data.size() and col >= 0 and col < _columns.size():
-		var column := get_column(col)
-		if column.is_range_column():
-			var range_cfg := column.get_range_config()
-			_data[row][col] = clamp(value, range_cfg.get(&"min"), range_cfg.get(&"max"))
-			queue_redraw()
-
-
 func select_all_rows() -> void:
 	if not _total_rows > 0:
 		return
@@ -702,7 +693,9 @@ func _get_cell_rect(row: int, col: int) -> Rect2:
 ## Dispatches drawing of a single data cell to the correct typed draw function.
 func _dispatch_cell_draw(cell_rect: Rect2, row: int, col_idx: int) -> void:
 	var col := get_column(col_idx)
-	if col.is_range_column():
+	if is_cell_invalid(row, col_idx):
+		_draw_cell_invalid(cell_rect, row, col_idx)
+	elif col.is_range_column():
 		_draw_cell_progress(cell_rect, row, col_idx)
 	elif col.is_boolean_column():
 		_draw_cell_bool(cell_rect, row, col_idx)
@@ -831,9 +824,6 @@ func _draw_cell_progress(rect: Rect2, row: int, col: int) -> void:
 
 
 func _draw_cell_bool(rect: Rect2, row: int, col: int) -> void:
-	if not row < _data.size() and col < _data[row].size():
-		return
-
 	var cell_value: Variant = _data[row][col]
 	if cell_value is not bool:
 		_draw_cell_text(rect, row, col)
@@ -851,12 +841,12 @@ func _draw_cell_bool(rect: Rect2, row: int, col: int) -> void:
 
 
 func _draw_cell_color(rect: Rect2, row: int, col: int) -> void:
-	var value: Variant = get_cell_value(row, col)
-	if not value is Color:
+	var cell_value: Variant = get_cell_value(row, col)
+	if cell_value is not Color:
 		_draw_cell_text(rect, row, col)
 		return
 
-	var color: Color = value
+	var color: Color = cell_value
 	var inner := rect.grow(-2.0)
 	if inner.size.x <= 0.0 or inner.size.y <= 0.0:
 		return
@@ -888,8 +878,8 @@ func _draw_cell_color(rect: Rect2, row: int, col: int) -> void:
 
 
 func _draw_cell_resource(rect: Rect2, row: int, col: int) -> void:
-	var value: Variant = get_cell_value(row, col)
-	if not value is Resource:
+	var cell_value: Variant = get_cell_value(row, col)
+	if cell_value is not Resource:
 		_draw_cell_text(rect, row, col, "<empty>")
 		return
 
@@ -897,7 +887,7 @@ func _draw_cell_resource(rect: Rect2, row: int, col: int) -> void:
 	if inner.size.x <= 0.0 or inner.size.y <= 0.0:
 		return
 
-	var res: Resource = value
+	var res: Resource = cell_value
 	var label := "<" + res.resource_path.get_file() + ">"
 	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_LEFT)
 	var thumb_width := 0.0
@@ -916,10 +906,10 @@ func _draw_cell_resource(rect: Rect2, row: int, col: int) -> void:
 
 
 func _draw_cell_path(rect: Rect2, row: int, col: int) -> void:
-	var value: Variant = get_cell_value(row, col)
+	var cell_value: Variant = get_cell_value(row, col)
 	if not (
 		get_column(col).property_hint == PROPERTY_HINT_FILE
-		and ResourceUID.has_id(ResourceUID.text_to_id(value))
+		and ResourceUID.has_id(ResourceUID.text_to_id(cell_value))
 	):
 		_draw_cell_text(rect, row, col)
 		return
@@ -930,7 +920,7 @@ func _draw_cell_path(rect: Rect2, row: int, col: int) -> void:
 
 	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_LEFT)
 	var thumb_width := 0.0
-	var texture := _get_or_queue_thumbnail(value)
+	var texture := _get_or_queue_thumbnail(cell_value)
 	if texture != null:
 		var thumb_rect := _fit_texture_rect(texture, inner, true)
 		thumb_rect.position.x += x_margin_val
@@ -943,9 +933,6 @@ func _draw_cell_path(rect: Rect2, row: int, col: int) -> void:
 
 func _draw_cell_text(rect: Rect2, row: int, col: int, text_override: String = "") -> void:
 	var cell_value := str(get_cell_value(row, col))
-	if cell_value == CELL_INVALID:
-		_draw_cell_invalid(rect, row, col)
-		return
 
 	var column := get_column(col)
 	var text_font: Font = font
@@ -1024,11 +1011,11 @@ func _draw_cell_invalid(rect: Rect2, _row: int, _col: int) -> void:
 
 
 func _draw_cell_collection(rect: Rect2, row: int, col: int) -> void:
-	var value: Variant = get_cell_value(row, col)
-	if not (value is Array or value is Dictionary):
+	var cell_value: Variant = get_cell_value(row, col)
+	if cell_value is not Array and cell_value is not Dictionary:
 		_draw_cell_text(rect, row, col)
 		return
-	var text := _format_collection_value(value)
+	var text := _format_collection_value(cell_value)
 	var x_margin: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_LEFT)
 	var baseline_y := _get_text_baseline_y(rect.position.y)
 	var display_text := _get_display_text(text, font, rect.size.x - absf(x_margin))
@@ -1053,15 +1040,15 @@ static func _format_collection_elem(elem: Variant) -> String:
 	return str(elem)
 
 
-static func _format_collection_value(value: Variant) -> String:
-	var is_dict := value is Dictionary
-	var items: Array = (value as Dictionary).keys() if is_dict else (value as Array)
+static func _format_collection_value(collection: Variant) -> String:
+	var is_dict := collection is Dictionary
+	var items: Array = (collection as Dictionary).keys() if is_dict else (collection as Array)
 
 	var parts: Array[String] = []
 	for i in mini(items.size(), 3):
 		if is_dict:
 			var key: Variant = items[i]
-			parts.append("%s: %s" % [str(key), _format_collection_elem((value as Dictionary)[key])])
+			parts.append("%s: %s" % [str(key), _format_collection_elem((collection as Dictionary)[key])])
 		else:
 			parts.append(_format_collection_elem(items[i]))
 
@@ -1094,12 +1081,12 @@ func _get_display_text(cell_value: String, text_font: Font, max_width: float) ->
 	return truncated_text + ellipsis
 
 
-func _get_interpolated_three_colors(start_c: Color, mid_c: Color, end_c: Color, t_val: float) -> Color:
-	var clamped_t := clampf(t_val, 0.0, 1.0)
+func _get_interpolated_three_colors(start_color: Color, mid_color: Color, end_color: Color, progress: float) -> Color:
+	var clamped_t := clampf(progress, 0.0, 1.0)
 	if clamped_t <= 0.5:
-		return start_c.lerp(mid_c, clamped_t * 2.0)
+		return start_color.lerp(mid_color, clamped_t * 2.0)
 	else:
-		return mid_c.lerp(end_c, (clamped_t - 0.5) * 2.0)
+		return mid_color.lerp(end_color, (clamped_t - 0.5) * 2.0)
 
 
 func _get_or_queue_thumbnail(resource_path: String, type_name: String = "Resource") -> Texture2D:
