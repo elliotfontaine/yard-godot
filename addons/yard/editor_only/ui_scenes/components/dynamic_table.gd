@@ -886,20 +886,27 @@ func _draw_cell_color(rect: Rect2, row: int, col: int) -> void:
 func _draw_cell_resource(rect: Rect2, row: int, col: int) -> void:
 	var value: Variant = get_cell_value(row, col)
 	if not value is Resource:
-		_draw_cell_text(rect, row, col)
+		_draw_cell_text(rect, row, col, "<empty>")
 		return
 
 	var inner := rect.grow(-2.0)
 	if inner.size.x <= 0.0 or inner.size.y <= 0.0:
 		return
 
-	var texture := _get_or_queue_thumbnail(value)
-	if texture == null:
-		draw_rect(inner, Color(1, 1, 1, 0.06), true)
-		draw_rect(inner, Color(1, 1, 1, 0.18), false, 1.0)
-		return
+	var res: Resource = value
+	var resource_path := _get_resource_key(res)
+	var label := "<" + resource_path.get_file() + ">"
+	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_LEFT)
+	var thumb_width := 0.0
+	var texture := _get_or_queue_thumbnail(res)
+	if texture != null:
+		var thumb_rect := _fit_texture_rect(texture, inner, true)
+		thumb_rect.position.x += x_margin_val
+		draw_texture_rect(texture, thumb_rect, false)
+		thumb_width = thumb_rect.size.x
 
-	draw_texture_rect(texture, _fit_texture_rect(texture, inner), false)
+	var text_rect := inner.grow_individual(-thumb_width - x_margin_val, 0, 0, 0)
+	_draw_cell_text(text_rect, row, col, label)
 
 
 func _draw_cell_path(rect: Rect2, row: int, col: int) -> void:
@@ -928,7 +935,7 @@ func _draw_cell_path(rect: Rect2, row: int, col: int) -> void:
 	_draw_cell_text(text_rect, row, col)
 
 
-func _draw_cell_text(rect: Rect2, row: int, col: int) -> void:
+func _draw_cell_text(rect: Rect2, row: int, col: int, text_override: String = "") -> void:
 	var cell_value := str(get_cell_value(row, col))
 	if cell_value == CELL_INVALID:
 		_draw_cell_invalid(rect, row, col)
@@ -942,13 +949,10 @@ func _draw_cell_text(rect: Rect2, row: int, col: int) -> void:
 	elif column.is_path_column():
 		text_font = mono_font
 
-	if column.is_resource_column() and _data[row][col] == null:
-		cell_value = "<empty>"
-		h_alignment = HORIZONTAL_ALIGNMENT_CENTER
-
+	var full_text := text_override if text_override else cell_value
 	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(h_alignment)
 	var baseline_y := _get_text_baseline_y(rect.position.y)
-	var display_text := _get_display_text(cell_value, text_font, rect.size.x - absf(x_margin_val))
+	var display_text := _get_display_text(full_text, text_font, rect.size.x - absf(x_margin_val))
 	var text_color := column.custom_font_color if column.custom_font_color else default_font_color
 	text_color = get_theme_color("error_color", "Editor") if cell_value.begins_with("(!) ") else text_color # TODO: registry-specific. Refactor outside — e.g. give the ability to set colors for specific rows.
 
@@ -1034,6 +1038,8 @@ func _draw_cell_collection(rect: Rect2, row: int, col: int) -> void:
 
 
 static func _format_collection_elem(elem: Variant) -> String:
+	if elem is Resource:
+		return "<%s>" % (elem as Resource).resource_path.get_file()
 	if elem is Array:
 		return "Array(%d)" % (elem as Array).size()
 	if elem is Dictionary:
@@ -1090,20 +1096,6 @@ func _get_interpolated_three_colors(start_c: Color, mid_c: Color, end_c: Color, 
 		return mid_c.lerp(end_c, (clamped_t - 0.5) * 2.0)
 
 
-func _start_filtering(col_idx: int) -> void:
-	if _filtering_column == col_idx and _filter_line_edit.visible:
-		return # Already in filter mode on this column
-
-	var col_x := _get_col_x_pos(col_idx)
-	var header_rect := Rect2(col_x, 0, get_column(col_idx).current_width, header_height)
-	_filtering_column = col_idx
-	_filter_line_edit.position = header_rect.position + Vector2(1, 1)
-	_filter_line_edit.size = header_rect.size - Vector2(2, 2)
-	_filter_line_edit.text = ""
-	_filter_line_edit.visible = true
-	_filter_line_edit.grab_focus()
-
-
 func _get_resource_key(res: Resource) -> String:
 	var key := res.resource_path
 	if key.is_empty():
@@ -1138,6 +1130,20 @@ func _fit_texture_rect(texture: Texture2D, container: Rect2, anchor_to_left := f
 	var offset_x := 0.0 if anchor_to_left else (container.size.x - thumb_size.x) / 2.0
 	var offset_y := (container.size.y - thumb_size.y) / 2.0
 	return Rect2(container.position + Vector2(offset_x, offset_y), thumb_size)
+
+
+func _start_filtering(col_idx: int) -> void:
+	if _filtering_column == col_idx and _filter_line_edit.visible:
+		return # Already in filter mode on this column
+
+	var col_x := _get_col_x_pos(col_idx)
+	var header_rect := Rect2(col_x, 0, get_column(col_idx).current_width, header_height)
+	_filtering_column = col_idx
+	_filter_line_edit.position = header_rect.position + Vector2(1, 1)
+	_filter_line_edit.size = header_rect.size - Vector2(2, 2)
+	_filter_line_edit.text = ""
+	_filter_line_edit.visible = true
+	_filter_line_edit.grab_focus()
 
 
 func _apply_filter(search_key: String) -> void:
