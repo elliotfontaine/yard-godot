@@ -81,7 +81,6 @@ var _full_data: Array = []
 var _total_rows := 0
 var _visible_rows_range: Array[int] = [0, 0]
 var _h_scroll_position := 0
-var _v_scroll_position := 0
 var _resizing_column := -1
 var _resizing_start_pos := 0
 var _resizing_start_width := 0
@@ -143,13 +142,11 @@ func _ready() -> void:
 	_setup_filtering_components()
 
 	_h_scroll = HScrollBar.new()
-	_h_scroll.name = "HScrollBar"
 	_h_scroll.set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE)
 	_h_scroll.offset_top = -8 * get_theme_default_base_scale()
 	_h_scroll.value_changed.connect(_on_h_scroll_changed)
 
 	_v_scroll = VScrollBar.new()
-	_v_scroll.name = "VScrollBar"
 	_v_scroll.set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE)
 	_v_scroll.offset_top = header_height
 	_v_scroll.offset_left = -8 * get_theme_default_base_scale()
@@ -404,7 +401,6 @@ func is_cell_invalid(row: int, col: int) -> bool:
 
 func _setup_filtering_components() -> void:
 	_filter_line_edit = LineEdit.new()
-	_filter_line_edit.name = "FilterLineEdit"
 	_filter_line_edit.visible = false
 	_filter_line_edit.text_submitted.connect(_apply_filter)
 	_filter_line_edit.focus_exited.connect(_on_filter_focus_exited)
@@ -534,9 +530,7 @@ func _start_cell_editing(row: int, col: int) -> void:
 		_open_path_editor(row, col)
 	elif column.is_enum_column():
 		_open_enum_editor(row, col)
-	elif column.is_numeric_column():
-		_open_text_editor(row, col)
-	elif column.is_string_column():
+	elif column.is_numeric_column() or column.is_string_column():
 		_open_text_editor(row, col)
 	else:
 		push_warning("There is no editor for this type of cell.")
@@ -1014,20 +1008,8 @@ func _draw_cell_collection(rect: Rect2, row: int, col: int) -> void:
 	var cell_value: Variant = get_cell_value(row, col)
 	if cell_value is not Array and cell_value is not Dictionary:
 		_draw_cell_text(rect, row, col)
-		return
-	var text := _format_collection_value(cell_value)
-	var x_margin: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_LEFT)
-	var baseline_y := _get_text_baseline_y(rect.position.y)
-	var display_text := _get_display_text(text, font, rect.size.x - absf(x_margin))
-	draw_string(
-		font,
-		Vector2(rect.position.x + x_margin, baseline_y),
-		display_text,
-		HORIZONTAL_ALIGNMENT_LEFT,
-		rect.size.x - absf(x_margin),
-		font_size,
-		default_font_color,
-	)
+	else:
+		_draw_cell_text(rect, row, col, _format_collection_value(cell_value))
 
 
 static func _format_collection_elem(elem: Variant) -> String:
@@ -1155,7 +1137,6 @@ func _apply_filter(search_key: String) -> void:
 
 	# Reset the view
 	_total_rows = _data.size()
-	_v_scroll_position = 0
 	_v_scroll.value = 0
 	selected_rows.clear()
 	_previous_sort_selected_rows.clear()
@@ -1784,7 +1765,6 @@ func _on_h_scroll_changed(value: float) -> void:
 
 
 func _on_v_scroll_value_changed(value: float) -> void:
-	_v_scroll_position = int(value)
 	if row_height > 0: # Avoid division by zero
 		_visible_rows_range[0] = floori(value / row_height)
 		_visible_rows_range[1] = _visible_rows_range[0] + floori((size.y - header_height) / row_height) + 1
