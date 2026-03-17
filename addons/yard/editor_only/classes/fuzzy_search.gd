@@ -112,7 +112,7 @@ func search(p_target: String, p_result: FuzzySearchResult) -> bool:
 	return true
 
 
-func search_all(p_targets: PackedStringArray, p_results: Array) -> void:
+func search_all(p_targets: PackedStringArray, p_results: Array[FuzzySearchResult]) -> void:
 	p_results.clear()
 
 	for i in range(p_targets.size()):
@@ -124,7 +124,7 @@ func search_all(p_targets: PackedStringArray, p_results: Array) -> void:
 	_sort_and_filter(p_results)
 
 
-static func _remove_low_scores(p_results: Array, p_cull_score: float) -> void:
+static func _remove_low_scores(p_results: Array[FuzzySearchResult], p_cull_score: float) -> void:
 	# Removes all results with score < p_cull_score in-place (two pointers).
 	var i := 0
 	var j := p_results.size() - 1
@@ -136,7 +136,7 @@ static func _remove_low_scores(p_results: Array, p_cull_score: float) -> void:
 			i += 1
 		if i >= j:
 			break
-		var tmp = p_results[i]
+		var tmp := p_results[i]
 		p_results[i] = p_results[j]
 		p_results[j] = tmp
 		i += 1
@@ -145,7 +145,7 @@ static func _remove_low_scores(p_results: Array, p_cull_score: float) -> void:
 	p_results.resize(j + 1)
 
 
-func _sort_and_filter(p_results: Array) -> void:
+func _sort_and_filter(p_results: Array[FuzzySearchResult]) -> void:
 	if p_results.is_empty():
 		return
 
@@ -154,10 +154,10 @@ func _sort_and_filter(p_results: Array) -> void:
 
 	for r in p_results:
 		avg_score += float(r.score)
-		max_score = max(max_score, float(r.score))
+		max_score = maxf(max_score, float(r.score))
 
 	avg_score /= float(p_results.size())
-	var cull_score: float = min(CULL_CUTOFF, lerp(avg_score, max_score, CULL_FACTOR))
+	var cull_score: float = minf(CULL_CUTOFF, lerpf(avg_score, max_score, CULL_FACTOR))
 	_remove_low_scores(p_results, cull_score)
 
 	# Sort on (score desc, length asc, alphanumeric asc) for consistent ordering.

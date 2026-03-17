@@ -44,7 +44,7 @@ func _extract_registries_from_drop(data: Dictionary, drop_type: StringName) -> A
 	if drop_type == &"files":
 		# Godot editor "files" payload generally carries an Array of paths in `files`
 		var files: Array = data.get(&"files", [])
-		for path in files:
+		for path: Variant in files:
 			if typeof(path) != TYPE_STRING:
 				continue
 			var res := load(path)

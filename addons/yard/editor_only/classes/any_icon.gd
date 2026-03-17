@@ -38,7 +38,7 @@ static var _union_cache: Dictionary = { }
 ## It works for everything: Built-in types and classes, custom classes with or
 ## without class_name.
 static func get_variant_icon(variant: Variant, fallback: StringName = &"") -> Texture2D:
-	var type: Variant.Type = typeof(variant)
+	var type := typeof(variant) as Variant.Type
 
 	if type == TYPE_OBJECT:
 		if is_instance_valid(variant): # Need the check because of type hints

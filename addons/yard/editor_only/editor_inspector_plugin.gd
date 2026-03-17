@@ -10,7 +10,7 @@ func _can_handle(_object: Object) -> bool:
 	return true
 
 
-func _parse_property(object: Object, type: Variant.Type, name: String, hint: PropertyHint, hint_text: String, usage: int, _wide: bool) -> bool:
+func _parse_property(object: Object, type: Variant.Type, name: String, hint: PropertyHint, hint_text: String, _usage: int, _wide: bool) -> bool:
 	if hint != Registry.PROPERTY_HINT_CUSTOM:
 		return false
 

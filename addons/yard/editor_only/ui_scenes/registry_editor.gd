@@ -249,7 +249,7 @@ func _update_registries_itemlist() -> void:
 			# To match on full resource paths, replace by the following :
 			# `targets.append(_editor_state_data.opened_registries[uid].resource_path)`
 			targets.append(display_name_by_uid[uid])
-		var fuzzy_results: Array = []
+		var fuzzy_results: Array[FuzzySearchResult] = []
 		_fuz.search_all(targets, fuzzy_results) # sorted by score already
 		for res: FuzzySearchResult in fuzzy_results:
 			# res.original_index maps back to `targets` (thus to `all_uids`)

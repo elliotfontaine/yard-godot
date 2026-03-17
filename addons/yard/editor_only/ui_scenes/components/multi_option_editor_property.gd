@@ -34,7 +34,7 @@ func initialize(initial_values: Array[Variant], options: Array[Variant], list_na
 	# Track seen values for uniqueness enforcement
 	var seen: Dictionary = { }
 
-	for item in initial_values:
+	for item: Variant in initial_values:
 		var as_string: String = str(item)
 		if not available_options.has(as_string):
 			continue
