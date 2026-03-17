@@ -901,7 +901,7 @@ func _draw_cell_resource(rect: Rect2, row: int, col: int) -> void:
 	var label := "<" + res.resource_path.get_file() + ">"
 	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_LEFT)
 	var thumb_width := 0.0
-	var texture := res if res is Texture else _get_or_queue_thumbnail(
+	var texture := res if res is Texture2D else _get_or_queue_thumbnail(
 		res.resource_path,
 		ClassUtils.get_type_name(res),
 	)
