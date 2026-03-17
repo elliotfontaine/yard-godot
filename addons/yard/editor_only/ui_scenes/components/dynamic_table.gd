@@ -898,11 +898,13 @@ func _draw_cell_resource(rect: Rect2, row: int, col: int) -> void:
 		return
 
 	var res: Resource = value
-	var resource_path := _get_resource_key(res)
-	var label := "<" + resource_path.get_file() + ">"
+	var label := "<" + res.resource_path.get_file() + ">"
 	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_LEFT)
 	var thumb_width := 0.0
-	var texture := _get_or_queue_thumbnail(res)
+	var texture := res if res is Texture else _get_or_queue_thumbnail(
+		res.resource_path,
+		ClassUtils.get_type_name(res),
+	)
 	if texture != null:
 		var thumb_rect := _fit_texture_rect(texture, inner, true)
 		thumb_rect.position.x += x_margin_val
@@ -928,7 +930,7 @@ func _draw_cell_path(rect: Rect2, row: int, col: int) -> void:
 
 	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_LEFT)
 	var thumb_width := 0.0
-	var texture := _get_or_queue_thumbnail(load(value))
+	var texture := _get_or_queue_thumbnail(value)
 	if texture != null:
 		var thumb_rect := _fit_texture_rect(texture, inner, true)
 		thumb_rect.position.x += x_margin_val
@@ -1100,24 +1102,16 @@ func _get_interpolated_three_colors(start_c: Color, mid_c: Color, end_c: Color, 
 		return mid_c.lerp(end_c, (clamped_t - 0.5) * 2.0)
 
 
-func _get_resource_key(res: Resource) -> String:
-	var key := res.resource_path
-	if key.is_empty():
-		key = "iid:%d" % res.get_instance_id()
-	return key
-
-
-func _get_or_queue_thumbnail(res: Resource) -> Texture2D:
-	var key := _get_resource_key(res)
-	if _resource_thumb_cache.has(key):
-		return _resource_thumb_cache[key]
-	if not _resource_thumb_pending.has(key):
-		_resource_thumb_pending[key] = true
-		EditorInterface.get_resource_previewer().queue_edited_resource_preview(
-			res,
+func _get_or_queue_thumbnail(resource_path: String, type_name: String = "Resource") -> Texture2D:
+	if _resource_thumb_cache.has(resource_path):
+		return _resource_thumb_cache[resource_path]
+	if not _resource_thumb_pending.has(resource_path):
+		_resource_thumb_pending[resource_path] = true
+		EditorInterface.get_resource_previewer().queue_resource_preview(
+			resource_path,
 			self,
-			"_on_resource_cell_thumb_ready",
-			{ "key": key, "class": ClassUtils.get_type_name(res) },
+			&"_on_resource_cell_thumb_ready",
+			{ &"resource_path": resource_path, &"class": type_name },
 		)
 	return null
 
@@ -1838,23 +1832,18 @@ func _on_resource_previewer_preview_invalidated(path: String) -> void:
 		_resource_thumb_cache.erase(path)
 
 
-func _on_resource_cell_thumb_ready(_path: String, preview: Texture2D, thumbnail_preview: Texture2D, userdata: Variant) -> void:
+func _on_resource_cell_thumb_ready(resource_path: String, preview: Texture2D, thumbnail_preview: Texture2D, userdata: Variant) -> void:
 	if typeof(userdata) != TYPE_DICTIONARY:
 		return
 
-	var key: String = userdata.get("key", "")
-	if key.is_empty():
-		return
-
-	# Prefer thumbnail; fallback to preview if thumbnail missing
-	var tex: Texture2D = thumbnail_preview if thumbnail_preview != null else preview
+	var tex: Texture2D = thumbnail_preview if thumbnail_preview else preview
 
 	# Fallback to resource class icon
 	if not tex:
-		tex = AnyIcon.get_class_icon(userdata.get("class", "Resource"))
+		tex = AnyIcon.get_class_icon(userdata.get(&"class", &"Resource"))
 
-	_resource_thumb_cache[key] = tex # can be null if both are null
-	_resource_thumb_pending.erase(key)
+	_resource_thumb_cache[resource_path] = tex # can be null if both are null
+	_resource_thumb_pending.erase(resource_path)
 
 	await get_tree().create_timer(0.01).timeout
 	queue_redraw()
