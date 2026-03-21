@@ -264,6 +264,42 @@ static func get_class_property_names(class_type: Variant) -> Array[String]:
 	return prop_names
 
 
+# WARNING: hacky
+## Attempt to get the built-in type for a given property within a class.
+# TODO: see if this should be replaced by get_property_declared_types() below (or similar) - the
+# implementation of that method doesn't return custom types from a class string.
+# TODO: consider whether we should also be able to get a custom defined type for custom properties too.
+# if multiple classes are defined for a registry, it might be ideal to be able to confirm that there aren't any inheritence
+# type conflicts between their properties, though, this may only need to be presented as a warning rather than an error.
+static func get_class_property_type_from_name(class_type: Variant, property_name: String) -> Variant.Type:
+	if not class_type or property_name.is_empty():
+		return TYPE_NIL
+	
+	if is_native(class_type):
+		var classname: String = class_type if class_type is String else get_type_name(class_type)
+		var props_native := ClassDB.class_get_property_list(classname)
+		for p in props_native:
+			if p.name == property_name and not p.type == TYPE_NIL:
+				return p.type
+	
+	elif is_script(class_type):
+		var obj: Script = class_type if class_type is Script else get_type(class_type)
+		if obj is Script:
+			var script := obj as Script
+			var script_props := script.get_script_property_list()
+			#print(script_props)
+			for p in script_props:
+				if p.name == property_name and not p.type == TYPE_NIL:
+					return p.type
+
+		var props := obj.get_property_list()
+		for p in props:
+			if p.name == property_name and not p.type == TYPE_NIL:
+				return p.type
+	
+	return TYPE_NIL
+
+
 ## Checks if a given type ID represents any built-in type except TYPE_OBJECT.
 ## Can receive other type IDs to exclude.
 static func is_type_builtin(type_id: Variant.Type, exclusions: Array[int] = []) -> bool:

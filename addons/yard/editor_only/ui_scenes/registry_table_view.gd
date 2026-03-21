@@ -173,34 +173,55 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 
 	if not current_registry:
 		return false
+		
+	
+	var scan_rulesets := RegistryIO.get_registry_settings(current_registry).get_compiled_rulesets()
 
 	for path: String in data.files:
 		if ResourceLoader.exists(path):
-			if RegistryIO.is_resource_matching_restriction(current_registry, load(path)):
+			var res := load(path)
+			var any_ruleset_class_matches := false
+			for scan_ruleset in scan_rulesets:
+				if RegistryIO.does_resource_match_class_restrictions(res, scan_ruleset.class_restrictions):
+					any_ruleset_class_matches = true
+					break
+			if any_ruleset_class_matches:
 				return true
 		elif path.ends_with("/"): # is dir
-			if RegistryIO.dir_has_matching_resource(current_registry, path, true):
-				return true
+			for scan_ruleset in scan_rulesets:
+				for scan_dir in scan_ruleset.scan_directories:
+					if RegistryIO.dir_has_matching_resource(path, scan_ruleset, scan_dir, true):
+						return true
 
 	return false
 
 
 func _drop_data(_at_position: Vector2, data: Variant) -> void:
 	var n_added := 0
-
+	
+	var scan_rulesets := RegistryIO.get_registry_settings(current_registry).get_compiled_rulesets()
+	
 	for path: String in data.files:
 		if ResourceLoader.exists(path):
-			if RegistryIO.is_resource_matching_restriction(current_registry, load(path)):
+			var res := load(path)
+			var any_ruleset_class_matches := false
+			for scan_ruleset in scan_rulesets:
+				if RegistryIO.does_resource_match_class_restrictions(res, scan_ruleset.class_restrictions):
+					any_ruleset_class_matches = true
+					break
+			if any_ruleset_class_matches:
 				var status := RegistryIO.add_entry(current_registry, ResourceUID.path_to_uid(path))
 				n_added += int(status == OK)
 		elif path.ends_with("/"):
-			var matching_resources := RegistryIO.dir_get_matching_resources(current_registry, path, true)
-			for res in matching_resources:
-				var status := RegistryIO.add_entry(
-					current_registry,
-					ResourceUID.path_to_uid(res.resource_path),
-				)
-				n_added += int(status == OK)
+			for scan_ruleset in scan_rulesets:
+				for scan_dir in scan_ruleset.scan_directories:
+					var matching_resources := RegistryIO.dir_get_matching_resources(path, scan_ruleset, scan_dir, true)
+					for res in matching_resources:
+						var status := RegistryIO.add_entry(
+							current_registry,
+							ResourceUID.path_to_uid(res.resource_path),
+						)
+						n_added += int(status == OK)
 
 	print_rich("[color=%s]Added %s new Resources to the registry.[/color]" % [LOGGING_INFO_COLOR, n_added])
 	update_view()
@@ -522,14 +543,21 @@ func _setup_add_entry() -> void:
 		_res_picker.queue_free()
 	_res_picker = EditorResourcePicker.new()
 	_res_picker.custom_minimum_size = Vector2(240, 0)
-	var restriction := RegistryIO.get_registry_settings(current_registry).class_restriction
-	if not restriction:
-		_res_picker.base_type = "Resource"
-	elif not RegistryIO.is_quoted_string(restriction):
-		_res_picker.base_type = restriction
-	else:
-		var script: Script = load(RegistryIO.unquote(restriction))
-		_res_picker.base_type = ClassUtils.get_type_name(script)
+	
+	_res_picker.base_type = "Resource"
+	var settings := RegistryIO.get_registry_settings(current_registry)
+	
+	if settings.has_any_class_restrictions():
+		var all_class_restrictions := settings.get_all_class_restrictions()
+		var only_class_restriction := all_class_restrictions[0] if all_class_restrictions.size() == 1 else &""
+		
+		if only_class_restriction:
+			if not RegistryIO.is_quoted_string(only_class_restriction):
+				_res_picker.base_type = only_class_restriction
+			else:
+				var script: Script = load(RegistryIO.unquote(only_class_restriction))
+				_res_picker.base_type = ClassUtils.get_type_name(script)
+	
 	resource_picker_container.add_child(_res_picker)
 	_texture_rect_parent = _res_picker.get_child(0)
 	_res_picker.resource_changed.connect(_on_res_picker_resource_changed)

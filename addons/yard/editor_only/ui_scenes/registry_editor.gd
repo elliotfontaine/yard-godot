@@ -134,9 +134,10 @@ func open_registry(registry: Registry) -> void:
 		_editor_state_data = _editor_state_data.save_and_reload()
 	_update_registries_itemlist()
 	_editor_state_data.add_recent(registry)
-
-	if RegistryIO.get_registry_settings(registry).auto_rescan:
-		RegistryIO.sync_registry_entries_from_scan_dir(registry)
+	
+	var settings := RegistryIO.get_registry_settings(registry)
+	if settings.auto_rescan:
+		RegistryIO.sync_registry_entries_from_scan_dir(registry, settings)
 
 	select_registry(uid)
 
@@ -280,15 +281,20 @@ func _add_registry_to_itemlist(uid: String, display_name: String) -> int:
 
 
 func _resolve_registry_itemlist_icon(registry: Registry) -> Texture2D:
-	var restriction := RegistryIO.get_registry_settings(registry).class_restriction
-	if restriction != "":
-		if RegistryIO.is_quoted_string(restriction):
-			var path := restriction.substr(1, restriction.length() - 2)
-			return AnyIcon.get_script_icon(ResourceLoader.load(path))
-		else:
-			var icon := AnyIcon.get_class_icon(restriction, &"Resource")
-			if icon:
-				return icon
+	var settings := RegistryIO.get_registry_settings(registry)
+	
+	if settings.has_any_class_restrictions():
+		var all_class_restrictions := settings.get_all_class_restrictions()
+		var only_class_restriction := all_class_restrictions[0] if all_class_restrictions.size() == 1 else &""
+		
+		if only_class_restriction:
+			if RegistryIO.is_quoted_string(only_class_restriction):
+				var path := only_class_restriction.substr(1, only_class_restriction.length() - 2)
+				return AnyIcon.get_script_icon(ResourceLoader.load(path))
+			else:
+				var icon := AnyIcon.get_class_icon(only_class_restriction, &"Resource")
+				if icon:
+					return icon
 
 	var custom_icon := AnyIcon.get_variant_icon(registry, &"Resource")
 	var registry_icon := AnyIcon.get_class_icon(&"Registry")
@@ -637,7 +643,7 @@ func _on_reindex_button_pressed() -> void:
 func _on_rescan_button_pressed() -> void:
 	var registry := registry_table_view.current_registry
 	if registry:
-		RegistryIO.sync_registry_entries_from_scan_dir(registry)
+		RegistryIO.sync_registry_entries_from_scan_dir(registry, RegistryIO.get_registry_settings(registry))
 	registry_table_view.update_view()
 
 
@@ -704,8 +710,9 @@ func _on_new_registry_dialog_confirmed() -> void:
 
 func _on_filesystem_changed() -> void:
 	for registry: Registry in _editor_state_data.opened_registries.values():
-		if RegistryIO.get_registry_settings(registry).auto_rescan:
-			RegistryIO.sync_registry_entries_from_scan_dir(registry)
+		var settings := RegistryIO.get_registry_settings(registry)
+		if settings.auto_rescan:
+			RegistryIO.sync_registry_entries_from_scan_dir(registry, settings)
 	_update_registries_itemlist()
 	registry_table_view.update_view()
 
