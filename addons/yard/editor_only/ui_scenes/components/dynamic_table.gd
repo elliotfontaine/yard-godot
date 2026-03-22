@@ -701,7 +701,7 @@ func _dispatch_cell_draw(cell_rect: Rect2, row: int, col_idx: int) -> void:
 		_draw_cell_path(cell_rect, row, col_idx)
 	elif col.is_enum_column():
 		_draw_cell_enum(cell_rect, row, col_idx)
-	elif col.is_array_column() or col.is_dictionary_column():
+	elif col.is_collection_column():
 		_draw_cell_collection(cell_rect, row, col_idx)
 	else:
 		_draw_cell_text(cell_rect, row, col_idx)
@@ -794,7 +794,7 @@ func _draw_cells_column_range(row: int, row_y: float, col_from: int, col_to: int
 
 func _draw_cell_progress(rect: Rect2, row: int, col: int) -> void:
 	var cell_value: float = get_cell_value(row, col)
-	var range_cfg := get_column(col).get_range_config()
+	var range_cfg := get_column(col).range_config
 	var progress: float = inverse_lerp(range_cfg.get(&"min"), range_cfg.get(&"max"), cell_value)
 	var progress_color := _get_interpolated_three_colors(progress_bar_start_color, progress_bar_middle_color, progress_bar_end_color, progress)
 
@@ -957,31 +957,14 @@ func _draw_cell_text(rect: Rect2, row: int, col: int, text_override: String = ""
 func _draw_cell_enum(rect: Rect2, row: int, col: int) -> void:
 	var cell_value: Variant = get_cell_value(row, col)
 	var column := get_column(col)
-	var hint_arr: Array = column.hint_string.split(",", false)
 	var value_str := ""
 
 	if not column.is_numeric_column():
-		var label := str(cell_value)
-		for entry: String in hint_arr:
-			var colon := entry.rfind(":")
-			var entry_label := entry.substr(0, colon) if colon != -1 else entry
-			if entry_label == label:
-				value_str = label
+		value_str = str(cell_value)
 	else:
-		var value_map: Dictionary = { }
-		var next_implicit := 0
-		for entry: String in hint_arr:
-			var colon := entry.rfind(":")
-			if colon == -1:
-				value_map[next_implicit] = entry
-				next_implicit += 1
-			else:
-				var explicit_val := entry.substr(colon + 1).to_int()
-				value_map[explicit_val] = entry.substr(0, colon)
-				next_implicit = explicit_val + 1
-
 		var int_value := cell_value as int
-		value_str = "%s:%s" % [value_map[int_value], int_value] if value_map.has(int_value) else "?:%d" % int_value
+		var map := column.enum_values_map
+		value_str = "%s:%s" % [map[int_value], int_value] if map.has(int_value) else "?:%d" % int_value
 
 	var text_font: Font = column.custom_font if column.custom_font else font
 	var h_alignment := HORIZONTAL_ALIGNMENT_CENTER
@@ -1009,36 +992,47 @@ func _draw_cell_collection(rect: Rect2, row: int, col: int) -> void:
 	if cell_value is not Array and cell_value is not Dictionary:
 		_draw_cell_text(rect, row, col)
 	else:
-		_draw_cell_text(rect, row, col, _format_collection_value(cell_value))
+		var column := get_column(col)
+		_draw_cell_text(rect, row, col, _format_collection_text(cell_value, column))
 
 
-static func _format_collection_elem(elem: Variant) -> String:
-	if elem is Resource:
-		return "<%s>" % (elem as Resource).resource_path.get_file()
-	if elem is Array:
-		return "Array(%d)" % (elem as Array).size()
-	if elem is Dictionary:
-		return "Dict(%d)" % (elem as Dictionary).size()
-	return str(elem)
-
-
-static func _format_collection_value(collection: Variant) -> String:
+static func _format_collection_text(collection: Variant, column: ColumnConfig) -> String:
 	var is_dict := collection is Dictionary
 	var items: Array = (collection as Dictionary).keys() if is_dict else (collection as Array)
-
+	var keys_map: Dictionary = column.enum_keys_map if column.is_enum_key_dictionary_column() else { }
+	var values_map: Dictionary = column.enum_values_map if column.is_enum_value_dictionary_column() or column.is_enum_array_column() else { }
 	var parts: Array[String] = []
 	for i in mini(items.size(), 3):
 		if is_dict:
 			var key: Variant = items[i]
-			parts.append("%s: %s" % [str(key), _format_collection_elem((collection as Dictionary)[key])])
+			var val: Variant = (collection as Dictionary)[key]
+			parts.append(
+				"%s: %s" % [
+					_format_collection_elem(key, keys_map),
+					_format_collection_elem(val, values_map),
+				],
+			)
 		else:
-			parts.append(_format_collection_elem(items[i]))
+			parts.append(_format_collection_elem(items[i], values_map))
 
 	var result := ", ".join(parts)
 	var remaining := items.size() - 3
 	if remaining > 0:
 		result += " and %d more" % remaining
 	return "{ %s }" % result if is_dict else "[%s]" % result
+
+
+static func _format_collection_elem(elem: Variant, enum_map: Dictionary = { }) -> String:
+	if elem is Resource:
+		return "<%s>" % (elem as Resource).resource_path.get_file()
+	if elem is Array:
+		return "Array(%d)" % (elem as Array).size()
+	if elem is Dictionary:
+		return "Dict(%d)" % (elem as Dictionary).size()
+	if elem is int and not enum_map.is_empty():
+		var int_elem := elem as int
+		return enum_map[int_elem] if enum_map.has(int_elem) else "?:%d" % int_elem
+	return str(elem)
 
 
 func _get_display_text(cell_value: String, text_font: Font, max_width: float) -> String:
@@ -1442,7 +1436,7 @@ func _handle_progress_drag(mouse_pos: Vector2) -> void:
 	if bar_w <= 0:
 		return
 
-	var range_cfg := get_column(_progress_drag_col).get_range_config()
+	var range_cfg := get_column(_progress_drag_col).range_config
 	var weight := (mouse_pos.x - bar_x) / bar_w
 	var new_progress: float = snappedf(
 		lerpf(range_cfg.get(&"min"), range_cfg.get(&"max"), weight),
@@ -1834,6 +1828,28 @@ class ColumnConfig:
 	var current_width: float:
 		set(value):
 			current_width = max(value, minimum_width)
+	var enum_values_map: Dictionary[int, String]:
+		get:
+			if not _enum_values_map_ready:
+				enum_values_map = _parse_enum_hint_string(_get_enum_value_hint_string())
+				_enum_values_map_ready = true
+			return enum_values_map
+	var enum_keys_map: Dictionary[int, String]:
+		get:
+			if not _enum_keys_map_ready:
+				enum_keys_map = _parse_enum_hint_string(_get_enum_key_hint_string())
+				_enum_keys_map_ready = true
+			return enum_keys_map
+	var range_config: Dictionary[StringName, Variant]:
+		get:
+			if not _range_config_ready:
+				range_config = _compute_range_config()
+				_range_config_ready = true
+			return range_config
+
+	var _range_config_ready := false
+	var _enum_values_map_ready := false
+	var _enum_keys_map_ready := false
 
 
 	func _init(p_identifier: String, p_header: String, p_type: Variant.Type, p_alignment: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT) -> void:
@@ -1898,19 +1914,77 @@ class ColumnConfig:
 		return type == TYPE_DICTIONARY
 
 
-	func get_range_config() -> Dictionary[StringName, Variant]:
+	func is_collection_column() -> bool:
+		return is_array_column() or is_dictionary_column()
+
+
+	## Array column whose elements are enum values
+	func is_enum_array_column() -> bool:
+		return is_array_column() and hint_string and _is_enum_collection_hint(hint_string)
+
+
+	## Dictionary column whose keys are enum values
+	func is_enum_key_dictionary_column() -> bool:
+		return is_dictionary_column() and hint_string and _is_enum_collection_hint(_dict_key_hint_part())
+
+
+	## Dictionary column whose values are enum values
+	func is_enum_value_dictionary_column() -> bool:
+		return is_dictionary_column() and hint_string and _is_enum_collection_hint(_dict_value_hint_part())
+
+
+	func _get_enum_value_hint_string() -> String:
+		if is_array_column():
+			return hint_string.split(":", true, 1)[1]
+		if is_dictionary_column():
+			return _dict_value_hint_part().split(":", true, 1)[1]
+		return hint_string
+
+
+	func _get_enum_key_hint_string() -> String:
+		return _dict_key_hint_part().split(":", true, 1)[1]
+
+
+	func _dict_key_hint_part() -> String:
+		return hint_string.split(";", true, 1)[0]
+
+
+	func _dict_value_hint_part() -> String:
+		return hint_string.split(";", true, 1)[1]
+
+
+	func _is_enum_collection_hint(hint: String) -> bool:
+		return hint.length() > 3 and hint[1] == "/" and int(hint[2]) == PROPERTY_HINT_ENUM
+
+
+	static func _parse_enum_hint_string(enum_hint_string: String) -> Dictionary[int, String]:
+		var map: Dictionary[int, String] = { }
+		var next_implicit := 0
+		for entry: String in enum_hint_string.split(",", false):
+			var colon := entry.rfind(":")
+			if colon == -1:
+				map[next_implicit] = entry
+				next_implicit += 1
+			else:
+				var explicit_val := entry.substr(colon + 1).to_int()
+				map[explicit_val] = entry.substr(0, colon)
+				next_implicit = explicit_val + 1
+		return map
+
+
+	func _compute_range_config() -> Dictionary[StringName, Variant]:
 		if not is_range_column():
 			return { }
 		var hint_elements := hint_string.split(",", false)
-		var r_min := float(hint_elements[0]) if hint_elements.size() > 0 else 0.0
-		var r_max := float(hint_elements[1]) if hint_elements.size() > 1 else 1.0
-		var r_step := float(hint_elements[2]) if hint_elements.size() > 2 else (0.001 if is_float_column() else 1.0)
-		var result: Dictionary[StringName, Variant] = { &"min": r_min, &"max": r_max, &"step": r_step }
+		var result: Dictionary[StringName, Variant] = {
+			&"min": float(hint_elements[0]) if hint_elements.size() > 0 else 0.0,
+			&"max": float(hint_elements[1]) if hint_elements.size() > 1 else 1.0,
+			&"step": float(hint_elements[2]) if hint_elements.size() > 2 else (0.001 if is_float_column() else 1.0),
+		}
 		for hint_str in hint_elements.slice(3):
 			match hint_str:
 				"or_greater":
-					result.set(&"or_greater", true)
+					result[&"or_greater"] = true
 				"or_less":
-					result.set(&"or_less", true)
-
+					result[&"or_less"] = true
 		return result
