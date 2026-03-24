@@ -167,6 +167,12 @@ bbcode_enabled = true
 fit_content = true
 scroll_active = false
 
+[node name="AdvancedSettingsCheckButton" type="CheckButton" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Advanced Settings"
+alignment = 2
+
 [connection signal="canceled" from="." to="." method="_on_canceled"]
 [connection signal="close_requested" from="." to="." method="_on_close_requested"]
 [connection signal="confirmed" from="." to="." method="_on_confirmed"]
@@ -175,3 +181,4 @@ scroll_active = false
 [connection signal="text_changed" from="VBoxContainer/GridContainer/IndexedPropertiesLineEdit" to="." method="_on_indexed_properties_line_edit_text_changed"]
 [connection signal="text_changed" from="VBoxContainer/GridContainer/RegistryPath/RegistryPathLineEdit" to="." method="_on_registry_path_line_edit_text_changed"]
 [connection signal="pressed" from="VBoxContainer/GridContainer/RegistryPath/RegistryPathFilesystemButton" to="." method="_on_registry_path_filesystem_button_pressed"]
+[connection signal="toggled" from="VBoxContainer/AdvancedSettingsCheckButton" to="." method="_on_advanced_settings_check_button_toggled"]

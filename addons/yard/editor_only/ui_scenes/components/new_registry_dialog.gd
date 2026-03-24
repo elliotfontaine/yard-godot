@@ -81,6 +81,7 @@ var _file_dialog_state: FileDialogState
 @onready var scan_rulesets_tab_container: TabContainer = %ScanRulesetsTabContainer
 @onready var registry_path_line_edit: LineEdit = %RegistryPathLineEdit
 @onready var registry_path_filesystem_button: Button = %RegistryPathFilesystemButton
+@onready var advanced_settings_check_button: CheckButton = %AdvancedSettingsCheckButton
 @onready var info_label: RichTextLabel = %InfoLabel
 
 @onready var advanced_registry_properties_to_controls: Dictionary[StringName, Array] = {
@@ -89,7 +90,6 @@ var _file_dialog_state: FileDialogState
 }
 
 var _additional_scan_ruleset_editors_list: Array[ScanRulesetEditor] = []
-var _show_advanced_settings_check_button: CheckButton
 
 var _last_file_dialog_requested_ruleset_editor: ScanRulesetEditor
 var _all_ruleset_editors: Array[ScanRulesetEditor]:
@@ -117,13 +117,6 @@ func _ready() -> void:
 	_file_dialog.file_selected.connect(_on_file_dialog_file_selected)
 	_file_dialog.dir_selected.connect(_on_file_dialog_dir_selected)
 	add_child(_file_dialog)
-
-	var placeholder_advanced_settings_button := add_button("Show Advanced Settings", true)
-	_show_advanced_settings_check_button = CheckButton.new()
-	_show_advanced_settings_check_button.text = "Show Advanced Settings"
-
-	placeholder_advanced_settings_button.replace_by(_show_advanced_settings_check_button)
-	_show_advanced_settings_check_button.toggled.connect(_on_show_advanced_settings_check_button_toggled)
 
 	scan_rulesets_tab_container.get_tab_bar().set_tab_title(0, "Default Ruleset")
 	_connect_ruleset_editor(default_ruleset_editor)
@@ -191,8 +184,8 @@ func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 	else:
 		return
 
-	_show_advanced_settings_check_button.set_pressed_no_signal(any_existing_advanced_settings)
-	_on_show_advanced_settings_check_button_toggled(any_existing_advanced_settings)
+	advanced_settings_check_button.set_pressed_no_signal(any_existing_advanced_settings)
+	_on_advanced_settings_check_button_toggled(any_existing_advanced_settings)
 	_on_scan_ruleset_additional_editors_list_updated()
 
 	popup()
@@ -593,7 +586,7 @@ func _add_additional_ruleset_editor(ruleset_settings: RegistryIO.RegistryScanRul
 
 	additional_ruleset_editor.default_ruleset_editor = default_ruleset_editor
 	additional_ruleset_editor.is_additional_ruleset = true
-	additional_ruleset_editor.show_advanced_settings = _show_advanced_settings_check_button.button_pressed
+	additional_ruleset_editor.show_advanced_settings = advanced_settings_check_button.button_pressed
 
 	if ruleset_settings != null:
 		additional_ruleset_editor.reset_properties(ruleset_settings)
@@ -618,7 +611,7 @@ func _on_delete_additional_ruleset(ruleset_editor: ScanRulesetEditor) -> void:
 	_on_scan_ruleset_additional_editors_list_updated()
 
 
-func _on_show_advanced_settings_check_button_toggled(toggled_on: bool) -> void:
+func _on_advanced_settings_check_button_toggled(toggled_on: bool) -> void:
 	add_scan_ruleset_button.visible = toggled_on
 
 	for property in ADVANCED_REGISTRY_PROPERTIES:
