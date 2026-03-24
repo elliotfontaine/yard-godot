@@ -19,11 +19,11 @@ const AnyIcon := Namespace.AnyIcon
 
 const ADVANCED_RULESET_PROPERTIES: Array[StringName] = [
 	&"scan_regex_include",
-	&"scan_regex_exclude"
+	&"scan_regex_exclude",
 ]
 
 const DEFAULT_OVERRIDDEN_RULESET_PROPERTIES: Array[StringName] = [
-	&"scan_directories"
+	&"scan_directories",
 ]
 
 enum ValidationSubState { INFO, SUCCESS, WARNING, ERROR }
@@ -52,12 +52,12 @@ enum ValidationSubState { INFO, SUCCESS, WARNING, ERROR }
 	&"recursive_scan": recursive_scan_check_box,
 	&"allowed_file_extensions": allowed_file_extensions_line_edit,
 	&"scan_regex_include": scan_regex_include_line_edit,
-	&"scan_regex_exclude": scan_regex_exclude_line_edit
+	&"scan_regex_exclude": scan_regex_exclude_line_edit,
 }
 
 @onready var advanced_ruleset_properties_to_controls: Dictionary[StringName, Array] = {
 	&"scan_regex_include": [scan_regex_include_label, scan_regex_include_line_edit],
-	&"scan_regex_exclude": [scan_regex_exclude_label, scan_regex_exclude_line_edit]
+	&"scan_regex_exclude": [scan_regex_exclude_label, scan_regex_exclude_line_edit],
 }
 
 ## Map RegistryScanRuleset properties to the names of all editor controls that should be reset and
@@ -71,7 +71,7 @@ enum ValidationSubState { INFO, SUCCESS, WARNING, ERROR }
 	&"recursive_scan": [&"recursive_scan_check_box"],
 	&"allowed_file_extensions": [&"allowed_file_extensions_line_edit"],
 	&"scan_regex_include": [&"scan_regex_include_line_edit"],
-	&"scan_regex_exclude": [&"scan_regex_exclude_line_edit"]
+	&"scan_regex_exclude": [&"scan_regex_exclude_line_edit"],
 }
 
 var is_additional_ruleset := false:
@@ -80,7 +80,7 @@ var is_additional_ruleset := false:
 		ruleset_delete_button.visible = is_additional_ruleset
 		# Additional ruleset editors have an extra column to support override buttons
 		ruleset_properties_grid_container.columns = 3 if is_additional_ruleset else 2
-		
+
 		if is_additional_ruleset and _registry_scan_ruleset_override_buttons.is_empty():
 			for ruleset_property in scan_ruleset_properties_to_root_edit_controls:
 				var ruleset_root_control := scan_ruleset_properties_to_root_edit_controls[ruleset_property]
@@ -89,12 +89,12 @@ var is_additional_ruleset := false:
 				_registry_scan_ruleset_override_buttons[ruleset_property] = override_button
 				ruleset_root_control.add_sibling(override_button)
 				override_button.pressed.connect(_on_override_button_pressed)
-		
+
 		elif not is_additional_ruleset and not _registry_scan_ruleset_override_buttons.is_empty():
 			for override_button: TextureButton in _registry_scan_ruleset_override_buttons.values():
 				override_button.queue_free()
 			_registry_scan_ruleset_override_buttons.clear()
-		
+
 		_update_overrides()
 
 ## Only required for non-default ruleset editors - allows using default values from this editor for
@@ -110,25 +110,25 @@ var show_advanced_settings := false:
 		for property in ADVANCED_RULESET_PROPERTIES:
 			for control: Control in advanced_ruleset_properties_to_controls[property]:
 				control.visible = show_advanced_settings
-		
+
 		_update_overrides()
 
 ## Map ruleset property names to their override buttons
-var _registry_scan_ruleset_override_buttons: Dictionary[String, TextureButton] = {}
+var _registry_scan_ruleset_override_buttons: Dictionary[String, TextureButton] = { }
 
 
 func reset_properties(ruleset_settings: RegistryIO.RegistryScanRuleset) -> void:
 	if is_additional_ruleset:
 		for override_property in _registry_scan_ruleset_override_buttons:
 			_registry_scan_ruleset_override_buttons[override_property].set_pressed_no_signal(ruleset_settings.override_properties.has(override_property))
-	
+
 	var update_resource_classes := not is_additional_ruleset or ruleset_settings.override_properties.has(&"class_restrictions")
 	var update_scan_directories := not is_additional_ruleset or ruleset_settings.override_properties.has(&"scan_directories")
 	var update_recursive_scan := not is_additional_ruleset or ruleset_settings.override_properties.has(&"recursive_scan")
 	var update_allowed_file_extensions := not is_additional_ruleset or ruleset_settings.override_properties.has(&"allowed_file_extensions")
 	var update_scan_regex_include := not is_additional_ruleset or ruleset_settings.override_properties.has(&"scan_regex_include")
 	var update_scan_regex_exclude := not is_additional_ruleset or ruleset_settings.override_properties.has(&"scan_regex_exclude")
-	
+
 	if update_resource_classes:
 		class_restrictions_tab_container.set_all_values(ruleset_settings.class_restrictions)
 	if update_scan_directories:
@@ -141,7 +141,7 @@ func reset_properties(ruleset_settings: RegistryIO.RegistryScanRuleset) -> void:
 		scan_regex_include_line_edit.text = ruleset_settings.scan_regex_include
 	if update_scan_regex_exclude:
 		scan_regex_exclude_line_edit.text = ruleset_settings.scan_regex_exclude
-	
+
 	# Trigger setters for already-set properties
 	is_additional_ruleset = is_additional_ruleset
 	show_advanced_settings = show_advanced_settings
@@ -173,16 +173,16 @@ func _on_override_button_pressed() -> void:
 func _update_overrides() -> void:
 	if not is_additional_ruleset or _registry_scan_ruleset_override_buttons.is_empty():
 		return
-		
+
 	# Update all controls w/default values for non-overridden properties
 	for property in scan_ruleset_properties_to_all_control_properties:
 		var override_button := _registry_scan_ruleset_override_buttons[property]
-		
+
 		var is_property_overridden := override_button.button_pressed
 		for control_property_name: StringName in scan_ruleset_properties_to_all_control_properties[property]:
 			var our_control: Control = self[control_property_name]
 			var default_control: Control = default_ruleset_editor[control_property_name]
-			
+
 			if our_control is LineEdit:
 				if not is_property_overridden:
 					our_control.text = default_control.text
@@ -195,7 +195,7 @@ func _update_overrides() -> void:
 				if not is_property_overridden:
 					our_control.match_other_tab_inputs_container(default_control)
 				our_control.disabled = not is_property_overridden
-	
+
 	# Only show advanced override buttons when advanced properties are enabled
 	for property in ADVANCED_RULESET_PROPERTIES:
 		var override_button := _registry_scan_ruleset_override_buttons[property]
@@ -217,12 +217,12 @@ func _build_ruleset() -> RegistryIO.RegistryScanRuleset:
 	ruleset.allowed_file_extensions = file_extensions
 	ruleset.scan_regex_include = scan_regex_include_line_edit.text.strip_edges()
 	ruleset.scan_regex_exclude = scan_regex_exclude_line_edit.text.strip_edges()
-	
+
 	if is_additional_ruleset:
 		for ruleset_property in _registry_scan_ruleset_override_buttons:
 			if _registry_scan_ruleset_override_buttons[ruleset_property].button_pressed:
 				ruleset.override_properties.append(ruleset_property)
-	
+
 	return ruleset
 
 
@@ -232,7 +232,7 @@ func _build_ruleset() -> RegistryIO.RegistryScanRuleset:
 ## 3. Regex include check
 ## 4. Regex exclude check
 ## Each tuple is in the form of: [ValidationSubState, StringName], which consists of the state of
-## the validation for that check (info/success/warning/error) and the corresponding info message key 
+## the validation for that check (info/success/warning/error) and the corresponding info message key
 ## (from NewRegistryDialog.INFO_MESSAGES). If that step was skipped or ignored, info is returned,
 ## but the message key will be empty.
 ## NOTE: although we could simplify this to return just the validation state, it may be better to
@@ -240,20 +240,20 @@ func _build_ruleset() -> RegistryIO.RegistryScanRuleset:
 ## additional, more specific warning/error messages in the future.
 func _validate_fields() -> Array[Array]:
 	var validation_messages: Array[Array] = []
-	
+
 	# Determine which properties should actually be validated (only default or non-overridden ones)
 	var validate_resource_classes := not is_additional_ruleset or _registry_scan_ruleset_override_buttons[&"class_restrictions"].button_pressed
 	var validate_scan_directories := not is_additional_ruleset or _registry_scan_ruleset_override_buttons[&"scan_directories"].button_pressed
 	var validate_allowed_file_extensions := not is_additional_ruleset or _registry_scan_ruleset_override_buttons[&"allowed_file_extensions"].button_pressed
 	var validate_scan_regex_include := not is_additional_ruleset or _registry_scan_ruleset_override_buttons[&"scan_regex_include"].button_pressed
 	var validate_scan_regex_exclude := not is_additional_ruleset or _registry_scan_ruleset_override_buttons[&"scan_regex_exclude"].button_pressed
-	
+
 	# Resource classes
 	if validate_resource_classes:
 		var all_class_strings: Array[String] = []
 		all_class_strings.assign(class_restrictions_tab_container.get_all_values(false))
 		var class_restriction_input_validation_icons: Array[Texture2D] = []
-		
+
 		var all_classes_empty := true
 		var all_classes_valid := true
 		for class_string in all_class_strings:
@@ -265,16 +265,14 @@ func _validate_fields() -> Array[Array]:
 				if is_class_valid:
 					## TODO: Fix icon size in Godot 4.6 — https://github.com/godotengine/godot/pull/95817
 					class_restriction_input_validation_icons.append(
-						AnyIcon.get_script_icon(load(RegistryIO.unquote(class_string)))
-						if RegistryIO.is_quoted_string(class_string)
-						else AnyIcon.get_class_icon(class_string)
+						AnyIcon.get_script_icon(load(RegistryIO.unquote(class_string))) if RegistryIO.is_quoted_string(class_string) else AnyIcon.get_class_icon(class_string),
 					)
 				else:
 					all_classes_valid = false
 					class_restriction_input_validation_icons.append(AnyIcon.get_icon(&"MissingResource"))
-		
+
 		class_restrictions_tab_container.render_validation_results(class_restriction_input_validation_icons)
-		
+
 		if all_classes_empty:
 			validation_messages.append([ValidationSubState.WARNING, &"class_empty"])
 		elif all_classes_valid:
@@ -296,14 +294,14 @@ func _validate_fields() -> Array[Array]:
 				if not DirAccess.dir_exists_absolute(scan_path):
 					all_paths_valid = false
 					break
-			
+
 			if all_paths_valid:
 				validation_messages.append([ValidationSubState.SUCCESS, &"scan_valid"])
 			else:
 				validation_messages.append([ValidationSubState.ERROR, &"scan_invalid"])
 	else:
 		validation_messages.append([ValidationSubState.INFO, &""])
-	
+
 	# Allowed file extensions
 	if validate_allowed_file_extensions:
 		var file_extensions: Array[String] = []
@@ -321,7 +319,7 @@ func _validate_fields() -> Array[Array]:
 			validation_messages.append([ValidationSubState.INFO, &"file_extensions_none"])
 	else:
 		validation_messages.append([ValidationSubState.INFO, &""])
-	
+
 	# Scan regex include filter
 	if validate_scan_regex_include:
 		var regex_include := scan_regex_include_line_edit.text.strip_edges()
@@ -334,7 +332,7 @@ func _validate_fields() -> Array[Array]:
 			validation_messages.append([ValidationSubState.INFO, &""])
 	else:
 		validation_messages.append([ValidationSubState.INFO, &""])
-	
+
 	# Scan regex exclude filter
 	if validate_scan_regex_exclude:
 		var regex_exclude := scan_regex_exclude_line_edit.text.strip_edges()
@@ -347,7 +345,7 @@ func _validate_fields() -> Array[Array]:
 			validation_messages.append([ValidationSubState.INFO, &""])
 	else:
 		validation_messages.append([ValidationSubState.INFO, &""])
-	
+
 	return validation_messages
 
 

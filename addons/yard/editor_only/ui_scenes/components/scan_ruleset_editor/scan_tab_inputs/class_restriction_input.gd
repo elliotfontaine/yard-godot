@@ -16,13 +16,13 @@ const REQUEST_CLASS_RESTRICTION_FILE_DIALOG_ACTION := &"request_class_restrictio
 func _ready() -> void:
 	if not Engine.is_editor_hint() or EditorInterface.get_edited_scene_root() == self:
 		return
-	
+
 	class_restriction_line_edit.text_changed.connect(input_changed.emit.unbind(1))
 	class_list_dialog_button.pressed.connect(_on_class_list_dialog_button_pressed)
 	class_filesystem_button.pressed.connect(_on_class_filesystem_button_pressed)
 	delete_button.pressed.connect(request_delete.emit)
 	add_button.pressed.connect(request_add.emit)
-	
+
 	disabled = disabled
 
 

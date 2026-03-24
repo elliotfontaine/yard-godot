@@ -26,15 +26,15 @@ var disabled: bool = false:
 func _ready() -> void:
 	if not Engine.is_editor_hint() or EditorInterface.get_edited_scene_root() == self:
 		return
-	
+
 	# Clear any placeholder children
 	for child in get_children():
 		remove_child(child)
 		child.queue_free()
-	
+
 	# Add one input to act on by default
 	_add_input(false)
-	
+
 	disabled = disabled
 	_update_tabs()
 
@@ -56,7 +56,7 @@ func set_all_values(values: Array[Variant]) -> void:
 	var inputs_count := _inputs.size()
 	var new_values_count := values.size()
 	var delta := new_values_count - inputs_count
-	
+
 	if delta > 0: # We need to add
 		for i in delta:
 			_add_input(false)
@@ -67,7 +67,7 @@ func set_all_values(values: Array[Variant]) -> void:
 			inputs_to_delete.append(_inputs[(-i - 1)])
 		for input in inputs_to_delete:
 			_delete_input(input, false)
-	
+
 	for i in new_values_count:
 		_inputs[i].set_value(values[i])
 
@@ -77,7 +77,7 @@ func render_validation_results(args: Array[Variant]) -> void:
 	if args_count != _inputs.size():
 		printerr("Validation results args count invalid!")
 		return
-	
+
 	for i in args_count:
 		var input := _inputs[i]
 		input.render_validation_results(args[i])
@@ -104,11 +104,11 @@ func _delete_input(input: ScanTabInput, emit_changed := true) -> void:
 	_inputs.erase(input)
 	remove_child(input)
 	input.queue_free()
-	
+
 	# Always ensure there is at least one available input
 	if _inputs.is_empty():
 		_add_input(false)
-	
+
 	if emit_changed:
 		inputs_changed.emit()
 	_update_tabs()
@@ -119,9 +119,9 @@ func _add_input(emit_changed := true) -> void:
 	_connect_input(new_input)
 	add_child(new_input)
 	_inputs.append(new_input)
-	
+
 	new_input.reset_value()
-	
+
 	if emit_changed:
 		inputs_changed.emit()
 	_update_tabs()
@@ -131,5 +131,5 @@ func _update_tabs() -> void:
 	var tab_count := get_tab_count()
 	for i in tab_count:
 		set_tab_title(i, tab_display_title + " %d" % (i + 1))
-	
+
 	tabs_visible = tab_count > 1

@@ -20,6 +20,12 @@ func _set_disabled(value: bool) -> void:
 
 
 @abstract func get_value() -> Variant
+
+
 @abstract func set_value(value: Variant) -> void
+
+
 @abstract func reset_value() -> void
+
+
 @abstract func render_validation_results(args: Variant) -> void

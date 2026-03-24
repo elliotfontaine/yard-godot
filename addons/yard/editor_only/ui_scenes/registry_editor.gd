@@ -134,7 +134,7 @@ func open_registry(registry: Registry) -> void:
 		_editor_state_data = _editor_state_data.save_and_reload()
 	_update_registries_itemlist()
 	_editor_state_data.add_recent(registry)
-	
+
 	var settings := RegistryIO.get_registry_settings(registry)
 	if settings.auto_rescan:
 		RegistryIO.sync_registry_entries_from_scan_dir(registry, settings)
@@ -282,11 +282,11 @@ func _add_registry_to_itemlist(uid: String, display_name: String) -> int:
 
 func _resolve_registry_itemlist_icon(registry: Registry) -> Texture2D:
 	var settings := RegistryIO.get_registry_settings(registry)
-	
+
 	if settings.has_any_class_restrictions():
 		var all_class_restrictions := settings.get_all_class_restrictions()
 		var only_class_restriction := all_class_restrictions[0] if all_class_restrictions.size() == 1 else &""
-		
+
 		if only_class_restriction:
 			if RegistryIO.is_quoted_string(only_class_restriction):
 				var path := only_class_restriction.substr(1, only_class_restriction.length() - 2)

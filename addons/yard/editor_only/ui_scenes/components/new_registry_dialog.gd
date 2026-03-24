@@ -20,7 +20,7 @@ const ERROR_COLOR = Color(1, 0.47, 0.42)
 
 const ADVANCED_REGISTRY_PROPERTIES: Array[StringName] = [
 	&"auto_rescan",
-	&"remove_unmatched"
+	&"remove_unmatched",
 ]
 
 # would be a constant if not for the `tr()`
@@ -36,19 +36,19 @@ var INFO_MESSAGES: Dictionary[StringName, Array] = {
 	&"scan_valid": [tr("Scan directory valid. Will watch for new Resources…"), SUCCESS_COLOR],
 	&"scan_invalid": [tr("Scan directory invalid. Pick an existing directory."), ERROR_COLOR],
 	&"scan_empty": [tr("No scan directory, resources auto-discovery is disabled."), DEFAULT_COLOR],
-	
+
 	# --- Allowed file extensions ---
 	&"file_extensions_none": [tr("File extension restrictions are optional. Separate multiple extensions with commas."), DEFAULT_COLOR],
 	&"file_extensions_valid": [tr("File extension filter active. Scan will be limited to matching extensions."), SUCCESS_COLOR],
 	&"file_extensions_empty_extension": [tr("Empty file extension detected. Remove extra commas."), ERROR_COLOR],
 	&"file_extensions_invalid_character": [tr("Invalid file extension detected. Remove disallowed characters."), ERROR_COLOR],
-	
+
 	# --- Scan regex ---
 	&"regex_include_valid": [tr("Include filter active. Only matching paths will be scanned."), SUCCESS_COLOR],
 	&"regex_include_invalid": [tr("Invalid include regex pattern."), ERROR_COLOR],
 	&"regex_exclude_valid": [tr("Exclude filter active. Matching paths will be skipped."), SUCCESS_COLOR],
 	&"regex_exclude_invalid": [tr("Invalid exclude regex pattern."), ERROR_COLOR],
-	
+
 	# --- Indexed properties ---
 	&"properties_none": [tr("Indexed properties are optional. Separate multiple properties with commas."), DEFAULT_COLOR],
 	&"properties_valid": [tr("All properties found on the specified resource class."), SUCCESS_COLOR],
@@ -85,7 +85,7 @@ var _file_dialog_state: FileDialogState
 
 @onready var advanced_registry_properties_to_controls: Dictionary[StringName, Array] = {
 	&"auto_rescan": [auto_rescan_label, auto_rescan_check_box],
-	&"remove_unmatched": [scan_remove_unlisted_label, scan_remove_unlisted_check_box]
+	&"remove_unmatched": [scan_remove_unlisted_label, scan_remove_unlisted_check_box],
 }
 
 var _additional_scan_ruleset_editors_list: Array[ScanRulesetEditor] = []
@@ -108,26 +108,26 @@ func _ready() -> void:
 	#advanced_scan_options_container.add_theme_color_override(&"font_color", base_font_color)
 	#advanced_scan_options_container.add_theme_color_override(&"collapsed_font_color", base_font_color)
 	#for check_box: CheckBox in [scan_recursive_check_box, auto_rescan_check_box, scan_remove_unlisted_check_box]:
-		#check_box.add_theme_stylebox_override(&"focus", get_theme_stylebox(&"focus", &"LineEdit"))
-		#for override: StringName in [&"normal", &"hover", &"pressed", &"hover_pressed"]:
-			#check_box.add_theme_stylebox_override(override, get_theme_stylebox(&"normal", &"LineEdit"))
+	#check_box.add_theme_stylebox_override(&"focus", get_theme_stylebox(&"focus", &"LineEdit"))
+	#for override: StringName in [&"normal", &"hover", &"pressed", &"hover_pressed"]:
+	#check_box.add_theme_stylebox_override(override, get_theme_stylebox(&"normal", &"LineEdit"))
 
 	about_to_popup.connect(_on_about_to_popup)
 	_file_dialog = EditorFileDialog.new()
 	_file_dialog.file_selected.connect(_on_file_dialog_file_selected)
 	_file_dialog.dir_selected.connect(_on_file_dialog_dir_selected)
 	add_child(_file_dialog)
-	
+
 	var placeholder_advanced_settings_button := add_button("Show Advanced Settings", true)
 	_show_advanced_settings_check_button = CheckButton.new()
 	_show_advanced_settings_check_button.text = "Show Advanced Settings"
-	
+
 	placeholder_advanced_settings_button.replace_by(_show_advanced_settings_check_button)
 	_show_advanced_settings_check_button.toggled.connect(_on_show_advanced_settings_check_button_toggled)
-	
+
 	scan_rulesets_tab_container.get_tab_bar().set_tab_title(0, "Default Ruleset")
 	_connect_ruleset_editor(default_ruleset_editor)
-	
+
 	hide()
 
 
@@ -136,9 +136,9 @@ func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 		scan_rulesets_tab_container.remove_child(existing_additional_ruleset_editor)
 		existing_additional_ruleset_editor.queue_free()
 	_additional_scan_ruleset_editors_list.clear()
-	
+
 	var any_existing_advanced_settings := false
-	
+
 	_state = state
 	if state == RegistryDialogState.NEW_REGISTRY:
 		var default_settings := RegistryIO.RegistrySettings.new() # to use default values
@@ -152,9 +152,9 @@ func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 		registry_path_line_edit.text = dir.path_join("new_registry.tres")
 		registry_path_filesystem_button.icon = AnyIcon.get_icon(&"Folder")
 		registry_path_filesystem_button.tooltip_text = ""
-		
+
 		default_ruleset_editor.reset_properties(default_settings.default_scan_ruleset)
-		
+
 	elif edited_registry and state == RegistryDialogState.REGISTRY_SETTINGS:
 		var settings := RegistryIO.get_registry_settings(edited_registry)
 		indexed_properties_line_edit.text = settings.indexed_props
@@ -163,7 +163,7 @@ func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 		default_ruleset_editor.reset_properties(settings.default_scan_ruleset)
 		for additional_ruleset in settings.additional_scan_rulesets:
 			_add_additional_ruleset_editor(additional_ruleset)
-		
+
 		registry_path_line_edit.text = edited_registry.resource_path
 		title = "Registry Settings"
 		ok_button_text = "Save"
@@ -171,26 +171,26 @@ func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 		registry_path_line_edit.focus_mode = Control.FOCUS_NONE
 		registry_path_filesystem_button.icon = AnyIcon.get_icon(&"ShowInFileSystem")
 		registry_path_filesystem_button.tooltip_text = "Show in FileSystem"
-		
+
 		# Determine whether to show advanced settings
 		var default_settings := RegistryIO.RegistrySettings.new()
 		for advanced_registry_property in ADVANCED_REGISTRY_PROPERTIES:
 			if settings[advanced_registry_property] != default_settings[advanced_registry_property]:
 				any_existing_advanced_settings = true
 				break
-		
+
 		if not any_existing_advanced_settings:
 			any_existing_advanced_settings = ScanRulesetEditor.are_any_advanced_ruleset_settings_set(settings.default_scan_ruleset, default_settings.default_scan_ruleset)
-		
+
 		if not any_existing_advanced_settings:
 			for additional_ruleset in settings.additional_scan_rulesets:
 				any_existing_advanced_settings = ScanRulesetEditor.are_any_advanced_ruleset_settings_set(additional_ruleset, default_settings.default_scan_ruleset)
 				if any_existing_advanced_settings:
 					break
-		
+
 	else:
 		return
-	
+
 	_show_advanced_settings_check_button.set_pressed_no_signal(any_existing_advanced_settings)
 	_on_show_advanced_settings_check_button_toggled(any_existing_advanced_settings)
 	_on_scan_ruleset_additional_editors_list_updated()
@@ -212,7 +212,7 @@ func _build_settings() -> RegistryIO.RegistrySettings:
 func _validate_fields() -> void:
 	get_ok_button().disabled = false
 	var info_messages: Array[Array] = [] # elements from INFO_MESSAGES
-	
+
 	# Collate ruleset validation state & messages; for every ruleset validation step, store a tuple
 	# representing the most severe validation state result (Error -> Warning -> Success), and a
 	# dictionary, with the unique message keys for that state as keys, and the count of editors that
@@ -225,9 +225,9 @@ func _validate_fields() -> void:
 		ruleset_validation_resource_class_state,
 		ruleset_validation_scan_dir_state,
 		ruleset_validation_regex_include_state,
-		ruleset_validation_regex_exclude_state
+		ruleset_validation_regex_exclude_state,
 	]
-	
+
 	for ruleset_editor in _all_ruleset_editors:
 		var ruleset_validation_results := ruleset_editor._validate_fields()
 		for i in all_ruleset_validation_step_states.size():
@@ -235,44 +235,44 @@ func _validate_fields() -> void:
 			var step_validation_results := ruleset_validation_results[i]
 			var step_validation_state: ScanRulesetEditor.ValidationSubState = step_validation_results[0]
 			var step_message_key: StringName = step_validation_results[1]
-			
+
 			if ruleset_validation_step_state.is_empty(): # The first results for this validation step
 				ruleset_validation_step_state.append(step_validation_state)
-				var new_message_keys_dict: Dictionary[StringName, int] = {}
+				var new_message_keys_dict: Dictionary[StringName, int] = { }
 				new_message_keys_dict[step_message_key] = 1
 				ruleset_validation_step_state.append(new_message_keys_dict)
 				continue
-			
+
 			var previous_validation_state: ScanRulesetEditor.ValidationSubState = ruleset_validation_step_state[0]
-			var previous_validation_message_keys: Dictionary[StringName, int] = ruleset_validation_step_state[1] 
+			var previous_validation_message_keys: Dictionary[StringName, int] = ruleset_validation_step_state[1]
 			if step_validation_state == previous_validation_state: # Same state severity, so add this message + increment its count
 				previous_validation_message_keys[step_message_key] = previous_validation_message_keys.get(step_message_key, 0) + 1
 			elif step_validation_state > previous_validation_state: # More severe (e.g. Error > Warning)
 				ruleset_validation_step_state[0] = step_validation_state
 				previous_validation_message_keys.clear()
 				previous_validation_message_keys[step_message_key] = 1
-	
+
 	# Show the corresponding (most severe) info messages for each ruleset validation step
 	for ruleset_validation_step_state: Array in all_ruleset_validation_step_states:
 		var step_validation_state: ScanRulesetEditor.ValidationSubState = ruleset_validation_step_state[0]
 		var step_message_keys: Dictionary[StringName, int] = ruleset_validation_step_state[1]
-		
+
 		for message_key in step_message_keys:
 			if message_key.is_empty():
 				continue
-			
-			var editors_that_returned_key_count := step_message_keys[message_key]	
+
+			var editors_that_returned_key_count := step_message_keys[message_key]
 			var new_info_message := INFO_MESSAGES[message_key]
-			
+
 			if editors_that_returned_key_count > 0:
 				new_info_message = new_info_message.duplicate()
 				new_info_message.append(editors_that_returned_key_count)
-			
+
 			if step_validation_state == ScanRulesetEditor.ValidationSubState.ERROR:
 				_invalidate_with_full_info_message(info_messages, new_info_message)
 			else:
 				info_messages.append(new_info_message)
-	
+
 	# Indexed properties
 	var properties: Array[String] = []
 	var indexed_properties_string := indexed_properties_line_edit.text.strip_edges()
@@ -287,42 +287,42 @@ func _validate_fields() -> void:
 			# editors (ensuring there are no property type conflicts between them), and check
 			# whether each indexed property is somewhere in there. Each property's type is also
 			# tracked for validation.
-			var all_class_properties: Dictionary[String, Variant.Type] = {}
+			var all_class_properties: Dictionary[String, Variant.Type] = { }
 			# For every mismatched property, track its name, and an array of the different expected
 			# values that it has.
 			# TODO: Actually implement & test this mismatched types check!
 			# Be sure to account for both quoted class strings and class names together.
 			#var mismatched_property_types: Dictionary[String, Array] = {}
-			
+
 			var all_class_strings: Array[String] = []
 			for ruleset_editor in _all_ruleset_editors:
 				var ruleset_unique_class_strings := ruleset_editor.get_unique_class_strings()
 				for class_string in ruleset_unique_class_strings:
 					if class_string not in all_class_strings:
 						all_class_strings.append(class_string)
-			
+
 			for class_string in all_class_strings:
 				var is_class_valid := RegistryIO.is_resource_class_string(class_string)
 				var class_props := _get_class_property_names(class_string) if is_class_valid else []
 				for prop_name: String in class_props:
 					var prop_type := ClassUtils.get_class_property_type_from_name(class_string, prop_name)
-					
+
 					if not all_class_properties.has(prop_name):
 						all_class_properties[prop_name] = prop_type
 					#else:
-						#var existing_prop_type := all_class_properties[prop_name]
-						#if prop_type != existing_prop_type:
-							#if not mismatched_property_types.has(prop_name):
-								#mismatched_property_types[prop_name] = [existing_prop_type, prop_type]
-							#elif not mismatched_property_types[prop_name].has(prop_type):
-								#mismatched_property_types[prop_name].append(prop_type)
-				
+					#var existing_prop_type := all_class_properties[prop_name]
+					#if prop_type != existing_prop_type:
+					#if not mismatched_property_types.has(prop_name):
+					#mismatched_property_types[prop_name] = [existing_prop_type, prop_type]
+					#elif not mismatched_property_types[prop_name].has(prop_type):
+					#mismatched_property_types[prop_name].append(prop_type)
+
 			#if not mismatched_property_types.is_empty():
-				#for mismatched_prop_name in mismatched_property_types:
-					#var msg := INFO_MESSAGES.properties_class_type_mismatch
-					#msg[0] = tr(msg[0]).format({ "prop": mismatched_prop_name })
-					#info_messages.append(msg)
-					##_invalidate_with_full_info_message(info_messages, msg)
+			#for mismatched_prop_name in mismatched_property_types:
+			#var msg := INFO_MESSAGES.properties_class_type_mismatch
+			#msg[0] = tr(msg[0]).format({ "prop": mismatched_prop_name })
+			#info_messages.append(msg)
+			##_invalidate_with_full_info_message(info_messages, msg)
 			#else:
 			var msgs_before := info_messages.size()
 			for p: String in properties:
@@ -372,9 +372,9 @@ func _get_class_property_names(class_string: String) -> Array:
 
 func _fill_info_label(info_messages: Array[Array]) -> void:
 	info_label.text = ""
-	
+
 	var show_ruleset_editors_count := not _additional_scan_ruleset_editors_list.is_empty()
-	
+
 	for i in info_messages.size():
 		if i != 0:
 			info_label.newline()
@@ -383,7 +383,7 @@ func _fill_info_label(info_messages: Array[Array]) -> void:
 		var text: String = message[0]
 		var color: Color = message[1]
 		var applicable_ruleset_editors_count: int = message[2] if show_ruleset_editors_count and message.size() >= 3 else -1
-		
+
 		info_label.push_color(color)
 		info_label.append_text("• " + tr(text))
 		if applicable_ruleset_editors_count > 0:
@@ -393,7 +393,7 @@ func _fill_info_label(info_messages: Array[Array]) -> void:
 
 func _open_file_dialog_as_class_restriction(restriction: String, ruleset_editor: ScanRulesetEditor) -> void:
 	_last_file_dialog_requested_ruleset_editor = ruleset_editor
-	
+
 	_file_dialog.title = tr("Choose Custom Resource Script")
 	_file_dialog.clear_filters()
 	_file_dialog.add_filter("*.gd", "Scripts")
@@ -411,7 +411,7 @@ func _open_file_dialog_as_class_restriction(restriction: String, ruleset_editor:
 
 func _open_file_dialog_as_scan_directory(scan_dir: String, ruleset_editor: ScanRulesetEditor) -> void:
 	_last_file_dialog_requested_ruleset_editor = ruleset_editor
-	
+
 	_file_dialog.title = tr("Choose Directory to Scan")
 	_file_dialog_state = FileDialogState.SCAN_DIRECTORY
 	_file_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_DIR
@@ -450,7 +450,7 @@ func _on_class_list_dialog_confirmed(type_name: String, ruleset_editor: ScanRule
 
 	if type_name.begins_with("res://") or type_name.begins_with("uid://"):
 		type_name = '"%s"' % type_name
-	
+
 	ruleset_editor.update_selected_class_restriction(type_name)
 
 
@@ -510,7 +510,7 @@ func _on_confirmed() -> void:
 						if not new_ruleset.matches_other_ruleset(old_ruleset, new_settings.default_scan_ruleset, old_settings.default_scan_ruleset):
 							scan_rulesets_changed = true
 							break
-			
+
 			if scan_rulesets_changed and RegistryIO.would_erase_entries(edited_registry, new_settings):
 				new_restriction_confirmation_dialog.popup()
 			else:
@@ -569,13 +569,12 @@ func _on_new_restriction_confirmation_dialog_confirmed() -> void:
 	hide()
 	_edit_settings_and_rebuild_index()
 
-
 # TODO: determine if we should be resetting the window/info label size with the current
 # implementation - if so, we may want to listen for hierarchical Control/CanvasItem events for this.
 #func _on_foldable_container_folding_changed(is_folded: bool) -> void:
-	#if is_folded:
-		#info_label.reset_size()
-		#reset_size()
+#if is_folded:
+#info_label.reset_size()
+#reset_size()
 
 
 func _connect_ruleset_editor(ruleset_editor: ScanRulesetEditor) -> void:
@@ -588,19 +587,19 @@ func _connect_ruleset_editor(ruleset_editor: ScanRulesetEditor) -> void:
 
 func _add_additional_ruleset_editor(ruleset_settings: RegistryIO.RegistryScanRuleset = null) -> void:
 	var additional_ruleset_editor: ScanRulesetEditor = SCAN_RULESET_EDITOR.instantiate()
-	
+
 	scan_rulesets_tab_container.add_child(additional_ruleset_editor)
 	_additional_scan_ruleset_editors_list.append(additional_ruleset_editor)
-	
+
 	additional_ruleset_editor.default_ruleset_editor = default_ruleset_editor
 	additional_ruleset_editor.is_additional_ruleset = true
 	additional_ruleset_editor.show_advanced_settings = _show_advanced_settings_check_button.button_pressed
-	
+
 	if ruleset_settings != null:
 		additional_ruleset_editor.reset_properties(ruleset_settings)
-	
+
 	_connect_ruleset_editor(additional_ruleset_editor)
-	
+
 	_on_scan_ruleset_additional_editors_list_updated()
 
 
@@ -611,22 +610,22 @@ func _on_add_scan_ruleset_button_pressed() -> void:
 func _on_delete_additional_ruleset(ruleset_editor: ScanRulesetEditor) -> void:
 	if not _additional_scan_ruleset_editors_list.has(ruleset_editor):
 		return
-	
+
 	_additional_scan_ruleset_editors_list.erase(ruleset_editor)
 	scan_rulesets_tab_container.remove_child(ruleset_editor)
 	ruleset_editor.queue_free()
-	
+
 	_on_scan_ruleset_additional_editors_list_updated()
 
 
 func _on_show_advanced_settings_check_button_toggled(toggled_on: bool) -> void:
 	add_scan_ruleset_button.visible = toggled_on
-	
+
 	for property in ADVANCED_REGISTRY_PROPERTIES:
 		for control: Control in advanced_registry_properties_to_controls[property]:
 			control.visible = toggled_on
-	
+
 	default_ruleset_editor.show_advanced_settings = toggled_on
-	
+
 	for additional_ruleset_editor in _additional_scan_ruleset_editors_list:
 		additional_ruleset_editor.show_advanced_settings = toggled_on

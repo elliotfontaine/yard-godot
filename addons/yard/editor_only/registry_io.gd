@@ -45,15 +45,15 @@ static func get_registry_settings(registry: Registry) -> RegistrySettings:
 		settings.indexed_props = ",".join(registry._property_index.keys())
 		settings.auto_rescan = registry._scan_auto
 		settings.remove_unmatched = registry._scan_remove
-		
+
 		var scan_rulesets_count := registry._scan_rulesets.size()
 		if scan_rulesets_count > 0:
 			settings.default_scan_ruleset = RegistryScanRuleset.get_ruleset_from_dict(registry._scan_rulesets[0], false)
 			for i in scan_rulesets_count - 1:
 				settings.additional_scan_rulesets.append(RegistryScanRuleset.get_ruleset_from_dict(registry._scan_rulesets[i + 1], true))
-		
+
 		return settings
-		
+
 	else:
 		# Temporary handling of old V1 properties to the V2 format
 		var settings := RegistrySettings.new()
@@ -61,7 +61,7 @@ static func get_registry_settings(registry: Registry) -> RegistrySettings:
 		settings.indexed_props = ",".join(registry._property_index.keys())
 		settings.auto_rescan = registry._scan_auto
 		settings.remove_unmatched = registry._scan_remove
-		
+
 		var default_scan_ruleset := RegistryScanRuleset.new()
 		default_scan_ruleset.class_restrictions = [registry._class_restriction]
 		default_scan_ruleset.scan_directories = [_normalize_abs_path(registry._scan_directory)]
@@ -69,10 +69,10 @@ static func get_registry_settings(registry: Registry) -> RegistrySettings:
 		default_scan_ruleset.allowed_file_extensions = []
 		default_scan_ruleset.scan_regex_include = registry._scan_regex_include
 		default_scan_ruleset.scan_regex_exclude = registry._scan_regex_exclude
-		
+
 		settings.default_scan_ruleset = default_scan_ruleset
 		settings.additional_scan_rulesets = []
-		
+
 		return settings
 
 
@@ -80,9 +80,9 @@ static func set_registry_settings(registry: Registry, settings: RegistrySettings
 	var err := _apply_settings(registry, settings)
 	if err != OK:
 		return err
-	
+
 	var scan_rulesets := settings.get_compiled_rulesets()
-	
+
 	for uid in registry.get_all_uids():
 		var res := load(uid)
 		var any_ruleset_class_matches := false
@@ -109,7 +109,7 @@ static func add_entry(registry: Registry, uid: StringName, string_id: String = "
 
 	if uid in registry._uids_to_string_ids:
 		return ERR_ALREADY_EXISTS
-	
+
 	var scan_rulesets := get_registry_settings(registry).get_compiled_rulesets()
 	var res := load(uid)
 	var any_ruleset_class_matches := false
@@ -176,7 +176,7 @@ static func change_entry_uid(registry: Registry, id: StringName, new_uid: String
 			],
 		)
 		return ERR_INVALID_PARAMETER
-	
+
 	var settings := get_registry_settings(registry)
 
 	if settings.has_any_class_restrictions():
@@ -251,7 +251,7 @@ static func sync_registry_entries_from_scan_dir(registry: Registry, settings: Re
 	# Remove
 	if not registry._scan_remove:
 		return
-	
+
 	for uid in registry.get_all_uids():
 		if scanned_uids.has(uid):
 			continue
@@ -389,16 +389,16 @@ static func is_valid_registry_output_path(path: String) -> bool:
 ## Subclasses of the class restrictions are accepted.
 static func does_resource_match_class_restrictions(
 		res: Resource,
-		class_restrictions: Array[StringName]
+		class_restrictions: Array[StringName],
 ) -> bool:
 	if res == null:
 		return false
 
 	if class_restrictions.is_empty():
 		return true
-	
+
 	var any_class_matches := false
-	
+
 	for class_restriction in class_restrictions:
 		if is_quoted_string(class_restriction):
 			var restriction_script_path := unquote(class_restriction)
@@ -416,10 +416,10 @@ static func does_resource_match_class_restrictions(
 		else:
 			if ClassUtils.is_class_of(res, class_restriction):
 				any_class_matches = true
-		
+
 		if any_class_matches:
 			break
-	
+
 	return any_class_matches
 
 
@@ -467,14 +467,14 @@ static func would_erase_entries(registry: Registry, new_scan_settings: RegistryS
 	for uid: StringName in registry.get_all_uids():
 		if not is_uid_valid(uid):
 			continue
-		
+
 		var res := load(uid)
 		var any_ruleset_class_matches := false
 		for scan_ruleset in scan_rulesets:
 			if does_resource_match_class_restrictions(res, scan_ruleset.class_restrictions):
 				any_ruleset_class_matches = true
 				break
-		
+
 		if not any_ruleset_class_matches:
 			return true
 	return false
@@ -510,30 +510,30 @@ static func _path_passes_scan_filters(path: String, re_include: RegEx, re_exclud
 
 static func _apply_settings(registry: Registry, settings: RegistrySettings) -> Error:
 	# Validate before applying new settings
-	for scan_ruleset in settings.get_compiled_rulesets(): 
+	for scan_ruleset in settings.get_compiled_rulesets():
 		for class_restriction in scan_ruleset.class_restrictions:
 			if class_restriction and not is_resource_class_string(class_restriction):
 				return ERR_DOES_NOT_EXIST
-		
+
 		for scan_dir in scan_ruleset.scan_directories:
 			if scan_dir and not DirAccess.dir_exists_absolute(scan_dir):
 				return ERR_DOES_NOT_EXIST
-	
+
 	registry._version = settings.version
 	registry._scan_auto = settings.auto_rescan
 	registry._scan_remove = settings.remove_unmatched
-	
+
 	var scan_ruleset_dicts: Array[Dictionary] = []
 	scan_ruleset_dicts.append(settings.default_scan_ruleset.to_dict(false))
 	for additional_ruleset in settings.additional_scan_rulesets:
 		scan_ruleset_dicts.append(additional_ruleset.to_dict(true))
 	registry._scan_rulesets = scan_ruleset_dicts
-	
+
 	var props: Array[StringName] = []
 	for p: String in settings.indexed_props.split(",", false):
 		props.append(StringName(p.strip_edges()))
 	_replace_indexed_properties_list(registry, props)
-	
+
 	return OK
 
 
@@ -602,7 +602,8 @@ class RegistrySettings:
 	var remove_unmatched: bool = true
 	var default_scan_ruleset: RegistryScanRuleset = RegistryScanRuleset.new()
 	var additional_scan_rulesets: Array[RegistryScanRuleset] = []
-	
+
+
 	## Apply scan property overrides on all additional rulesets, and return every ruleset in a
 	## single list that can be read from without further read calculations.
 	func get_compiled_rulesets() -> Array[RegistryScanRuleset]:
@@ -610,8 +611,8 @@ class RegistrySettings:
 		for additional_scan_ruleset in additional_scan_rulesets:
 			compiled_rulesets.append(additional_scan_ruleset.compile_with_overridden_properties(default_scan_ruleset))
 		return compiled_rulesets
-	
-	
+
+
 	func has_any_class_restrictions() -> bool:
 		if not default_scan_ruleset.class_restrictions.is_empty():
 			return true
@@ -619,8 +620,8 @@ class RegistrySettings:
 			if not additional_scan_ruleset.class_restrictions.is_empty():
 				return true
 		return false
-	
-	
+
+
 	func get_all_class_restrictions() -> Array[StringName]:
 		var all_class_restrictions: Array[StringName] = default_scan_ruleset.class_restrictions.duplicate()
 		for additional_scan_ruleset in additional_scan_rulesets:
@@ -634,9 +635,15 @@ class RegistrySettings:
 ## Defines how a scanning operation should run, including which directories should be checked & what
 ## restrictions to impose on them.
 class RegistryScanRuleset:
-	const RULESET_PROPERTY_KEYS: Array[StringName] = [&"class_restrictions", &"scan_directories",
-		&"recursive_scan", &"allowed_file_extensions", &"scan_regex_include", &"scan_regex_exclude"]
-	
+	const RULESET_PROPERTY_KEYS: Array[StringName] = [
+		&"class_restrictions",
+		&"scan_directories",
+		&"recursive_scan",
+		&"allowed_file_extensions",
+		&"scan_regex_include",
+		&"scan_regex_exclude",
+	]
+
 	var class_restrictions: Array[StringName] = []
 	var scan_directories: Array[String] = []
 	var recursive_scan: bool = false
@@ -646,15 +653,16 @@ class RegistryScanRuleset:
 	## Only relevant for non-default scan rulesets - defines which of these scan properties should
 	## actually be used vs. which should be inherited from the default settings.
 	var override_properties: Array[StringName] = []
-	
+
+
 	## Determine whether two rulesets match. For either ruleset, a default 'fallback' ruleset can be
 	## optionally specified, implying that this is an additional ruleset that should only compare
 	## its overridden properties rather than all properties.
 	func matches_other_ruleset(
 			other_ruleset: RegistryScanRuleset,
 			default_ruleset: RegistryScanRuleset = null,
-			other_default_ruleset: RegistryScanRuleset = null
-			) -> bool:
+			other_default_ruleset: RegistryScanRuleset = null,
+	) -> bool:
 		for property_key in RULESET_PROPERTY_KEYS:
 			var our_value: Variant = (
 				self[property_key] if default_ruleset == null or self.override_properties.has(property_key)
@@ -666,9 +674,10 @@ class RegistryScanRuleset:
 			)
 			if our_value != their_value:
 				return false
-		
+
 		return true
-	
+
+
 	## Make a copy of this ruleset with compiled rules taken overridden fields + non-overridden ones from the default ruleset.
 	## Only applicable for non-default rulesets.
 	func compile_with_overridden_properties(default_ruleset: RegistryScanRuleset) -> RegistryScanRuleset:
@@ -676,17 +685,17 @@ class RegistryScanRuleset:
 		for property_key in RULESET_PROPERTY_KEYS:
 			compiled_ruleset[property_key] = self[property_key] if override_properties.has(property_key) else default_ruleset[property_key]
 		return compiled_ruleset
-	
-	
+
+
 	## Convert this ruleset to a dictionary format (usually to store to a resource file).
 	func to_dict(is_additional_ruleset: bool) -> Dictionary:
-		var dict := {}
+		var dict := { }
 		for property_key in RULESET_PROPERTY_KEYS:
 			if not is_additional_ruleset or property_key in override_properties:
 				dict[property_key] = self[property_key]
 		return dict
-	
-	
+
+
 	## Generate a ruleset from a dictionary (usually stored to a resource file).
 	static func get_ruleset_from_dict(dict: Dictionary, is_additional_ruleset: bool) -> RegistryScanRuleset:
 		var new_ruleset := RegistryScanRuleset.new()

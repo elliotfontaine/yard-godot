@@ -173,8 +173,7 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 
 	if not current_registry:
 		return false
-		
-	
+
 	var scan_rulesets := RegistryIO.get_registry_settings(current_registry).get_compiled_rulesets()
 
 	for path: String in data.files:
@@ -198,9 +197,9 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 
 func _drop_data(_at_position: Vector2, data: Variant) -> void:
 	var n_added := 0
-	
+
 	var scan_rulesets := RegistryIO.get_registry_settings(current_registry).get_compiled_rulesets()
-	
+
 	for path: String in data.files:
 		if ResourceLoader.exists(path):
 			var res := load(path)
@@ -543,21 +542,21 @@ func _setup_add_entry() -> void:
 		_res_picker.queue_free()
 	_res_picker = EditorResourcePicker.new()
 	_res_picker.custom_minimum_size = Vector2(240, 0)
-	
+
 	_res_picker.base_type = "Resource"
 	var settings := RegistryIO.get_registry_settings(current_registry)
-	
+
 	if settings.has_any_class_restrictions():
 		var all_class_restrictions := settings.get_all_class_restrictions()
 		var only_class_restriction := all_class_restrictions[0] if all_class_restrictions.size() == 1 else &""
-		
+
 		if only_class_restriction:
 			if not RegistryIO.is_quoted_string(only_class_restriction):
 				_res_picker.base_type = only_class_restriction
 			else:
 				var script: Script = load(RegistryIO.unquote(only_class_restriction))
 				_res_picker.base_type = ClassUtils.get_type_name(script)
-	
+
 	resource_picker_container.add_child(_res_picker)
 	_texture_rect_parent = _res_picker.get_child(0)
 	_res_picker.resource_changed.connect(_on_res_picker_resource_changed)
