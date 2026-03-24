@@ -30,11 +30,13 @@ icon_name = "Folder"
 [node name="DeleteButton" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
+flat = true
 script = ExtResource("1_43t7j")
 icon_name = "Remove"
 
 [node name="AddButton" type="Button" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
+flat = true
 script = ExtResource("1_43t7j")
 icon_name = "Add"

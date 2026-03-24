@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://cqt3d2a2exd2f"]
+[gd_scene load_steps=9 format=3 uid="uid://cqt3d2a2exd2f"]
 
 [ext_resource type="Script" uid="uid://bg3lfbc87nwi1" path="res://addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.gd" id="1_2j2pv"]
 [ext_resource type="Script" uid="uid://b4hvdt62s4fy8" path="res://addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_tab_inputs/scan_inputs_tab_container.gd" id="2_moyid"]
@@ -6,29 +6,12 @@
 [ext_resource type="PackedScene" uid="uid://ue3y11qye0nl" path="res://addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_tab_inputs/class_restriction_input.tscn" id="3_cl5ex"]
 [ext_resource type="PackedScene" uid="uid://2npm30era2em" path="res://addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_tab_inputs/scan_directory_input.tscn" id="4_uf0vx"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uf0vx"]
-content_margin_left = 0.0
-content_margin_top = 0.0
-content_margin_right = 0.0
-content_margin_bottom = 0.0
-bg_color = Color(0.1, 0.1, 0.1, 0.6)
-corner_radius_top_left = 3
-corner_radius_top_right = 3
-corner_radius_bottom_right = 3
-corner_radius_bottom_left = 3
-corner_detail = 5
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cl5ex"]
 content_margin_left = 0.0
 content_margin_top = 0.0
 content_margin_right = 0.0
 content_margin_bottom = 0.0
-bg_color = Color(0.1, 0.1, 0.1, 0.6)
-corner_radius_top_left = 3
-corner_radius_top_right = 3
-corner_radius_bottom_right = 3
-corner_radius_bottom_left = 3
-corner_detail = 5
+bg_color = Color(0, 0, 0, 0)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nldj0"]
 content_margin_left = 4.0
@@ -88,7 +71,7 @@ text = "Class Restriction:"
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 4
-theme_override_styles/panel = SubResource("StyleBoxFlat_uf0vx")
+theme_override_styles/panel = SubResource("StyleBoxFlat_cl5ex")
 current_tab = 0
 tabs_visible = false
 script = ExtResource("2_moyid")
