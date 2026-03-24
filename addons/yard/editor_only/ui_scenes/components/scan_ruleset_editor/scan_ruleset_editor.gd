@@ -108,6 +108,8 @@ var default_ruleset_editor: ScanRulesetEditor:
 var show_advanced_settings := false:
 	set(value):
 		show_advanced_settings = value
+		class_restrictions_tab_container.show_advanced_settings = value
+		scan_directories_tab_container.show_advanced_settings = value
 		for property in ADVANCED_RULESET_PROPERTIES:
 			for control: Control in advanced_ruleset_properties_to_controls[property]:
 				control.visible = show_advanced_settings

@@ -8,8 +8,6 @@ const ScanTabInput := preload("./scan_tab_input.gd")
 @warning_ignore_start("unused_signal")
 signal input_changed
 signal request_action(action: StringName, args: Variant)
-signal request_delete
-signal request_add
 
 var disabled: bool = false:
 	set = _set_disabled
