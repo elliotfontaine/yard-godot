@@ -51,6 +51,7 @@ func _ready() -> void:
 	_add_input_tab = ReferenceRect.new()
 	add_child(_add_input_tab)
 	set_tab_icon(_add_input_tab.get_index(), get_theme_icon(&"Add", &"EditorIcons"))
+	set_tab_title(_add_input_tab.get_index(), "")
 
 	tab_selected.connect(_on_tab_selected)
 	tab_clicked.connect(_on_tab_clicked)
@@ -131,6 +132,7 @@ func _delete_input(input: ScanTabInput, emit_changed := true) -> void:
 	# Always ensure there is at least one available input
 	if _inputs.is_empty():
 		_add_input(false)
+		current_tab = 0
 
 	if emit_changed:
 		inputs_changed.emit()
@@ -139,10 +141,10 @@ func _delete_input(input: ScanTabInput, emit_changed := true) -> void:
 
 func _add_input(emit_changed := true) -> void:
 	var new_input: ScanTabInput = scan_tab_input_scene.instantiate()
+	_inputs.append(new_input)
 	_connect_input(new_input)
 	add_child(new_input)
-	move_child(new_input, get_tab_count() - 2)
-	_inputs.append(new_input)
+	move_child(new_input, _inputs.size() - 1)
 
 	new_input.reset_value()
 
@@ -154,9 +156,7 @@ func _add_input(emit_changed := true) -> void:
 func _update_tabs() -> void:
 	var tab_count := get_tab_count()
 	for i in tab_count:
-		if get_tab_control(i) is ReferenceRect:
-			set_tab_title(i, "")
-		else:
+		if not get_tab_control(i) is ReferenceRect:
 			set_tab_title(i, tab_display_title + " %d" % (i + 1))
 
 	tabs_visible = show_advanced_settings or _inputs.size() > 1

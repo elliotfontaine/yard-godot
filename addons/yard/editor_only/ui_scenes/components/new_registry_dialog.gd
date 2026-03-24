@@ -69,6 +69,7 @@ var edited_registry: Registry
 var _state: RegistryDialogState
 var _file_dialog: EditorFileDialog
 var _file_dialog_state: FileDialogState
+var _add_ruleset_tab: ReferenceRect
 
 @onready var new_restriction_confirmation_dialog: ConfirmationDialog = %NewRestrictionConfirmationDialog
 @onready var indexed_properties_line_edit: LineEdit = %IndexedPropertiesLineEdit
@@ -77,7 +78,6 @@ var _file_dialog_state: FileDialogState
 @onready var scan_remove_unlisted_label: Label = %ScanRemoveUnlistedLabel
 @onready var scan_remove_unlisted_check_box: CheckBox = %ScanRemoveUnlistedCheckBox
 @onready var default_ruleset_editor: ScanRulesetEditor = %DefaultRulesetEditor
-@onready var add_scan_ruleset_button: Button = %AddScanRulesetButton
 @onready var scan_rulesets_tab_container: TabContainer = %ScanRulesetsTabContainer
 @onready var registry_path_line_edit: LineEdit = %RegistryPathLineEdit
 @onready var registry_path_filesystem_button: Button = %RegistryPathFilesystemButton
@@ -118,8 +118,15 @@ func _ready() -> void:
 	_file_dialog.dir_selected.connect(_on_file_dialog_dir_selected)
 	add_child(_file_dialog)
 
-	scan_rulesets_tab_container.get_tab_bar().set_tab_title(0, "Default Ruleset")
+	var rulesets_tab_bar := scan_rulesets_tab_container.get_tab_bar()
+	rulesets_tab_bar.set_tab_title(0, "Default Ruleset")
+	rulesets_tab_bar.tab_close_pressed.connect(_on_rulesets_tab_bar_close_pressed)
 	_connect_ruleset_editor(default_ruleset_editor)
+
+	_add_ruleset_tab = ReferenceRect.new()
+	scan_rulesets_tab_container.add_child(_add_ruleset_tab)
+	scan_rulesets_tab_container.set_tab_icon(_add_ruleset_tab.get_index(), get_theme_icon(&"Add", &"EditorIcons"))
+	scan_rulesets_tab_container.set_tab_title(_add_ruleset_tab.get_index(), "")
 
 	hide()
 
@@ -546,11 +553,18 @@ func _on_file_dialog_dir_selected(path: String) -> void:
 
 
 func _update_ruleset_tabs_bar() -> void:
-	scan_rulesets_tab_container.tabs_visible = not _additional_scan_ruleset_editors_list.is_empty()
 	var ruleset_tab_bar := scan_rulesets_tab_container.get_tab_bar()
 	var additional_ruleset_editors_count := _additional_scan_ruleset_editors_list.size()
 	for i in additional_ruleset_editors_count:
 		ruleset_tab_bar.set_tab_title(i + 1, "Ruleset %d" % (i + 2))
+
+	scan_rulesets_tab_container.tabs_visible = advanced_settings_check_button.button_pressed or not _additional_scan_ruleset_editors_list.is_empty()
+
+	scan_rulesets_tab_container.get_tab_bar().tab_close_display_policy = (
+		TabBar.CLOSE_BUTTON_SHOW_NEVER
+		if scan_rulesets_tab_container.get_current_tab_control() == default_ruleset_editor
+		else TabBar.CLOSE_BUTTON_SHOW_ACTIVE_ONLY
+	)
 
 
 func _on_scan_ruleset_additional_editors_list_updated() -> void:
@@ -571,7 +585,6 @@ func _on_new_restriction_confirmation_dialog_confirmed() -> void:
 
 
 func _connect_ruleset_editor(ruleset_editor: ScanRulesetEditor) -> void:
-	ruleset_editor.delete_ruleset.connect(_on_delete_additional_ruleset.bind(ruleset_editor))
 	ruleset_editor.inputs_changed.connect(_validate_fields)
 	ruleset_editor.request_class_restriction_class_list_dialog.connect(_on_ruleset_editor_request_class_restriction_class_list_dialog.bind(ruleset_editor))
 	ruleset_editor.request_class_restriction_file_dialog.connect(_open_file_dialog_as_class_restriction.bind(ruleset_editor))
@@ -580,9 +593,9 @@ func _connect_ruleset_editor(ruleset_editor: ScanRulesetEditor) -> void:
 
 func _add_additional_ruleset_editor(ruleset_settings: RegistryIO.RegistryScanRuleset = null) -> void:
 	var additional_ruleset_editor: ScanRulesetEditor = SCAN_RULESET_EDITOR.instantiate()
-
-	scan_rulesets_tab_container.add_child(additional_ruleset_editor)
 	_additional_scan_ruleset_editors_list.append(additional_ruleset_editor)
+	scan_rulesets_tab_container.add_child(additional_ruleset_editor)
+	scan_rulesets_tab_container.move_child(additional_ruleset_editor, _additional_scan_ruleset_editors_list.size())
 
 	additional_ruleset_editor.default_ruleset_editor = default_ruleset_editor
 	additional_ruleset_editor.is_additional_ruleset = true
@@ -596,24 +609,7 @@ func _add_additional_ruleset_editor(ruleset_settings: RegistryIO.RegistryScanRul
 	_on_scan_ruleset_additional_editors_list_updated()
 
 
-func _on_add_scan_ruleset_button_pressed() -> void:
-	_add_additional_ruleset_editor()
-
-
-func _on_delete_additional_ruleset(ruleset_editor: ScanRulesetEditor) -> void:
-	if not _additional_scan_ruleset_editors_list.has(ruleset_editor):
-		return
-
-	_additional_scan_ruleset_editors_list.erase(ruleset_editor)
-	scan_rulesets_tab_container.remove_child(ruleset_editor)
-	ruleset_editor.queue_free()
-
-	_on_scan_ruleset_additional_editors_list_updated()
-
-
 func _on_advanced_settings_check_button_toggled(toggled_on: bool) -> void:
-	add_scan_ruleset_button.visible = toggled_on
-
 	for property in ADVANCED_REGISTRY_PROPERTIES:
 		for control: Control in advanced_registry_properties_to_controls[property]:
 			control.visible = toggled_on
@@ -622,3 +618,32 @@ func _on_advanced_settings_check_button_toggled(toggled_on: bool) -> void:
 
 	for additional_ruleset_editor in _additional_scan_ruleset_editors_list:
 		additional_ruleset_editor.show_advanced_settings = toggled_on
+
+	_update_ruleset_tabs_bar()
+
+
+func _on_scan_rulesets_tab_container_tab_clicked(tab: int) -> void:
+	if scan_rulesets_tab_container.get_tab_control(tab) is ReferenceRect:
+		_add_additional_ruleset_editor()
+		scan_rulesets_tab_container.current_tab = _additional_scan_ruleset_editors_list.size()
+	_update_ruleset_tabs_bar()
+
+
+func _on_scan_rulesets_tab_container_tab_selected(tab: int) -> void:
+	if not is_node_ready():
+		return
+	if scan_rulesets_tab_container.get_tab_control(tab) is ReferenceRect:
+		scan_rulesets_tab_container.current_tab = _additional_scan_ruleset_editors_list.size()
+	_update_ruleset_tabs_bar()
+
+
+func _on_rulesets_tab_bar_close_pressed(tab: int) -> void:
+	var ruleset_editor: ScanRulesetEditor = scan_rulesets_tab_container.get_tab_control(tab)
+	if not _additional_scan_ruleset_editors_list.has(ruleset_editor):
+		return
+
+	_additional_scan_ruleset_editors_list.erase(ruleset_editor)
+	scan_rulesets_tab_container.remove_child(ruleset_editor)
+	ruleset_editor.queue_free()
+
+	_on_scan_ruleset_additional_editors_list_updated()

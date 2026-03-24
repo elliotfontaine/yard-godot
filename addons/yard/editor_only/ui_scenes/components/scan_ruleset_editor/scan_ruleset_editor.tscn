@@ -1,8 +1,7 @@
-[gd_scene load_steps=9 format=3 uid="uid://cqt3d2a2exd2f"]
+[gd_scene load_steps=8 format=3 uid="uid://cqt3d2a2exd2f"]
 
 [ext_resource type="Script" uid="uid://bg3lfbc87nwi1" path="res://addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.gd" id="1_2j2pv"]
 [ext_resource type="Script" uid="uid://b4hvdt62s4fy8" path="res://addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_tab_inputs/scan_inputs_tab_container.gd" id="2_moyid"]
-[ext_resource type="Script" uid="uid://djrr6b7fc76rw" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="2_xccxr"]
 [ext_resource type="PackedScene" uid="uid://ue3y11qye0nl" path="res://addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_tab_inputs/class_restriction_input.tscn" id="3_cl5ex"]
 [ext_resource type="PackedScene" uid="uid://2npm30era2em" path="res://addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_tab_inputs/scan_directory_input.tscn" id="4_uf0vx"]
 
@@ -141,12 +140,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "e.g. `\\.tscn$|\\.scn$`"
 
-[node name="RulesetDeleteButton" type="Button" parent="."]
-unique_name_in_owner = true
-layout_mode = 2
-script = ExtResource("2_xccxr")
-icon_name = "Remove"
-
 [connection signal="inputs_changed" from="RulesetPropertiesGridContainer/ClassRestrictionsTabContainer" to="." method="_on_class_restrictions_tab_container_inputs_changed"]
 [connection signal="request_action" from="RulesetPropertiesGridContainer/ClassRestrictionsTabContainer" to="." method="_on_class_restrictions_tab_container_request_action"]
 [connection signal="inputs_changed" from="RulesetPropertiesGridContainer/ScanDirectoriesTabContainer" to="." method="_on_scan_directories_tab_container_inputs_changed"]
@@ -155,4 +148,3 @@ icon_name = "Remove"
 [connection signal="text_changed" from="RulesetPropertiesGridContainer/AllowedFileExtensionsLineEdit" to="." method="_on_allowed_file_extensions_line_edit_text_changed"]
 [connection signal="text_changed" from="RulesetPropertiesGridContainer/ScanRegexIncludeLineEdit" to="." method="_on_scan_regex_include_line_edit_text_changed"]
 [connection signal="text_changed" from="RulesetPropertiesGridContainer/ScanRegexExcludeLineEdit" to="." method="_on_scan_regex_exclude_line_edit_text_changed"]
-[connection signal="pressed" from="RulesetDeleteButton" to="." method="_on_ruleset_override_delete_button_pressed"]

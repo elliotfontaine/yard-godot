@@ -1,7 +1,6 @@
 @tool
 extends HBoxContainer
 
-signal delete_ruleset
 signal inputs_changed
 signal request_class_restriction_class_list_dialog(class_restriction: String)
 signal request_class_restriction_file_dialog(class_restriction: String)
@@ -42,7 +41,6 @@ enum ValidationSubState { INFO, SUCCESS, WARNING, ERROR }
 @onready var scan_regex_include_line_edit: LineEdit = %ScanRegexIncludeLineEdit
 @onready var scan_regex_exclude_label: Label = %ScanRegexExcludeLabel
 @onready var scan_regex_exclude_line_edit: LineEdit = %ScanRegexExcludeLineEdit
-@onready var ruleset_delete_button: Button = %RulesetDeleteButton
 
 ## Map RegistryScanRuleset properties to the controls that their override buttons should be spawned
 ## before in the scene tree, for additional ruleset editors that need to allow those buttons.
@@ -77,7 +75,6 @@ enum ValidationSubState { INFO, SUCCESS, WARNING, ERROR }
 var is_additional_ruleset := false:
 	set(value):
 		is_additional_ruleset = value
-		ruleset_delete_button.visible = is_additional_ruleset
 		# Additional ruleset editors have an extra column to support override buttons
 		ruleset_properties_grid_container.columns = 3 if is_additional_ruleset else 2
 
@@ -396,7 +393,3 @@ func _on_scan_regex_include_line_edit_text_changed(_new_text: String) -> void:
 
 func _on_scan_regex_exclude_line_edit_text_changed(_new_text: String) -> void:
 	inputs_changed.emit()
-
-
-func _on_ruleset_override_delete_button_pressed() -> void:
-	delete_ruleset.emit()

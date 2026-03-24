@@ -83,14 +83,6 @@ unique_name_in_owner = true
 layout_mode = 2
 metadata/_tab_index = 0
 
-[node name="AddScanRulesetButton" type="Button" parent="VBoxContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 4
-text = "Add Scan Ruleset"
-script = ExtResource("2_8x47h")
-icon_name = "Add"
-
 [node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
 layout_mode = 2
 
@@ -177,7 +169,8 @@ alignment = 2
 [connection signal="close_requested" from="." to="." method="_on_close_requested"]
 [connection signal="confirmed" from="." to="." method="_on_confirmed"]
 [connection signal="confirmed" from="NewRestrictionConfirmationDialog" to="." method="_on_new_restriction_confirmation_dialog_confirmed"]
-[connection signal="pressed" from="VBoxContainer/AddScanRulesetButton" to="." method="_on_add_scan_ruleset_button_pressed"]
+[connection signal="tab_clicked" from="VBoxContainer/ScanRulesetsTabContainer" to="." method="_on_scan_rulesets_tab_container_tab_clicked"]
+[connection signal="tab_selected" from="VBoxContainer/ScanRulesetsTabContainer" to="." method="_on_scan_rulesets_tab_container_tab_selected"]
 [connection signal="text_changed" from="VBoxContainer/GridContainer/IndexedPropertiesLineEdit" to="." method="_on_indexed_properties_line_edit_text_changed"]
 [connection signal="text_changed" from="VBoxContainer/GridContainer/RegistryPath/RegistryPathLineEdit" to="." method="_on_registry_path_line_edit_text_changed"]
 [connection signal="pressed" from="VBoxContainer/GridContainer/RegistryPath/RegistryPathFilesystemButton" to="." method="_on_registry_path_filesystem_button_pressed"]
