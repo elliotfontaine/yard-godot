@@ -45,7 +45,7 @@ enum ValidationSubState { INFO, SUCCESS, WARNING, ERROR }
 @onready var ruleset_delete_button: Button = %RulesetDeleteButton
 
 ## Map RegistryScanRuleset properties to the controls that their override buttons should be spawned
-## in afterward in the scene tree, for additional ruleset editors that need to allow those buttons.
+## before in the scene tree, for additional ruleset editors that need to allow those buttons.
 @onready var scan_ruleset_properties_to_root_edit_controls: Dictionary[StringName, Control] = {
 	&"class_restrictions": class_restrictions_tab_container,
 	&"scan_directories": scan_directories_tab_container,
@@ -87,7 +87,8 @@ var is_additional_ruleset := false:
 				var override_button := OVERRIDE_DEFAULT_SETTING_TOGGLE_BUTTON.instantiate()
 				override_button.button_pressed = ruleset_property in DEFAULT_OVERRIDDEN_RULESET_PROPERTIES
 				_registry_scan_ruleset_override_buttons[ruleset_property] = override_button
-				ruleset_root_control.add_sibling(override_button)
+				ruleset_properties_grid_container.add_child(override_button)
+				ruleset_properties_grid_container.move_child(override_button, ruleset_root_control.get_index())
 				override_button.pressed.connect(_on_override_button_pressed)
 
 		elif not is_additional_ruleset and not _registry_scan_ruleset_override_buttons.is_empty():
