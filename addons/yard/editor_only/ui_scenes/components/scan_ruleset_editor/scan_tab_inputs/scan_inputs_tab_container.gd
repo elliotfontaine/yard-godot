@@ -14,6 +14,7 @@ const ScanTabInput := preload("./scan_tab_input.gd")
 @export var scan_tab_input_scene: PackedScene
 
 var _inputs: Array[ScanTabInput] = []
+var _add_input_tab: ReferenceRect
 
 var disabled: bool = false:
 	set(value):
@@ -21,6 +22,17 @@ var disabled: bool = false:
 		if is_node_ready():
 			for input in _inputs:
 				input.disabled = disabled
+			set_tab_hidden(_add_input_tab.get_index(), disabled)
+			get_tab_bar().tab_close_display_policy = (
+				TabBar.CLOSE_BUTTON_SHOW_NEVER
+				if disabled
+				else TabBar.CLOSE_BUTTON_SHOW_ACTIVE_ONLY
+			)
+
+var show_advanced_settings: bool:
+	set(value):
+		show_advanced_settings = value
+		_update_tabs()
 
 
 func _ready() -> void:
@@ -34,6 +46,16 @@ func _ready() -> void:
 
 	# Add one input to act on by default
 	_add_input(false)
+
+	# "+" tab to add input. Should never be the current tab.
+	_add_input_tab = ReferenceRect.new()
+	add_child(_add_input_tab)
+	set_tab_icon(_add_input_tab.get_index(), get_theme_icon(&"Add", &"EditorIcons"))
+	set_tab_title(_add_input_tab.get_index(), "")
+
+	tab_selected.connect(_on_tab_selected)
+	tab_clicked.connect(_on_tab_clicked)
+	get_tab_bar().tab_close_pressed.connect(_delete_current_input)
 
 	disabled = disabled
 	_update_tabs()
@@ -96,8 +118,10 @@ func update_selected_input_value(value: Variant) -> void:
 func _connect_input(input: ScanTabInput) -> void:
 	input.input_changed.connect(inputs_changed.emit)
 	input.request_action.connect(request_action.emit)
-	input.request_delete.connect(_delete_input.bind(input))
-	input.request_add.connect(_add_input)
+
+
+func _delete_current_input(emit_changed := true) -> void:
+	_delete_input(get_tab_control(current_tab), emit_changed)
 
 
 func _delete_input(input: ScanTabInput, emit_changed := true) -> void:
@@ -108,6 +132,7 @@ func _delete_input(input: ScanTabInput, emit_changed := true) -> void:
 	# Always ensure there is at least one available input
 	if _inputs.is_empty():
 		_add_input(false)
+		current_tab = 0
 
 	if emit_changed:
 		inputs_changed.emit()
@@ -116,9 +141,10 @@ func _delete_input(input: ScanTabInput, emit_changed := true) -> void:
 
 func _add_input(emit_changed := true) -> void:
 	var new_input: ScanTabInput = scan_tab_input_scene.instantiate()
+	_inputs.append(new_input)
 	_connect_input(new_input)
 	add_child(new_input)
-	_inputs.append(new_input)
+	move_child(new_input, _inputs.size() - 1)
 
 	new_input.reset_value()
 
@@ -130,6 +156,18 @@ func _add_input(emit_changed := true) -> void:
 func _update_tabs() -> void:
 	var tab_count := get_tab_count()
 	for i in tab_count:
-		set_tab_title(i, tab_display_title + " %d" % (i + 1))
+		if not get_tab_control(i) is ReferenceRect:
+			set_tab_title(i, tab_display_title + " %d" % (i + 1))
 
-	tabs_visible = tab_count > 1
+	tabs_visible = show_advanced_settings or _inputs.size() > 1
+
+
+func _on_tab_selected(tab: int) -> void:
+	if tab == _add_input_tab.get_index():
+		current_tab = get_tab_count() - 2
+
+
+func _on_tab_clicked(tab: int) -> void:
+	if tab == _add_input_tab.get_index():
+		_add_input()
+		current_tab = get_tab_count() - 2
