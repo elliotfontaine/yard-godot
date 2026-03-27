@@ -799,7 +799,7 @@ func _draw_cell_progress(rect: Rect2, row: int, col: int) -> void:
 	var progress_color := _get_interpolated_three_colors(progress_bar_start_color, progress_bar_middle_color, progress_bar_end_color, progress)
 
 	var bar := rect.grow(-2.0 * EditorThemeUtils.scale)
-	var fill := Rect2(bar.position, Vector2(bar.size.x * minf(progress, 1.0), bar.size.y))
+	var fill := Rect2(bar.position, Vector2(bar.size.x * clampf(progress, 0.0, 1.0), bar.size.y))
 
 	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_CENTER)
 	var numeric_text := str(snappedf(cell_value, 0.001))
