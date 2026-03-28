@@ -103,14 +103,6 @@ func _ready() -> void:
 	if not Engine.is_editor_hint() or EditorInterface.get_edited_scene_root() == self:
 		return
 
-	# Why was this here? Not sure if different styling needs to be applied to the newly updated UI.
-	#var base_font_color := get_theme_color(&"font_color", &"Editor")
-	#advanced_scan_options_container.add_theme_color_override(&"font_color", base_font_color)
-	#advanced_scan_options_container.add_theme_color_override(&"collapsed_font_color", base_font_color)
-	#for check_box: CheckBox in [scan_recursive_check_box, auto_rescan_check_box, scan_remove_unlisted_check_box]:
-	#check_box.add_theme_stylebox_override(&"focus", get_theme_stylebox(&"focus", &"LineEdit"))
-	#for override: StringName in [&"normal", &"hover", &"pressed", &"hover_pressed"]:
-	#check_box.add_theme_stylebox_override(override, get_theme_stylebox(&"normal", &"LineEdit"))
 
 	about_to_popup.connect(_on_about_to_popup)
 	_file_dialog = EditorFileDialog.new()
