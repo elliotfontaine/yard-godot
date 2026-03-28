@@ -2,8 +2,7 @@
 
 [ext_resource type="Script" uid="uid://ci6vvg34c6b6o" path="res://addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd" id="1_uots1"]
 [ext_resource type="Script" uid="uid://djrr6b7fc76rw" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="2_8x47h"]
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_v4rg0"]
+[ext_resource type="PackedScene" uid="uid://cqt3d2a2exd2f" path="res://addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn" id="3_srqmm"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_khhqm"]
 content_margin_left = 4.0
@@ -44,7 +43,8 @@ expand_margin_bottom = 2.0
 oversampling_override = 1.0
 title = "Create Registry"
 initial_position = 1
-size = Vector2i(666, 306)
+size = Vector2i(666, 754)
+visible = true
 ok_button_text = "Create"
 dialog_hide_on_ok = false
 script = ExtResource("1_uots1")
@@ -73,36 +73,23 @@ grow_vertical = 2
 theme_override_constants/separation = 16
 alignment = 1
 
+[node name="ScanRulesetsTabContainer" type="TabContainer" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+current_tab = 0
+
+[node name="DefaultRulesetEditor" parent="VBoxContainer/ScanRulesetsTabContainer" instance=ExtResource("3_srqmm")]
+unique_name_in_owner = true
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
 [node name="GridContainer" type="GridContainer" parent="VBoxContainer"]
 layout_mode = 2
 theme_override_constants/h_separation = 12
 columns = 2
-
-[node name="ClassRestrictionLabel" type="Label" parent="VBoxContainer/GridContainer"]
-layout_mode = 2
-text = "Class Restriction:"
-
-[node name="ClassRestriction" type="HBoxContainer" parent="VBoxContainer/GridContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="ClassRestrictionLineEdit" type="LineEdit" parent="VBoxContainer/GridContainer/ClassRestriction"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-placeholder_text = "Resource"
-
-[node name="ClassListDialogButton" type="Button" parent="VBoxContainer/GridContainer/ClassRestriction"]
-unique_name_in_owner = true
-layout_mode = 2
-script = ExtResource("2_8x47h")
-icon_name = "ClassList"
-
-[node name="ClassFilesystemButton" type="Button" parent="VBoxContainer/GridContainer/ClassRestriction"]
-unique_name_in_owner = true
-layout_mode = 2
-script = ExtResource("2_8x47h")
-icon_name = "Folder"
 
 [node name="IndexedPropertiesLabel" type="Label" parent="VBoxContainer/GridContainer"]
 layout_mode = 2
@@ -113,71 +100,12 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ScanDirectoryLabel" type="Label" parent="VBoxContainer/GridContainer"]
-layout_mode = 2
-text = "Scan Directory:"
-
-[node name="ScanDirectory" type="HBoxContainer" parent="VBoxContainer/GridContainer"]
-layout_mode = 2
-
-[node name="ScanDirectoryLineEdit" type="LineEdit" parent="VBoxContainer/GridContainer/ScanDirectory"]
+[node name="AutoRescanLabel" type="Label" parent="VBoxContainer/GridContainer"]
 unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="ScanDirectoryFilesystemButton" type="Button" parent="VBoxContainer/GridContainer/ScanDirectory"]
-unique_name_in_owner = true
-layout_mode = 2
-script = ExtResource("2_8x47h")
-icon_name = "Folder"
-
-[node name="AdvancedScanOptionsContainer" type="FoldableContainer" parent="VBoxContainer"]
-layout_mode = 2
-focus_neighbor_bottom = NodePath("MarginContainer/GridContainer/RecursiveScanCheckBox")
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_colors/collapsed_font_color = Color(0, 0, 0, 1)
-theme_override_styles/title_panel = SubResource("StyleBoxEmpty_v4rg0")
-theme_override_styles/title_hover_panel = SubResource("StyleBoxEmpty_v4rg0")
-theme_override_styles/title_collapsed_panel = SubResource("StyleBoxEmpty_v4rg0")
-theme_override_styles/title_collapsed_hover_panel = SubResource("StyleBoxEmpty_v4rg0")
-theme_override_styles/focus = SubResource("StyleBoxEmpty_v4rg0")
-theme_override_styles/panel = SubResource("StyleBoxEmpty_v4rg0")
-folded = true
-title = "Advanced Scan Options"
-
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/AdvancedScanOptionsContainer"]
-visible = false
-layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 0
-theme_override_constants/margin_bottom = 0
-
-[node name="GridContainer" type="GridContainer" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer"]
-layout_mode = 2
-theme_override_constants/h_separation = 12
-columns = 2
-
-[node name="RecursiveScanLabel" type="Label" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
-layout_mode = 2
-text = "Recursive:"
-
-[node name="RecursiveScanCheckBox" type="CheckBox" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_styles/normal = SubResource("StyleBoxFlat_khhqm")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_khhqm")
-theme_override_styles/hover = SubResource("StyleBoxFlat_khhqm")
-theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_khhqm")
-theme_override_styles/focus = SubResource("StyleBoxFlat_srqmm")
-text = "On"
-
-[node name="AutoRescanLabel" type="Label" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
 layout_mode = 2
 text = "Auto Rescan:"
 
-[node name="AutoRescanCheckBox" type="CheckBox" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
+[node name="AutoRescanCheckBox" type="CheckBox" parent="VBoxContainer/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_khhqm")
@@ -187,11 +115,12 @@ theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_khhqm")
 theme_override_styles/focus = SubResource("StyleBoxFlat_srqmm")
 text = "On"
 
-[node name="ScanRemoveUnlistedLabel" type="Label" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
+[node name="ScanRemoveUnlistedLabel" type="Label" parent="VBoxContainer/GridContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Remove Unlisted:"
 
-[node name="ScanRemoveUnlistedCheckBox" type="CheckBox" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
+[node name="ScanRemoveUnlistedCheckBox" type="CheckBox" parent="VBoxContainer/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_khhqm")
@@ -201,46 +130,21 @@ theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_khhqm")
 theme_override_styles/focus = SubResource("StyleBoxFlat_srqmm")
 text = "On"
 
-[node name="ScanRegexIncludeLabel" type="Label" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
-layout_mode = 2
-text = "RegEx Include:"
-
-[node name="ScanRegexIncludeLineEdit" type="LineEdit" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="ScanRegexExcludeLabel" type="Label" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
-layout_mode = 2
-text = "RegEx Exclude:"
-
-[node name="ScanRegexExcludeLineEdit" type="LineEdit" parent="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
-layout_mode = 2
-
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 20
-
-[node name="PathLabel" type="Label" parent="VBoxContainer/HBoxContainer"]
+[node name="PathLabel" type="Label" parent="VBoxContainer/GridContainer"]
 layout_mode = 2
 text = "Path:"
 
-[node name="RegistryPath" type="HBoxContainer" parent="VBoxContainer/HBoxContainer"]
+[node name="RegistryPath" type="HBoxContainer" parent="VBoxContainer/GridContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="RegistryPathLineEdit" type="LineEdit" parent="VBoxContainer/HBoxContainer/RegistryPath"]
+[node name="RegistryPathLineEdit" type="LineEdit" parent="VBoxContainer/GridContainer/RegistryPath"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "new_registry.tres"
 
-[node name="RegistryPathFilesystemButton" type="Button" parent="VBoxContainer/HBoxContainer/RegistryPath"]
+[node name="RegistryPathFilesystemButton" type="Button" parent="VBoxContainer/GridContainer/RegistryPath"]
 unique_name_in_owner = true
 layout_mode = 2
 script = ExtResource("2_8x47h")
@@ -255,18 +159,19 @@ bbcode_enabled = true
 fit_content = true
 scroll_active = false
 
+[node name="AdvancedSettingsCheckButton" type="CheckButton" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Advanced Settings"
+alignment = 2
+
 [connection signal="canceled" from="." to="." method="_on_canceled"]
 [connection signal="close_requested" from="." to="." method="_on_close_requested"]
 [connection signal="confirmed" from="." to="." method="_on_confirmed"]
 [connection signal="confirmed" from="NewRestrictionConfirmationDialog" to="." method="_on_new_restriction_confirmation_dialog_confirmed"]
-[connection signal="text_changed" from="VBoxContainer/GridContainer/ClassRestriction/ClassRestrictionLineEdit" to="." method="_on_class_restriction_line_edit_text_changed"]
-[connection signal="pressed" from="VBoxContainer/GridContainer/ClassRestriction/ClassListDialogButton" to="." method="_on_class_list_dialog_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/GridContainer/ClassRestriction/ClassFilesystemButton" to="." method="_on_class_filesystem_button_pressed"]
+[connection signal="tab_clicked" from="VBoxContainer/ScanRulesetsTabContainer" to="." method="_on_scan_rulesets_tab_container_tab_clicked"]
+[connection signal="tab_selected" from="VBoxContainer/ScanRulesetsTabContainer" to="." method="_on_scan_rulesets_tab_container_tab_selected"]
 [connection signal="text_changed" from="VBoxContainer/GridContainer/IndexedPropertiesLineEdit" to="." method="_on_indexed_properties_line_edit_text_changed"]
-[connection signal="text_changed" from="VBoxContainer/GridContainer/ScanDirectory/ScanDirectoryLineEdit" to="." method="_on_scan_directory_line_edit_text_changed"]
-[connection signal="pressed" from="VBoxContainer/GridContainer/ScanDirectory/ScanDirectoryFilesystemButton" to="." method="_on_scan_directory_filesystem_button_pressed"]
-[connection signal="folding_changed" from="VBoxContainer/AdvancedScanOptionsContainer" to="." method="_on_foldable_container_folding_changed"]
-[connection signal="text_changed" from="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer/ScanRegexIncludeLineEdit" to="." method="_on_scan_regex_include_line_edit_text_changed"]
-[connection signal="text_changed" from="VBoxContainer/AdvancedScanOptionsContainer/MarginContainer/GridContainer/ScanRegexExcludeLineEdit" to="." method="_on_scan_regex_exclude_line_edit_text_changed"]
-[connection signal="text_changed" from="VBoxContainer/HBoxContainer/RegistryPath/RegistryPathLineEdit" to="." method="_on_registry_path_line_edit_text_changed"]
-[connection signal="pressed" from="VBoxContainer/HBoxContainer/RegistryPath/RegistryPathFilesystemButton" to="." method="_on_registry_path_filesystem_button_pressed"]
+[connection signal="text_changed" from="VBoxContainer/GridContainer/RegistryPath/RegistryPathLineEdit" to="." method="_on_registry_path_line_edit_text_changed"]
+[connection signal="pressed" from="VBoxContainer/GridContainer/RegistryPath/RegistryPathFilesystemButton" to="." method="_on_registry_path_filesystem_button_pressed"]
+[connection signal="toggled" from="VBoxContainer/AdvancedSettingsCheckButton" to="." method="_on_advanced_settings_check_button_toggled"]
