@@ -28,9 +28,6 @@ const DEFAULT_OVERRIDDEN_RULESET_PROPERTIES: Array[StringName] = [
 enum ValidationSubState { INFO, SUCCESS, WARNING, ERROR }
 
 @onready var ruleset_properties_grid_container: GridContainer = %RulesetPropertiesGridContainer
-# TODO: I made these tab containers' 'Panel' styles use a unique copy of the default one visible in
-# the editor to avoid odd margins that show up otherwise when the registry dialog window pops up, is
-# there a better way to fix this?
 @onready var class_restrictions_tab_container: TabContainer = %ClassRestrictionsTabContainer
 @onready var scan_directories_tab_container: TabContainer = %ScanDirectoriesTabContainer
 @onready var recursive_scan_label: Label = %RecursiveScanLabel
@@ -95,8 +92,8 @@ var is_additional_ruleset := false:
 
 		_update_overrides()
 
-## Only required for non-default ruleset editors - allows using default values from this editor for
-## non-overridden properties.
+## Reference to another instance - only required for non-default ruleset editors.
+## Allows using default values from this editor for non-overridden properties.
 var default_ruleset_editor: ScanRulesetEditor:
 	set(value):
 		default_ruleset_editor = value
@@ -229,8 +226,9 @@ func _build_ruleset() -> RegistryIO.RegistryScanRuleset:
 ## Returns several tuples to represent validation states for:
 ## 1. Resource class checks
 ## 2. Scan directory checks
-## 3. Regex include check
-## 4. Regex exclude check
+## 3. File extension checks
+## 4. Regex include check
+## 5. Regex exclude check
 ## Each tuple is in the form of: [ValidationSubState, StringName], which consists of the state of
 ## the validation for that check (info/success/warning/error) and the corresponding info message key
 ## (from NewRegistryDialog.INFO_MESSAGES). If that step was skipped or ignored, info is returned,

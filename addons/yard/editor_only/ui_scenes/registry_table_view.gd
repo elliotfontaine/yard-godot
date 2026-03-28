@@ -174,18 +174,15 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 	if not current_registry:
 		return false
 
-	var scan_rulesets := RegistryIO.get_registry_settings(current_registry).get_compiled_rulesets()
+	var settings := RegistryIO.get_registry_settings(current_registry)
+	var all_class_restrictions := settings.get_all_class_restrictions()
+	var scan_rulesets := settings.get_compiled_rulesets()
 
 	for path: String in data.files:
 		if ResourceLoader.exists(path):
-			var res := load(path)
-			var any_ruleset_class_matches := false
-			for scan_ruleset in scan_rulesets:
-				if RegistryIO.does_resource_match_class_restrictions(res, scan_ruleset.class_restrictions):
-					any_ruleset_class_matches = true
-					break
-			if any_ruleset_class_matches:
+			if RegistryIO.does_resource_match_class_restrictions(load(path), all_class_restrictions):
 				return true
+
 		elif path.ends_with("/"): # is dir
 			for scan_ruleset in scan_rulesets:
 				for scan_dir in scan_ruleset.scan_directories:
@@ -198,19 +195,16 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 func _drop_data(_at_position: Vector2, data: Variant) -> void:
 	var n_added := 0
 
-	var scan_rulesets := RegistryIO.get_registry_settings(current_registry).get_compiled_rulesets()
+	var settings := RegistryIO.get_registry_settings(current_registry)
+	var all_class_restrictions := settings.get_all_class_restrictions()
+	var scan_rulesets := settings.get_compiled_rulesets()
 
 	for path: String in data.files:
 		if ResourceLoader.exists(path):
-			var res := load(path)
-			var any_ruleset_class_matches := false
-			for scan_ruleset in scan_rulesets:
-				if RegistryIO.does_resource_match_class_restrictions(res, scan_ruleset.class_restrictions):
-					any_ruleset_class_matches = true
-					break
-			if any_ruleset_class_matches:
+			if RegistryIO.does_resource_match_class_restrictions(load(path), all_class_restrictions):
 				var status := RegistryIO.add_entry(current_registry, ResourceUID.path_to_uid(path))
 				n_added += int(status == OK)
+
 		elif path.ends_with("/"):
 			for scan_ruleset in scan_rulesets:
 				for scan_dir in scan_ruleset.scan_directories:
@@ -547,15 +541,15 @@ func _setup_add_entry() -> void:
 	var settings := RegistryIO.get_registry_settings(current_registry)
 
 	if settings.has_any_class_restrictions():
-		var all_class_restrictions := settings.get_all_class_restrictions()
-		var only_class_restriction := all_class_restrictions[0] if all_class_restrictions.size() == 1 else &""
-
-		if only_class_restriction:
-			if not RegistryIO.is_quoted_string(only_class_restriction):
-				_res_picker.base_type = only_class_restriction
+		var all_class_restrictions_usable_strings: PackedStringArray
+		for restriction in settings.get_all_class_restrictions():
+			if not RegistryIO.is_quoted_string(restriction):
+				all_class_restrictions_usable_strings.append(restriction)
 			else:
-				var script: Script = load(RegistryIO.unquote(only_class_restriction))
-				_res_picker.base_type = ClassUtils.get_type_name(script)
+				var script: Script = load(RegistryIO.unquote(restriction))
+				all_class_restrictions_usable_strings.append(ClassUtils.get_type_name(script))
+		if not all_class_restrictions_usable_strings.is_empty():
+			_res_picker.base_type = ",".join(all_class_restrictions_usable_strings)
 
 	resource_picker_container.add_child(_res_picker)
 	_texture_rect_parent = _res_picker.get_child(0)

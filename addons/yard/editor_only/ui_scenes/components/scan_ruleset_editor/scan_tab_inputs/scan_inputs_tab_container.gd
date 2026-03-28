@@ -131,7 +131,7 @@ func _delete_input(input: ScanTabInput, emit_changed := true) -> void:
 
 	# Always ensure there is at least one available input
 	if _inputs.is_empty():
-		_add_input(false)
+		_add_input(true)
 		current_tab = 0
 
 	if emit_changed:

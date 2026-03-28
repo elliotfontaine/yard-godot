@@ -39,7 +39,7 @@ static func create_registry_file(path: String, settings: RegistrySettings = null
 static func get_registry_settings(registry: Registry) -> RegistrySettings:
 	# TODO: Create a migration to handle the actual conversion of registry setting values.
 	# This is only a temporary implementation!
-	if registry._version == 2:
+	if registry._version >= 2:
 		var settings := RegistrySettings.new()
 		settings.version = registry._version
 		settings.indexed_props = ",".join(registry._property_index.keys())
@@ -81,16 +81,9 @@ static func set_registry_settings(registry: Registry, settings: RegistrySettings
 	if err != OK:
 		return err
 
-	var scan_rulesets := settings.get_compiled_rulesets()
-
+	var all_class_restrictions := settings.get_all_class_restrictions()
 	for uid in registry.get_all_uids():
-		var res := load(uid)
-		var any_ruleset_class_matches := false
-		for scan_ruleset in scan_rulesets:
-			if does_resource_match_class_restrictions(res, scan_ruleset.class_restrictions):
-				any_ruleset_class_matches = true
-				break
-		if not any_ruleset_class_matches:
+		if not does_resource_match_class_restrictions(load(uid), all_class_restrictions):
 			erase_entry(registry, uid)
 
 	return ResourceSaver.save(registry)
@@ -110,15 +103,8 @@ static func add_entry(registry: Registry, uid: StringName, string_id: String = "
 	if uid in registry._uids_to_string_ids:
 		return ERR_ALREADY_EXISTS
 
-	var scan_rulesets := get_registry_settings(registry).get_compiled_rulesets()
-	var res := load(uid)
-	var any_ruleset_class_matches := false
-	for scan_ruleset in scan_rulesets:
-		if does_resource_match_class_restrictions(res, scan_ruleset.class_restrictions):
-			any_ruleset_class_matches = true
-			break
-
-	if not any_ruleset_class_matches:
+	var settings := get_registry_settings(registry)
+	if settings.has_any_class_restrictions() and not does_resource_match_class_restrictions(load(uid), settings.get_all_class_restrictions()):
 		return ERR_DATABASE_CANT_WRITE
 
 	if not string_id:
@@ -199,10 +185,9 @@ static func change_entry_uid(registry: Registry, id: StringName, new_uid: String
 
 static func sync_registry_entries_from_scan_dir(registry: Registry, settings: RegistrySettings) -> void:
 	# Validate before applying new settings
-	for scan_ruleset in settings.get_compiled_rulesets():
-		for scan_dir in scan_ruleset.scan_directories:
-			if not scan_dir or not DirAccess.dir_exists_absolute(scan_dir):
-				return
+	for scan_dir in settings.get_all_scan_directories():
+		if not scan_dir or not DirAccess.dir_exists_absolute(scan_dir):
+			return
 
 	var n_added := 0
 	var n_removed := 0
@@ -235,8 +220,7 @@ static func sync_registry_entries_from_scan_dir(registry: Registry, settings: Re
 			)
 
 	# Add
-	var scan_rulesets := settings.get_compiled_rulesets()
-	for scan_ruleset in scan_rulesets:
+	for scan_ruleset in settings.get_compiled_rulesets():
 		for scan_dir in scan_ruleset.scan_directories:
 			for res in dir_get_matching_resources(scan_dir, scan_ruleset, scan_dir):
 				var uid := ResourceUID.path_to_uid(res.resource_path)
@@ -397,8 +381,6 @@ static func does_resource_match_class_restrictions(
 	if class_restrictions.is_empty():
 		return true
 
-	var any_class_matches := false
-
 	for class_restriction in class_restrictions:
 		if is_quoted_string(class_restriction):
 			var restriction_script_path := unquote(class_restriction)
@@ -411,16 +393,13 @@ static func does_resource_match_class_restrictions(
 				continue
 
 			if restriction_script in ClassUtils.get_script_inheritance_list(resource_script, true):
-				any_class_matches = true
+				return true
 
 		else:
 			if ClassUtils.is_class_of(res, class_restriction):
-				any_class_matches = true
+				return true
 
-		if any_class_matches:
-			break
-
-	return any_class_matches
+	return false
 
 
 ## Returns true if [param class_string] names a valid Resource subclass.[br]
@@ -463,20 +442,14 @@ static func is_quoted_string(string: String) -> bool:
 
 
 static func would_erase_entries(registry: Registry, new_scan_settings: RegistrySettings) -> bool:
-	var scan_rulesets := new_scan_settings.get_compiled_rulesets()
+	var all_class_restrictions := new_scan_settings.get_all_class_restrictions()
 	for uid: StringName in registry.get_all_uids():
 		if not is_uid_valid(uid):
 			continue
 
-		var res := load(uid)
-		var any_ruleset_class_matches := false
-		for scan_ruleset in scan_rulesets:
-			if does_resource_match_class_restrictions(res, scan_ruleset.class_restrictions):
-				any_ruleset_class_matches = true
-				break
-
-		if not any_ruleset_class_matches:
+		if not does_resource_match_class_restrictions(load(uid), all_class_restrictions):
 			return true
+
 	return false
 
 
@@ -510,14 +483,13 @@ static func _path_passes_scan_filters(path: String, re_include: RegEx, re_exclud
 
 static func _apply_settings(registry: Registry, settings: RegistrySettings) -> Error:
 	# Validate before applying new settings
-	for scan_ruleset in settings.get_compiled_rulesets():
-		for class_restriction in scan_ruleset.class_restrictions:
-			if class_restriction and not is_resource_class_string(class_restriction):
-				return ERR_DOES_NOT_EXIST
+	for class_restriction in settings.get_all_class_restrictions():
+		if class_restriction and not is_resource_class_string(class_restriction):
+			return ERR_DOES_NOT_EXIST
 
-		for scan_dir in scan_ruleset.scan_directories:
-			if scan_dir and not DirAccess.dir_exists_absolute(scan_dir):
-				return ERR_DOES_NOT_EXIST
+	for scan_dir in settings.get_all_scan_directories():
+		if scan_dir and not DirAccess.dir_exists_absolute(scan_dir):
+			return ERR_DOES_NOT_EXIST
 
 	registry._version = settings.version
 	registry._scan_auto = settings.auto_rescan
@@ -630,6 +602,16 @@ class RegistrySettings:
 					if not all_class_restrictions.has(additional_class_restriction):
 						all_class_restrictions.append(additional_class_restriction)
 		return all_class_restrictions
+
+
+	func get_all_scan_directories() -> Array[String]:
+		var all_scan_directories: Array[String] = default_scan_ruleset.scan_directories.duplicate()
+		for additional_scan_ruleset in additional_scan_rulesets:
+			if additional_scan_ruleset.override_properties.has(&"scan_directories"):
+				for additional_scan_directory in additional_scan_ruleset.scan_directories:
+					if not all_scan_directories.has(additional_scan_directory):
+						all_scan_directories.append(additional_scan_directory)
+		return all_scan_directories
 
 
 ## Defines how a scanning operation should run, including which directories should be checked & what

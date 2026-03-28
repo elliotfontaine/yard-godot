@@ -191,8 +191,7 @@ func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 	else:
 		return
 
-	advanced_settings_check_button.set_pressed_no_signal(any_existing_advanced_settings)
-	_on_advanced_settings_check_button_toggled(any_existing_advanced_settings)
+	advanced_settings_check_button.button_pressed = any_existing_advanced_settings
 	_on_scan_ruleset_additional_editors_list_updated()
 
 	popup()
@@ -294,28 +293,29 @@ func _validate_fields() -> void:
 			# Be sure to account for both quoted class strings and class names together.
 			#var mismatched_property_types: Dictionary[String, Array] = {}
 
-			var all_class_strings: Array[String] = []
-			for ruleset_editor in _all_ruleset_editors:
-				var ruleset_unique_class_strings := ruleset_editor.get_unique_class_strings()
-				for class_string in ruleset_unique_class_strings:
-					if class_string not in all_class_strings:
-						all_class_strings.append(class_string)
-
-			for class_string in all_class_strings:
-				var is_class_valid := RegistryIO.is_resource_class_string(class_string)
-				var class_props := _get_class_property_names(class_string) if is_class_valid else []
-				for prop_name: String in class_props:
-					var prop_type := ClassUtils.get_class_property_type_from_name(class_string, prop_name)
-
-					if not all_class_properties.has(prop_name):
-						all_class_properties[prop_name] = prop_type
-					#else:
-					#var existing_prop_type := all_class_properties[prop_name]
-					#if prop_type != existing_prop_type:
-					#if not mismatched_property_types.has(prop_name):
-					#mismatched_property_types[prop_name] = [existing_prop_type, prop_type]
-					#elif not mismatched_property_types[prop_name].has(prop_type):
-					#mismatched_property_types[prop_name].append(prop_type)
+			#var all_class_strings: Array[String] = []
+			#for ruleset_editor in _all_ruleset_editors:
+			#var ruleset_unique_class_strings := ruleset_editor.get_unique_class_strings()
+			#for class_string in ruleset_unique_class_strings:
+			#if class_string not in all_class_strings:
+			#all_class_strings.append(class_string)
+			#
+			#for class_string in all_class_strings:
+			#var is_class_valid := RegistryIO.is_resource_class_string(class_string)
+			#var class_props := _get_class_property_names(class_string) if is_class_valid else []
+			#for prop_name: String in class_props:
+			## TODO: get the type of this property, accounting for custom class types
+			#var prop_type
+			#
+			#if not all_class_properties.has(prop_name):
+			#all_class_properties[prop_name] = prop_type
+			#else:
+			#var existing_prop_type := all_class_properties[prop_name]
+			#if prop_type != existing_prop_type:
+			#if not mismatched_property_types.has(prop_name):
+			#mismatched_property_types[prop_name] = [existing_prop_type, prop_type]
+			#elif not mismatched_property_types[prop_name].has(prop_type):
+			#mismatched_property_types[prop_name].append(prop_type)
 
 			#if not mismatched_property_types.is_empty():
 			#for mismatched_prop_name in mismatched_property_types:
