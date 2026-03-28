@@ -82,21 +82,20 @@ func _init() -> void:
 
 
 ## Returns the number of entries in the registry. Empty registries always return [code]0[/code].
-## See also [method Registry.is_empty].
+## See also [method is_empty].
 func size() -> int:
 	return _uids_to_string_ids.size()
 
 
 ## Returns [code]true[/code] if the registry contains no entries.
-## See also [method Registry.size].
+## See also [method size].
 func is_empty() -> bool:
 	return _uids_to_string_ids.is_empty()
 
 
 ## Returns [code]true[/code] if [param property] has been baked into the property index.[br][br]
 ##
-## Use this to guard calls to [method Registry.filter_by_value],
-## [method Registry.filter_by], and [method Registry.filter_by_values]
+## Use this to guard calls to [method filter] and [method where].
 ## when indexing of a given property is not guaranteed.
 func is_property_indexed(property: StringName) -> bool:
 	return _property_index.has(property)
@@ -163,8 +162,7 @@ func get_string_id(uid: StringName) -> StringName:
 ## Returns an [Array] of all properties that have been baked into the property index.[br][br]
 ##
 ## Each entry in the returned array is a [StringName] corresponding to a property key
-## that can be queried using [method Registry.filter_by], [method Registry.filter_by_value],
-## or [method Registry.filter_by_values].[br][br]
+## that can be queried using [method filter] or [method where].[br][br]
 ##
 ## Use this method to inspect which properties are available for fast lookup at runtime,
 ## without loading the underlying resources.
@@ -238,6 +236,37 @@ func load_all_threaded_request(
 	return tracker
 
 
+## Returns the string IDs of all entries whose [param property] matches [param criterion].[br][br]
+##
+## [param criterion] is either an exact value ([Variant]) or a [Callable] predicate
+## receiving the property value and returning a [bool].
+## Requires the property index to have been baked for [param property].
+## Returns an empty array if the property is not indexed or no entry matches.
+## [codeblock]
+## var legendaries := weapon_registry.filter(&"rarity", Rarity.LEGENDARY)
+## var high_level := weapon_registry.filter(&"level", func(v): return v >= 10)
+## var rare_or_epic := weapon_registry.filter(&"rarity", func(v): return v in [Rarity.RARE, Rarity.EPIC])
+## [/codeblock]
+## See also [method where].
+func filter(property: StringName, criterion: Variant) -> Array[StringName]:
+	if not _property_index.has(property):
+		return []
+	if criterion is Callable:
+		var result: Array[StringName] = []
+		for value: Variant in _property_index[property]:
+			if criterion.call(value):
+				for string_id: StringName in _property_index[property][value]:
+					result.append(string_id)
+		return result
+	else:
+		var value_map: Dictionary = _property_index[property]
+		if not value_map.has(criterion):
+			return []
+		var result: Array[StringName] = []
+		result.assign(value_map[criterion].keys())
+		return result
+
+
 ## Returns the string IDs of all entries whose [param property] satisfies [param predicate].[br][br]
 ##
 ## [param predicate] receives the property value and must return a [bool].
@@ -247,6 +276,7 @@ func load_all_threaded_request(
 ## var high_level := weapon_registry.filter_by(&"level", func(v): return v >= 10)
 ## var rare_or_epic := weapon_registry.filter_by(&"rarity", func(v): return v in [Rarity.RARE, Rarity.EPIC])
 ## [/codeblock]
+## @deprecated: Use [method filter] instead.
 func filter_by(property: StringName, predicate: Callable) -> Array[StringName]:
 	var result: Array[StringName] = []
 	if not _property_index.has(property):
@@ -265,6 +295,7 @@ func filter_by(property: StringName, predicate: Callable) -> Array[StringName]:
 ## [codeblock]
 ## var legendaries := weapon_registry.filter_by_value(&"rarity", Rarity.LEGENDARY)
 ## [/codeblock]
+## @deprecated: Use [method filter] instead.
 func filter_by_value(property: StringName, value: Variant) -> Array[StringName]:
 	var result: Array[StringName] = []
 	if not _property_index.has(property):
@@ -285,26 +316,52 @@ func filter_by_value(property: StringName, value: Variant) -> Array[StringName]:
 ## var perfect_armors := armor_registry.filter_by_values({&"defense": 100, &"weight": 0})
 ## var legendary_swords := weapon_registry.filter_by_values({&"rarity": Rarity.LEGENDARY, &"type": "sword"})
 ## [/codeblock]
+## @deprecated: Use [method where] instead.
 func filter_by_values(criteria: Dictionary[StringName, Variant]) -> Array[StringName]:
 	var result: Array[StringName] = []
-	var first := true
+	var initialized := false
 	for property: StringName in criteria:
 		var matches := filter_by_value(property, criteria[property])
-		if first:
-			result = matches
-			first = false
-		else:
-			# Intersect: keep only IDs present in both
-			var matches_set: Dictionary[StringName, bool] = { }
-			for id in matches:
-				matches_set[id] = true
-			var intersected: Array[StringName] = []
-			for id in result:
-				if matches_set.has(id):
-					intersected.append(id)
-			result = intersected
+		result = matches if not initialized else _intersect(result, matches)
+		initialized = true
 		if result.is_empty():
 			return result
+	return result
+
+
+## Returns the string IDs of all entries matching all [param criteria] (AND logic).[br][br]
+##
+## Each value in [param criteria] is either an exact [Variant] to match against, or a
+## [Callable] predicate receiving the property value and returning a [bool].
+## Requires the property index to have been baked for each property.
+## Returns an empty array if any property is not indexed or the intersection is empty.
+## [codeblock]
+## var result := ROOMS.where({
+##     &"biome": Biome.FOREST,
+##     &"tier": func(t): return t != RoomData.Tier.Boss,
+## })
+## [/codeblock]
+## See also [method filter].
+func where(criteria: Dictionary[StringName, Variant]) -> Array[StringName]:
+	var result: Array[StringName] = []
+	var initialized := false
+	for property: StringName in criteria:
+		var matches := filter(property, criteria[property])
+		result = matches if not initialized else _intersect(result, matches)
+		initialized = true
+		if result.is_empty():
+			return result
+	return result
+
+
+static func _intersect(base: Array[StringName], other: Array[StringName]) -> Array[StringName]:
+	var other_set: Dictionary[StringName, bool] = { }
+	for id: StringName in other:
+		other_set[id] = true
+	var result: Array[StringName] = []
+	for id: StringName in base:
+		if other_set.has(id):
+			result.append(id)
 	return result
 
 
