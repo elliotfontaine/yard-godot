@@ -111,7 +111,7 @@ static func add_entry(registry: Registry, uid: StringName, string_id: String = "
 		string_id = ResourceUID.get_id_path(cache_id).get_file().get_basename()
 
 	if string_id in registry._string_ids_to_uids:
-		string_id = _make_string_unique(registry, string_id)
+		string_id = _make_string_id_unique(registry, string_id)
 
 	registry._uids_to_string_ids[uid] = string_id as StringName
 	registry._string_ids_to_uids[string_id] = uid
@@ -140,7 +140,7 @@ static func rename_entry(
 		return ERR_INVALID_PARAMETER
 
 	registry._string_ids_to_uids.erase(id)
-	var unique_new_string_id := _make_string_unique(registry, new_string_id)
+	var unique_new_string_id := _make_string_id_unique(registry, new_string_id)
 	registry._string_ids_to_uids[unique_new_string_id] = uid
 	registry._uids_to_string_ids[uid] = unique_new_string_id
 	return ResourceSaver.save(registry)
@@ -396,9 +396,8 @@ static func does_resource_match_class_restrictions(
 			if restriction_script in ClassUtils.get_script_inheritance_list(resource_script, true):
 				return true
 
-		else:
-			if ClassUtils.is_class_of(res, class_restriction):
-				return true
+		elif ClassUtils.is_class_of(res, class_restriction):
+			return true
 
 	return false
 
@@ -510,7 +509,7 @@ static func _apply_settings(registry: Registry, settings: RegistrySettings) -> E
 	return OK
 
 
-static func _make_string_unique(registry: Registry, string_id: String) -> String:
+static func _make_string_id_unique(registry: Registry, string_id: String) -> String:
 	if not string_id in registry._string_ids_to_uids:
 		return string_id
 
