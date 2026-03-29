@@ -54,7 +54,7 @@ var INFO_MESSAGES: Dictionary[StringName, Array] = {
 	&"properties_valid": [tr("All properties found on the specified resource class."), SUCCESS_COLOR],
 	&"properties_empty_prop": [tr("Empty property name detected. Remove extra commas."), ERROR_COLOR],
 	&"properties_class_type_mismatch": [tr("Property '{prop}' is declared on multiple classes with different types."), WARNING_COLOR],
-	&"properties_cant_verify": [tr("Property '{prop}' may not exist on the resource class."), WARNING_COLOR],
+	&"properties_cant_verify": [tr("Property '{prop}' may not exist on class {class_n}."), WARNING_COLOR],
 
 	# --- Registry path ---
 	&"path_available": [tr("Will create a new registry file."), SUCCESS_COLOR],
@@ -102,7 +102,6 @@ var _all_ruleset_editors: Array[ScanRulesetEditor]:
 func _ready() -> void:
 	if not Engine.is_editor_hint() or EditorInterface.get_edited_scene_root() == self:
 		return
-
 
 	about_to_popup.connect(_on_about_to_popup)
 	_file_dialog = EditorFileDialog.new()
@@ -265,65 +264,37 @@ func _validate_fields() -> void:
 				info_messages.append(new_info_message)
 
 	# Indexed properties
-	var properties: Array[String] = []
+	var indexed_props: Array[String] = []
 	var indexed_properties_string := indexed_properties_line_edit.text.strip_edges()
 	if indexed_properties_string.is_empty():
 		info_messages.append(INFO_MESSAGES.properties_none)
 	else:
-		properties.assign(indexed_properties_string.split(",", true))
-		if properties.any(func(s: String) -> bool: return s.strip_edges().is_empty()):
+		indexed_props.assign(indexed_properties_string.split(",", true))
+		indexed_props.assign(indexed_props.map(func(s: String) -> String: return s.strip_edges()))
+		if indexed_props.any(func(s: String) -> bool: return s.is_empty()):
 			_invalidate(info_messages, &"properties_empty_prop")
 		else:
-			# Get the combined list of all properties for all classes defined by the ruleset
-			# editors (ensuring there are no property type conflicts between them), and check
-			# whether each indexed property is somewhere in there. Each property's type is also
-			# tracked for validation.
-			var all_class_properties: Dictionary[String, Variant.Type] = { }
 			# For every mismatched property, track its name, and an array of the different expected
 			# values that it has.
 			# TODO: Actually implement & test this mismatched types check!
-			# Be sure to account for both quoted class strings and class names together.
-			#var mismatched_property_types: Dictionary[String, Array] = {}
+			var props_per_class: Dictionary[StringName, Array] = { }
+			#var mismatched_property_types: Dictionary[String, Array] = { }
 
-			#var all_class_strings: Array[String] = []
-			#for ruleset_editor in _all_ruleset_editors:
-			#var ruleset_unique_class_strings := ruleset_editor.get_unique_class_strings()
-			#for class_string in ruleset_unique_class_strings:
-			#if class_string not in all_class_strings:
-			#all_class_strings.append(class_string)
-			#
-			#for class_string in all_class_strings:
-			#var is_class_valid := RegistryIO.is_resource_class_string(class_string)
-			#var class_props := _get_class_property_names(class_string) if is_class_valid else []
-			#for prop_name: String in class_props:
-			## TODO: get the type of this property, accounting for custom class types
-			#var prop_type
-			#
-			#if not all_class_properties.has(prop_name):
-			#all_class_properties[prop_name] = prop_type
-			#else:
-			#var existing_prop_type := all_class_properties[prop_name]
-			#if prop_type != existing_prop_type:
-			#if not mismatched_property_types.has(prop_name):
-			#mismatched_property_types[prop_name] = [existing_prop_type, prop_type]
-			#elif not mismatched_property_types[prop_name].has(prop_type):
-			#mismatched_property_types[prop_name].append(prop_type)
+			for ruleset_editor in _all_ruleset_editors:
+				var ruleset_unique_class_strings := ruleset_editor.get_unique_class_strings()
+				for class_string in ruleset_unique_class_strings:
+					if not props_per_class.has(class_string):
+						props_per_class[class_string] = _get_class_property_names(class_string)
 
-			#if not mismatched_property_types.is_empty():
-			#for mismatched_prop_name in mismatched_property_types:
-			#var msg := INFO_MESSAGES.properties_class_type_mismatch
-			#msg[0] = tr(msg[0]).format({ "prop": mismatched_prop_name })
-			#info_messages.append(msg)
-			##_invalidate_with_full_info_message(info_messages, msg)
-			#else:
-			var msgs_before := info_messages.size()
-			for p: String in properties:
-				if not all_class_properties.has(p.strip_edges()):
+			for prop: String in indexed_props:
+				var classes_without_prop := []
+				for class_n in props_per_class:
+					if not prop in props_per_class[class_n]:
+						classes_without_prop.append(class_n)
+				if not classes_without_prop.is_empty():
 					var msg := INFO_MESSAGES.properties_cant_verify.duplicate()
-					msg[0] = tr(msg[0]).format({ "prop": p })
+					msg[0] = tr(msg[0]).format({ "prop": prop, "class_n": ", ".join(classes_without_prop) })
 					info_messages.append(msg)
-			if info_messages.size() == msgs_before:
-				info_messages.append(INFO_MESSAGES.properties_valid)
 
 	if _state == RegistryDialogState.REGISTRY_SETTINGS:
 		_fill_info_label(info_messages)
@@ -356,7 +327,7 @@ func _invalidate_with_full_info_message(info_messages: Array[Array], new_info_me
 	info_messages.append(new_info_message)
 
 
-func _get_class_property_names(class_string: String) -> Array:
+func _get_class_property_names(class_string: String) -> Array[String]:
 	if RegistryIO.is_quoted_string(class_string):
 		return ClassUtils.get_class_property_names(load(RegistryIO.unquote(class_string)))
 	return ClassUtils.get_class_property_names(class_string)
