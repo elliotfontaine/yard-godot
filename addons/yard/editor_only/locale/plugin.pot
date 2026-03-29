@@ -253,16 +253,16 @@ msgid "Indexed Properties:"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
-msgid "On"
-msgstr ""
-
-#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Automatically sync the registry entries when the filesystem changes."
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Auto Rescan:"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "On"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
@@ -274,10 +274,6 @@ msgid "Remove Unlisted:"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-msgid "Advanced Settings"
-msgstr ""
-
-#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Path to the registry file."
 msgstr ""
 
@@ -285,12 +281,16 @@ msgstr ""
 msgid "Path:"
 msgstr ""
 
-#: addons/yard/editor_only/ui_scenes/registry_editor.gd
-msgid "Clear Recent Registries"
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "Advanced Settings"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "Open Registry"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Clear Recent Registries"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
@@ -378,19 +378,19 @@ msgid "Refresh"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
-msgid "Rebuild Property Index"
-msgstr ""
-
-#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
-msgid "Reindex"
-msgstr ""
-
-#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Scan FileSystem for matching resources."
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Rescan"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
+msgid "Rebuild Property Index"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
+msgid "Reindex"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
