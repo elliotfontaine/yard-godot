@@ -135,9 +135,8 @@ func open_registry(registry: Registry) -> void:
 	_update_registries_itemlist()
 	_editor_state_data.add_recent(registry)
 
-	var settings := RegistryIO.get_registry_settings(registry)
-	if settings.auto_rescan:
-		RegistryIO.sync_registry_entries_from_scan_dir(registry, settings)
+	if RegistryIO.get_registry_settings(registry).auto_rescan:
+		RegistryIO.sync_from_scan_directories(registry)
 
 	select_registry(uid)
 
@@ -643,7 +642,7 @@ func _on_reindex_button_pressed() -> void:
 func _on_rescan_button_pressed() -> void:
 	var registry := registry_table_view.current_registry
 	if registry:
-		RegistryIO.sync_registry_entries_from_scan_dir(registry, RegistryIO.get_registry_settings(registry))
+		RegistryIO.sync_from_scan_directories(registry)
 	registry_table_view.update_view()
 
 
@@ -710,9 +709,8 @@ func _on_new_registry_dialog_confirmed() -> void:
 
 func _on_filesystem_changed() -> void:
 	for registry: Registry in _editor_state_data.opened_registries.values():
-		var settings := RegistryIO.get_registry_settings(registry)
-		if settings.auto_rescan:
-			RegistryIO.sync_registry_entries_from_scan_dir(registry, settings)
+		if RegistryIO.get_registry_settings(registry).auto_rescan:
+			RegistryIO.sync_from_scan_directories(registry)
 	_update_registries_itemlist()
 	registry_table_view.update_view()
 

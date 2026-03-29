@@ -183,7 +183,8 @@ static func change_entry_uid(registry: Registry, id: StringName, new_uid: String
 	return ResourceSaver.save(registry)
 
 
-static func sync_registry_entries_from_scan_dir(registry: Registry, settings: RegistrySettings) -> void:
+static func sync_from_scan_directories(registry: Registry) -> void:
+	var settings := get_registry_settings(registry)
 	# Validate before applying new settings
 	for scan_dir in settings.get_all_scan_directories():
 		if not scan_dir or not DirAccess.dir_exists_absolute(scan_dir):
