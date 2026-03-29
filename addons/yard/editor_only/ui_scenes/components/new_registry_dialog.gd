@@ -519,7 +519,7 @@ func _update_ruleset_tabs_bar() -> void:
 	var ruleset_tab_bar := scan_rulesets_tab_container.get_tab_bar()
 	var additional_ruleset_editors_count := _additional_scan_ruleset_editors_list.size()
 	for i in additional_ruleset_editors_count:
-		ruleset_tab_bar.set_tab_title(i + 1, "Ruleset %d" % (i + 2))
+		ruleset_tab_bar.set_tab_title(i + 1, tr("Ruleset %d") % (i + 2))
 
 	scan_rulesets_tab_container.tabs_visible = advanced_settings_check_button.button_pressed or not _additional_scan_ruleset_editors_list.is_empty()
 
