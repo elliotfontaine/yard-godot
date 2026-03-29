@@ -185,9 +185,8 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 
 		elif path.ends_with("/"): # is dir
 			for scan_ruleset in scan_rulesets:
-				for scan_dir in scan_ruleset.scan_directories:
-					if RegistryIO.dir_has_matching_resource(path, scan_ruleset, scan_dir, true):
-						return true
+				if RegistryIO.dir_has_matching_resource(path, scan_ruleset, "", true):
+					return true
 
 	return false
 
@@ -207,14 +206,13 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 
 		elif path.ends_with("/"):
 			for scan_ruleset in scan_rulesets:
-				for scan_dir in scan_ruleset.scan_directories:
-					var matching_resources := RegistryIO.dir_get_matching_resources(path, scan_ruleset, scan_dir, true)
-					for res in matching_resources:
-						var status := RegistryIO.add_entry(
-							current_registry,
-							ResourceUID.path_to_uid(res.resource_path),
-						)
-						n_added += int(status == OK)
+				var matching_resources := RegistryIO.dir_get_matching_resources(path, scan_ruleset, "", true)
+				for res in matching_resources:
+					var status := RegistryIO.add_entry(
+						current_registry,
+						ResourceUID.path_to_uid(res.resource_path),
+					)
+					n_added += int(status == OK)
 
 	print_rich("[color=%s]Added %s new Resources to the registry.[/color]" % [LOGGING_INFO_COLOR, n_added])
 	update_view()
