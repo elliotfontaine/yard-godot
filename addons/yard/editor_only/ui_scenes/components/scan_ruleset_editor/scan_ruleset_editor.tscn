@@ -64,6 +64,8 @@ columns = 2
 
 [node name="ClassRestrictionsLabel" type="Label" parent="RulesetPropertiesGridContainer"]
 layout_mode = 2
+tooltip_text = "Only resources of this class (or subclasses) will be accepted."
+mouse_filter = 1
 text = "Class Restriction:"
 
 [node name="ClassRestrictionsTabContainer" type="TabContainer" parent="RulesetPropertiesGridContainer"]
@@ -79,6 +81,8 @@ scan_tab_input_scene = ExtResource("3_cl5ex")
 
 [node name="ScanDirectoryLabel" type="Label" parent="RulesetPropertiesGridContainer"]
 layout_mode = 2
+tooltip_text = "Directory to watch for matching resource files."
+mouse_filter = 1
 text = "Scan Directory:"
 
 [node name="ScanDirectoriesTabContainer" type="TabContainer" parent="RulesetPropertiesGridContainer"]
@@ -95,6 +99,8 @@ scan_tab_input_scene = ExtResource("4_uf0vx")
 [node name="RecursiveScanLabel" type="Label" parent="RulesetPropertiesGridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+tooltip_text = "Also scan subdirectories."
+mouse_filter = 1
 text = "Recursive:"
 
 [node name="RecursiveScanCheckBox" type="CheckBox" parent="RulesetPropertiesGridContainer"]
@@ -111,16 +117,20 @@ text = "On"
 [node name="AllowedFileExtensionsLabel" type="Label" parent="RulesetPropertiesGridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+tooltip_text = "Restrict scan to these file extensions. Separate with commas."
+mouse_filter = 1
 text = "File Extensions:"
 
 [node name="AllowedFileExtensionsLineEdit" type="LineEdit" parent="RulesetPropertiesGridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-placeholder_text = "e.g. `.tres,.res`"
+placeholder_text = "e.g. `.tres, .res`"
 
 [node name="ScanRegexIncludeLabel" type="Label" parent="RulesetPropertiesGridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+tooltip_text = "Only paths matching this pattern will be scanned. Applied to the relative path from the scan directory."
+mouse_filter = 1
 text = "RegEx Include:"
 
 [node name="ScanRegexIncludeLineEdit" type="LineEdit" parent="RulesetPropertiesGridContainer"]
@@ -132,6 +142,8 @@ placeholder_text = "e.g. `\\.tres$|\\.res$`"
 [node name="ScanRegexExcludeLabel" type="Label" parent="RulesetPropertiesGridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+tooltip_text = "Paths matching this pattern will be skipped. Applied to the relative path from the scan directory."
+mouse_filter = 1
 text = "RegEx Exclude:"
 
 [node name="ScanRegexExcludeLineEdit" type="LineEdit" parent="RulesetPropertiesGridContainer"]

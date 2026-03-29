@@ -93,6 +93,8 @@ columns = 2
 
 [node name="IndexedPropertiesLabel" type="Label" parent="VBoxContainer/GridContainer"]
 layout_mode = 2
+tooltip_text = "Properties baked into the registry index for zero-cost runtime queries. Separate with commas."
+mouse_filter = 1
 text = "Indexed Properties:"
 
 [node name="IndexedPropertiesLineEdit" type="LineEdit" parent="VBoxContainer/GridContainer"]
@@ -103,6 +105,8 @@ size_flags_horizontal = 3
 [node name="AutoRescanLabel" type="Label" parent="VBoxContainer/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+tooltip_text = "Automatically sync the registry entries when the filesystem changes."
+mouse_filter = 1
 text = "Auto Rescan:"
 
 [node name="AutoRescanCheckBox" type="CheckBox" parent="VBoxContainer/GridContainer"]
@@ -118,6 +122,8 @@ text = "On"
 [node name="ScanRemoveUnlistedLabel" type="Label" parent="VBoxContainer/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+tooltip_text = "Remove entries whose file no longer exists in the scan directory, or no longer matches any scan ruleset."
+mouse_filter = 1
 text = "Remove Unlisted:"
 
 [node name="ScanRemoveUnlistedCheckBox" type="CheckBox" parent="VBoxContainer/GridContainer"]
@@ -132,6 +138,8 @@ text = "On"
 
 [node name="PathLabel" type="Label" parent="VBoxContainer/GridContainer"]
 layout_mode = 2
+tooltip_text = "Path to the registry file."
+mouse_filter = 1
 text = "Path:"
 
 [node name="RegistryPath" type="HBoxContainer" parent="VBoxContainer/GridContainer"]

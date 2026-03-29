@@ -245,15 +245,28 @@ msgid ""
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "Properties baked into the registry index for zero-cost runtime queries. Separate with commas."
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Indexed Properties:"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
 msgid "On"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "Automatically sync the registry entries when the filesystem changes."
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Auto Rescan:"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "Remove entries whose file no longer exists in the scan directory, or no longer matches any scan ruleset."
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
@@ -262,6 +275,10 @@ msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Advanced Settings"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "Path to the registry file."
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
@@ -421,7 +438,15 @@ msgid "Registry"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "Only resources of this class (or subclasses) will be accepted."
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
 msgid "Class Restriction:"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "Directory to watch for matching resource files."
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
@@ -429,7 +454,15 @@ msgid "Scan Directory:"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "Also scan subdirectories."
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
 msgid "Recursive:"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "Restrict scan to these file extensions. Separate with commas."
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
@@ -437,7 +470,11 @@ msgid "File Extensions:"
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
-msgid "e.g. `.tres,.res`"
+msgid "e.g. `.tres, .res`"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "Only paths matching this pattern will be scanned. Applied to the relative path from the scan directory."
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
@@ -446,6 +483,10 @@ msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
 msgid "e.g. `\\.tres$|\\.res$`"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "Paths matching this pattern will be skipped. Applied to the relative path from the scan directory."
 msgstr ""
 
 #: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
