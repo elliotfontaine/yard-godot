@@ -83,33 +83,38 @@ unique_name_in_owner = true
 layout_mode = 2
 metadata/_tab_index = 0
 
-[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+[node name="GlobalSettingsContainer" type="PanelContainer" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/GlobalSettingsContainer"]
 layout_mode = 2
 
-[node name="GridContainer" type="GridContainer" parent="VBoxContainer"]
+[node name="GridContainer" type="GridContainer" parent="VBoxContainer/GlobalSettingsContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/h_separation = 12
 columns = 2
 
-[node name="IndexedPropertiesLabel" type="Label" parent="VBoxContainer/GridContainer"]
+[node name="IndexedPropertiesLabel" type="Label" parent="VBoxContainer/GlobalSettingsContainer/VBoxContainer/GridContainer"]
 layout_mode = 2
 tooltip_text = "Properties baked into the registry index for zero-cost runtime queries. Separate with commas."
 mouse_filter = 1
 text = "Indexed Properties:"
 
-[node name="IndexedPropertiesLineEdit" type="LineEdit" parent="VBoxContainer/GridContainer"]
+[node name="IndexedPropertiesLineEdit" type="LineEdit" parent="VBoxContainer/GlobalSettingsContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="AutoRescanLabel" type="Label" parent="VBoxContainer/GridContainer"]
+[node name="AutoRescanLabel" type="Label" parent="VBoxContainer/GlobalSettingsContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Automatically sync the registry entries when the filesystem changes."
 mouse_filter = 1
 text = "Auto Rescan:"
 
-[node name="AutoRescanCheckBox" type="CheckBox" parent="VBoxContainer/GridContainer"]
+[node name="AutoRescanCheckBox" type="CheckBox" parent="VBoxContainer/GlobalSettingsContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_khhqm")
@@ -119,14 +124,14 @@ theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_khhqm")
 theme_override_styles/focus = SubResource("StyleBoxFlat_srqmm")
 text = "On"
 
-[node name="ScanRemoveUnlistedLabel" type="Label" parent="VBoxContainer/GridContainer"]
+[node name="ScanRemoveUnlistedLabel" type="Label" parent="VBoxContainer/GlobalSettingsContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Remove entries whose file no longer exists in the scan directory, or no longer matches any scan ruleset."
 mouse_filter = 1
 text = "Remove Unlisted:"
 
-[node name="ScanRemoveUnlistedCheckBox" type="CheckBox" parent="VBoxContainer/GridContainer"]
+[node name="ScanRemoveUnlistedCheckBox" type="CheckBox" parent="VBoxContainer/GlobalSettingsContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_khhqm")
@@ -136,29 +141,29 @@ theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_khhqm")
 theme_override_styles/focus = SubResource("StyleBoxFlat_srqmm")
 text = "On"
 
-[node name="PathLabel" type="Label" parent="VBoxContainer/GridContainer"]
+[node name="PathLabel" type="Label" parent="VBoxContainer/GlobalSettingsContainer/VBoxContainer/GridContainer"]
 layout_mode = 2
 tooltip_text = "Path to the registry file."
 mouse_filter = 1
 text = "Path:"
 
-[node name="RegistryPath" type="HBoxContainer" parent="VBoxContainer/GridContainer"]
+[node name="RegistryPath" type="HBoxContainer" parent="VBoxContainer/GlobalSettingsContainer/VBoxContainer/GridContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="RegistryPathLineEdit" type="LineEdit" parent="VBoxContainer/GridContainer/RegistryPath"]
+[node name="RegistryPathLineEdit" type="LineEdit" parent="VBoxContainer/GlobalSettingsContainer/VBoxContainer/GridContainer/RegistryPath"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 text = "new_registry.tres"
 
-[node name="RegistryPathFilesystemButton" type="Button" parent="VBoxContainer/GridContainer/RegistryPath"]
+[node name="RegistryPathFilesystemButton" type="Button" parent="VBoxContainer/GlobalSettingsContainer/VBoxContainer/GridContainer/RegistryPath"]
 unique_name_in_owner = true
 layout_mode = 2
 script = ExtResource("2_8x47h")
 icon_name = "Folder"
 
-[node name="InfoLabel" type="RichTextLabel" parent="VBoxContainer"]
+[node name="InfoLabel" type="RichTextLabel" parent="VBoxContainer/GlobalSettingsContainer/VBoxContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(650, 0)
 layout_mode = 2
@@ -170,6 +175,7 @@ scroll_active = false
 [node name="AdvancedSettingsCheckButton" type="CheckButton" parent="VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 8
 text = "Advanced Settings"
 alignment = 2
 
@@ -179,7 +185,7 @@ alignment = 2
 [connection signal="confirmed" from="NewRestrictionConfirmationDialog" to="." method="_on_new_restriction_confirmation_dialog_confirmed"]
 [connection signal="tab_clicked" from="VBoxContainer/ScanRulesetsTabContainer" to="." method="_on_scan_rulesets_tab_container_tab_clicked"]
 [connection signal="tab_selected" from="VBoxContainer/ScanRulesetsTabContainer" to="." method="_on_scan_rulesets_tab_container_tab_selected"]
-[connection signal="text_changed" from="VBoxContainer/GridContainer/IndexedPropertiesLineEdit" to="." method="_on_indexed_properties_line_edit_text_changed"]
-[connection signal="text_changed" from="VBoxContainer/GridContainer/RegistryPath/RegistryPathLineEdit" to="." method="_on_registry_path_line_edit_text_changed"]
-[connection signal="pressed" from="VBoxContainer/GridContainer/RegistryPath/RegistryPathFilesystemButton" to="." method="_on_registry_path_filesystem_button_pressed"]
+[connection signal="text_changed" from="VBoxContainer/GlobalSettingsContainer/VBoxContainer/GridContainer/IndexedPropertiesLineEdit" to="." method="_on_indexed_properties_line_edit_text_changed"]
+[connection signal="text_changed" from="VBoxContainer/GlobalSettingsContainer/VBoxContainer/GridContainer/RegistryPath/RegistryPathLineEdit" to="." method="_on_registry_path_line_edit_text_changed"]
+[connection signal="pressed" from="VBoxContainer/GlobalSettingsContainer/VBoxContainer/GridContainer/RegistryPath/RegistryPathFilesystemButton" to="." method="_on_registry_path_filesystem_button_pressed"]
 [connection signal="toggled" from="VBoxContainer/AdvancedSettingsCheckButton" to="." method="_on_advanced_settings_check_button_toggled"]

@@ -114,6 +114,12 @@ var show_advanced_settings := false:
 var _registry_scan_ruleset_override_buttons: Dictionary[String, TextureButton] = { }
 
 
+func _ready() -> void:
+	recursive_scan_check_box.add_theme_stylebox_override(&"focus", get_theme_stylebox(&"focus", &"LineEdit"))
+	for override: StringName in [&"normal", &"hover", &"pressed", &"hover_pressed"]:
+		recursive_scan_check_box.add_theme_stylebox_override(override, get_theme_stylebox(&"normal", &"LineEdit"))
+
+
 func reset_properties(ruleset_settings: RegistryIO.RegistryScanRuleset) -> void:
 	if is_additional_ruleset:
 		for override_property in _registry_scan_ruleset_override_buttons:

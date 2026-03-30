@@ -71,6 +71,7 @@ var _file_dialog: EditorFileDialog
 var _file_dialog_state: FileDialogState
 var _add_ruleset_tab: ReferenceRect
 
+@onready var global_settings_container: PanelContainer = %GlobalSettingsContainer
 @onready var new_restriction_confirmation_dialog: ConfirmationDialog = %NewRestrictionConfirmationDialog
 @onready var indexed_properties_line_edit: LineEdit = %IndexedPropertiesLineEdit
 @onready var auto_rescan_label: Label = %AutoRescanLabel
@@ -102,6 +103,13 @@ var _all_ruleset_editors: Array[ScanRulesetEditor]:
 func _ready() -> void:
 	if not Engine.is_editor_hint() or EditorInterface.get_edited_scene_root() == self:
 		return
+
+	add_theme_stylebox_override(&"panel", get_theme_stylebox(&"panel", &"EditorSettingsDialog"))
+	global_settings_container.add_theme_stylebox_override(&"panel", get_theme_stylebox(&"BottomPanel", &"EditorStyles"))
+	for check_box: CheckBox in [auto_rescan_check_box, scan_remove_unlisted_check_box]:
+		check_box.add_theme_stylebox_override(&"focus", get_theme_stylebox(&"focus", &"LineEdit"))
+		for override: StringName in [&"normal", &"hover", &"pressed", &"hover_pressed"]:
+			check_box.add_theme_stylebox_override(override, get_theme_stylebox(&"normal", &"LineEdit"))
 
 	about_to_popup.connect(_on_about_to_popup)
 	_file_dialog = EditorFileDialog.new()
