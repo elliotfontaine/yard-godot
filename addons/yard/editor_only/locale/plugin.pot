@@ -8,7 +8,7 @@
 # res://addons/yard/plugin.gd
 # res://addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
 #
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>, 2026.
 #
 #, fuzzy
 msgid ""
