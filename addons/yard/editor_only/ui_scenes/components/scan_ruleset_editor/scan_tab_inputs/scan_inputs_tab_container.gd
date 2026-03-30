@@ -157,7 +157,7 @@ func _update_tabs() -> void:
 	var tab_count := get_tab_count()
 	for i in tab_count:
 		if not get_tab_control(i) is ReferenceRect:
-			set_tab_title(i, tab_display_title + " %d" % (i + 1))
+			set_tab_title(i, tr(tab_display_title) + " %d" % (i + 1))
 
 	tabs_visible = show_advanced_settings or _inputs.size() > 1
 

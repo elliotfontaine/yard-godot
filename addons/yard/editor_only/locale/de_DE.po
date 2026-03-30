@@ -396,6 +396,10 @@ msgid "Directory to watch for matching resource files."
 msgstr "Verzeichnis, das auf passende Ressourcendateien überwacht wird."
 
 #: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "Dir"
+msgstr "Verz."
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
 msgid "Scan Directory:"
 msgstr "Zu scannendes Verzeichnis:"
 
