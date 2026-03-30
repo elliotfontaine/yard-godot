@@ -58,7 +58,7 @@ extends Resource
 ## [/codeblock]
 const PROPERTY_HINT_CUSTOM: int = 1024
 
-const _REGISTRY_FORMAT_VERSION: int = 1
+const _REGISTRY_FORMAT_VERSION: int = 2
 
 @export_storage var _version: int = 0
 @export_storage var _class_restriction: StringName = &""
@@ -68,6 +68,13 @@ const _REGISTRY_FORMAT_VERSION: int = 1
 @export_storage var _scan_remove: bool = true
 @export_storage var _scan_regex_include: String = ""
 @export_storage var _scan_regex_exclude: String = ""
+# V2 Settings - a real migration is needed here to translate from V1 to V2 without storing redundant data
+#@export_storage var _version: int = 0
+#@export_storage var _scan_auto: bool = true
+#@export_storage var _scan_remove: bool = true
+# Holds both default + override rulesets. Overridden rulesets only need to define their non-default values.
+@export_storage var _scan_rulesets: Array[Dictionary]
+
 # Bidirectional map. Populated by RegistryIO in the editor, read-only at runtime.
 @export_storage var _uids_to_string_ids: Dictionary[StringName, StringName]
 @export_storage var _string_ids_to_uids: Dictionary[StringName, StringName]

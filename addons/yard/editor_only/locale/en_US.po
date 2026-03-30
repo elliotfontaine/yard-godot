@@ -1,13 +1,4 @@
-# LANGUAGE translation for Yet Another Resource Database for the following files:
-# res://addons/yard/editor_only/ui_scenes/registry_table_view.gd
-# res://addons/yard/editor_only/ui_scenes/registry_table_view.tscn
-# res://addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
-# res://addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-# res://addons/yard/editor_only/ui_scenes/registry_editor.gd
-# res://addons/yard/editor_only/ui_scenes/registry_editor.tscn
-# res://addons/yard/plugin.gd
-#
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>, 2026.
 #
 #, fuzzy
 msgid ""
@@ -134,6 +125,44 @@ msgstr "No scan directory, resources auto-discovery is disabled."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid ""
+"File extension restrictions are optional. Separate multiple extensions with "
+"commas."
+msgstr ""
+"File extension restrictions are optional. Separate multiple extensions with "
+"commas."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid ""
+"File extension filter active. Scan will be limited to matching extensions."
+msgstr ""
+"File extension filter active. Scan will be limited to matching extensions."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Empty file extension detected. Remove extra commas."
+msgstr "Empty file extension detected. Remove extra commas."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Invalid file extension detected. Remove disallowed characters."
+msgstr "Invalid file extension detected. Remove disallowed characters."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Include filter active. Only matching paths will be scanned."
+msgstr "Include filter active. Only matching paths will be scanned."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Invalid include regex pattern."
+msgstr "Invalid include regex pattern."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Exclude filter active. Matching paths will be skipped."
+msgstr "Exclude filter active. Matching paths will be skipped."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Invalid exclude regex pattern."
+msgstr "Invalid exclude regex pattern."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid ""
 "Indexed properties are optional. Separate multiple properties with commas."
 msgstr ""
 "Indexed properties are optional. Separate multiple properties with commas."
@@ -147,8 +176,13 @@ msgid "Empty property name detected. Remove extra commas."
 msgstr "Empty property name detected. Remove extra commas."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
-msgid "Property '{prop}' may not exist on the resource class."
-msgstr "Property '{prop}' may not exist on the resource class."
+msgid "Property '{prop}' is declared on multiple classes with different types."
+msgstr ""
+"Property '{prop}' is declared on multiple classes with different types."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Property '{prop}' may not exist on class {class_n}."
+msgstr "Property '{prop}' may not exist on class {class_n}."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Will create a new registry file."
@@ -171,20 +205,8 @@ msgid "Registry file already exists."
 msgstr "Registry file already exists."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
-msgid "Include filter active. Only matching paths will be scanned."
-msgstr "Include filter active. Only matching paths will be scanned."
-
-#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
-msgid "Invalid include regex pattern."
-msgstr "Invalid include regex pattern."
-
-#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
-msgid "Exclude filter active. Matching paths will be skipped."
-msgstr "Exclude filter active. Matching paths will be skipped."
-
-#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
-msgid "Invalid exclude regex pattern."
-msgstr "Invalid exclude regex pattern."
+msgid "Default Ruleset"
+msgstr "Default Ruleset"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Choose Custom Resource Script"
@@ -201,6 +223,10 @@ msgstr "Choose Registry Location"
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Choose Class Restriction"
 msgstr "Choose Class Restriction"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Ruleset %d"
+msgstr "Ruleset %d"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Create Registry"
@@ -227,60 +253,61 @@ msgstr ""
 "Do you want to proceed ?"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-msgid "Class Restriction:"
-msgstr "Class Restriction:"
-
-#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-msgid "Resource"
-msgstr "Resource"
+msgid ""
+"Properties baked into the registry index for zero-cost runtime queries. "
+"Separate with commas."
+msgstr ""
+"Properties baked into the registry index for zero-cost runtime queries. "
+"Separate with commas."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Indexed Properties:"
 msgstr "Indexed Properties:"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-msgid "Scan Directory:"
-msgstr "Scan Directory:"
-
-#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-msgid "Advanced Scan Options"
-msgstr "Advanced Scan Options"
-
-#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-msgid "Recursive:"
-msgstr "Recursive:"
-
-#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-msgid "On"
-msgstr "On"
+msgid "Automatically sync the registry entries when the filesystem changes."
+msgstr "Automatically sync the registry entries when the filesystem changes."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Auto Rescan:"
 msgstr "Auto Rescan:"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "On"
+msgstr "On"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid ""
+"Remove entries whose file no longer exists in the scan directory, or no "
+"longer matches any scan ruleset."
+msgstr ""
+"Remove entries whose file no longer exists in the scan directory, or no "
+"longer matches any scan ruleset."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Remove Unlisted:"
 msgstr "Remove Unlisted:"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-msgid "RegEx Include:"
-msgstr "RegEx Include:"
-
-#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
-msgid "RegEx Exclude:"
-msgstr "RegEx Exclude:"
+msgid "Path to the registry file."
+msgstr "Path to the registry file."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
 msgid "Path:"
 msgstr "Path:"
 
-#: addons/yard/editor_only/ui_scenes/registry_editor.gd
-msgid "Clear Recent Registries"
-msgstr "Clear Recent Registries"
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn
+msgid "Advanced Settings"
+msgstr "Advanced Settings"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "Open Registry"
 msgstr "Open Registry"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Clear Recent Registries"
+msgstr "Clear Recent Registries"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "None of the closed resources exist anymore"
@@ -367,20 +394,20 @@ msgid "Refresh"
 msgstr "Refresh"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
-msgid "Rebuild Property Index"
-msgstr "Rebuild Property Index"
-
-#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
-msgid "Reindex"
-msgstr "Reindex"
-
-#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Scan FileSystem for matching resources."
 msgstr "Scan FileSystem for matching resources."
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Rescan"
 msgstr "Rescan"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
+msgid "Rebuild Property Index"
+msgstr "Rebuild Property Index"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
+msgid "Reindex"
+msgstr "Reindex"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Open project's issues in your browser."
@@ -425,3 +452,71 @@ msgstr "Sort"
 #: addons/yard/plugin.gd
 msgid "Registry"
 msgstr "Registry"
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "Only resources of this class (or subclasses) will be accepted."
+msgstr "Only resources of this class (or subclasses) will be accepted."
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "Class Restriction:"
+msgstr "Class Restriction:"
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "Directory to watch for matching resource files."
+msgstr "Directory to watch for matching resource files."
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "Scan Directory:"
+msgstr "Scan Directory:"
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "Also scan subdirectories."
+msgstr "Also scan subdirectories."
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "Recursive:"
+msgstr "Recursive:"
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "Restrict scan to these file extensions. Separate with commas."
+msgstr "Restrict scan to these file extensions. Separate with commas."
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "File Extensions:"
+msgstr "File Extensions:"
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "e.g. `.tres, .res`"
+msgstr "e.g. `.tres, .res`"
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid ""
+"Only paths matching this pattern will be scanned. Applied to the relative "
+"path from the scan directory."
+msgstr ""
+"Only paths matching this pattern will be scanned. Applied to the relative "
+"path from the scan directory."
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "RegEx Include:"
+msgstr "RegEx Include:"
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "e.g. `\\.tres$|\\.res$`"
+msgstr "e.g. `\\.tres$|\\.res$`"
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid ""
+"Paths matching this pattern will be skipped. Applied to the relative path "
+"from the scan directory."
+msgstr ""
+"Paths matching this pattern will be skipped. Applied to the relative path "
+"from the scan directory."
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "RegEx Exclude:"
+msgstr "RegEx Exclude:"
+
+#: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
+msgid "e.g. `\\.tscn$|\\.scn$`"
+msgstr "e.g. `\\.tscn$|\\.scn$`"
