@@ -160,8 +160,7 @@ msgstr "Todas as propriedades encontradas na classe de recurso."
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Empty property name detected. Remove extra commas."
 msgstr ""
-"Nome de propriedade vazio detectado. Remova as vírgulas extras.Nome de "
-"propriedade vazio detectado. Remova as vírgulas desnecessárias."
+"Nome de propriedade vazio detectado. Remova as vírgulas desnecessárias."
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Property '{prop}' is declared on multiple classes with different types."
@@ -308,11 +307,16 @@ msgstr "Copiar UID do registro"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Edit Registry Settings"
-msgstr "Editar parâmetros do registro"
+msgstr "Editar configurações do registro"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgctxt "RegistrySettingsDialog"
+msgid "Registry Settings"
+msgstr "Configurações do registro"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Registry Settings"
-msgstr "Parâmetros"
+msgstr "Configurações"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Select shown columns."

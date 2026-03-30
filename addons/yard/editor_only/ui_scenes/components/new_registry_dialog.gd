@@ -164,7 +164,7 @@ func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 			_add_additional_ruleset_editor(additional_ruleset)
 
 		registry_path_line_edit.text = edited_registry.resource_path
-		title = "Registry Settings"
+		title = tr("Registry Settings", "RegistrySettingsDialog")
 		ok_button_text = "Save"
 		registry_path_line_edit.editable = false
 		registry_path_line_edit.focus_mode = Control.FOCUS_NONE

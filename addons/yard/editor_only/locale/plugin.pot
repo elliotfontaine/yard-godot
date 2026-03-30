@@ -279,6 +279,11 @@ msgstr ""
 msgid "Edit Registry Settings"
 msgstr ""
 
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgctxt "RegistrySettingsDialog"
+msgid "Registry Settings"
+msgstr ""
+
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Registry Settings"
 msgstr ""

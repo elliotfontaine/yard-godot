@@ -307,6 +307,11 @@ msgstr "Copia UID registro"
 msgid "Edit Registry Settings"
 msgstr "Modifica impostazioni registro"
 
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgctxt "RegistrySettingsDialog"
+msgid "Registry Settings"
+msgstr "Impostazioni del registro"
+
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Registry Settings"
 msgstr "Impostazioni"

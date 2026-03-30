@@ -305,6 +305,11 @@ msgstr "Kayıt defteri UID'sini kopyala"
 msgid "Edit Registry Settings"
 msgstr "Kayıt defteri ayarlarını düzenle"
 
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgctxt "RegistrySettingsDialog"
+msgid "Registry Settings"
+msgstr "Kayıt defteri ayarları"
+
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Registry Settings"
 msgstr "Kayıt Ayarlar"
