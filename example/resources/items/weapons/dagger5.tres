@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://cofolhwjcjtk6"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cfqljgwewo12w" path="res://example/assets/idywild_items/arsenal/dagger5.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 5
+damage_min = 9
+damage_max = 16
+attack_speed = 2.0
+critical_hit_chance = 0.22
+required_strength = 6
+texture = ExtResource("2_tex")
+name = "Assassin's Knife"
+base_price = 200
+in_inventory_height = 2
+rarity = 3

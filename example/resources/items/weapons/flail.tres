@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://ijc8iqt3y8yl"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cl2hmqhici6uh" path="res://example/assets/idywild_items/arsenal/flail.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 2
+damage_min = 8
+damage_max = 15
+attack_speed = 0.9
+critical_hit_chance = 0.06
+required_strength = 12
+texture = ExtResource("2_tex")
+name = "Flail"
+base_price = 140
+weight = 2.3
+in_inventory_height = 2
+rarity = 1

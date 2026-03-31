@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://7n7ihcgsepmb"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bt4dqk1fwx6a6" path="res://example/assets/idywild_items/arsenal/sword1.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+damage_min = 3
+damage_max = 7
+attack_speed = 1.1
+critical_hit_chance = 0.06
+required_strength = 5
+texture = ExtResource("2_tex")
+name = "Iron Sword"
+base_price = 40
+weight = 1.5
+in_inventory_height = 2

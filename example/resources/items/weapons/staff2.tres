@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://cd6lvve0csw16"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dfmmrybx757j2" path="res://example/assets/idywild_items/arsenal/staff2.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 8
+damage_type = 1
+damage_min = 7
+damage_max = 13
+critical_hit_chance = 0.07
+is_two_handed = true
+required_strength = 6
+texture = ExtResource("2_tex")
+name = "Oak Staff"
+base_price = 100
+weight = 1.8
+in_inventory_height = 3
+rarity = 1

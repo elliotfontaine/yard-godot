@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://dbgscysxjr8q0"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c7vda57w788mn" path="res://example/assets/idywild_items/arsenal/crossbow2.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 4
+damage_min = 11
+damage_max = 19
+attack_speed = 0.6
+critical_hit_chance = 0.06
+is_two_handed = true
+is_ranged_weapon = true
+required_strength = 12
+texture = ExtResource("2_tex")
+name = "Crossbow"
+base_price = 180
+weight = 3.0
+in_inventory_height = 2
+rarity = 1

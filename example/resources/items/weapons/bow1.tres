@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://3aes44heleu8"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://e5qei0qe40cd" path="res://example/assets/idywild_items/arsenal/bow1.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 3
+damage_min = 4
+damage_max = 8
+attack_speed = 1.2
+critical_hit_chance = 0.07
+is_two_handed = true
+is_ranged_weapon = true
+required_strength = 6
+texture = ExtResource("2_tex")
+name = "Short Bow"
+base_price = 60
+weight = 0.9
+in_inventory_height = 3

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://bobc41eh8wsxr"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://m7vfep1wpnte" path="res://example/assets/idywild_items/arsenal/club1.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 2
+damage_min = 2
+damage_max = 6
+attack_speed = 0.9
+critical_hit_chance = 0.04
+required_strength = 4
+texture = ExtResource("2_tex")
+name = "Club"
+base_price = 10
+weight = 1.5
+in_inventory_height = 2

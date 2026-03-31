@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://cp75vkurplr6s"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cs2yngyuw43ms" path="res://example/assets/idywild_items/arsenal/crossbow1.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 4
+damage_min = 7
+damage_max = 13
+attack_speed = 0.7
+critical_hit_chance = 0.06
+is_two_handed = true
+is_ranged_weapon = true
+required_strength = 8
+texture = ExtResource("2_tex")
+name = "Light Crossbow"
+base_price = 100
+weight = 2.5
+in_inventory_height = 2

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://d2uuso6b0ws7o"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bgyb73qv0efc6" path="res://example/assets/idywild_items/arsenal/arrow1.png" id="2_bf02e"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 6
+damage_min = 5
+damage_max = 9
+is_ranged_weapon = true
+texture = ExtResource("2_bf02e")
+name = "Irontip Arrow"
+base_price = 5
+weight = 0.1

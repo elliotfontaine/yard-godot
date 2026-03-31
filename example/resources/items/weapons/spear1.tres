@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://cliiqegm8pqm6"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://l5r53bfxe1gw" path="res://example/assets/idywild_items/arsenal/spear1.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 2
+damage_min = 6
+damage_max = 13
+critical_hit_chance = 0.06
+is_two_handed = true
+required_strength = 10
+texture = ExtResource("2_tex")
+name = "Spear"
+base_price = 70
+weight = 2.0
+in_inventory_height = 3

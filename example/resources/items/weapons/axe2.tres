@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://dqrhmoeeao30l"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bt3qs50kywcp4" path="res://example/assets/idywild_items/arsenal/axe3.png" id="2_ark7x"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 1
+damage_min = 8
+damage_max = 15
+attack_speed = 0.9
+critical_hit_chance = 0.06
+required_strength = 14
+texture = ExtResource("2_ark7x")
+name = "Battle Axe"
+base_price = 110
+weight = 2.5
+in_inventory_height = 2
+rarity = 1

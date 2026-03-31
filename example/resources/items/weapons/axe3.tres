@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://bts24h1h2gr5y"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://b3n23ljrwjfjl" path="res://example/assets/idywild_items/arsenal/axe1.png" id="2_j8afh"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 1
+damage_min = 13
+damage_max = 22
+attack_speed = 0.8
+critical_hit_chance = 0.08
+is_two_handed = true
+required_strength = 20
+texture = ExtResource("2_j8afh")
+name = "Great Axe"
+base_price = 200
+weight = 4.0
+in_inventory_height = 3
+rarity = 1

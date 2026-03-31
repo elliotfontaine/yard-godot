@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://cns08tnts3kea"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bfqq474ukqubl" path="res://example/assets/idywild_items/arsenal/staff6.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 8
+damage_type = 1
+damage_min = 20
+damage_max = 34
+attack_speed = 1.2
+critical_hit_chance = 0.11
+is_two_handed = true
+required_strength = 14
+texture = ExtResource("2_tex")
+name = "Staff of Power"
+base_price = 650
+weight = 2.5
+in_inventory_height = 3
+rarity = 3

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://bavaitv23l14y"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bfpg567734btu" path="res://example/assets/idywild_items/arsenal/knife.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 5
+damage_min = 2
+damage_max = 4
+attack_speed = 1.6
+critical_hit_chance = 0.1
+required_strength = 1
+texture = ExtResource("2_tex")
+name = "Knife"
+base_price = 10
+weight = 0.3

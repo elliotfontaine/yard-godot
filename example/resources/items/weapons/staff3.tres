@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://dc8hhje1pn00t"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://btmts2ue8pts6" path="res://example/assets/idywild_items/arsenal/staff3.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 8
+damage_type = 1
+damage_min = 10
+damage_max = 18
+attack_speed = 1.1
+critical_hit_chance = 0.08
+is_two_handed = true
+required_strength = 8
+texture = ExtResource("2_tex")
+name = "Mage Staff"
+base_price = 180
+weight = 1.6
+in_inventory_height = 3
+rarity = 2

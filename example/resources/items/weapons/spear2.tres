@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://cg6q5h8voxopi"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dnk521snedfev" path="res://example/assets/idywild_items/arsenal/spear2.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 2
+damage_min = 9
+damage_max = 17
+critical_hit_chance = 0.06
+required_strength = 14
+texture = ExtResource("2_tex")
+name = "Iron Spear"
+base_price = 120
+weight = 2.5
+in_inventory_height = 3
+rarity = 1

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://cxsbi5ghgr3kp"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c05r0pf7vhj1s" path="res://example/assets/idywild_items/arsenal/arrow3.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 6
+damage_min = 6
+damage_max = 11
+critical_hit_chance = 0.06
+is_ranged_weapon = true
+texture = ExtResource("2_tex")
+name = "Broadhead Arrow"
+base_price = 8
+weight = 0.1
+rarity = 1

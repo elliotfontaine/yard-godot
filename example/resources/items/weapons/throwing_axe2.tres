@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://rst3m8cliag4"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bncebqsgubwhc" path="res://example/assets/idywild_items/arsenal/throwing_axe2.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 6
+damage_min = 7
+damage_max = 14
+attack_speed = 1.1
+critical_hit_chance = 0.09
+is_ranged_weapon = true
+required_strength = 10
+texture = ExtResource("2_tex")
+name = "Steel Throwing Axe"
+base_price = 90
+weight = 0.9
+rarity = 1

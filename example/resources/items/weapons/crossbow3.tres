@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://ujiythtacwsn"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://d4am35hliimk0" path="res://example/assets/idywild_items/arsenal/crossbow3.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 4
+damage_min = 16
+damage_max = 28
+attack_speed = 0.5
+critical_hit_chance = 0.07
+is_two_handed = true
+is_ranged_weapon = true
+required_strength = 18
+texture = ExtResource("2_tex")
+name = "Heavy Crossbow"
+base_price = 320
+weight = 4.0
+in_inventory_height = 2
+rarity = 2

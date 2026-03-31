@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://c08u8hx18p5od"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://csiu5iuso5nym" path="res://example/assets/idywild_items/arsenal/chakram.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 6
+damage_min = 5
+damage_max = 10
+attack_speed = 1.3
+critical_hit_chance = 0.1
+is_ranged_weapon = true
+required_strength = 6
+texture = ExtResource("2_tex")
+name = "Chakram"
+base_price = 80
+weight = 0.6
+rarity = 1

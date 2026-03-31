@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://btv0ilpwrw7br"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://41ocdaqugbrc" path="res://example/assets/idywild_items/arsenal/sword3.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+damage_min = 9
+damage_max = 17
+attack_speed = 1.2
+critical_hit_chance = 0.08
+required_strength = 12
+texture = ExtResource("2_tex")
+name = "Elven Blade"
+base_price = 160
+weight = 1.4
+in_inventory_height = 2
+rarity = 2

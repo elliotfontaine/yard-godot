@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://bs4wu4t0jc7qq"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://hxg7t24048d3" path="res://example/assets/idywild_items/arsenal/staff4.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 8
+damage_type = 1
+damage_min = 14
+damage_max = 24
+critical_hit_chance = 0.09
+is_two_handed = true
+required_strength = 10
+texture = ExtResource("2_tex")
+name = "Elder Staff"
+base_price = 300
+weight = 2.0
+in_inventory_height = 3
+rarity = 2

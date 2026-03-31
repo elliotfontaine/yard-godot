@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://ba08g0gvy5lxf"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://2a8erym522xy" path="res://example/assets/idywild_items/arsenal/morningstar.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 2
+damage_min = 11
+damage_max = 19
+attack_speed = 0.8
+critical_hit_chance = 0.06
+required_strength = 16
+texture = ExtResource("2_tex")
+name = "Morning Star"
+base_price = 180
+weight = 2.8
+in_inventory_height = 2
+rarity = 2

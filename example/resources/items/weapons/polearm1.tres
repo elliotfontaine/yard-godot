@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://dkl3gyc13tjir"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://1kk8ubvxdcds" path="res://example/assets/idywild_items/arsenal/polearm1.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 2
+damage_min = 10
+damage_max = 18
+attack_speed = 0.8
+critical_hit_chance = 0.06
+is_two_handed = true
+required_strength = 16
+texture = ExtResource("2_tex")
+name = "Halberd"
+base_price = 160
+weight = 3.0
+in_inventory_height = 3
+rarity = 1

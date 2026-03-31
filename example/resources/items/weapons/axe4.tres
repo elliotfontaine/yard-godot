@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://b13d37g0ywkm7"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bq5q2dxkls2oe" path="res://example/assets/idywild_items/arsenal/axe4.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 1
+damage_min = 16
+damage_max = 28
+attack_speed = 0.7
+critical_hit_chance = 0.1
+is_two_handed = true
+required_strength = 24
+texture = ExtResource("2_tex")
+name = "War Axe"
+base_price = 280
+weight = 4.5
+in_inventory_height = 3
+rarity = 2

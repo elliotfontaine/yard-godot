@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://c4d5t7rhey7sm"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://byx1t0d2dsmsk" path="res://example/assets/idywild_items/arsenal/mace1.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 2
+damage_min = 6
+damage_max = 11
+attack_speed = 0.9
+critical_hit_chance = 0.04
+required_strength = 10
+texture = ExtResource("2_tex")
+name = "Mace"
+base_price = 80
+weight = 2.2
+in_inventory_height = 2

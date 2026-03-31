@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://s3min6d227t3"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bkk27ijf0y5qn" path="res://example/assets/idywild_items/arsenal/dagger3.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 5
+damage_min = 5
+damage_max = 10
+attack_speed = 1.7
+critical_hit_chance = 0.14
+required_strength = 4
+texture = ExtResource("2_tex")
+name = "Steel Dagger"
+base_price = 60
+weight = 0.7
+in_inventory_height = 2
+rarity = 1

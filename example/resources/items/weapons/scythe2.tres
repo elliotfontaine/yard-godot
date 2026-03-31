@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://beki23e0k0u18"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bsohw4q8k7dw8" path="res://example/assets/idywild_items/arsenal/scythe1.png" id="2_hxdb3"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 2
+damage_min = 14
+damage_max = 26
+attack_speed = 0.8
+critical_hit_chance = 0.09
+is_two_handed = true
+required_strength = 20
+texture = ExtResource("2_hxdb3")
+name = "Reaper's Scythe"
+base_price = 300
+weight = 3.5
+in_inventory_height = 3
+rarity = 3

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://tnni4xd7kqtp"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bgphif6whwd2l" path="res://example/assets/idywild_items/arsenal/dagger4.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 5
+damage_min = 7
+damage_max = 13
+attack_speed = 1.8
+critical_hit_chance = 0.18
+required_strength = 5
+texture = ExtResource("2_tex")
+name = "Shadow Blade"
+base_price = 120
+weight = 0.6
+in_inventory_height = 2
+rarity = 2

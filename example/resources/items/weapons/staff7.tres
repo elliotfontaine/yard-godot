@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://c5xp6lvqrx7q"]
+
+[ext_resource type="Script" uid="uid://c4mplghykdbf" path="res://example/classes/weapon.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://18nw7snpt7ml" path="res://example/assets/idywild_items/arsenal/staff7.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_type = 8
+damage_type = 1
+damage_min = 26
+damage_max = 44
+attack_speed = 1.3
+critical_hit_chance = 0.15
+is_two_handed = true
+required_strength = 16
+texture = ExtResource("2_tex")
+name = "Staff of Ages"
+base_price = 999
+weight = 3.0
+in_inventory_height = 3
+rarity = 4
