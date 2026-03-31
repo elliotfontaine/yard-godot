@@ -4,6 +4,7 @@
 
 [resource]
 script = ExtResource("1_xci8q")
+_version = 1
 _class_restriction = &"Item"
 _scan_directory = "res://test/fixtures/resources/items"
 _recursive_scan = true
@@ -70,21 +71,99 @@ _string_ids_to_uids = Dictionary[StringName, StringName]({
 &"wood": &"uid://uge4rk0vtwxs"
 })
 _property_index = Dictionary[StringName, Dictionary]({
-&"slot_flags": {
-4: {
-&"potion_blue": true,
-&"potion_purple": true,
-&"potion_red": true
-},
-5: {
+&"in_inventory_height": {
+0: {
 &"arrows": true
 },
-6: {
+1: {
+&"belt_1": true,
+&"belt_2": true,
 &"coin_gold": true,
 &"coin_purple": true,
-&"scroll_enchant": true
+&"feather": true,
+&"gem_blue": true,
+&"herb": true,
+&"leather": true,
+&"metalscrap_copper": true,
+&"metalscrap_gold": true,
+&"metalscrap_iron": true,
+&"metalscrap_wyvernite": true,
+&"ring_1": true,
+&"ring_2": true,
+&"wood": true
 },
-8: {
+2: {
+&"head_helmet": true,
+&"head_wizardhat": true,
+&"magic_crystal": true,
+&"potion_blue": true,
+&"potion_purple": true,
+&"potion_red": true,
+&"scroll_enchant": true,
+&"wand_purple": true,
+&"wand_red": true
+},
+3: {
+&"chestplate_1": true,
+&"chestplate_2": true,
+&"melee_sword": true
+},
+4: {
+&"melee_battleaxe": true
+}
+},
+&"in_inventory_width": {
+1: {
+&"coin_gold": true,
+&"coin_purple": true,
+&"feather": true,
+&"gem_blue": true,
+&"magic_crystal": true,
+&"melee_battleaxe": true,
+&"melee_sword": true,
+&"metalscrap_copper": true,
+&"metalscrap_gold": true,
+&"metalscrap_iron": true,
+&"metalscrap_wyvernite": true,
+&"potion_blue": true,
+&"potion_purple": true,
+&"potion_red": true,
+&"ring_1": true,
+&"ring_2": true,
+&"scroll_enchant": true,
+&"wand_purple": true,
+&"wand_red": true
+},
+2: {
+&"arrows": true,
+&"belt_1": true,
+&"belt_2": true,
+&"chestplate_1": true,
+&"chestplate_2": true,
+&"head_helmet": true,
+&"head_wizardhat": true,
+&"herb": true,
+&"leather": true,
+&"wood": true
+}
+},
+&"max_stack_count": {
+1: {
+&"belt_1": true,
+&"belt_2": true,
+&"chestplate_1": true,
+&"chestplate_2": true,
+&"head_helmet": true,
+&"head_wizardhat": true,
+&"melee_battleaxe": true,
+&"melee_sword": true,
+&"ring_1": true,
+&"ring_2": true,
+&"wand_purple": true,
+&"wand_red": true
+},
+20: {
+&"arrows": true,
 &"feather": true,
 &"gem_blue": true,
 &"herb": true,
@@ -94,29 +173,15 @@ _property_index = Dictionary[StringName, Dictionary]({
 &"metalscrap_gold": true,
 &"metalscrap_iron": true,
 &"metalscrap_wyvernite": true,
+&"potion_blue": true,
+&"potion_purple": true,
+&"potion_red": true,
+&"scroll_enchant": true,
 &"wood": true
 },
-9: {
-&"melee_battleaxe": true,
-&"melee_sword": true,
-&"wand_purple": true,
-&"wand_red": true
-},
-11: {
-&"head_helmet": true,
-&"head_wizardhat": true
-},
-12: {
-&"chestplate_1": true,
-&"chestplate_2": true
-},
-13: {
-&"belt_1": true,
-&"belt_2": true
-},
-16: {
-&"ring_1": true,
-&"ring_2": true
+100: {
+&"coin_gold": true,
+&"coin_purple": true
 }
 }
 })

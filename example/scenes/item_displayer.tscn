@@ -1,0 +1,158 @@
+[gd_scene load_steps=6 format=3 uid="uid://dvmf633b8xlkm"]
+
+[ext_resource type="Script" uid="uid://batb4hb4cbisr" path="res://example/scenes/item_displayer.gd" id="1_2jg5f"]
+[ext_resource type="Theme" uid="uid://chlnkbertyww3" path="res://example/assets/ornate_theme/ornate-theme.tres" id="1_wnkx6"]
+[ext_resource type="Texture2D" uid="uid://bt2xad4hgm2fw" path="res://example/assets/item_frame.png" id="3_jk3hd"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wnkx6"]
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_wnkx6"]
+
+[node name="ItemDisplayer" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_wnkx6")
+theme_override_styles/panel = SubResource("StyleBoxFlat_wnkx6")
+script = ExtResource("1_2jg5f")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="Input" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Input"]
+layout_mode = 2
+text = "Item Registry — String IDs"
+horizontal_alignment = 1
+
+[node name="ItemList" type="ItemList" parent="MarginContainer/HBoxContainer/Input"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/focus = SubResource("StyleBoxEmpty_wnkx6")
+auto_width = true
+item_count = 2
+item_0/text = "Arrow"
+item_1/text = "Ring"
+
+[node name="ClearFilterButton" type="Button" parent="MarginContainer/HBoxContainer/Input"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 8
+text = "Clear filter"
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/HBoxContainer/Input"]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer/Input"]
+layout_mode = 2
+
+[node name="PropertyOptionButton" type="OptionButton" parent="MarginContainer/HBoxContainer/Input/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+item_count = 1
+popup/item_0/text = "some_property"
+popup/item_0/id = 0
+
+[node name="OperatorOptionButton" type="OptionButton" parent="MarginContainer/HBoxContainer/Input/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+selected = 0
+item_count = 6
+popup/item_0/text = "=="
+popup/item_0/id = 0
+popup/item_1/text = "!="
+popup/item_1/id = 5
+popup/item_2/text = "<"
+popup/item_2/id = 1
+popup/item_3/text = "<="
+popup/item_3/id = 2
+popup/item_4/text = ">"
+popup/item_4/id = 3
+popup/item_5/text = ">="
+popup/item_5/id = 4
+
+[node name="ValueSpinBox" type="SpinBox" parent="MarginContainer/HBoxContainer/Input/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+rounded = true
+
+[node name="FilterButton" type="Button" parent="MarginContainer/HBoxContainer/Input"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Click to filter"
+
+[node name="Display" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="TextureCenterContainer" type="CenterContainer" parent="MarginContainer/HBoxContainer/Display"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TextureRect" type="TextureRect" parent="MarginContainer/HBoxContainer/Display/TextureCenterContainer"]
+layout_mode = 2
+texture = ExtResource("3_jk3hd")
+
+[node name="ItemTextureRect" type="TextureRect" parent="MarginContainer/HBoxContainer/Display/TextureCenterContainer"]
+unique_name_in_owner = true
+texture_filter = 1
+layout_mode = 2
+
+[node name="ItemNameLabel" type="Label" parent="MarginContainer/HBoxContainer/Display"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Select an item on
+the list to display
+its info"
+horizontal_alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer/Display"]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="MaxStackCountLabel" type="Label" parent="MarginContainer/HBoxContainer/Display/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="WidthLabel" type="Label" parent="MarginContainer/HBoxContainer/Display/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="HeightLabel" type="Label" parent="MarginContainer/HBoxContainer/Display/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="InfoLabel" type="Label" parent="MarginContainer/HBoxContainer/Display"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+size_flags_vertical = 10
+text = "Only the displayed item is loaded in memory. Filtering entries is done through the Registry property index."
+horizontal_alignment = 2
+autowrap_mode = 3
+
+[connection signal="item_selected" from="MarginContainer/HBoxContainer/Input/ItemList" to="." method="_on_item_list_item_selected"]
+[connection signal="pressed" from="MarginContainer/HBoxContainer/Input/ClearFilterButton" to="." method="_on_clear_filter_button_pressed"]
+[connection signal="pressed" from="MarginContainer/HBoxContainer/Input/FilterButton" to="." method="_on_filter_button_pressed"]
