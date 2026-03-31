@@ -7,7 +7,6 @@ addons/zylann.editor_debugger
 addons/GDQuest_GDScript_formatter
 addons/string_wrangler
 addons/gut
-example
 
 # Godot 4+ specific ignores
 .godot/
