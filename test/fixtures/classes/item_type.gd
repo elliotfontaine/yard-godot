@@ -1,4 +1,4 @@
-class_name Item
+class_name ItemType
 extends Resource
 
 enum SlotType {

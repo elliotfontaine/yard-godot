@@ -26,7 +26,7 @@ func _ready() -> void:
 		property_option_button.add_item(prop)
 
 
-func display_item(item: Item) -> void:
+func display_item(item: ItemType) -> void:
 	texture_center_container.show()
 	info_label.show()
 	item_texture_rect.texture = item.texture

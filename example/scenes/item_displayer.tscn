@@ -38,7 +38,7 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Input"]
 layout_mode = 2
-text = "Item Registry — String IDs"
+text = "ItemType Registry — String IDs"
 horizontal_alignment = 1
 
 [node name="ItemList" type="ItemList" parent="MarginContainer/HBoxContainer/Input"]

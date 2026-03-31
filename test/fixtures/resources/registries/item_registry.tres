@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_xci8q")
 _version = 1
-_class_restriction = &"Item"
+_class_restriction = &"ItemType"
 _scan_directory = "res://test/fixtures/resources/items"
 _recursive_scan = true
 _uids_to_string_ids = Dictionary[StringName, StringName]({

@@ -18,7 +18,7 @@ const TOOL_SHOVEL: UpgradeToolData = preload("uid://b3lolnnlh808g")
 
 class TestTypeName extends GutTest:
 	func test_assert_eq_wood_typename_is_item():
-		assert_eq(ClassUtils.get_type_name(WOOD), &"Item")
+		assert_eq(ClassUtils.get_type_name(WOOD), &"ItemType")
 
 
 	func test_assert_eq_blizzard_typename_is_upgradedata():
@@ -27,10 +27,12 @@ class TestTypeName extends GutTest:
 
 	func test_assert_eq_shovel_typename_is_upgradedata():
 		assert_eq(ClassUtils.get_type_name(WEAPON_BLIZZARD), &"UpgradeData")
-	
+
+
 	func test_assert_eq_upgrade_data_script_typename_is_upgradedata():
 		assert_eq(ClassUtils.get_type_name(UPGRADE_DATA_SCRIPT), &"UpgradeData")
-	
+
+
 	func test_assert_eq_upgrade_gear_data_script_typename_is_upgradegeardata():
 		assert_eq(ClassUtils.get_type_name(UPGRADE_GEAR_DATA_SCRIPT), &"UpgradeGearData")
 
@@ -55,21 +57,21 @@ class TestInheritance extends GutTest:
 
 
 	func test_assert_true_item_script_is_resource():
-		assert_true(ClassUtils.is_class_of("Item", "Resource"))
-		assert_true(ClassUtils.is_class_of(Item, "Resource"))
+		assert_true(ClassUtils.is_class_of("ItemType", "Resource"))
+		assert_true(ClassUtils.is_class_of(ItemType, "Resource"))
 
 
 	func test_assert_false_resource_is_not_item():
-		assert_false(ClassUtils.is_class_of("Resource", "Item"))
+		assert_false(ClassUtils.is_class_of("Resource", "ItemType"))
 
 
 	func test_assert_true_item_instance_is_resource():
-		assert_true(ClassUtils.is_class_of("Item", "Resource"))
-		assert_true(ClassUtils.is_class_of(Item.new(), "Resource"))
+		assert_true(ClassUtils.is_class_of("ItemType", "Resource"))
+		assert_true(ClassUtils.is_class_of(ItemType.new(), "Resource"))
 
 
 	func test_assert_true_wood_is_item():
-		assert_true(ClassUtils.is_class_of(WOOD, "Item"))
+		assert_true(ClassUtils.is_class_of(WOOD, "ItemType"))
 
 
 	func test_assert_true_upgrade_data_instance_is_resource():
@@ -106,8 +108,8 @@ class TestInheritance extends GutTest:
 
 	func test_tool_shovel_instance_is_upgrade_tool_data():
 		assert_true(ClassUtils.is_class_of(TOOL_SHOVEL, UpgradeToolData))
-	
-	
+
+
 	func test_upgrade_strength_is_not_upgrade_tool_data():
 		assert_false(ClassUtils.is_class_of(UPGRADE_STRENGTH, UpgradeToolData))
 
@@ -122,6 +124,7 @@ class TestInheritance extends GutTest:
 
 	func test_upgrade_data_class_is_not_upgrade_gear_data():
 		assert_false(ClassUtils.is_class_of(UpgradeData, UpgradeGearData))
+
 
 	func test_upgrade_gear_instance_is_not_upgrade_tool_data():
 		assert_false(ClassUtils.is_class_of(UpgradeGearData.new(), UpgradeToolData))
