@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c2nlgq5y35y5p"
-path="res://.godot/imported/wand1.png-d1e744a8cfc410ae0923f4245f7ddafe.ctex"
+uid="uid://bfqq474ukqubl"
+path="res://.godot/imported/staff6.png-946e0c3339b48b8857734caf056de744.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://example/assets/idywild_items/arsenal/wand1.png"
-dest_files=["res://.godot/imported/wand1.png-d1e744a8cfc410ae0923f4245f7ddafe.ctex"]
+source_file="res://example/assets/idywild_items/arsenal/staff6.png"
+dest_files=["res://.godot/imported/staff6.png-946e0c3339b48b8857734caf056de744.ctex"]
 
 [params]
 
