@@ -82,6 +82,11 @@ static func get_script_inheritance_list(script: Script, include_self: bool = fal
 	return result
 
 
+## Returns the full inheritance chain of [param script] as an array of strings.
+## [br]Script ancestors are represented by their global class name, or by their
+## [code]resource_path[/code] if no [code]class_name[/code] is declared.
+## Native class ancestors are appended after the script chain.
+## [br]If [param include_self] is [code]true[/code], [param script] itself is included first.
 static func get_script_inheritance_list_strings(script: Script, include_self: bool = false) -> Array[String]:
 	var inheritance_list_builtin := get_inheritance_list(script)
 	var inheritance_script_list := get_script_inheritance_list(script, include_self)
@@ -156,6 +161,8 @@ static func get_class_name_or_path_from_prop(property_info: Dictionary) -> Strin
 	return str(global_name) if global_name else hint_string
 
 
+## Returns [code]true[/code] if [param property_info] is a class descriptor entry
+## from [method Object.get_property_list].
 static func is_class_property(property_info: Dictionary) -> bool:
 	return (
 		property_info[&"name"] != ""
