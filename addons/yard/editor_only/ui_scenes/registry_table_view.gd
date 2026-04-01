@@ -319,58 +319,23 @@ func is_property_disabled(property_info: Dictionary) -> bool:
 	return property_info[&"name"] in current_cache_data.disabled_columns
 
 
-func is_class_category_property(property_info: Dictionary) -> bool:
-	return (
-		property_info[&"type"] == TYPE_NIL
-		and property_info[&"usage"] & (PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_GROUP) != 0
-		and property_info[&"hint_string"] != ""
-	)
-
-
 func parent_props_first() -> bool:
 	return current_cache_data.parent_props_first
 
 
 func set_columns_data(resources: Array[Resource]) -> void:
 	properties_column_info.clear()
-	var found_props: Dictionary[StringName, Dictionary] = { }
+	var found_props := _collect_props(resources)
+	var grouped := _group_props_by_class(found_props)
 
-	for res: Resource in resources:
-		if res:
-			for prop: Dictionary in res.get_property_list():
-				prop[&"owner_object"] = res
-				found_props[prop[&"name"]] = prop
-
-	var grouped_by_class_props: Dictionary[String, Array] = { }
-	var current_group: Array[String] = []
-	var current_class: String
-	for prop: Dictionary in found_props.values():
-		var prop_name: String = prop[&"name"]
-		var prop_hint_string: String = prop[&"hint_string"]
-		if is_class_category_property(prop):
-			if current_group.size() > 0:
-				grouped_by_class_props.set(current_class, current_group)
-			current_group = [prop_name]
-			if prop_hint_string.begins_with("res://"):
-				var script: Script = load(prop_hint_string)
-				var global_name: String = script.get_global_name()
-				current_class = global_name if global_name else prop_hint_string
-			else:
-				current_class = prop_name
-		else:
-			current_group.append(prop_name)
-
-	if current_group.size() > 0:
-		grouped_by_class_props.set(current_class, current_group)
-
-	var ordered_groups: Array[String] = ClassUtils.sort_by_inheritance(grouped_by_class_props.keys())
+	var ordered_groups: Array[String] = ClassUtils.sort_by_inheritance(grouped.keys())
 	if not parent_props_first():
 		ordered_groups.reverse()
 
 	for class_str: String in ordered_groups:
-		for prop_name: StringName in grouped_by_class_props[class_str]:
+		for prop_name: StringName in grouped[class_str]:
 			var prop := found_props[prop_name]
-			if _can_display_property(prop) or is_class_category_property(prop):
+			if _can_display_property(prop) or ClassUtils.is_class_property(prop):
 				properties_column_info.append(prop)
 
 
@@ -380,7 +345,7 @@ func get_res_row_data(res: Resource) -> Array[Variant]:
 
 	var row: Array[Variant] = []
 	for prop: Dictionary in properties_column_info:
-		if is_property_disabled(prop) or is_class_category_property(prop):
+		if is_property_disabled(prop) or ClassUtils.is_class_property(prop):
 			continue
 		if prop[&"name"] in res:
 			row.append(res.get(prop[&"name"]))
@@ -472,6 +437,36 @@ func _build_columns() -> Array[DynamicTable.ColumnConfig]:
 		columns.append(column)
 
 	return columns
+
+
+func _collect_props(resources: Array[Resource]) -> Dictionary[StringName, Dictionary]:
+	var found_props: Dictionary[StringName, Dictionary] = { }
+	for res: Resource in resources:
+		if res:
+			for prop: Dictionary in res.get_property_list():
+				prop[&"owner_object"] = res
+				found_props[prop[&"name"]] = prop
+	return found_props
+
+
+func _group_props_by_class(found_props: Dictionary) -> Dictionary[String, Array]:
+	var grouped: Dictionary[String, Array] = { }
+	var current_group: Array[String] = []
+	var current_class: String
+
+	for prop: Dictionary in found_props.values():
+		if ClassUtils.is_class_property(prop):
+			if current_group.size() > 0:
+				grouped[current_class] = current_group
+			current_group = [prop[&"name"]]
+			current_class = ClassUtils.get_class_name_or_path_from_prop(prop)
+		else:
+			current_group.append(prop[&"name"])
+
+	if current_group.size() > 0:
+		grouped[current_class] = current_group
+
+	return grouped
 
 
 func _can_display_property(property_info: Dictionary) -> bool:

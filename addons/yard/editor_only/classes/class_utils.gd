@@ -143,6 +143,34 @@ static func sort_by_inheritance(classes_names: Array[String]) -> Array[String]:
 	return result
 
 
+## Given that [param property_info] is a class descriptor from get_property_list(),
+## returns the class name or the script path if no name declared.
+static func get_class_name_or_path_from_prop(property_info: Dictionary) -> String:
+	if not is_class_property(property_info):
+		return ""
+
+	var prop_name: String = property_info[&"name"]
+	var hint_string: String = property_info[&"hint_string"]
+	if not hint_string.begins_with("res://"):
+		return prop_name
+
+	var script := load(hint_string) as Script
+	if not (script and script is Script):
+		return prop_name
+
+	var global_name := script.get_global_name()
+	return str(global_name) if global_name else hint_string
+
+
+static func is_class_property(property_info: Dictionary) -> bool:
+	return (
+		property_info[&"name"] != ""
+		and property_info[&"type"] == TYPE_NIL
+		and property_info[&"usage"] & (PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_GROUP) != 0
+		and property_info[&"hint_string"] != ""
+	)
+
+
 ## Returns the type name of any given type or it's instance.
 ## [br][br][param obj]: Accepts anything other than built-in Variant types directly.
 ## [br] This includes Native Classes, user-defined Scripts,
