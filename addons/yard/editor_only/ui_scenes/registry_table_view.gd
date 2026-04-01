@@ -319,20 +319,59 @@ func is_property_disabled(property_info: Dictionary) -> bool:
 	return property_info[&"name"] in current_cache_data.disabled_columns
 
 
+func is_class_category_property(property_info: Dictionary) -> bool:
+	return (
+		property_info[&"type"] == TYPE_NIL
+		and property_info[&"usage"] & (PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_GROUP) != 0
+		and property_info[&"hint_string"] != ""
+	)
+
+
+func parent_props_first() -> bool:
+	return current_cache_data.parent_props_first
+
+
 func set_columns_data(resources: Array[Resource]) -> void:
 	properties_column_info.clear()
-	var found_props := { }
+	var found_props: Dictionary[StringName, Dictionary] = { }
+
 	for res: Resource in resources:
-		if not res:
-			continue
+		if res:
+			for prop: Dictionary in res.get_property_list():
+				prop[&"owner_object"] = res
+				found_props[prop[&"name"]] = prop
 
-		for prop: Dictionary in res.get_property_list():
-			found_props[prop[&"name"]] = prop
-			prop[&"owner_object"] = res
-
+	var grouped_by_class_props: Dictionary[String, Array] = { }
+	var current_group: Array[String] = []
+	var current_class: String
 	for prop: Dictionary in found_props.values():
-		if _can_display_property(prop):
-			properties_column_info.append(prop)
+		var prop_name: String = prop[&"name"]
+		var prop_hint_string: String = prop[&"hint_string"]
+		if is_class_category_property(prop):
+			if current_group.size() > 0:
+				grouped_by_class_props.set(current_class, current_group)
+			current_group = [prop_name]
+			if prop_hint_string.begins_with("res://"):
+				var script: Script = load(prop_hint_string)
+				var global_name: String = script.get_global_name()
+				current_class = global_name if global_name else prop_hint_string
+			else:
+				current_class = prop_name
+		else:
+			current_group.append(prop_name)
+
+	if current_group.size() > 0:
+		grouped_by_class_props.set(current_class, current_group)
+
+	var ordered_groups: Array[String] = ClassUtils.sort_by_inheritance(grouped_by_class_props.keys())
+	if not parent_props_first():
+		ordered_groups.reverse()
+
+	for class_str: String in ordered_groups:
+		for prop_name: StringName in grouped_by_class_props[class_str]:
+			var prop := found_props[prop_name]
+			if _can_display_property(prop) or is_class_category_property(prop):
+				properties_column_info.append(prop)
 
 
 func get_res_row_data(res: Resource) -> Array[Variant]:
@@ -341,7 +380,7 @@ func get_res_row_data(res: Resource) -> Array[Variant]:
 
 	var row: Array[Variant] = []
 	for prop: Dictionary in properties_column_info:
-		if is_property_disabled(prop):
+		if is_property_disabled(prop) or is_class_category_property(prop):
 			continue
 		if prop[&"name"] in res:
 			row.append(res.get(prop[&"name"]))
@@ -392,21 +431,6 @@ func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 		)
 	else:
 		edit_menu.set_item_text(edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), "Delete Entry")
-
-
-func _on_drag_begin() -> void:
-	if not current_registry:
-		drag_and_drop_info_panel.visible = false
-		return
-	var drag_data: Variant = get_viewport().gui_get_drag_data()
-	var can_drop := drag_data != null and _can_drop_data(Vector2.ZERO, drag_data)
-	drag_and_drop_info_panel.visible = can_drop or current_registry.is_empty()
-	focus_panel.visible = can_drop
-
-
-func _on_drag_end() -> void:
-	drag_and_drop_info_panel.hide()
-	focus_panel.hide()
 
 
 func _build_columns() -> Array[DynamicTable.ColumnConfig]:
@@ -602,6 +626,21 @@ func _print_fake_error(message: String) -> void:
 			message,
 		],
 	)
+
+
+func _on_drag_begin() -> void:
+	if not current_registry:
+		drag_and_drop_info_panel.visible = false
+		return
+	var drag_data: Variant = get_viewport().gui_get_drag_data()
+	var can_drop := drag_data != null and _can_drop_data(Vector2.ZERO, drag_data)
+	drag_and_drop_info_panel.visible = can_drop or current_registry.is_empty()
+	focus_panel.visible = can_drop
+
+
+func _on_drag_end() -> void:
+	drag_and_drop_info_panel.hide()
+	focus_panel.hide()
 
 
 func _on_cell_selected(row: int, column: int) -> void:

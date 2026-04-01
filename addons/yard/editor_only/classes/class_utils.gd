@@ -82,6 +82,67 @@ static func get_script_inheritance_list(script: Script, include_self: bool = fal
 	return result
 
 
+static func get_script_inheritance_list_strings(script: Script, include_self: bool = false) -> Array[String]:
+	var inheritance_list_builtin := get_inheritance_list(script)
+	var inheritance_script_list := get_script_inheritance_list(script, include_self)
+	var inheritance_script_list_string: Array[String]
+	for s: Script in inheritance_script_list:
+		inheritance_script_list_string.append(str(s.get_global_name()) if s.get_global_name() else s.resource_path)
+
+	return inheritance_script_list_string + inheritance_list_builtin
+
+
+## Sorts an array of class identifiers so that parent classes always appear before child classes.
+## [br]Each element can be a class name or builtin (e.g. [code]"Node"[/code])
+## or a script path (e.g. [code]"res://my_class.gd"[/code]).
+## [br]Returns a new sorted array. Elements that cannot be resolved are kept in place.
+static func sort_by_inheritance(classes_names: Array[String]) -> Array[String]:
+	var n := classes_names.size()
+	if n <= 1:
+		return classes_names.duplicate()
+
+	# Returns all ancestor class names/paths for a given entry, with caching
+	var cache := { }
+	var ancestors_of := func(entry: String) -> Array:
+		if entry not in cache:
+			cache[entry] = (get_script_inheritance_list_strings(load(entry), false)
+				if entry.begins_with("res://")
+				else get_inheritance_list(entry, false) )
+		return cache[entry]
+
+	# Build graph: edge i→j means class[i] is ancestor of class[j] (must come before)
+	var in_degree := PackedInt32Array()
+	in_degree.resize(n)
+	var adj: Array[Array] = []
+	adj.resize(n)
+	for i in n:
+		adj[i] = []
+		for j in n:
+			if i != j and ancestors_of.call(classes_names[j]).has(classes_names[i]):
+				adj[i].append(j)
+				in_degree[j] += 1
+
+	# Kahn's topological sort
+	var queue: Array[int]
+	queue.assign(range(n).filter(func(i: int) -> bool: return in_degree[i] == 0))
+
+	var result: Array[String] = []
+	while not queue.is_empty():
+		var idx: int = queue.pop_front()
+		result.append(classes_names[idx])
+		for j: int in adj[idx]:
+			in_degree[j] -= 1
+			if in_degree[j] == 0:
+				queue.append(j)
+
+	# Fallback for cycles (shouldn't occur with class hierarchies)
+	for name in classes_names:
+		if not result.has(name):
+			result.append(name)
+
+	return result
+
+
 ## Returns the type name of any given type or it's instance.
 ## [br][br][param obj]: Accepts anything other than built-in Variant types directly.
 ## [br] This includes Native Classes, user-defined Scripts,

@@ -33,7 +33,7 @@ const NewRegistryDialog := Namespace.NewRegistryDialog
 const AnyIcon := Namespace.AnyIcon
 const FuzzySearch := Namespace.FuzzySearch
 const FuzzySearchResult := FuzzySearch.FuzzySearchResult
-const DISABLED_BY_DEFAULT_COLUMNS: Array[StringName] = RegistryCacheData.DISABLED_BY_DEFAULT_COLUMNS
+const BUILTIN_RESOURCE_PROPERTIES: Array[StringName] = RegistryCacheData.BUILTIN_RESOURCE_PROPERTIES
 
 const ACCELERATORS_WIN: Dictionary = {
 	FileMenuAction.NEW: KEY_MASK_CTRL | KEY_N,
@@ -541,6 +541,7 @@ func _show_in_filesystem(uid: String) -> void:
 func _add_column_check_item(popup: PopupMenu, prop: Dictionary) -> void:
 	var prop_name: String = prop[&"name"]
 	popup.add_check_item(prop_name.capitalize())
+	popup.set_item_auto_translate_mode(popup.item_count - 1, AUTO_TRANSLATE_MODE_DISABLED)
 	popup.set_item_tooltip(popup.item_count - 1, prop_name)
 	popup.set_item_icon(popup.item_count - 1, AnyIcon.get_property_icon_from_dict(prop))
 	popup.set_item_checked(popup.item_count - 1, prop_name not in registry_table_view.current_cache_data.disabled_columns)
@@ -593,23 +594,25 @@ func _on_registry_context_menu_id_pressed(id: int) -> void:
 func _on_columns_menu_id_pressed(id: int) -> void:
 	var popup := columns_menu_button.get_popup()
 
-	if id == 0: # Freeze ID Columns
-		popup.toggle_item_checked(0)
-		registry_table_view.id_columns_frozen = popup.is_item_checked(0)
-		return
-
-	var prop_name: StringName = popup.get_item_tooltip(id)
-	popup.toggle_item_checked(id)
-
-	if popup.is_item_checked(id):
-		registry_table_view.current_cache_data.disabled_columns.erase(prop_name)
-		registry_table_view.current_cache_data.save()
-	else:
-		if not prop_name in registry_table_view.current_cache_data.disabled_columns:
-			registry_table_view.current_cache_data.disabled_columns.append(prop_name)
+	match id:
+		0: # Freeze ID Columns
+			popup.toggle_item_checked(0)
+			registry_table_view.id_columns_frozen = popup.is_item_checked(0)
+		1: # Parent props first
+			popup.toggle_item_checked(1)
+			registry_table_view.current_cache_data.parent_props_first = popup.is_item_checked(1)
 			registry_table_view.current_cache_data.save()
-
-	registry_table_view.update_view()
+			registry_table_view.update_view()
+		_:
+			var prop_name: StringName = popup.get_item_tooltip(id)
+			popup.toggle_item_checked(id)
+			if popup.is_item_checked(id):
+				registry_table_view.current_cache_data.disabled_columns.erase(prop_name)
+			else:
+				if not prop_name in registry_table_view.current_cache_data.disabled_columns:
+					registry_table_view.current_cache_data.disabled_columns.append(prop_name)
+			registry_table_view.current_cache_data.save()
+			registry_table_view.update_view()
 
 
 func _on_itemlist_registries_dropped(registries: Array[Registry]) -> void:
@@ -673,16 +676,38 @@ func _on_columns_menu_button_about_to_popup() -> void:
 		return
 
 	popup.add_check_item("Freeze ID Columns")
+	popup.set_item_tooltip(0, "Keep the UID and string ID columns visible while scrolling horizontally.")
 	popup.set_item_checked(0, registry_table_view.id_columns_frozen)
 
-	popup.add_separator()
+	popup.add_check_item("Parent Props First")
+	popup.set_item_tooltip(
+		1,
+		"Reorder columns so parent class properties appear before subclass ones. " +
+		"\nBy default, columns follow the inspector order (subclass properties first).",
+	)
+	popup.set_item_checked(1, registry_table_view.current_cache_data.parent_props_first)
+
+	if not registry_table_view.properties_column_info:
+		return
+
 	for prop in registry_table_view.properties_column_info:
-		if prop[&"name"] not in DISABLED_BY_DEFAULT_COLUMNS:
+		var prop_name: StringName = prop[&"name"]
+		var prop_hint_string: String = prop[&"hint_string"]
+		if registry_table_view.is_class_category_property(prop):
+			if prop_name not in [&"Resource", &"RefCounted"]:
+				if prop_hint_string.begins_with("res://"):
+					var script: Script = load(prop_hint_string)
+					var global_name: StringName = script.get_global_name()
+					prop_name = global_name if global_name else prop_name
+				popup.add_separator(prop_name)
+				popup.set_item_auto_translate_mode(popup.item_count - 1, AUTO_TRANSLATE_MODE_DISABLED)
+		elif prop_name not in BUILTIN_RESOURCE_PROPERTIES:
 			_add_column_check_item(popup, prop)
 
-	popup.add_separator()
+	popup.add_separator("Resource/RefCounted")
+	popup.set_item_auto_translate_mode(popup.item_count - 1, AUTO_TRANSLATE_MODE_DISABLED)
 	for prop in registry_table_view.properties_column_info:
-		if prop[&"name"] in DISABLED_BY_DEFAULT_COLUMNS:
+		if prop[&"name"] in BUILTIN_RESOURCE_PROPERTIES:
 			_add_column_check_item(popup, prop)
 
 
