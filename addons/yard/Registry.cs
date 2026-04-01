@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using Godot.Collections;
 
@@ -181,12 +182,26 @@ public class Registry<[MustBeVariant] TResource> where TResource : Resource
 	// -----------------------------
 
 	/// <summary>
-	/// Returns the string IDs of all entries whose property equals <paramref name="value"/>.
+	/// Returns the string IDs of all entries whose property matches <paramref name="criterion"/>.
+	/// <para>Criterion is either an exact value <see cref="Variant"/> or a <see cref="Callable"/> predicate
+	/// receiving the property value and returning a <see cref="bool"/>.</para>
 	/// <para>Requires the property index to have been baked for <paramref name="property"/>.</para>
 	/// <para>Returns an empty array if the property is not indexed or no entry has that value.</para>
 	/// </summary>
 	/// <param name="property">Property name to filter by.</param>
+	/// <param name="criterion">Criterion is either an exact value Variant or a Callable predicate</param>
+	public Array<StringName> Filter(StringName property, Variant criterion) => (Array<StringName>) _registry.Call("filter", property, criterion);
+
+	/// <summary>
+	/// Returns the string IDs of all entries whose property equals <paramref name="value"/>.
+	/// <para>Requires the property index to have been baked for <paramref name="property"/>.</para>
+	/// <para>Returns an empty array if the property is not indexed or no entry has that value.</para>
+	/// DEPRECATED: This method is outdated. Use <see cref="Filter"/> instead.
+	/// </summary>
+	/// <param name="property">Property name to filter by.</param>
 	/// <param name="value">Value to match.</param>
+	/// DEPRECATED: This method is outdated. Use <see cref="Filter"/> instead.
+	[Obsolete("Please use Filter instead.")]
 	public Array<StringName> FilterByValue(StringName property, Variant value) => (Array<StringName>) _registry.Call("filter_by_value", property, value);
 
 	/// <summary>
@@ -194,9 +209,11 @@ public class Registry<[MustBeVariant] TResource> where TResource : Resource
 	/// <para>Predicate receives the property value and must return a bool.</para>
 	/// <para>Requires the property index to have been baked for <paramref name="property"/>.</para>
 	/// <para>Returns an empty array if the property is not indexed or no value matches the predicate.</para>
+	/// DEPRECATED: This method is outdated. Use <see cref="Filter"/> instead.
 	/// </summary>
 	/// <param name="property">Property name to filter by.</param>
 	/// <param name="predicate">Predicate to apply to property values.</param>
+	[Obsolete("Please use Filter instead.")]
 	public Array<StringName> FilterBy(StringName property, Callable predicate) => (Array<StringName>) _registry.Call("filter_by", property, predicate);
 
 	/// <summary>
@@ -204,8 +221,10 @@ public class Registry<[MustBeVariant] TResource> where TResource : Resource
 	/// <para><paramref name="criteria"/> is a <c>Dictionary</c> mapping property names to their expected values.</para>
 	/// <para>Requires the property index to have been baked for each property.</para>
 	/// <para>Returns an empty array if any property is not indexed or if the intersection yields no results.</para>
+	/// DEPRECATED: This method is outdated. Use <see cref="Filter"/> instead.
 	/// </summary>
 	/// <param name="criteria">Dictionary of property names and expected values.</param>
+	[Obsolete("Please use Filter instead.")]
 	public Array<StringName> FilterByValues(Dictionary<StringName, Variant> criteria) => (Array<StringName>) _registry.Call("filter_by_values", criteria);
 
 	/// <summary>
@@ -215,6 +234,16 @@ public class Registry<[MustBeVariant] TResource> where TResource : Resource
 	/// </summary>
 	/// <param name="property">Property name to check.</param>
 	public bool IsPropertyIndexed(StringName property) => _registry.Call("is_property_indexed", property).AsBool();
+
+	/// <summary>
+	/// <para>Returns the string IDs of all entries matching all <paramref name="criteria"/> (and logic).
+	/// Each value in <paramref name="criteria"/> is either an exact <see cref="Variant"/> to match against, or a
+	/// <see cref="Callable"/> predicate receiving the property value and returning a <see cref="bool"/>.</para>
+	/// <para>Requires the property index to have been baked for each property.</para>
+	/// <para>Returns an empty array if any property is not indexed or the intersection is empty.</para>
+	/// </summary>
+	/// <param name="criteria">Criterion is either an exact value Variant or a Callable predicate</param>
+	public Array<StringName> Where(Dictionary<StringName, Variant> criteria) => (Array<StringName>) _registry.Call("where", criteria);
 	
 	// -----------------------------
 	// Wrapper for RegistryLoadTracker
