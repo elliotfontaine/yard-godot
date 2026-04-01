@@ -287,6 +287,22 @@ msgstr "Seleziona prima un registro"
 msgid "Freeze ID Columns"
 msgstr "Blocca colonne ID"
 
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Keep the UID and string ID columns visible while scrolling horizontally."
+msgstr "Mantiene visibili le colonne UID e ID testuale durante lo scorrimento orizzontale."
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Show Parent Properties First"
+msgstr "Mostra le proprietà della classe padre per prime"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid ""
+"Reorder columns so parent class properties appear before subclass ones.\n"
+"By default, columns follow the inspector order (subclass properties first)."
+msgstr ""
+"Riordina le colonne in modo che le proprietà della classe padre appaiano prima di quelle delle sottoclassi.\n"
+"Per impostazione predefinita, le colonne seguono l'ordine dell'inspector (proprietà della sottoclasse per prime)."
+
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "New Registry..."
 msgstr "Nuovo registro…"

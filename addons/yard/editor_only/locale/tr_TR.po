@@ -285,6 +285,22 @@ msgstr "Önce bir kayıt defteri seçin"
 msgid "Freeze ID Columns"
 msgstr "ID sütunlarını sabitle"
 
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Keep the UID and string ID columns visible while scrolling horizontally."
+msgstr "Yatay kaydırma sırasında UID ve Metin ID sütunlarını görünür tutar."
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Show Parent Properties First"
+msgstr "Üst sınıf özelliklerini önce göster"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid ""
+"Reorder columns so parent class properties appear before subclass ones.\n"
+"By default, columns follow the inspector order (subclass properties first)."
+msgstr ""
+"Sütunları, üst sınıf özelliklerinin alt sınıf özelliklerinden önce görünmesi için yeniden sıralar.\n"
+"Varsayılan olarak sütunlar inspector sırasını takip eder (alt sınıf özellikleri önce)."
+
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "New Registry..."
 msgstr "Yeni kayıt defteri…"

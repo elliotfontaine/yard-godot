@@ -272,6 +272,22 @@ msgstr "请先选择一个注册表"
 msgid "Freeze ID Columns"
 msgstr "固定 ID 列"
 
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Keep the UID and string ID columns visible while scrolling horizontally."
+msgstr "在水平滚动时保持 UID 和字符串 ID 列可见。"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Show Parent Properties First"
+msgstr "优先显示父类属性"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid ""
+"Reorder columns so parent class properties appear before subclass ones.\n"
+"By default, columns follow the inspector order (subclass properties first)."
+msgstr ""
+"重新排列列，使父类属性显示在子类属性之前。\n"
+"默认情况下，列遵循检查器顺序（子类属性优先）。"
+
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "New Registry..."
 msgstr "新建注册表…"

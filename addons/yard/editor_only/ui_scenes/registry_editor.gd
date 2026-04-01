@@ -441,16 +441,18 @@ func _populate_columns_popup_menu() -> void:
 
 	_add_check_item(
 		popup,
-		"Freeze ID Columns",
-		"Keep the UID and string ID columns visible while scrolling horizontally.",
+		tr("Freeze ID Columns"),
+		tr("Keep the UID and string ID columns visible while scrolling horizontally."),
 		registry_table_view.id_columns_frozen,
 	)
 
 	_add_check_item(
 		popup,
-		"Show Parent Properties First",
-		"Reorder columns so parent class properties appear before subclass ones." +
-		"\nBy default, columns follow the inspector order (subclass properties first).",
+		tr("Show Parent Properties First"),
+		tr(
+			"Reorder columns so parent class properties appear before subclass ones." +
+			"\nBy default, columns follow the inspector order (subclass properties first).",
+		),
 		registry_table_view.current_cache_data.parent_props_first,
 	)
 

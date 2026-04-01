@@ -284,6 +284,22 @@ msgstr "Сначала выберите реестр"
 msgid "Freeze ID Columns"
 msgstr "Закрепить столбцы ID"
 
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Keep the UID and string ID columns visible while scrolling horizontally."
+msgstr "Сохраняет видимость столбцов UID и строкового ID при горизонтальной прокрутке."
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Show Parent Properties First"
+msgstr "Показывать свойства родительского класса первыми"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid ""
+"Reorder columns so parent class properties appear before subclass ones.\n"
+"By default, columns follow the inspector order (subclass properties first)."
+msgstr ""
+"Переупорядочивает столбцы так, чтобы свойства родительского класса отображались перед свойствами подклассов.\n"
+"По умолчанию столбцы следуют порядку инспектора (свойства подкласса первыми)."
+
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "New Registry..."
 msgstr "Новый реестр…"
