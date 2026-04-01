@@ -1362,19 +1362,25 @@ func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
 
 
 func _handle_mouse_button(event: InputEventMouseButton) -> void:
-	match event.button_index:
-		MOUSE_BUTTON_LEFT:
-			if event.pressed:
+	if event.pressed:
+		match event.button_index:
+			MOUSE_BUTTON_LEFT:
 				_handle_left_press(event)
-			else:
-				_handle_left_release()
-		MOUSE_BUTTON_RIGHT:
-			if event.pressed:
+			MOUSE_BUTTON_RIGHT:
 				_handle_right_click(event.position)
-		MOUSE_BUTTON_WHEEL_UP:
-			_v_scroll.value = maxf(0.0, _v_scroll.value - _v_scroll.step)
-		MOUSE_BUTTON_WHEEL_DOWN:
-			_v_scroll.value = minf(_v_scroll.max_value, _v_scroll.value + _v_scroll.step)
+			MOUSE_BUTTON_WHEEL_UP:
+				_v_scroll.value = maxf(0.0, _v_scroll.value - _v_scroll.step)
+			MOUSE_BUTTON_WHEEL_DOWN:
+				_v_scroll.value = minf(_v_scroll.max_value, _v_scroll.value + _v_scroll.step)
+			MOUSE_BUTTON_WHEEL_LEFT:
+				# Also uses the VScroll's step, as the HScroll doesn't have one
+				_h_scroll.value = maxf(0.0, _h_scroll.value - _v_scroll.step)
+			MOUSE_BUTTON_WHEEL_RIGHT:
+				_h_scroll.value = minf(_h_scroll.max_value, _h_scroll.value + _v_scroll.step)
+	else:
+		match event.button_index:
+			MOUSE_BUTTON_LEFT:
+				_handle_left_release()
 
 
 func _handle_left_press(event: InputEventMouseButton) -> void:
