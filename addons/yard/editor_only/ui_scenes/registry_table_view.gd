@@ -319,17 +319,13 @@ func is_property_disabled(property_info: Dictionary) -> bool:
 	return property_info[&"name"] in current_cache_data.disabled_columns
 
 
-func parent_props_first() -> bool:
-	return current_cache_data.parent_props_first
-
-
 func set_columns_data(resources: Array[Resource]) -> void:
 	properties_column_info.clear()
 	var found_props := _collect_props(resources)
 	var grouped := _group_props_by_class(found_props)
 
 	var ordered_groups: Array[String] = ClassUtils.sort_by_inheritance(grouped.keys())
-	if not parent_props_first():
+	if not current_cache_data.parent_props_first:
 		ordered_groups.reverse()
 
 	for class_str: String in ordered_groups:

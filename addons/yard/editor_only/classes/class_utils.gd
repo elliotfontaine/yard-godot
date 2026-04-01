@@ -124,9 +124,8 @@ static func sort_by_inheritance(classes_names: Array[String]) -> Array[String]:
 
 	# Kahn's topological sort
 	var queue: Array[int]
-	queue.assign(range(n).filter(func(i: int) -> bool: return in_degree[i] == 0))
-
 	var result: Array[String] = []
+	queue.assign(range(n).filter(func(i: int) -> bool: return in_degree[i] == 0))
 	while not queue.is_empty():
 		var idx: int = queue.pop_front()
 		result.append(classes_names[idx])
@@ -134,11 +133,6 @@ static func sort_by_inheritance(classes_names: Array[String]) -> Array[String]:
 			in_degree[j] -= 1
 			if in_degree[j] == 0:
 				queue.append(j)
-
-	# Fallback for cycles (shouldn't occur with class hierarchies)
-	for name in classes_names:
-		if not result.has(name):
-			result.append(name)
 
 	return result
 
