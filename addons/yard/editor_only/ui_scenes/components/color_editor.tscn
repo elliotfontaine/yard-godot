@@ -1,17 +1,13 @@
-[gd_scene load_steps=4 format=3 uid="uid://cuhed17jgms48"]
+[gd_scene load_steps=3 format=3 uid="uid://cuhed17jgms48"]
 
 [ext_resource type="Script" uid="uid://2xver6rxjvvu" path="res://addons/yard/editor_only/ui_scenes/components/color_editor.gd" id="1_4lnk3"]
 [ext_resource type="Script" uid="uid://djrr6b7fc76rw" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="2_7jwya"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4lnk3"]
-bg_color = Color(0.152, 0.1748, 0.2356, 1)
 
 [node name="ColorEditor" type="PanelContainer"]
 top_level = true
 offset_right = 298.0
 offset_bottom = 572.0
 focus_mode = 1
-theme_override_styles/panel = SubResource("StyleBoxFlat_4lnk3")
 script = ExtResource("1_4lnk3")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]

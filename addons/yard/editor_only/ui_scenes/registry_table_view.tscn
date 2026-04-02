@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://crnac01bnyk3"]
+[gd_scene load_steps=14 format=3 uid="uid://crnac01bnyk3"]
 
 [ext_resource type="Script" uid="uid://tahli441tq7q" path="res://addons/yard/editor_only/ui_scenes/registry_table_view.gd" id="1_isv8r"]
 [ext_resource type="Script" uid="uid://0fmlvbrxn2lf" path="res://addons/yard/editor_only/classes/editor_icon_popup_menu.gd" id="2_8g0vx"]
@@ -38,6 +38,8 @@ border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 corner_detail = 1
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_p6h1j"]
 
 [sub_resource type="InputEventKey" id="InputEventKey_ae6j4"]
 command_or_control_autoremap = true
@@ -183,6 +185,7 @@ text = "Drop resource files here to add them to the registry."
 
 [node name="PanelContainer" type="PanelContainer" parent="VBoxContainer"]
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_p6h1j")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/PanelContainer"]
 layout_mode = 2

@@ -18,12 +18,10 @@ var color: Color:
 
 
 func _ready() -> void:
-	if not Engine.is_editor_hint():
+	if not Engine.is_editor_hint() or EditorInterface.get_edited_scene_root() == self:
 		return
 
-	var base_dark := EditorThemeUtils.get_base_color(0.8)
-	var stylebox: StyleBoxFlat = get_theme_stylebox(&"panel")
-	stylebox.bg_color = base_dark
+	add_theme_stylebox_override(&"panel", get_theme_stylebox(&"panel", &"PopupMenu"))
 
 
 func get_color_picker() -> ColorPicker:
