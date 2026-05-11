@@ -128,6 +128,7 @@ var _tooltip_cell := [-1, -1] # [row, col]
 # Node references
 var _h_scroll: HScrollBar
 var _v_scroll: VScrollBar
+var _pixelated_canvas: Control
 
 
 func _ready() -> void:
@@ -141,6 +142,11 @@ func _ready() -> void:
 	_setup_editing_components()
 	_setup_filtering_components()
 
+	_pixelated_canvas = Control.new()
+	_pixelated_canvas.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_pixelated_canvas.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_pixelated_canvas.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
 	_h_scroll = HScrollBar.new()
 	_h_scroll.set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE)
 	_h_scroll.offset_top = -8 * get_theme_default_base_scale()
@@ -152,6 +158,7 @@ func _ready() -> void:
 	_v_scroll.offset_left = -8 * get_theme_default_base_scale()
 	_v_scroll.value_changed.connect(_on_v_scroll_value_changed)
 
+	add_child(_pixelated_canvas)
 	add_child(_h_scroll)
 	add_child(_v_scroll)
 
@@ -188,6 +195,8 @@ func _gui_input(event: InputEvent) -> void:
 func _draw() -> void:
 	if not is_inside_tree() or _columns.is_empty() or _full_data.is_empty():
 		return
+
+	RenderingServer.canvas_item_clear(_pixelated_canvas.get_canvas_item())
 
 	var frozen_w := _get_frozen_width()
 	var scroll_x := frozen_w - _h_scroll_position # screen X of first scrollable column
@@ -887,15 +896,15 @@ func _draw_cell_resource(rect: Rect2, row: int, col: int) -> void:
 	var label := "<" + res.resource_path.get_file() + ">"
 	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_LEFT)
 	var thumb_width := 0.0
-	var texture := res if res is Texture2D else _get_or_queue_thumbnail(
+	var texture: Texture2D = res if res is Texture2D else _get_or_queue_thumbnail(
 		res.resource_path,
 		ClassUtils.get_type_name(res),
 	)
 	if texture != null:
 		var thumb_rect := _fit_texture_rect(texture, inner, true)
 		thumb_rect.position.x += x_margin_val
-		draw_texture_rect(texture, thumb_rect, false)
 		thumb_width = thumb_rect.size.x
+		_draw_filtered_texture_rect(texture, thumb_rect)
 
 	var text_rect := inner.grow_individual(-thumb_width - x_margin_val, 0, 0, 0)
 	_draw_cell_text(text_rect, row, col, label)
@@ -920,11 +929,24 @@ func _draw_cell_path(rect: Rect2, row: int, col: int) -> void:
 	if texture != null:
 		var thumb_rect := _fit_texture_rect(texture, inner, true)
 		thumb_rect.position.x += x_margin_val
-		draw_texture_rect(texture, thumb_rect, false)
 		thumb_width = thumb_rect.size.x
+		_draw_filtered_texture_rect(texture, thumb_rect)
 
 	var text_rect := inner.grow_individual(-thumb_width - x_margin_val, 0, 0, 0)
 	_draw_cell_text(text_rect, row, col)
+
+
+func _draw_filtered_texture_rect(texture: Texture2D, rect: Rect2) -> void:
+	var ratio := rect.size / texture.get_size()
+	if minf(ratio.x, ratio.y) > 1.5 * EditorInterface.get_editor_scale():
+		# Probably pixel-art. Heuristic similar to godotengine/godot#67426
+		var ci := _pixelated_canvas.get_canvas_item()
+		if texture is AtlasTexture:
+			RenderingServer.canvas_item_add_texture_rect_region(ci, rect, texture.get_rid(), texture.region)
+		else:
+			RenderingServer.canvas_item_add_texture_rect(ci, rect, texture.get_rid())
+	else:
+		draw_texture_rect(texture, rect, false)
 
 
 func _draw_cell_text(rect: Rect2, row: int, col: int, text_override: String = "") -> void:
