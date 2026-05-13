@@ -567,8 +567,44 @@ func _setup_add_entry() -> void:
 	resource_picker_container.add_child(_res_picker)
 	_texture_rect_parent = _res_picker.get_child(0)
 	_res_picker.resource_changed.connect(_on_res_picker_resource_changed)
+	_res_picker.resource_selected.connect(_on_res_picker_resource_selected)
 	_toggle_add_entry_button()
 	entry_name_line_edit.text = ""
+
+
+func _add_entry_from_picker(res: Resource, string_id: StringName) -> void:
+	if not res.resource_path or not ResourceLoader.exists(res.resource_path):
+		var current_dir := EditorInterface.get_current_path().get_base_dir()
+		var save_path := current_dir.path_join(str(string_id) + ".tres")
+		if ResourceLoader.exists(save_path):
+			_print_fake_error("A file already exists at '%s'. Choose a different String ID or save the resource manually first." % save_path)
+			return
+		var save_status := ResourceSaver.save(res, save_path, ResourceSaver.FLAG_CHANGE_PATH)
+		if save_status != OK:
+			_print_fake_error("Failed to save resource to '%s'." % save_path)
+			return
+		EditorInterface.get_editor_toaster().push_toast("Resource saved to %s" % save_path)
+		res = load(save_path) # Required because of race condition shinenigans I guess
+
+	var uid := ResourceUID.path_to_uid(res.resource_path)
+
+	var adding_status := RegistryIO.add_entry(current_registry, uid, string_id)
+	match adding_status:
+		OK:
+			_res_picker.edited_resource = null
+			entry_name_line_edit.text = ""
+			_toggle_add_entry_button()
+			update_view()
+		ERR_ALREADY_EXISTS:
+			_print_fake_error("An entry with the same UID already exists in the registry.")
+		ERR_CANT_ACQUIRE_RESOURCE:
+			_print_fake_error("This resource is not saved as a file. Click [b]⌄[/b] then [b]Save[/b] on the resource picker to save it first.")
+		ERR_INVALID_PARAMETER:
+			_print_fake_error("The String ID is invalid. It must not start with 'uid://'.")
+		ERR_DATABASE_CANT_WRITE:
+			_print_fake_error("This resource doesn't match the registry class restriction.")
+		_:
+			_print_fake_error("Failed to add entry to the registry.")
 
 
 func _toggle_add_entry_button() -> void:
@@ -711,6 +747,11 @@ func _on_res_picker_resource_changed(_new_resource: Resource) -> void:
 	_toggle_add_entry_button()
 
 
+func _on_res_picker_resource_selected(resource: Resource, inspect: bool) -> void:
+	if inspect:
+		EditorInterface.edit_resource(resource)
+
+
 func _on_delete_entries_confirmation_dialog_confirmed() -> void:
 	_delete_selected_entries()
 
@@ -724,24 +765,4 @@ func _on_add_entry_button_pressed() -> void:
 	if add_entry_button.disabled:
 		return
 
-	var res: Resource = _res_picker.edited_resource
-	var string_id: StringName = StringName(entry_name_line_edit.text)
-	var uid := ResourceUID.path_to_uid(res.resource_path)
-
-	var status := RegistryIO.add_entry(current_registry, uid, string_id)
-	match status:
-		OK:
-			_res_picker.edited_resource = null
-			entry_name_line_edit.text = ""
-			_toggle_add_entry_button()
-			update_view()
-		ERR_ALREADY_EXISTS:
-			_print_fake_error("An entry with the same UID already exists in the registry.")
-		ERR_CANT_ACQUIRE_RESOURCE:
-			_print_fake_error("This resource is not saved as a file. Click [b]⌄[/b] then [b]Save[/b] on the resource picker to save it first.")
-		ERR_INVALID_PARAMETER:
-			_print_fake_error("The String ID is invalid. It must not start with 'uid://'.")
-		ERR_DATABASE_CANT_WRITE:
-			_print_fake_error("This resource doesn't match the registry class restriction.")
-		_:
-			_print_fake_error("Failed to add entry to the registry.")
+	_add_entry_from_picker(_res_picker.edited_resource, StringName(entry_name_line_edit.text))
