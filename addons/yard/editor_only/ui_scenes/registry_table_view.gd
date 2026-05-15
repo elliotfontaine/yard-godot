@@ -591,7 +591,6 @@ func _add_entry_from_picker(res: Resource, string_id: StringName) -> void:
 	var adding_status := RegistryIO.add_entry(current_registry, uid, string_id)
 	match adding_status:
 		OK:
-			_res_picker.edited_resource = null
 			entry_name_line_edit.text = ""
 			_toggle_add_entry_button()
 			update_view()
