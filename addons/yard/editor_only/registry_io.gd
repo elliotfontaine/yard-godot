@@ -185,8 +185,11 @@ static func change_entry_uid(registry: Registry, id: StringName, new_uid: String
 
 static func sync_from_scan_directories(registry: Registry) -> void:
 	var settings := get_registry_settings(registry)
+	var all_scan_dirs := settings.get_all_scan_directories()
+	if all_scan_dirs.is_empty():
+		return
 	# Validate before applying new settings
-	for scan_dir in settings.get_all_scan_directories():
+	for scan_dir in all_scan_dirs:
 		if not scan_dir or not DirAccess.dir_exists_absolute(scan_dir):
 			return
 
