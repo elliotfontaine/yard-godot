@@ -28,6 +28,7 @@ const H_ALIGNMENT_MARGINS = {
 	HORIZONTAL_ALIGNMENT_RIGHT: -5,
 }
 const CELL_INVALID := "<CELL_INVALID>"
+const INVALID_UID := "uid://<invalid>"
 
 # Theming properties
 @export_group("Custom YARD Properties")
@@ -598,14 +599,18 @@ func _open_resource_editor(row: int, col: int) -> void:
 
 func _open_path_editor(row: int, col: int) -> void:
 	_editing_cell = [row, col]
+	var cell_value: String = get_cell_value(row, col)
 	var column := get_column(col)
 	if column.property_hint in [PROPERTY_HINT_FILE, PROPERTY_HINT_FILE_PATH]:
 		_path_editor.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
 	if column.property_hint in [PROPERTY_HINT_DIR]:
 		_path_editor.file_mode = EditorFileDialog.FILE_MODE_OPEN_DIR
-	var current_path := ResourceUID.ensure_path(get_cell_value(row, col))
-	_path_editor.current_dir = current_path.get_base_dir()
-	_path_editor.current_path = current_path
+
+	if FileAccess.file_exists(cell_value):
+		var current_path := ResourceUID.ensure_path(cell_value)
+		_path_editor.current_dir = current_path.get_base_dir()
+		_path_editor.current_path = current_path
+
 	_path_editor.popup_centered_ratio(0.55)
 
 
@@ -912,10 +917,8 @@ func _draw_cell_resource(rect: Rect2, row: int, col: int) -> void:
 
 func _draw_cell_path(rect: Rect2, row: int, col: int) -> void:
 	var cell_value: Variant = get_cell_value(row, col)
-	if not (
-		get_column(col).property_hint == PROPERTY_HINT_FILE
-		and ResourceUID.has_id(ResourceUID.text_to_id(cell_value))
-	):
+	var is_invalid_uid: bool = cell_value == INVALID_UID
+	if not get_column(col).property_hint == PROPERTY_HINT_FILE:
 		_draw_cell_text(rect, row, col)
 		return
 
@@ -925,7 +928,12 @@ func _draw_cell_path(rect: Rect2, row: int, col: int) -> void:
 
 	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_LEFT)
 	var thumb_width := 0.0
-	var texture := _get_or_queue_thumbnail(cell_value)
+	var texture: Texture2D
+	if is_invalid_uid:
+		texture = get_theme_icon(&"FileDead", &"EditorIcons")
+	elif ResourceLoader.exists(cell_value):
+		texture = _get_or_queue_thumbnail(cell_value)
+
 	if texture != null:
 		var thumb_rect := _fit_texture_rect(texture, inner, true)
 		thumb_rect.position.x += x_margin_val
@@ -933,7 +941,10 @@ func _draw_cell_path(rect: Rect2, row: int, col: int) -> void:
 		_draw_filtered_texture_rect(texture, thumb_rect)
 
 	var text_rect := inner.grow_individual(-thumb_width - x_margin_val, 0, 0, 0)
-	_draw_cell_text(text_rect, row, col)
+	if is_invalid_uid:
+		_draw_cell_text(text_rect, row, col, "", get_theme_color(&"error_color", &"Editor"))
+	else:
+		_draw_cell_text(text_rect, row, col)
 
 
 func _draw_filtered_texture_rect(texture: Texture2D, rect: Rect2) -> void:
@@ -949,7 +960,7 @@ func _draw_filtered_texture_rect(texture: Texture2D, rect: Rect2) -> void:
 		draw_texture_rect(texture, rect, false)
 
 
-func _draw_cell_text(rect: Rect2, row: int, col: int, text_override: String = "") -> void:
+func _draw_cell_text(rect: Rect2, row: int, col: int, text_override: String = "", color_override: Color = Color.TRANSPARENT) -> void:
 	var cell_value := str(get_cell_value(row, col))
 
 	var column := get_column(col)
@@ -964,8 +975,11 @@ func _draw_cell_text(rect: Rect2, row: int, col: int, text_override: String = ""
 	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(h_alignment)
 	var baseline_y := _get_text_baseline_y(rect.position.y)
 	var display_text := _get_display_text(full_text, text_font, rect.size.x - absf(x_margin_val))
-	var text_color := column.custom_font_color if column.custom_font_color else default_font_color
-	text_color = get_theme_color("error_color", "Editor") if cell_value.begins_with("(!) ") else text_color # TODO: registry-specific. Refactor outside — e.g. give the ability to set colors for specific rows.
+	var text_color := default_font_color
+	if color_override != Color.TRANSPARENT:
+		text_color = color_override
+	elif column.custom_font_color:
+		text_color = column.custom_font_color
 
 	draw_string(
 		text_font,
