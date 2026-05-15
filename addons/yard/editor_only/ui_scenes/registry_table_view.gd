@@ -39,6 +39,7 @@ const ACCELERATORS_MAC: Dictionary = {
 	EditMenuAction.SELECT_ALL: KEY_MASK_META | KEY_A,
 }
 
+const INVALID_UID := "uid://<invalid>"
 const LOGGING_INFO_COLOR := "lightslategray"
 const UID_COLUMN_CONFIG := ["uid", "UID", TYPE_STRING]
 const STRINGID_COLUMN_CONFIG := ["string_id", "String ID", TYPE_STRING]
@@ -240,7 +241,7 @@ func update_view() -> void:
 		if RegistryIO.is_uid_valid(uid):
 			entry_data.append_array(get_res_row_data(current_registry.load_entry(uid)))
 		else:
-			entry_data[UID_COLUMN] = "(!) " + uid
+			entry_data[UID_COLUMN] = INVALID_UID
 			entry_data.append_array(get_res_row_data(null))
 		entries_data.append(entry_data)
 
@@ -351,9 +352,9 @@ func get_res_row_data(res: Resource) -> Array[Variant]:
 
 
 func get_row_resource_uid(row: int) -> StringName:
-	var uid: Variant = dynamic_table.get_cell_value(row, UID_COLUMN)
-	if uid and uid is StringName:
-		return uid
+	var string_id: Variant = dynamic_table.get_cell_value(row, STRINGID_COLUMN)
+	if string_id and string_id is StringName:
+		return current_registry.get_uid(string_id)
 	else:
 		return &""
 
@@ -620,7 +621,10 @@ func _toggle_edit_context_menu_items() -> void:
 func _delete_selected_entries() -> void:
 	for row_idx: int in dynamic_table.selected_rows:
 		var uid := get_row_resource_uid(row_idx)
-		RegistryIO.erase_entry(current_registry, uid)
+		if RegistryIO.erase_entry(current_registry, uid) != OK:
+			_print_fake_error(
+				"Failed to remove %s from %s." % [uid, current_registry.resource_path.get_file()],
+			)
 
 	dynamic_table.set_selected_cell(-1, -1) # cancel current selection
 	update_view()
@@ -691,7 +695,6 @@ func _on_multiple_rows_selected(_rows: Array) -> void:
 
 
 func _on_cell_edited(row: int, column: int, old_value: Variant, new_value: Variant) -> void:
-	#print("Cell edited on row ", row, ", column ", column, " Old value: ", old_value, " New value: ", new_value)
 	if column not in [UID_COLUMN, STRINGID_COLUMN]:
 		var entry := get_row_resource_uid(row)
 		var col_config: DynamicTable.ColumnConfig = dynamic_table.get_column(column)
@@ -701,7 +704,8 @@ func _on_cell_edited(row: int, column: int, old_value: Variant, new_value: Varia
 	elif column == STRINGID_COLUMN and new_value:
 		RegistryIO.rename_entry(current_registry, old_value, new_value)
 	elif column == UID_COLUMN and new_value:
-		RegistryIO.change_entry_uid(current_registry, old_value, new_value)
+		var old_uid = get_row_resource_uid(row) # Needed because the cell might store uid://<invalid>
+		var res: Error = RegistryIO.change_entry_uid(current_registry, old_uid, new_value)
 	update_view()
 
 
