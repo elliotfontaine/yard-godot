@@ -1,5 +1,6 @@
 @tool
 extends Button
+class_name EditorIconMenuButton
 
 @export var icon_name := "Node":
 	set(v):

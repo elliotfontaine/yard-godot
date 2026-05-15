@@ -1,9 +1,10 @@
-[gd_scene load_steps=14 format=3 uid="uid://crnac01bnyk3"]
+[gd_scene format=3 uid="uid://crnac01bnyk3"]
 
 [ext_resource type="Script" uid="uid://tahli441tq7q" path="res://addons/yard/editor_only/ui_scenes/registry_table_view.gd" id="1_isv8r"]
 [ext_resource type="Script" uid="uid://0fmlvbrxn2lf" path="res://addons/yard/editor_only/classes/editor_icon_popup_menu.gd" id="2_8g0vx"]
 [ext_resource type="Script" uid="uid://d25c0lxjdxouk" path="res://addons/yard/editor_only/ui_scenes/components/dynamic_table.gd" id="2_wsykm"]
 [ext_resource type="Script" uid="uid://djrr6b7fc76rw" path="res://addons/yard/editor_only/classes/editor_icon_button.gd" id="3_5vsn3"]
+[ext_resource type="Script" uid="uid://cyavqqa5qice7" path="res://addons/yard/editor_only/add_entry_button.gd" id="5_3v8u8"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5vsn3"]
 
@@ -65,7 +66,14 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[node name="RegistryTableView" type="PanelContainer"]
+[sub_resource type="InputEventKey" id="InputEventKey_3v8u8"]
+device = -1
+keycode = 4194309
+
+[sub_resource type="Shortcut" id="Shortcut_s605x"]
+events = [SubResource("InputEventKey_3v8u8")]
+
+[node name="RegistryTableView" type="PanelContainer" unique_id=1992110506]
 clip_contents = true
 anchors_preset = 15
 anchor_right = 1.0
@@ -75,7 +83,7 @@ size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxEmpty_5vsn3")
 script = ExtResource("1_isv8r")
 
-[node name="EditContextMenu" type="PopupMenu" parent="."]
+[node name="EditContextMenu" type="PopupMenu" parent="." unique_id=452271828]
 unique_name_in_owner = true
 size = Vector2i(130, 65)
 item_count = 13
@@ -117,80 +125,87 @@ icon_names = Dictionary[int, String]({
 7: "ActionPaste"
 })
 
-[node name="DeleteEntriesConfirmationDialog" type="ConfirmationDialog" parent="."]
+[node name="DeleteEntriesConfirmationDialog" type="ConfirmationDialog" parent="." unique_id=1598690725]
 unique_name_in_owner = true
 title = "Please Confirm"
 initial_position = 1
 size = Vector2i(400, 100)
 ok_button_text = "Yes"
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1411726899]
 layout_mode = 2
 alignment = 2
 
-[node name="Border" type="PanelContainer" parent="VBoxContainer"]
+[node name="Border" type="PanelContainer" parent="VBoxContainer" unique_id=1728128279]
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 1
 theme_override_styles/panel = SubResource("StyleBoxFlat_8g0vx")
 
-[node name="ClipChildren" type="PanelContainer" parent="VBoxContainer/Border"]
+[node name="ClipChildren" type="PanelContainer" parent="VBoxContainer/Border" unique_id=383753236]
 clip_children = 1
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 1
 theme_override_styles/panel = SubResource("StyleBoxFlat_5vsn3")
 
-[node name="DynamicTable" type="Control" parent="VBoxContainer/Border/ClipChildren"]
+[node name="DynamicTable" type="Control" parent="VBoxContainer/Border/ClipChildren" unique_id=754314228]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 focus_mode = 2
 mouse_filter = 1
 script = ExtResource("2_wsykm")
-default_font_color = Color(0.8, 0.8075, 0.8275, 1)
-header_height = 42.0
-header_color = Color(0.14, 0.161, 0.21700001, 1)
-header_filter_active_font_color = Color(0.3372549, 0.61960787, 1, 1)
-row_height = 42.0
+default_font_color = Color(1, 1, 1, 0.75)
+header_height = 28.0
+header_color = Color(0.105454996, 0.105454996, 0.105454996, 1)
+header_filter_active_font_color = Color(0.337, 0.62, 1, 1)
+row_height = 28.0
 n_frozen_columns = 2
-grid_color = Color(0.14, 0.161, 0.217, 1)
+grid_color = Color(0.063273, 0.063273, 0.063273, 1)
 selected_row_back_color = Color(1, 1, 1, 0.2)
-selected_cell_back_color = Color(0.3372549, 0.61960787, 1, 1)
-row_color = Color(0.2, 0.23, 0.31, 1)
-alternate_row_color = Color(0.164, 0.1886, 0.2542, 1)
-invalid_cell_color = Color(0.146, 0.1679, 0.2263, 1)
+selected_cell_back_color = Color(0.337, 0.62, 1, 1)
+row_color = Color(0.161, 0.161, 0.161, 1)
+alternate_row_color = Color(0.12236, 0.12236, 0.12236, 1)
+progress_bar_start_color = Color(0.96, 0.2, 0.32, 1)
+progress_bar_middle_color = Color(0.98, 0.89, 0.27, 1)
+progress_bar_end_color = Color(0.45, 0.95, 0.5, 1)
+progress_background_color = Color(0, 0, 0, 1)
+progress_border_color = Color(1, 1, 1, 0.2)
+progress_text_color_light = Color(1, 1, 1, 0.75)
+progress_text_color_dark = Color(0.105454996, 0.105454996, 0.105454996, 1)
+invalid_cell_color = Color(0.117529996, 0.117529996, 0.117529996, 1)
 
-[node name="DragAndDropInfoPanel" type="PanelContainer" parent="VBoxContainer/Border"]
+[node name="DragAndDropInfoPanel" type="PanelContainer" parent="VBoxContainer/Border" unique_id=1202599608]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_1gq3u")
 
-[node name="FocusPanel" type="PanelContainer" parent="VBoxContainer/Border/DragAndDropInfoPanel"]
+[node name="FocusPanel" type="PanelContainer" parent="VBoxContainer/Border/DragAndDropInfoPanel" unique_id=1050609124]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_p6h1j")
 
-[node name="CenterContainer" type="CenterContainer" parent="VBoxContainer/Border/DragAndDropInfoPanel"]
+[node name="CenterContainer" type="CenterContainer" parent="VBoxContainer/Border/DragAndDropInfoPanel" unique_id=1674108507]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="Label" type="Label" parent="VBoxContainer/Border/DragAndDropInfoPanel/CenterContainer"]
+[node name="Label" type="Label" parent="VBoxContainer/Border/DragAndDropInfoPanel/CenterContainer" unique_id=387601167]
 layout_mode = 2
 text = "Drop resource files here to add them to the registry."
 
-[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer"]
+[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer" unique_id=314751251]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_p6h1j")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/PanelContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/PanelContainer" unique_id=1078401011]
 layout_mode = 2
 
-[node name="ToggleRegistryPanelButton" type="Button" parent="VBoxContainer/PanelContainer/HBoxContainer"]
+[node name="ToggleRegistryPanelButton" type="Button" parent="VBoxContainer/PanelContainer/HBoxContainer" unique_id=1615900097]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Toggle Files Panel"
@@ -199,7 +214,7 @@ shortcut = SubResource("Shortcut_8bvbn")
 script = ExtResource("3_5vsn3")
 icon_name = "Back"
 
-[node name="AddEntryContainer" type="HBoxContainer" parent="VBoxContainer/PanelContainer/HBoxContainer"]
+[node name="AddEntryContainer" type="HBoxContainer" parent="VBoxContainer/PanelContainer/HBoxContainer" unique_id=583076759]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -207,23 +222,24 @@ size_flags_horizontal = 3
 theme_override_constants/separation = 8
 alignment = 2
 
-[node name="ResourcePickerContainer" type="PanelContainer" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer"]
+[node name="ResourcePickerContainer" type="PanelContainer" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer" unique_id=2076206042]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_3v8u8")
 
-[node name="EntryNameLineEdit" type="LineEdit" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer"]
+[node name="EntryNameLineEdit" type="LineEdit" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer" unique_id=822511187]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 placeholder_text = "String ID"
 
-[node name="AddEntryButton" type="Button" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer"]
+[node name="AddEntryButton" type="Button" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer" unique_id=454249873]
 unique_name_in_owner = true
 layout_mode = 2
+shortcut = SubResource("Shortcut_s605x")
 text = "Add Entry"
 icon_alignment = 2
-script = ExtResource("3_5vsn3")
+script = ExtResource("5_3v8u8")
 icon_name = "Add"
 
 [connection signal="about_to_popup" from="EditContextMenu" to="." method="_on_edit_context_menu_about_to_popup"]
