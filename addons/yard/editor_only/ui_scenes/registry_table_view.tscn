@@ -217,6 +217,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 placeholder_text = "String ID"
+keep_editing_on_text_submit = true
 
 [node name="AddEntryButton" type="Button" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer"]
 unique_name_in_owner = true

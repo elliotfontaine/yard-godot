@@ -103,6 +103,7 @@ func _ready() -> void:
 	dynamic_table.header_clicked.connect(_on_header_clicked)
 	dynamic_table.column_resized.connect(_on_column_resized)
 	dynamic_table.multiple_rows_selected.connect(_on_multiple_rows_selected)
+	entry_name_line_edit.text_submitted.connect(_on_new_entry_text_submitted)
 
 	var accelerators := ACCELERATORS_MAC if OS.get_name() == "macOS" else ACCELERATORS_WIN
 	for action: EditMenuAction in accelerators:
@@ -574,7 +575,8 @@ func _setup_add_entry() -> void:
 
 
 func _add_entry_from_picker(res: Resource, string_id: StringName) -> void:
-	if not res.resource_path or not ResourceLoader.exists(res.resource_path):
+	var res_is_file := res.resource_path and ResourceLoader.exists(res.resource_path)
+	if not res_is_file:
 		var current_dir := EditorInterface.get_current_path().get_base_dir()
 		var save_path := current_dir.path_join(str(string_id) + ".tres")
 		if ResourceLoader.exists(save_path):
@@ -592,7 +594,8 @@ func _add_entry_from_picker(res: Resource, string_id: StringName) -> void:
 	var adding_status := RegistryIO.add_entry(current_registry, uid, string_id)
 	match adding_status:
 		OK:
-			_res_picker.edited_resource = null
+			if res_is_file:
+				_res_picker.edited_resource = null
 			entry_name_line_edit.text = ""
 			_toggle_add_entry_button()
 			update_view()
@@ -762,6 +765,10 @@ func _on_delete_entries_confirmation_dialog_confirmed() -> void:
 
 func _on_edit_context_menu_about_to_popup() -> void:
 	_toggle_edit_context_menu_items()
+
+
+func _on_new_entry_text_submitted(_new_text: String) -> void:
+	_on_add_entry_button_pressed()
 
 
 func _on_add_entry_button_pressed() -> void:
