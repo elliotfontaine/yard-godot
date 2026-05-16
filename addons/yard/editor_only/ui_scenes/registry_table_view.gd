@@ -759,6 +759,10 @@ func _on_edit_context_menu_about_to_popup() -> void:
 	_toggle_edit_context_menu_items()
 
 
+func _on_new_entry_text_submitted(_new_text: String) -> void:
+	_on_add_entry_button_pressed()
+
+
 func _on_add_entry_button_pressed() -> void:
 	_toggle_add_entry_button()
 	if add_entry_button.disabled:
