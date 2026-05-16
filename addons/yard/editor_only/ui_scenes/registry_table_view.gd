@@ -102,6 +102,7 @@ func _ready() -> void:
 	dynamic_table.header_clicked.connect(_on_header_clicked)
 	dynamic_table.column_resized.connect(_on_column_resized)
 	dynamic_table.multiple_rows_selected.connect(_on_multiple_rows_selected)
+entry_name_line_edit.text_submitted.connect(_on_new_entry_text_submitted)
 
 	var accelerators := ACCELERATORS_MAC if OS.get_name() == "macOS" else ACCELERATORS_WIN
 	for action: EditMenuAction in accelerators:
