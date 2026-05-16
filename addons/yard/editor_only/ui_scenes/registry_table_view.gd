@@ -574,7 +574,8 @@ func _setup_add_entry() -> void:
 
 
 func _add_entry_from_picker(res: Resource, string_id: StringName) -> void:
-	if not res.resource_path or not ResourceLoader.exists(res.resource_path):
+	var res_is_file := res.resource_path and ResourceLoader.exists(res.resource_path)
+	if not res_is_file:
 		var current_dir := EditorInterface.get_current_path().get_base_dir()
 		var save_path := current_dir.path_join(str(string_id) + ".tres")
 		if ResourceLoader.exists(save_path):
