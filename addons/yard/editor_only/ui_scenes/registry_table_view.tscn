@@ -231,5 +231,4 @@ icon_name = "Add"
 [connection signal="id_pressed" from="EditContextMenu" to="." method="_on_edit_context_menu_id_pressed"]
 [connection signal="confirmed" from="DeleteEntriesConfirmationDialog" to="." method="_on_delete_entries_confirmation_dialog_confirmed"]
 [connection signal="text_changed" from="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer/EntryNameLineEdit" to="." method="_on_entry_name_line_edit_text_changed"]
-[connection signal="text_submitted" from="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer/EntryNameLineEdit" to="." method="_on_new_entry_text_submitted"]
 [connection signal="pressed" from="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer/AddEntryButton" to="." method="_on_add_entry_button_pressed"]
