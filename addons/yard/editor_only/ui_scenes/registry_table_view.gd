@@ -57,9 +57,10 @@ var current_registry: Registry:
 		var is_another := new != current_registry
 		current_registry = new
 		current_cache_data = RegistryCacheData.load_or_default(new) if new else null
-		if is_another and current_cache_data:
+		if current_cache_data:
 			_setup_add_entry()
-			dynamic_table.ordering_data(STRINGID_COLUMN, true)
+			if is_another:
+				dynamic_table.ordering_data(STRINGID_COLUMN, true)
 		update_view()
 
 var toggle_button_forward := false:

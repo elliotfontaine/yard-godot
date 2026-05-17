@@ -103,6 +103,7 @@ func _ready() -> void:
 	columns_menu_button.get_popup().hide_on_checkable_item_selection = false
 	registries_itemlist.registries_dropped.connect(_on_itemlist_registries_dropped)
 	registry_table_view.toggle_registry_panel_button.pressed.connect(_on_toggle_registries_pressed)
+	new_registry_dialog.settings_saved.connect(_on_new_registry_dialog_settings_saved)
 
 	# Fuzzy Search settings
 	_fuz.max_results = 20
@@ -737,7 +738,7 @@ func _on_toggle_registries_pressed() -> void:
 	registry_table_view.toggle_button_forward = !registries_container.visible
 
 
-func _on_new_registry_dialog_confirmed() -> void:
+func _on_new_registry_dialog_settings_saved() -> void:
 	_update_registries_itemlist()
 	if (
 		new_registry_dialog._state == new_registry_dialog.RegistryDialogState.REGISTRY_SETTINGS

@@ -4,6 +4,8 @@ extends ConfirmationDialog
 # Used both for the 'New Registry' menu item
 # and for the 'Registry Settings' button
 
+signal settings_saved
+
 enum RegistryDialogState { NEW_REGISTRY, REGISTRY_SETTINGS }
 enum FileDialogState { CLASS_RESTRICTION, SCAN_DIRECTORY, REGISTRY_PATH }
 
@@ -434,6 +436,7 @@ func _edit_settings_and_rebuild_index(already_built_settings: RegistryIO.Registr
 	err = RegistryIO.rebuild_property_index(edited_registry)
 	if err != OK:
 		print_debug(error_string(err))
+	settings_saved.emit()
 
 
 func _on_about_to_popup() -> void:
