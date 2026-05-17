@@ -162,6 +162,19 @@ func get_string_id(id: StringName) -> StringName:
 	return _uids_to_string_ids.get(id, &"")
 
 
+## Returns the string ID of a loaded [Resource]. Returns an empty [StringName]
+## if [param res] is [code]null[/code], has no file path, or is not present in
+## the registry.[br][br]
+##
+## [b]Warning:[/b] This will not work with resources duplicated via [method Resource.duplicate],
+## as duplicated resources have an empty [member Resource.resource_path].
+func get_string_id_of(res: Resource) -> StringName:
+	if not res or res.resource_path.is_empty():
+		return &""
+	var uid := ResourceUID.path_to_uid(res.resource_path)
+	return _uids_to_string_ids.get(StringName(uid), &"")
+
+
 ## Returns an [Array] of all properties that have been baked into the property index.[br][br]
 ##
 ## Each entry in the returned array is a [StringName] corresponding to a property key

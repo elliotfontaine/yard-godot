@@ -103,6 +103,17 @@ public class Registry<[MustBeVariant] TResource> where TResource : Resource
 	public StringName GetStringId(StringName id) => _registry.Call("get_string_id", id).AsStringName();
 
 	/// <summary>
+	/// Returns the string ID of a loaded <see cref="Resource"/>.
+	/// Returns an empty <c>StringName</c> if the resource is null, has no file path,
+	/// or is not present in the registry.
+	/// <para><b>Warning:</b> This will not work with resources duplicated via
+	/// <see cref="Resource.Duplicate"/>, as duplicated resources have an empty
+	/// <see cref="Resource.ResourcePath"/>.</para>
+	/// </summary>
+	/// <param name="res">Resource instance to look up.</param>
+	public StringName GetStringIdOf(Resource res) => _registry.Call("get_string_id_of", res).AsStringName();
+
+	/// <summary>
 	/// Returns an Array of all registered string IDs.
 	/// </summary>
 	public Array<StringName> GetAllStringIds() => (Array<StringName>) _registry.Call("get_all_string_ids");
@@ -126,7 +137,7 @@ public class Registry<[MustBeVariant] TResource> where TResource : Resource
 	/// See also IsEmpty.
 	/// </summary>
 	public int Size() => (int) _registry.Call("size");
-	
+
 	/// <summary>
 	/// Returns true if the registry contains no entries.
 	/// See also Size.
@@ -246,7 +257,7 @@ public class Registry<[MustBeVariant] TResource> where TResource : Resource
 	/// </summary>
 	/// <param name="criteria">Criterion is either an exact value Variant or a Callable predicate</param>
 	public Array<StringName> Where(Dictionary<StringName, Variant> criteria) => (Array<StringName>) _registry.Call("where", criteria);
-	
+
 	// -----------------------------
 	// Wrapper for RegistryLoadTracker
 	// -----------------------------
