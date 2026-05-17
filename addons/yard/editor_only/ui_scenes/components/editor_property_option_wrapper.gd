@@ -21,6 +21,7 @@ func _build_dropdown(choices: Array[String], current_value: String, p_show_empty
 	var dropdown: OptionButton = OptionButton.new()
 	dropdown.flat = true
 	dropdown.fit_to_longest_item = false
+	dropdown.allow_reselect = true
 	dropdown.clip_text = true
 
 	if p_show_empty:
@@ -48,6 +49,7 @@ func _on_option_selected(index: int) -> void:
 func _update_property() -> void:
 	var current: String = get_edited_object().get(get_edited_property())
 
+	inner_control.select(-1)
 	for i in range(inner_control.item_count):
 		if inner_control.get_item_text(i) == current:
 			inner_control.select(i)
