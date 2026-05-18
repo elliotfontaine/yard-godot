@@ -1689,6 +1689,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 			return
 
 	var old_row := focused_row
+	var old_col := focused_col
 	focused_row = new_row
 	focused_col = new_col
 
@@ -1698,7 +1699,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 		_ensure_row_visible(focused_row)
 		_ensure_col_visible(focused_col)
 
-	if old_row != focused_row or new_col != focused_col:
+	if old_row != focused_row or old_col != focused_col:
 		cell_selected.emit(focused_row, focused_col)
 
 	_finalize_key_operation()

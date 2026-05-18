@@ -7,7 +7,6 @@ enum EditMenuAction {
 	COPY_STRING_ID = 1,
 	COPY_UID = 2,
 	SHOW_IN_FILESYSTEM = 3,
-	INSPECT_RESOURCE = 4,
 	CUT_CELL_VALUE = 5,
 	COPY_CELL_VALUE = 6,
 	PASTE_TO_CELL = 7,
@@ -77,6 +76,7 @@ var id_columns_frozen := true:
 var _texture_rect_parent: Button
 var _res_picker: EditorResourcePicker
 var _uid_resource_to_inspect: String
+var _subresource_to_inspect: Resource
 
 @onready var dynamic_table: DynamicTable = %DynamicTable
 @onready var toggle_registry_panel_button: Button = %ToggleRegistryPanelButton
@@ -139,9 +139,13 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	# Too many load() and inspect requests might be the source of the 'Abort trap: 6' crashes
-	if _uid_resource_to_inspect and Engine.get_process_frames() % 30 == 0:
-		EditorInterface.edit_resource(load(_uid_resource_to_inspect))
-		_uid_resource_to_inspect = ""
+	if (_uid_resource_to_inspect or _subresource_to_inspect) and Engine.get_process_frames() % 30 == 0:
+		if _subresource_to_inspect:
+			EditorInterface.edit_resource(_subresource_to_inspect)
+			_subresource_to_inspect = null
+		elif _uid_resource_to_inspect:
+			EditorInterface.edit_resource(load(_uid_resource_to_inspect))
+			_uid_resource_to_inspect = ""
 
 	if _texture_rect_parent and _texture_rect_parent.custom_minimum_size != Vector2(1, 1):
 		# It's set by C++ code to enlarge the resource preview in the inspector.
@@ -284,13 +288,6 @@ func do_edit_menu_action(action_id: int) -> void:
 			var uid := get_row_resource_uid(dynamic_table.focused_row)
 			var path := ResourceUID.uid_to_path(uid)
 			EditorInterface.get_file_system_dock().navigate_to_path(path)
-		EditMenuAction.INSPECT_RESOURCE:
-			var row := dynamic_table.focused_row
-			var col := dynamic_table.focused_col
-			if -1 not in [row, col]:
-				var value: Variant = dynamic_table.get_cell_value(row, col)
-				if value is Resource:
-					EditorInterface.edit_resource(value)
 		EditMenuAction.CUT_CELL_VALUE:
 			var row := dynamic_table.focused_row
 			var col := dynamic_table.focused_col
@@ -374,8 +371,6 @@ func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 	var cell_value: Variant = dynamic_table.get_cell_value(row, col) if has_selected_cell else null
 	var cant_be_cut := col in [UID_COLUMN, STRINGID_COLUMN]
 	var is_cell_invalid: bool = cell_value is String and cell_value == dynamic_table.CELL_INVALID
-	var is_resource_cell := has_selected_cell and cell_value is Resource
-
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), !has_selected_row)
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.COPY_STRING_ID), !has_selected_row)
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.COPY_UID), !has_selected_row)
@@ -383,7 +378,6 @@ func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.CUT_CELL_VALUE), !has_selected_cell or cant_be_cut or is_cell_invalid)
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.COPY_CELL_VALUE), !has_selected_cell or is_cell_invalid)
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.PASTE_TO_CELL), !has_selected_cell or is_cell_invalid)
-	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.INSPECT_RESOURCE), !is_resource_cell)
 
 	for select_action: int in [EditMenuAction.SELECT_ALL, EditMenuAction.INVERT_SELECTION, EditMenuAction.UNSELECT]:
 		edit_menu.set_item_disabled(edit_menu.get_item_index(select_action), false)
@@ -683,9 +677,15 @@ func _on_cell_selected(row: int, column: int) -> void:
 	# but supposedly related to switching selected cell with arrow keys. Only report: 'Abort trap: 6'
 	#print("Cell selected on row ", row, ", column ", column, " Cell value: ", dynamic_table.get_cell_value(row, column)) #, " Row value: ", dynamic_table.get_row_value(row))
 	if row != -1 and column != -1:
-		var uid: StringName = get_row_resource_uid(row)
-		if RegistryIO.is_uid_valid(uid):
-			_uid_resource_to_inspect = uid
+		var cell_value: Variant = dynamic_table.get_cell_value(row, column)
+		if cell_value is Resource:
+			_subresource_to_inspect = cell_value
+			_uid_resource_to_inspect = ""
+		else:
+			_subresource_to_inspect = null
+			var uid: StringName = get_row_resource_uid(row)
+			if RegistryIO.is_uid_valid(uid):
+				_uid_resource_to_inspect = uid
 
 
 func _on_cell_right_selected(row: int, _column: int, _mouse_pos: Vector2) -> void:
@@ -708,8 +708,8 @@ func _on_cell_edited(row: int, column: int, old_value: Variant, new_value: Varia
 	elif column == STRINGID_COLUMN and new_value:
 		RegistryIO.rename_entry(current_registry, old_value, new_value)
 	elif column == UID_COLUMN and new_value:
-		var old_uid = get_row_resource_uid(row) # Needed because the cell might store uid://<invalid>
-		var res: Error = RegistryIO.change_entry_uid(current_registry, old_uid, new_value)
+		var old_uid := get_row_resource_uid(row) # Needed because the cell might store uid://<invalid>
+		RegistryIO.change_entry_uid(current_registry, old_uid, new_value)
 	update_view()
 
 
