@@ -32,11 +32,6 @@ msgstr "复制 UID"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
-msgid "Edit Resource"
-msgstr "编辑资源"
-
-#: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
-#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Cut Cell Value"
 msgstr "剪切值"
 

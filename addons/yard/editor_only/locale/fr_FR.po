@@ -32,11 +32,6 @@ msgstr "Copier l'UID"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
-msgid "Edit Resource"
-msgstr "Modifier la ressource"
-
-#: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
-#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Cut Cell Value"
 msgstr "Couper la valeur"
 
