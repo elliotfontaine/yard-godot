@@ -61,7 +61,7 @@ Properties support dot-notation paths for nested resources (e.g. `"weapon.rarity
 
 ## Git commits
 
-Always commit as the sole author — Elliot Fontaine <elliot.fontaine@gmail.com>. Do not add `Co-Authored-By` trailers.
+Commits must be authored by the human contributor only. Do not add `Co-Authored-By` trailers.
 
 ## Code conventions
 
