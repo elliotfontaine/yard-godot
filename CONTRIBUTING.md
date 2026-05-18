@@ -23,7 +23,7 @@ Issues tagged [`good first issue`](https://github.com/elliotfontaine/yard-godot/
 
 ## Project structure
 
-```py
+```yaml
 addons/yard/
   plugin.gd                  # Plugin entry point
   registry.gd                # Runtime API (class_name Registry)
