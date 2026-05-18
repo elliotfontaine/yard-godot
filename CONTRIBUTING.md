@@ -17,10 +17,6 @@ The following plugins are recommended for a comfortable development experience (
 - **[Editor Theme Explorer](https://github.com/YuriSizov/godot-editor-theme-explorer)**: browse editor theme constants, colors, and icons.
 - **[Editor Debugger](https://github.com/Zylann/godot_editor_debugger_plugin)**: inspect the editor's own scene tree at runtime.
 
-## Good first issues
-
-Issues tagged [`good first issue`](https://github.com/elliotfontaine/yard-godot/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) are a good starting point if you are new to the codebase.
-
 ## Project structure
 
 ```r
@@ -108,3 +104,7 @@ in `DynamicTable`; plugin-level operations (menus, file I/O) in `RegistryEditor`
 - Write commit messages following [Conventional Commits](https://www.conventionalcommits.org/).
 - Do not add **Co-Authored-By** trailers for coding agents (Claude Code, Copilot, etc.). Commits must be authored by the human contributor only.
 - Open a pull request against `main`. Describe what changed and why, and link any related issue.
+
+## Good first issues
+
+Issues tagged [`good first issue`](https://github.com/elliotfontaine/yard-godot/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) are a good starting point if you are new to the codebase.
