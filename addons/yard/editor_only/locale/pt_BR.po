@@ -93,6 +93,10 @@ msgid "Scan directory valid. Will watch for new Resources…"
 msgstr "Diretório válido. Novos recursos serão detectados automaticamente…"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Scan directory is set to the project root ([code]res://[/code]). This will scan the entire project on every file save, which may cause significant editor lag."
+msgstr "O diretório de análise está definido como a raiz do projeto ([code]res://[/code]). Isso irá analisar o projeto inteiro a cada salvamento de arquivo, o que pode causar lentidão significativa no editor."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Scan directory invalid. Pick an existing directory."
 msgstr "Diretório inválido. Escolha um diretório existente."
 

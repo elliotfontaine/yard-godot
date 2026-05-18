@@ -93,6 +93,10 @@ msgid "Scan directory valid. Will watch for new Resources…"
 msgstr "Dizin geçerli. Yeni kaynaklar otomatik olarak algılanacak…"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Scan directory is set to the project root ([code]res://[/code]). This will scan the entire project on every file save, which may cause significant editor lag."
+msgstr "Tarama dizini, projenin kök dizinine ([code]res://[/code]) ayarlı. Bu, her dosya kaydında tüm projeyi tarayacak ve editörde önemli performans sorunlarına yol açabilir."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Scan directory invalid. Pick an existing directory."
 msgstr "Geçersiz dizin. Mevcut bir dizin seçin."
 

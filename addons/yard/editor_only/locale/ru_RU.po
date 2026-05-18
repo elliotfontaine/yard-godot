@@ -93,6 +93,10 @@ msgstr ""
 "Директория действительна. Новые ресурсы будут обнаружены автоматически…"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Scan directory is set to the project root ([code]res://[/code]). This will scan the entire project on every file save, which may cause significant editor lag."
+msgstr "Директория сканирования задана как корень проекта ([code]res://[/code]). При каждом сохранении файла будет сканироваться весь проект, что может привести к значительным задержкам в редакторе."
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Scan directory invalid. Pick an existing directory."
 msgstr "Директория недействительна. Выберите существующую директорию."
 
