@@ -92,6 +92,10 @@ msgid "Scan directory valid. Will watch for new Resources…"
 msgstr "目录有效。将自动检测新资源…"
 
 #: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
+msgid "Scan directory is set to the project root ([code]res://[/code]). This will scan the entire project on every file save, which may cause significant editor lag."
+msgstr "扫描目录已设置为项目根目录（[code]res://[/code]）。每次保存文件时将扫描整个项目，可能导致编辑器明显卡顿。"
+
+#: addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd
 msgid "Scan directory invalid. Pick an existing directory."
 msgstr "目录无效。请选择一个已存在的目录。"
 

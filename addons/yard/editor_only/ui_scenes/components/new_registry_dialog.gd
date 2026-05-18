@@ -36,6 +36,7 @@ var INFO_MESSAGES: Dictionary[StringName, Array] = {
 
 	# --- Scan directory ---
 	&"scan_valid": [tr("Scan directory valid. Will watch for new Resources…"), SUCCESS_COLOR],
+	&"scan_root_warning": [tr("Scan directory is set to the project root ([code]res://[/code]). This will scan the entire project on every file save, which may cause significant editor lag."), WARNING_COLOR],
 	&"scan_invalid": [tr("Scan directory invalid. Pick an existing directory."), ERROR_COLOR],
 	&"scan_empty": [tr("No scan directory, resources auto-discovery is disabled."), DEFAULT_COLOR],
 

@@ -300,7 +300,11 @@ func _validate_fields() -> Array[Array]:
 					break
 
 			if all_paths_valid:
-				validation_messages.append([ValidationSubState.SUCCESS, &"scan_valid"])
+				var has_root_dir := all_scan_paths.any(func(p: String) -> bool: return p == "res://")
+				if has_root_dir:
+					validation_messages.append([ValidationSubState.WARNING, &"scan_root_warning"])
+				else:
+					validation_messages.append([ValidationSubState.SUCCESS, &"scan_valid"])
 			else:
 				validation_messages.append([ValidationSubState.ERROR, &"scan_invalid"])
 	else:
