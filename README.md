@@ -13,20 +13,20 @@ A Godot 4 plugin for managing and querying collections of resources through a de
 
 ![preview of the registry editor](etc/preview_2.png)
 
-YARD has two complementary aspects:
+YARD builds on Godot's [resource system](https://docs.godotengine.org/en/4.5/tutorials/scripting/resources.html). It has two parts:
 
-**A table-based resource editor.** The YARD editor tab lets you create and manage registries: catalogues of resources grouped by class. Each registry provides a spreadsheet-like view of your resources and their properties.
+**A table-based resource editor.** The YARD editor tab lets you create and manage registries: catalogues of resources, optionally restricted to a class. Each registry provides a spreadsheet-like view of your resources and their properties.
 
-**A lightweight runtime API.** At runtime, a `Registry` is just a small `.tres` file holding UIDs and string IDs. It does not load the resources it references. _You_ control when loading happens, and how.
+**A lightweight runtime API.** At runtime, a `Registry` is just a small `.tres` file holding UIDs and string IDs. It contains only the mapping, never the resources themselves. _You_ control when loading happens, and how.
 
 ## Features
 
-- 🏷 Reference resources by stable, human-readable string IDs instead of file paths or UIDs lying around in some autoload
-- 🔒 Restrict a registry to a specific class — only matching resources can be added
-- 🔄 Sync a registry from a directory — entries are added and removed automatically as resource files appear or disappear, recursively or not
-- 🥧 Bake a property index in the editor for zero-cost runtime queries by resource property values
+- 🏷 Stable string IDs that survive file moves, with no autoload boilerplate to maintain
+- 🔒 Restrict a registry to a class so only matching resources can be added
+- 🔄 Sync a registry from a directory (recursively or not), with entries staying in sync as files appear or disappear
+- 🥧 Bake a property index in the editor for zero-cost runtime filtering by property value
 - 📦 Load entries individually, all at once (blocking), or asynchronously via threaded loading
-- ⚡ No runtime overhead beyond what you explicitly request, all expensive operations happen in the editor
+- ⚡ All expensive operations happen in the editor, leaving no runtime overhead beyond what you explicitly request
 
 ## Installation
 
@@ -39,96 +39,81 @@ YARD has two complementary aspects:
 
 Open the **Registry** tab in the editor, click **File > New Registry**, and configure:
 
-- **Class restriction** — only resources of this class (or its subclasses) will be accepted
-- **Scan directory** — the registry will stay in sync with resource files in this folder
-- **Indexed properties** — property names to bake into the index for runtime filtering
+- **Class restriction**: only resources of this class (or its subclasses) will be accepted
+- **Scan directory**: the registry will stay in sync with resource files in this folder
+- **Indexed properties**: property names to bake into the index for runtime filtering
 
-If you didn't specify a scan directory, you can add entries manually by dragging and dropping resources from the FileSystem dock into the registry table, or use the resource picker at the bottom.
+### Adding entries
 
-### Loading an entry
+If a scan directory is set, entries are managed automatically. Otherwise, you can add entries manually in two ways:
+
+- **Drag and drop** resources from the FileSystem dock into the registry table. They must match the class restriction.
+- **Create a new resource on the spot** using the resource picker at the bottom of the table. When you press **Add Entry**, it creates and saves the file, then immediately registers it.
+
+### Inspector dropdown with `@export_custom`
+
+`Registry.PROPERTY_HINT_CUSTOM` enables a dropdown in the inspector for any `StringName`, `String`, `Array[StringName]`, or `Array[String]` property, populated with the string IDs of a given registry.
+
+```gdscript
+@export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres") var item: StringName
+# With an <empty> option that maps to an empty string:
+@export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres,true") var item_or_empty: StringName
+# For arrays (duplicates allowed by default, set to false to disable):
+@export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres,true,false") var unique_items: Array[StringName]
+```
+
+### Loading entries at runtime
 
 ```gdscript
 const ENEMIES: Registry = preload("res://data/enemy_registry.tres")
 
-func _on_fight_started() -> void:
-	var skeleton: Enemy = ENEMIES.load_entry(&"skeleton")
-```
+# Load a single entry by string ID
+var skeleton: Enemy = ENEMIES.load_entry(&"skeleton")
 
-### Loading all entries
+# Load all entries at once (blocking)
+var all_enemies: Dictionary[StringName, Resource] = ENEMIES.load_all_blocking()
 
-```gdscript
-# Blocking
-var all_enemies := ENEMIES.load_all_blocking()
-
-# Threaded
+# Load all entries via background threads
 var tracker := ENEMIES.load_all_threaded_request()
+# Poll tracker.progress (0.0–1.0) each frame; read tracker.resources when done
 ```
 
-### Querying the index
-
-The property index can be baked while in the editor. At runtime, queries run without loading any resource.
+To look up the string ID of an already-loaded resource:
 
 ```gdscript
-# All entries where rarity == LEGENDARY
-var legendaries := WEAPONS.filter_by_value(&"rarity", Rarity.LEGENDARY)
+var string_id := ENEMIES.get_string_id_of(loaded_resource)
+```
 
-# All entries where level >= 10
-var high_level := WEAPONS.filter_by(&"level", func(v): return v >= 10)
+### Querying entries through the property index
 
-# AND query across multiple properties
-var legendary_swords := WEAPONS.filter_by_values({
-	&"rarity": Rarity.LEGENDARY,
-	&"type": &"sword",
+Set up indexed properties in **Registry Settings** and press **Reindex** to bake the index. At runtime, queries run without loading any resource.
+
+```gdscript
+# Single property — exact value or predicate
+var legendaries := WEAPONS.filter(&"rarity", Rarity.LEGENDARY)
+var high_level  := WEAPONS.filter(&"level", func(v): return v >= 10)
+
+# AND query across multiple properties (exact values or predicates)
+var legendary_non_boss := ROOMS.where({
+	&"biome": Biome.FOREST,
+	&"tier": func(t): return t != RoomData.Tier.Boss,
 })
 ```
 
-## API Reference
+Properties support dot notation for nested resources: `&"weapon.rarity"` resolves the `rarity` property of the resource stored in `weapon`.
 
-Full API documentation for `Registry` is available in the in-editor class reference.
+> The full `Registry` API is documented in the in-editor class reference: **Help > Search Help > Registry**.
 
-### Lookup
+## How the property index works its magic
 
-| Method                     | Description                                                   |
-| -------------------------- | ------------------------------------------------------------- |
-| `has(id)`                  | Returns `true` if the string ID or UID exists in the registry |
-| `has_string_id(string_id)` | Returns `true` if the string ID exists                        |
-| `has_uid(uid)`             | Returns `true` if the UID exists                              |
-| `get_uid(id)`              | Resolves a string ID or UID to its canonical UID              |
-| `get_string_id(uid)`       | Returns the string ID for a given UID                         |
-| `get_all_string_ids()`     | Returns all registered string IDs                             |
-| `get_all_uids()`           | Returns all registered UIDs                                   |
-| `size()`                   | Number of entries                                             |
-| `is_empty()`               | Returns `true` if the registry has no entries                 |
-
-### Loading
-
-| Method                                      | Description                                                                 |
-| ------------------------------------------- | --------------------------------------------------------------------------- |
-| `load_entry(id, type_hint, cache_mode)`     | Loads and returns a single resource                                         |
-| `load_all_blocking(type_hint, cache_mode)`  | Loads all entries synchronously, returns `Dictionary[StringName, Resource]` |
-| `load_all_threaded_request(type_hint, ...)` | Requests threaded loading for all entries, returns a `RegistryLoadTracker`  |
-
-### Filtering
-
-Filtering methods require the relevant properties to have been indexed in the editor.
-
-| Method                             | Description                                                           |
-| ---------------------------------- | --------------------------------------------------------------------- |
-| `is_property_indexed(property)`    | Returns `true` if the property has a baked index                      |
-| `filter_by_value(property, value)` | Returns string IDs of entries where `property == value`               |
-| `filter_by(property, predicate)`   | Returns string IDs of entries where `predicate.call(value)` is `true` |
-| `filter_by_values(criteria)`       | Returns string IDs matching all criteria (AND logic)                  |
-
-## How the property index work
-
-The index is simply a nested dictionary stored inside the registry `.tres` file :
+The index is simply a nested dictionary stored inside the registry `.tres` file:
 
 ```gdscript
 _property_index = {
 	&"rarity": {
 		Rarity.LEGENDARY: { &"excalibur": true, &"mjolnir": true },
 		Rarity.COMMON: { &"stick": true },
-	}
+	},
 	&"level": {
 		1: { &"stick": true },
 		10: { &"excalibur": true },

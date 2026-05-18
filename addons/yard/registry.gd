@@ -54,7 +54,7 @@ extends Resource
 ## [codeblock]
 ## @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres") var item: StringName
 ## @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres,true") var item_or_empty: StringName
-## @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres,true,false") var items: Array[StringName]
+## @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres,true,false") var unique_items: Array[StringName]
 ## [/codeblock]
 const PROPERTY_HINT_CUSTOM: int = 1024
 
