@@ -71,7 +71,7 @@ If a scan directory is set, entries are managed automatically. Otherwise, you ca
 const ENEMIES: Registry = preload("res://data/enemy_registry.tres")
 
 # Load a single entry by string ID
-var skeleton: Enemy = ENEMIES.load_entry(&"skeleton")
+var skeleton: Resource = ENEMIES.load_entry(&"skeleton")
 
 # Load all entries at once (blocking)
 var all_enemies: Dictionary[StringName, Resource] = ENEMIES.load_all_blocking()
