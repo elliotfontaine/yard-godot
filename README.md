@@ -139,7 +139,9 @@ _property_index = {
 
 ## Contributing
 
-Contributions are welcome. For major changes, open an issue first to discuss what you have in mind.
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+
+For major changes, [open an issue](https://github.com/elliotfontaine/yard-godot/issues/new?template=feature_request.yml) first to discuss what you have in mind.
 
 ## License
 
