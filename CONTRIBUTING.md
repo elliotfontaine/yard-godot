@@ -7,7 +7,7 @@ Thanks for your interest in contributing! This guide covers setup, project struc
 YARD is a Godot 4.5+ project. Development should target Godot 4.5, since forward-compatibility is easier to maintain than backward-compatibility. Test your changes on later versions before submitting.
 
 1. Clone the repository.
-2. Open `project.godot` in **Godot 4.5**.
+2. Open the project in **Godot 4.5**.
 3. Enable the YARD plugin in **Project > Project Settings > Plugins** if it isn't already active.
 
 The following plugins are recommended for a comfortable development experience (install them separately via the Asset Library or their repository):
@@ -23,7 +23,7 @@ Issues tagged [`good first issue`](https://github.com/elliotfontaine/yard-godot/
 
 ## Project structure
 
-```yaml
+```r
 addons/yard/
   plugin.gd                  # Plugin entry point
   registry.gd                # Runtime API (class_name Registry)
