@@ -15,7 +15,7 @@
 
 <p align="center">
   <a href="https://godotengine.org/download/" target="_blank" style="text-decoration:none"><img alt="Godot v4.5+" src="https://img.shields.io/badge/Godot-v4.5+-%23478cbf?color=49A9B4" /></a>
-  <a href="https://github.com/elliotfontaine/yard/releases"  target="_blank" style="text-decoration:none"><img alt="Latest YARD Release" src="https://img.shields.io/github/v/release/elliotfontaine/yard-godot?include_prereleases&label=Release"></a>
+  <a href="https://github.com/elliotfontaine/yard-godot/releases"  target="_blank" style="text-decoration:none"><img alt="Latest YARD Release" src="https://img.shields.io/github/v/release/elliotfontaine/yard-godot?include_prereleases&label=Release"></a>
 </p>
 
 ## Overview
