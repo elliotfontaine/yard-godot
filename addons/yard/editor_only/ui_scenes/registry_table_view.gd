@@ -7,6 +7,7 @@ enum EditMenuAction {
 	COPY_STRING_ID = 1,
 	COPY_UID = 2,
 	SHOW_IN_FILESYSTEM = 3,
+	DUPLICATE_ENTRIES = 4,
 	CUT_CELL_VALUE = 5,
 	COPY_CELL_VALUE = 6,
 	PASTE_TO_CELL = 7,
@@ -24,6 +25,7 @@ const RegistryCacheData := Namespace.YardEditorCache.RegistryCacheData
 
 const ACCELERATORS_WIN: Dictionary = {
 	EditMenuAction.DELETE_ENTRIES: KEY_MASK_CTRL | KEY_BACKSPACE,
+	EditMenuAction.DUPLICATE_ENTRIES: KEY_MASK_CTRL | KEY_D,
 	EditMenuAction.CUT_CELL_VALUE: KEY_MASK_CTRL | KEY_X,
 	EditMenuAction.COPY_CELL_VALUE: KEY_MASK_CTRL | KEY_C,
 	EditMenuAction.PASTE_TO_CELL: KEY_MASK_CTRL | KEY_V,
@@ -32,6 +34,7 @@ const ACCELERATORS_WIN: Dictionary = {
 
 const ACCELERATORS_MAC: Dictionary = {
 	EditMenuAction.DELETE_ENTRIES: KEY_MASK_META | KEY_BACKSPACE,
+	EditMenuAction.DUPLICATE_ENTRIES: KEY_MASK_META | KEY_D,
 	EditMenuAction.CUT_CELL_VALUE: KEY_MASK_META | KEY_X,
 	EditMenuAction.COPY_CELL_VALUE: KEY_MASK_META | KEY_C,
 	EditMenuAction.PASTE_TO_CELL: KEY_MASK_META | KEY_V,
@@ -288,6 +291,8 @@ func do_edit_menu_action(action_id: int) -> void:
 			var uid := get_row_resource_uid(dynamic_table.focused_row)
 			var path := ResourceUID.uid_to_path(uid)
 			EditorInterface.get_file_system_dock().navigate_to_path(path)
+		EditMenuAction.DUPLICATE_ENTRIES:
+			_duplicate_selected_entries()
 		EditMenuAction.CUT_CELL_VALUE:
 			var row := dynamic_table.focused_row
 			var col := dynamic_table.focused_col
@@ -372,6 +377,7 @@ func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 	var cant_be_cut := col in [UID_COLUMN, STRINGID_COLUMN]
 	var is_cell_invalid: bool = cell_value is String and cell_value == dynamic_table.CELL_INVALID
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), !has_selected_row)
+	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.DUPLICATE_ENTRIES), !has_selected_row)
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.COPY_STRING_ID), !has_selected_row)
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.COPY_UID), !has_selected_row)
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.SHOW_IN_FILESYSTEM), !has_selected_row)
@@ -385,10 +391,15 @@ func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 	if dynamic_table.selected_rows.size() > 1:
 		edit_menu.set_item_text(
 			edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES),
-			"Delete Entries (%s)" % dynamic_table.selected_rows.size(),
+			tr("Delete Entries (%s)") % dynamic_table.selected_rows.size(),
+		)
+		edit_menu.set_item_text(
+			edit_menu.get_item_index(EditMenuAction.DUPLICATE_ENTRIES),
+			tr("Duplicate Entries (%s)") % dynamic_table.selected_rows.size(),
 		)
 	else:
-		edit_menu.set_item_text(edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), "Delete Entry")
+		edit_menu.set_item_text(edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), tr("Delete Entry"))
+		edit_menu.set_item_text(edit_menu.get_item_index(EditMenuAction.DUPLICATE_ENTRIES), tr("Duplicate Entry"))
 
 
 func _build_columns() -> Array[DynamicTable.ColumnConfig]:
@@ -625,6 +636,16 @@ func _delete_selected_entries() -> void:
 			)
 
 	dynamic_table.set_selected_cell(-1, -1) # cancel current selection
+	update_view()
+
+
+func _duplicate_selected_entries() -> void:
+	for row_idx: int in dynamic_table.selected_rows:
+		var uid := get_row_resource_uid(row_idx)
+		if RegistryIO.duplicate_entry(current_registry, uid) != OK:
+			_print_fake_error(
+				"Failed to duplicate %s in %s." % [uid, current_registry.resource_path.get_file()],
+			)
 	update_view()
 
 

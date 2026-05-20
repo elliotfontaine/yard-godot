@@ -130,6 +130,43 @@ static func erase_entry(registry: Registry, id: StringName) -> Error:
 	return ResourceSaver.save(registry)
 
 
+static func duplicate_entry(registry: Registry, uid: StringName) -> Error:
+	var string_id := str(registry.get_string_id(uid))
+	if not string_id:
+		return ERR_INVALID_PARAMETER
+
+	if not is_uid_valid(uid):
+		return ERR_CANT_ACQUIRE_RESOURCE
+
+	var path := ResourceUID.uid_to_path(uid)
+	if not ResourceLoader.exists(path):
+		return ERR_FILE_NOT_FOUND
+
+	var dir := path.get_base_dir()
+	var ext := path.get_extension()
+
+	var base_string_id := _strip_index_suffix(string_id)
+	var n := 2
+	var new_string_id: String
+	var new_path: String
+	while true:
+		new_string_id = base_string_id + "_" + str(n)
+		new_path = dir.path_join(new_string_id + "." + ext)
+		if not registry.has_string_id(new_string_id) and not ResourceLoader.exists(new_path):
+			break
+		n += 1
+
+	var original_res := load(path)
+	var new_res := original_res.duplicate()
+	var save_status := ResourceSaver.save(new_res, new_path)
+	if save_status != OK:
+		return save_status
+
+	new_res = load(new_path)
+	var new_uid := ResourceUID.path_to_uid(new_res.resource_path)
+	return add_entry(registry, new_uid, new_string_id)
+
+
 static func rename_entry(
 		registry: Registry,
 		id: StringName,
@@ -515,16 +552,17 @@ static func _apply_settings(registry: Registry, settings: RegistrySettings) -> E
 static func _make_string_id_unique(registry: Registry, string_id: String) -> String:
 	if not string_id in registry._string_ids_to_uids:
 		return string_id
+	var base := _strip_index_suffix(string_id)
+	var n := 2
+	while base + "_" + str(n) in registry._string_ids_to_uids:
+		n += 1
+	return base + "_" + str(n)
 
+
+static func _strip_index_suffix(s: String) -> String:
 	var regex := RegEx.new()
 	regex.compile("(_\\d+)$")
-	string_id = regex.sub(string_id, "", true)
-
-	var id_to_try := string_id
-	var n := 2
-	while id_to_try + "_" + str(n) in registry._string_ids_to_uids:
-		n += 1
-	return id_to_try + "_" + str(n)
+	return regex.sub(s, "", true)
 
 
 ## Reconciles the set of indexed properties to match [param properties] exactly.[br][br]

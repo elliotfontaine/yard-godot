@@ -24,6 +24,20 @@ msgstr ""
 msgid "Delete Entry"
 msgstr ""
 
+#: addons/yard/editor_only/ui_scenes/registry_table_view.gd
+msgid "Delete Entries (%s)"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/registry_table_view.gd
+#: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
+msgid "Duplicate Entry"
+msgstr ""
+
+#: addons/yard/editor_only/ui_scenes/registry_table_view.gd
+msgid "Duplicate Entries (%s)"
+msgstr ""
+
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Copy String ID"
