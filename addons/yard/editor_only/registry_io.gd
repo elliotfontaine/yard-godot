@@ -156,15 +156,12 @@ static func duplicate_entry(registry: Registry, uid: StringName) -> Error:
 			break
 		n += 1
 
-	var original_res := load(path)
-	var new_res := original_res.duplicate()
+	var new_res := load(path).duplicate()
 	var save_status := ResourceSaver.save(new_res, new_path)
 	if save_status != OK:
 		return save_status
 
-	new_res = load(new_path)
-	var new_uid := ResourceUID.path_to_uid(new_res.resource_path)
-	return add_entry(registry, new_uid, new_string_id)
+	return add_entry(registry, ResourceUID.path_to_uid(new_path), new_string_id)
 
 
 static func rename_entry(
