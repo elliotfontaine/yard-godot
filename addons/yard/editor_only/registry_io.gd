@@ -3,6 +3,7 @@ extends Object
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const ClassUtils := Namespace.ClassUtils
+const Compat := Namespace.Compat
 
 const REGISTRY_FILE_EXTENSIONS := ["tres"]
 const LOGGING_INFO_COLOR := "lightslategray"
@@ -27,7 +28,6 @@ static func create_registry_file(path: String, settings: RegistrySettings = null
 	var save_err := ResourceSaver.save(registry, path, ResourceSaver.FLAG_CHANGE_PATH)
 
 	var uid_int := ResourceUID.create_id()
-	ResourceSaver.set_uid(path, uid_int)
 	if not ResourceUID.has_id(uid_int):
 		# Ensures the UID is in the in-memory cache, not just on disk
 		ResourceUID.add_id(uid_int, path)
@@ -138,7 +138,7 @@ static func duplicate_entry(registry: Registry, uid: StringName) -> Error:
 	if not is_uid_valid(uid):
 		return ERR_CANT_ACQUIRE_RESOURCE
 
-	var path := ResourceUID.uid_to_path(uid)
+	var path := Compat.uid_to_path(uid)
 	if not ResourceLoader.exists(path):
 		return ERR_FILE_NOT_FOUND
 
@@ -161,7 +161,7 @@ static func duplicate_entry(registry: Registry, uid: StringName) -> Error:
 	if save_status != OK:
 		return save_status
 
-	return add_entry(registry, ResourceUID.path_to_uid(new_path), new_string_id)
+	return add_entry(registry, Compat.path_to_uid(new_path), new_string_id)
 
 
 static func rename_entry(
@@ -261,7 +261,7 @@ static func sync_from_scan_directories(registry: Registry) -> void:
 	for scan_ruleset in settings.get_compiled_rulesets():
 		for scan_dir in scan_ruleset.scan_directories:
 			for res in dir_get_matching_resources(scan_dir, scan_ruleset, scan_dir):
-				var uid := ResourceUID.path_to_uid(res.resource_path)
+				var uid := Compat.path_to_uid(res.resource_path)
 				scanned_uids[uid] = true
 				if add_entry(registry, uid) == OK:
 					n_added += 1
@@ -685,12 +685,12 @@ class RegistryScanRuleset:
 	) -> bool:
 		for property_key in RULESET_PROPERTY_KEYS:
 			var our_value: Variant = (
-				self[property_key] if default_ruleset == null or self.override_properties.has(property_key)
-				else default_ruleset[property_key]
+					self[property_key] if default_ruleset == null or self.override_properties.has(property_key)
+					else default_ruleset[property_key]
 			)
 			var their_value: Variant = (
-				other_ruleset[property_key] if other_default_ruleset == null or other_ruleset.override_properties.has(property_key)
-				else other_default_ruleset[property_key]
+					other_ruleset[property_key] if other_default_ruleset == null or other_ruleset.override_properties.has(property_key)
+					else other_default_ruleset[property_key]
 			)
 			if our_value != their_value:
 				return false

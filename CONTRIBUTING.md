@@ -4,10 +4,10 @@ Thanks for your interest in contributing! This guide covers setup, project struc
 
 ## Getting started
 
-YARD is a Godot 4.5+ project. Development should target Godot 4.5, since forward-compatibility is easier to maintain than backward-compatibility. Test your changes on later versions before submitting.
+YARD is a Godot 4.4+ project. Development should target Godot 4.4, since forward-compatibility is easier to maintain than backward-compatibility. Test your changes on later versions before submitting.
 
 1. Clone the repository.
-2. Open the project in **Godot 4.5**.
+2. Open the project in **Godot 4.4**.
 3. Enable the YARD plugin in **Project > Project Settings > Plugins** if it isn't already active.
 
 The following plugins are recommended for a comfortable development experience (install them separately via the Asset Library or their repository):

@@ -14,13 +14,13 @@
 </p>
 
 <p align="center">
-  <a href="https://godotengine.org/download/" target="_blank" style="text-decoration:none"><img alt="Godot v4.5+" src="https://img.shields.io/badge/Godot-v4.5+-%23478cbf?color=49A9B4" /></a>
+  <a href="https://godotengine.org/download/" target="_blank" style="text-decoration:none"><img alt="Godot v4.4+" src="https://img.shields.io/badge/Godot-v4.4+-%23478cbf?color=49A9B4" /></a>
   <a href="https://github.com/elliotfontaine/yard-godot/releases"  target="_blank" style="text-decoration:none"><img alt="Latest YARD Release" src="https://img.shields.io/github/v/release/elliotfontaine/yard-godot?include_prereleases&label=Release"></a>
 </p>
 
 ## Overview
 
-YARD builds on Godot's [resource system](https://docs.godotengine.org/en/4.5/tutorials/scripting/resources.html). It has two parts:
+YARD builds on Godot's [resource system](https://docs.godotengine.org/en/4.4/tutorials/scripting/resources.html). It has two parts:
 
 **A table-based resource editor.** The YARD editor tab lets you create and manage registries: catalogues of resources, optionally restricted to a class. Each registry provides a spreadsheet-like view of your resources and their properties.
 

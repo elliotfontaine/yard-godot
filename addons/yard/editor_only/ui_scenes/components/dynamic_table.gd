@@ -19,6 +19,7 @@ signal cell_edited(row: int, col: int, old_value: Variant, new_value: Variant)
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const ClassUtils := Namespace.ClassUtils
+const Compat := Namespace.Compat
 const EditorThemeUtils := Namespace.EditorThemeUtils
 const AnyIcon := Namespace.AnyIcon
 
@@ -29,6 +30,7 @@ const H_ALIGNMENT_MARGINS = {
 }
 const CELL_INVALID := "<CELL_INVALID>"
 const INVALID_UID := "uid://<invalid>"
+const PROPERTY_HINT_FILE_PATH := 44 # does not exist in Godot 4.4
 
 # Theming properties
 @export_group("Custom YARD Properties")
@@ -262,7 +264,7 @@ func set_native_theming(delay: int = 0) -> void:
 	default_font_color = root.get_theme_color(&"font_color", &"Editor")
 	font_size = root.get_theme_font_size(&"main_size", &"EditorFonts")
 	row_color = root.get_theme_color(&"base_color", &"Editor")
-	if ClassUtils.is_engine_version_equal_or_newer(4, 6) and editor_settings.get_setting("interface/theme/style") == "Modern":
+	if Compat.is_engine_version_equal_or_newer(4, 6) and editor_settings.get_setting("interface/theme/style") == "Modern":
 		alternate_row_color = root.get_theme_color(&"dark_color_3", &"Editor")
 		header_color = root.get_theme_color(&"dark_color_1", &"Editor")
 	else:
@@ -611,7 +613,7 @@ func _open_path_editor(row: int, col: int) -> void:
 		_path_editor.file_mode = EditorFileDialog.FILE_MODE_OPEN_DIR
 
 	if FileAccess.file_exists(cell_value):
-		var current_path := ResourceUID.ensure_path(cell_value)
+		var current_path := Compat.ensure_path(cell_value)
 		_path_editor.current_dir = current_path.get_base_dir()
 		_path_editor.current_path = current_path
 
@@ -657,7 +659,7 @@ func _finish_editing(save_changes: bool = true) -> void:
 		var new_value: Variant = _get_editor_value_for_column(column)
 		if typeof(new_value) == column.type:
 			if column.is_path_column() and column.property_hint == PROPERTY_HINT_FILE:
-				new_value = ResourceUID.path_to_uid(new_value)
+				new_value = Compat.path_to_uid(new_value)
 			update_cell(_editing_cell[0], _editing_cell[1], new_value)
 			cell_edited.emit(_editing_cell[0], _editing_cell[1], old_value, new_value)
 

@@ -3,6 +3,7 @@ extends Object
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const RegistryIO := Namespace.RegistryIO
+const Compat := Namespace.Compat
 
 const _BASE_DIR := "res://.godot/plugins/yard/"
 
@@ -71,7 +72,7 @@ class RegistryCacheData:
 
 
 	static func _get_registry_cache_path(registry: Registry) -> String:
-		var uid := ResourceUID.path_to_uid(registry.resource_path)
+		var uid := Compat.path_to_uid(registry.resource_path)
 		var uid_str := uid.trim_prefix("uid://")
 		return _REGISTRIES_DIR + uid_str + ".cfg"
 
@@ -143,7 +144,7 @@ class EditorStateData:
 
 
 	func add_recent(registry: Registry) -> void:
-		var uid := ResourceUID.path_to_uid(registry.resource_path)
+		var uid := Compat.path_to_uid(registry.resource_path)
 		recent_registry_uids.erase(uid)
 		recent_registry_uids.push_front(uid)
 		if recent_registry_uids.size() > _MAX_RECENT:

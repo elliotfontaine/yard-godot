@@ -4,6 +4,7 @@ const PluginCFG := "res://addons/yard/plugin.cfg"
 const RegistryIO := preload("res://addons/yard/editor_only/registry_io.gd")
 const YardEditorCache := preload("res://addons/yard/editor_only/classes/yard_editor_cache.gd")
 const ClassUtils := preload("res://addons/yard/editor_only/classes/class_utils.gd")
+const Compat := preload("res://addons/yard/editor_only/classes/compat.gd")
 const EditorThemeUtils := preload("res://addons/yard/editor_only/classes/editor_theme_utils.gd")
 const FuzzySearch := preload("res://addons/yard/editor_only/classes/fuzzy_search.gd")
 const AnyIcon := preload("res://addons/yard/editor_only/classes/any_icon.gd")

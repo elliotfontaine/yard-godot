@@ -26,6 +26,7 @@ const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const PluginCFG := Namespace.PluginCFG
 const RegistryIO := Namespace.RegistryIO
 const ClassUtils := Namespace.ClassUtils
+const Compat := Namespace.Compat
 const EditorStateData := Namespace.YardEditorCache.EditorStateData
 const RegistryCacheData := Namespace.YardEditorCache.RegistryCacheData
 const RegistriesItemList := Namespace.RegistriesItemList
@@ -129,7 +130,7 @@ func _shortcut_input(event: InputEvent) -> void:
 ## Open a registry from the filesystem and add it to the list of opened ones
 func open_registry(registry: Registry) -> void:
 	var filepath := registry.resource_path
-	var uid := ResourceUID.path_to_uid(filepath)
+	var uid := Compat.path_to_uid(filepath)
 
 	if uid not in _editor_state_data.opened_registries:
 		_editor_state_data.opened_registries[uid] = registry
@@ -411,7 +412,7 @@ func _populate_open_recent_submenu() -> void:
 	var recent := PopupMenu.new()
 	for entry in _editor_state_data.recent_registry_uids:
 		if ResourceUID.has_id(ResourceUID.text_to_id(entry)):
-			recent.add_item(ResourceUID.uid_to_path(entry))
+			recent.add_item(Compat.uid_to_path(entry))
 	recent.add_separator()
 	recent.add_item(tr("Clear Recent Registries"), FileMenuAction.CLEAR_RECENT)
 	recent.set_item_disabled(recent.get_item_index(FileMenuAction.CLEAR_RECENT), recent.get_item_count() == 2) # only the "Clear" item
@@ -524,7 +525,7 @@ func _do_file_menu_action(action_id: int) -> void:
 		FileMenuAction.CLOSE_ALL:
 			close_all()
 		FileMenuAction.COPY_PATH:
-			var path := ResourceUID.uid_to_path(_current_registry_uid)
+			var path := Compat.uid_to_path(_current_registry_uid)
 			if path:
 				DisplayServer.clipboard_set(path)
 		FileMenuAction.COPY_UID:
@@ -598,7 +599,7 @@ func _close_tabs_below(uid: String) -> void:
 
 
 func _show_in_filesystem(uid: String) -> void:
-	var path := ResourceUID.uid_to_path(uid)
+	var path := Compat.uid_to_path(uid)
 	var fs := EditorInterface.get_file_system_dock()
 	fs.navigate_to_path(path)
 

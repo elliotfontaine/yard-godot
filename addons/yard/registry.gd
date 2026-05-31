@@ -159,7 +159,8 @@ func get_string_id(id: StringName) -> StringName:
 func get_string_id_of(res: Resource) -> StringName:
 	if not res or res.resource_path.is_empty():
 		return &""
-	var uid := ResourceUID.path_to_uid(res.resource_path)
+	#var uid := ResourceUID.path_to_uid(res.resource_path)
+	var uid := ResourceUID.id_to_text(ResourceLoader.get_resource_uid(res.resource_path))
 	return _uids_to_string_ids.get(StringName(uid), &"")
 
 

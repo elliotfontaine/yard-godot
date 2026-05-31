@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this project is
 
-YARD (Yet Another Resource Database) is a **Godot 4 editor plugin** for managing collections of resources through a table-based editor UI and a lightweight runtime API. It targets Godot 4.5+ and supports both GDScript and C#.
+YARD (Yet Another Resource Database) is a **Godot 4 editor plugin** for managing collections of resources through a table-based editor UI and a lightweight runtime API. It targets Godot 4.4+ and supports both GDScript and C#.
 
 Plugin entry point: `addons/yard/plugin.gd`
 Runtime API class: `addons/yard/registry.gd` (`class_name Registry`)
@@ -12,7 +12,7 @@ C# wrapper: `addons/yard/Registry.cs`
 
 ## Development
 
-This is a Godot 4 project. Development, testing, and all iteration happen inside the Godot editor. There is no CLI build or test command — open `project.godot` in Godot 4.5+ to work on it.
+This is a Godot 4 project. Development, testing, and all iteration happen inside the Godot editor. There is no CLI build or test command — open `project.godot` in Godot 4.4+ to work on it.
 
 Tests use the **GUT** (Godot Unit Testing) framework. Test files live in `test/unit/` and are run from within the Godot editor via the GUT plugin.
 

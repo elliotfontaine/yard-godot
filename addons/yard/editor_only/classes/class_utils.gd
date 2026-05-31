@@ -1,5 +1,8 @@
 extends Object
 
+const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const Compat := Namespace.Compat
+
 # MIT LICENSE
 # Copyright (c) 2025 Wagner GFX
 # https://github.com/WagnerGFX/gdscript_utilities
@@ -183,7 +186,7 @@ static func get_type_name(obj: Variant) -> String:
 		obj = obj.get_script()
 
 	if obj is Script:
-		if is_engine_version_equal_or_newer(4, 3):
+		if Compat.is_engine_version_equal_or_newer(4, 3):
 			class_type_name = obj.get_global_name()
 		else:
 			for inner_script in ProjectSettings.get_global_class_list():
@@ -390,7 +393,7 @@ static func _get_typed_dictionary_name(value: Dictionary) -> String:
 	var dictionary_name := type_string(typeof(value))
 
 	# Before Godot v4.4
-	if is_engine_version_older(4, 4):
+	if Compat.is_engine_version_older(4, 4):
 		return dictionary_name
 
 	# Not a typed Dictionary
@@ -420,17 +423,6 @@ static func _get_typed_dictionary_name(value: Dictionary) -> String:
 		dictionary_value_type_name = value.get_typed_value_class_name()
 
 	return "%s[%s,%s]" % [dictionary_name, dictionary_key_type_name, dictionary_value_type_name]
-
-
-## Return true if the current engine version is equal or newer compared to the values provided
-static func is_engine_version_equal_or_newer(major: int, minor: int = 0, patch: int = 0) -> bool:
-	var engine_ver: Dictionary = Engine.get_version_info()
-	return engine_ver.major >= major and engine_ver.minor >= minor and engine_ver.patch >= patch
-
-
-## Return true if the current engine version is older compared to the values provided
-static func is_engine_version_older(major: int, minor: int = 0, patch: int = 0) -> bool:
-	return not is_engine_version_equal_or_newer(major, minor, patch)
 
 
 ## Returns all declared types of a property as an array of strings (e.g. ["int"], ["BaseMaterial3D","ShaderMaterial"], ...).
