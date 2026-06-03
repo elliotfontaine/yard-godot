@@ -21,6 +21,7 @@ const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const ClassUtils := Namespace.ClassUtils
 const EditorThemeUtils := Namespace.EditorThemeUtils
 const AnyIcon := Namespace.AnyIcon
+const YardLogger := preload("res://addons/yard/editor_only/classes/yard_logger.gd")
 
 const H_ALIGNMENT_MARGINS = {
 	HORIZONTAL_ALIGNMENT_LEFT: 5,
@@ -552,7 +553,7 @@ func _start_cell_editing(row: int, col: int) -> void:
 	elif column.is_numeric_column() or column.is_string_column():
 		_open_text_editor(row, col)
 	else:
-		push_warning("There is no editor for this type of cell.")
+		YardLogger.warn("There is no editor for this type of cell.")
 	# NB: boolean cells are toggled using single click
 
 

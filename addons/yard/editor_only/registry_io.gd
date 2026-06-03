@@ -3,9 +3,9 @@ extends Object
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const ClassUtils := Namespace.ClassUtils
+const YardLogger := Namespace.YardLogger
 
 const REGISTRY_FILE_EXTENSIONS := ["tres"]
-const LOGGING_INFO_COLOR := "lightslategray"
 
 
 static func create_registry_file(path: String, settings: RegistrySettings = null) -> Error:
@@ -188,7 +188,7 @@ static func change_entry_uid(registry: Registry, id: StringName, new_uid: String
 	var string_id := registry.get_string_id(old_uid)
 	if registry.has_uid(new_uid):
 		var already_there_string_id := registry.get_string_id(new_uid)
-		push_error(
+		YardLogger.error(
 			"UID Change Error: You can't use %s for '%s', as it's already in the registry as '%s'" % [
 				new_uid,
 				string_id,
@@ -203,7 +203,7 @@ static func change_entry_uid(registry: Registry, id: StringName, new_uid: String
 		var res := load(new_uid)
 		var all_class_restrictions := settings.get_all_class_restrictions()
 		if not does_resource_match_class_restrictions(res, all_class_restrictions):
-			push_error(
+			YardLogger.error(
 				"UID Change Error: The associated resource '%s' doesn't match the registry class restriction (%s)." % [
 					res.resource_path.get_file(),
 					",".join(all_class_restrictions),
@@ -235,9 +235,8 @@ static func sync_from_scan_directories(registry: Registry) -> void:
 
 	var _log := func(action: String, prep: String, n: int, first: String) -> void:
 		if n == 1:
-			print_rich(
-				"[color=%s]%s %s %s %s.[/color]" % [
-					LOGGING_INFO_COLOR,
+			YardLogger.info(
+				"%s %s %s %s." % [
 					action.capitalize(),
 					first,
 					prep,
@@ -245,9 +244,8 @@ static func sync_from_scan_directories(registry: Registry) -> void:
 				],
 			)
 		elif n > 1:
-			print_rich(
-				"[color=%s]%s %s and %d more entr%s %s %s.[/color]" % [
-					LOGGING_INFO_COLOR,
+			YardLogger.info(
+				"%s %s and %d more entr%s %s %s." % [
 					action.capitalize(),
 					first,
 					n - 1,
@@ -283,13 +281,7 @@ static func sync_from_scan_directories(registry: Registry) -> void:
 			if n_removed == 1:
 				first_removed = string_id
 		else:
-			print_rich(
-				"[color=%s]Failed to remove %s from %s.[/color]" % [
-					LOGGING_INFO_COLOR,
-					string_id,
-					registry.resource_path.get_file(),
-				],
-			)
+			YardLogger.warn("Failed to remove %s from %s." % [string_id, registry.resource_path.get_file()])
 
 	_log.call("removed", "from", n_removed, first_removed)
 

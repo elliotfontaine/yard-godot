@@ -7,6 +7,7 @@ const ClassUtils := preload("res://addons/yard/editor_only/classes/class_utils.g
 const EditorThemeUtils := preload("res://addons/yard/editor_only/classes/editor_theme_utils.gd")
 const FuzzySearch := preload("res://addons/yard/editor_only/classes/fuzzy_search.gd")
 const AnyIcon := preload("res://addons/yard/editor_only/classes/any_icon.gd")
+const YardLogger := preload("res://addons/yard/editor_only/classes/yard_logger.gd")
 
 # UI Scenes
 const RegistryEditor := preload("res://addons/yard/editor_only/ui_scenes/registry_editor.gd")

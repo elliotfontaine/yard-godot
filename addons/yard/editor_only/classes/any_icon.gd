@@ -20,11 +20,11 @@ static var allow_generating_union_icons: bool = true
 ## Shortcut for [method EditorInterface.get_base_control].
 static var base_control: Control = EditorInterface.get_base_control() if Engine.is_editor_hint() else Control.new():
 	set(new):
-		printerr("AnyIcon.base_control is read-only.")
+		push_error("AnyIcon.base_control is read-only.")
 ## The icon displayed when no valid icon is found.
 static var icon_not_found: Texture2D = base_control.get_theme_icon(&""):
 	set(new):
-		printerr("AnyIcon.icon_not_found is read-only.")
+		push_error("AnyIcon.icon_not_found is read-only.")
 
 static var _ICON_ANNOTATION_REGEX := RegEx.create_from_string(
 	r"""@icon\s*?\((?:[^#]*?(?:)*?(?:#.*)*?)*?(?<delimiter>"+|'+)(?<path>.*?)\k<delimiter>(?:.|\n)*?\)""",

@@ -7,11 +7,11 @@ static var editor_theme: Theme:
 
 static var base_margin: int:
 	get:
-		return editor_theme.get_constant("base_margin", "Editor")
+		return editor_theme.get_constant(&"base_margin", &"Editor")
 
 static var class_icon_size: int:
 	get:
-		return editor_theme.get_constant("class_icon_size", "Editor")
+		return editor_theme.get_constant(&"class_icon_size", &"Editor")
 
 static var scale: float:
 	get:
@@ -19,15 +19,19 @@ static var scale: float:
 
 static var color_error: Color:
 	get:
-		return editor_theme.get_color("error_color", "Editor")
+		return editor_theme.get_color(&"error_color", &"Editor")
 
 static var color_warning: Color:
 	get:
-		return editor_theme.get_color("warning_color", "Editor")
+		return editor_theme.get_color(&"warning_color", &"Editor")
+
+static var color_message: Color:
+	get:
+		return editor_theme.get_color(&"font_color", &"Editor") * Color(1, 1, 1, 0.6)
 
 static var color_success: Color:
 	get:
-		return editor_theme.get_color("success_color", "Editor")
+		return editor_theme.get_color(&"success_color", &"Editor")
 
 
 static func get_base_color(p_dimness_ofs: float = 0.0, p_saturation_mult: float = 1.0) -> Color:

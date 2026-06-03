@@ -21,6 +21,7 @@ const RegistryIO := Namespace.RegistryIO
 const ClassUtils := Namespace.ClassUtils
 const EditorThemeUtils := Namespace.EditorThemeUtils
 const DynamicTable := Namespace.DynamicTable
+const YardLogger := Namespace.YardLogger
 const RegistryCacheData := Namespace.YardEditorCache.RegistryCacheData
 
 const ACCELERATORS_WIN: Dictionary = {
@@ -42,7 +43,6 @@ const ACCELERATORS_MAC: Dictionary = {
 }
 
 const INVALID_UID := "uid://<invalid>"
-const LOGGING_INFO_COLOR := "lightslategray"
 const UID_COLUMN_CONFIG := ["uid", "UID", TYPE_STRING]
 const STRINGID_COLUMN_CONFIG := ["string_id", "String ID", TYPE_STRING]
 const NON_PROP_COLUMNS_COUNT := 2
@@ -156,9 +156,7 @@ func _process(_delta: float) -> void:
 		_texture_rect_parent.custom_minimum_size = Vector2(1, 1)
 
 	if not get_viewport().gui_is_dragging():
-		drag_and_drop_info_panel.visible = (
-			current_registry and current_registry.is_empty()
-		)
+		drag_and_drop_info_panel.visible = current_registry and current_registry.is_empty()
 
 
 func _notification(what: int) -> void:
@@ -224,7 +222,7 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 					)
 					n_added += int(status == OK)
 
-	print_rich("[color=%s]Added %s new Resources to the registry.[/color]" % [LOGGING_INFO_COLOR, n_added])
+	YardLogger.info("Added %s new Resources to the registry." % n_added)
 	update_view()
 
 
@@ -487,12 +485,7 @@ func _edit_entry_property(entry: StringName, property: StringName, old_value: Va
 
 	var res := load(entry)
 	if not property in res:
-		print_rich(
-			"[color=%s]● [b]ERROR:[/b] Property %s not in resource[/color]" % [
-				EditorThemeUtils.color_error.to_html(false),
-				property,
-			],
-		)
+		YardLogger.error("Property %s not in resource" % property)
 		return
 
 	var prop_types := ClassUtils.get_property_declared_types(res, property)
@@ -518,9 +511,8 @@ func _edit_entry_property(entry: StringName, property: StringName, old_value: Va
 			break
 
 	if not valid:
-		print_rich(
-			"[color=%s]● [b]ERROR:[/b] Invalid type. Couldn't set %s (%s) to %s (%s)[/color]" % [
-				EditorThemeUtils.color_error.to_html(false),
+		YardLogger.error(
+			"Invalid type. Couldn't set %s (%s) to %s (%s)" % [
 				property,
 				", ".join(prop_types),
 				new_value,
@@ -532,9 +524,8 @@ func _edit_entry_property(entry: StringName, property: StringName, old_value: Va
 	res.set(property, new_value)
 	var old_is_string := typeof(old_value) in [TYPE_STRING, TYPE_STRING_NAME]
 	var new_is_string := typeof(res.get(property)) in [TYPE_STRING, TYPE_STRING_NAME]
-	print_rich(
-		"[color=%s]Set %s—>%s from %s to %s[/color]" % [
-			LOGGING_INFO_COLOR,
+	YardLogger.info(
+		"Set %s—>%s from %s to %s" % [
 			current_registry.get_string_id(uid),
 			property,
 			'"' + old_value + '"' if old_is_string else old_value,
@@ -586,11 +577,11 @@ func _add_entry_from_picker(res: Resource, string_id: StringName) -> void:
 		var current_dir := EditorInterface.get_current_path().get_base_dir()
 		var save_path := current_dir.path_join(str(string_id) + ".tres")
 		if ResourceLoader.exists(save_path):
-			_print_fake_error("A file already exists at '%s'. Choose a different String ID or save the resource manually first." % save_path)
+			YardLogger.error("A file already exists at '%s'. Choose a different String ID or save the resource manually first." % save_path)
 			return
 		var save_status := ResourceSaver.save(res, save_path, ResourceSaver.FLAG_CHANGE_PATH)
 		if save_status != OK:
-			_print_fake_error("Failed to save resource to '%s'." % save_path)
+			YardLogger.error("Failed to save resource to '%s'." % save_path)
 			return
 		EditorInterface.get_editor_toaster().push_toast("Resource saved to %s" % save_path)
 		res = load(save_path) # Required because of race condition shinenigans I guess
@@ -606,15 +597,15 @@ func _add_entry_from_picker(res: Resource, string_id: StringName) -> void:
 			_toggle_add_entry_button()
 			update_view()
 		ERR_ALREADY_EXISTS:
-			_print_fake_error("An entry with the same UID already exists in the registry.")
+			YardLogger.error("An entry with the same UID already exists in the registry.")
 		ERR_CANT_ACQUIRE_RESOURCE:
-			_print_fake_error("This resource is not saved as a file. Click [b]⌄[/b] then [b]Save[/b] on the resource picker to save it first.")
+			YardLogger.error("This resource is not saved as a file. Click [b]⌄[/b] then [b]Save[/b] on the resource picker to save it first.")
 		ERR_INVALID_PARAMETER:
-			_print_fake_error("The String ID is invalid. It must not start with 'uid://'.")
+			YardLogger.error("The String ID is invalid. It must not start with 'uid://'.")
 		ERR_DATABASE_CANT_WRITE:
-			_print_fake_error("This resource doesn't match the registry class restriction.")
+			YardLogger.error("This resource doesn't match the registry class restriction.")
 		_:
-			_print_fake_error("Failed to add entry to the registry.")
+			YardLogger.error("Failed to add entry to the registry.")
 
 
 func _toggle_add_entry_button() -> void:
@@ -631,7 +622,7 @@ func _delete_selected_entries() -> void:
 	for row_idx: int in dynamic_table.selected_rows:
 		var uid := get_row_resource_uid(row_idx)
 		if RegistryIO.erase_entry(current_registry, uid) != OK:
-			_print_fake_error(
+			YardLogger.error(
 				"Failed to remove %s from %s." % [uid, current_registry.resource_path.get_file()],
 			)
 
@@ -643,7 +634,7 @@ func _duplicate_selected_entries() -> void:
 	for row_idx: int in dynamic_table.selected_rows:
 		var uid := get_row_resource_uid(row_idx)
 		if RegistryIO.duplicate_entry(current_registry, uid) != OK:
-			_print_fake_error(
+			YardLogger.error(
 				"Failed to duplicate %s in %s." % [uid, current_registry.resource_path.get_file()],
 			)
 	update_view()
@@ -667,15 +658,6 @@ func _invert_selection() -> void:
 func _unselect() -> void:
 	dynamic_table.selected_rows = []
 	dynamic_table.queue_redraw()
-
-
-func _print_fake_error(message: String) -> void:
-	print_rich(
-		"[color=%s]● [b]ERROR:[/b] %s[/color]" % [
-			EditorThemeUtils.color_error.to_html(false),
-			message,
-		],
-	)
 
 
 func _on_drag_begin() -> void:

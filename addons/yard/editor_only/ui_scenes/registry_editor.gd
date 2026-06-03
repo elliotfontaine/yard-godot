@@ -33,6 +33,7 @@ const RegistryTableView := Namespace.RegistryTableView
 const NewRegistryDialog := Namespace.NewRegistryDialog
 const AnyIcon := Namespace.AnyIcon
 const FuzzySearch := Namespace.FuzzySearch
+const YardLogger := Namespace.YardLogger
 const FuzzySearchResult := FuzzySearch.FuzzySearchResult
 const BUILTIN_RESOURCE_PROPERTIES: Array[StringName] = RegistryCacheData.BUILTIN_RESOURCE_PROPERTIES
 
@@ -513,7 +514,7 @@ func _do_file_menu_action(action_id: int) -> void:
 					open_registry(load(uid))
 					return
 				_session_closed_uids.remove_at(idx)
-			push_warning(tr("None of the closed resources exist anymore"))
+			YardLogger.warn(tr("None of the closed resources exist anymore"))
 		FileMenuAction.CLOSE:
 			if is_any_registry_selected(): # check because of shortcut
 				close_registry(_current_registry_uid)
@@ -567,8 +568,9 @@ func _sort_opened_registries_by_filename() -> void:
 	var sorted: Dictionary[String, Registry] = { }
 	keys.sort_custom(
 		func(a: String, b: String) -> bool:
-			return _editor_state_data.opened_registries[a].resource_path.get_file().to_lower() \
-			< _editor_state_data.opened_registries[b].resource_path.get_file().to_lower()
+			var filename_a := _editor_state_data.opened_registries[a].resource_path.get_file().to_lower()
+			var filename_b := _editor_state_data.opened_registries[b].resource_path.get_file().to_lower()
+			return filename_a < filename_b
 	)
 	for uid in keys:
 		sorted[uid] = _editor_state_data.opened_registries[uid]
@@ -681,9 +683,9 @@ func _on_file_dialog_action(path: String) -> void:
 	if res is Registry:
 		open_registry(res)
 	elif res.get_script():
-		push_error("Tried to open %s as a Registry" % res.get_script().get_global_name())
+		YardLogger.error("Tried to open %s as a Registry" % res.get_script().get_global_name())
 	else:
-		push_error("Tried to open %s as a Registry" % res.get_class())
+		YardLogger.error("Tried to open %s as a Registry" % res.get_class())
 
 
 func _on_refresh_view_button_pressed() -> void:

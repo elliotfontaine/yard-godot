@@ -97,7 +97,7 @@ func set_all_values(values: Array[Variant]) -> void:
 func render_validation_results(args: Array[Variant]) -> void:
 	var args_count := args.size()
 	if args_count != _inputs.size():
-		printerr("Validation results args count invalid!")
+		push_error("Validation results args count invalid!")
 		return
 
 	for i in args_count:
