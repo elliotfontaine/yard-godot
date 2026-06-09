@@ -574,8 +574,8 @@ func _setup_add_entry() -> void:
 func _add_entry_from_picker(res: Resource, string_id: StringName) -> void:
 	var res_is_file := res.resource_path and ResourceLoader.exists(res.resource_path)
 	if not res_is_file:
-		var current_dir := EditorInterface.get_current_path().get_base_dir()
-		var save_path := current_dir.path_join(str(string_id) + ".tres")
+		var save_dir := _get_new_entry_default_save_dir()
+		var save_path := save_dir.path_join(str(string_id) + ".tres")
 		if ResourceLoader.exists(save_path):
 			YardLogger.error("A file already exists at '%s'. Choose a different String ID or save the resource manually first." % save_path)
 			return
@@ -606,6 +606,14 @@ func _add_entry_from_picker(res: Resource, string_id: StringName) -> void:
 			YardLogger.error("This resource doesn't match the registry class restriction.")
 		_:
 			YardLogger.error("Failed to add entry to the registry.")
+
+
+func _get_new_entry_default_save_dir() -> String:
+	var settings := RegistryIO.get_registry_settings(current_registry)
+	for scan_dir in settings.get_all_scan_directories():
+		if not scan_dir.is_empty():
+			return scan_dir
+	return EditorInterface.get_current_path().get_base_dir()
 
 
 func _toggle_add_entry_button() -> void:
