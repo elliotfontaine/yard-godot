@@ -76,6 +76,18 @@ var id_columns_frozen := true:
 		dynamic_table.n_frozen_columns = 2 if frozen else 0
 		dynamic_table._update_scrollbars() # private but whatever
 
+var show_uid := true:
+	set(show):
+		show_uid = show
+		update_view()
+		_build_columns()
+
+var show_string_id := true:
+	set(show):
+		show_string_id = show
+		update_view()
+		_build_columns()
+
 var _texture_rect_parent: Button
 var _res_picker: EditorResourcePicker
 var _uid_resource_to_inspect: String
@@ -244,7 +256,11 @@ func update_view() -> void:
 	set_columns_data(resources.values())
 	entries_data.clear()
 	for uid in current_registry.get_all_uids():
-		var entry_data := [current_registry.get_string_id(uid), uid]
+		var entry_data := []
+		if show_string_id:
+			entry_data.append(current_registry.get_string_id(uid))
+		if show_uid:
+			entry_data.append(uid)
 		if RegistryIO.is_uid_valid(uid):
 			entry_data.append_array(get_res_row_data(current_registry.load_entry(uid)))
 		else:
@@ -403,15 +419,18 @@ func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 func _build_columns() -> Array[DynamicTable.ColumnConfig]:
 	var columns: Array[DynamicTable.ColumnConfig] = []
 
-	var string_id_column: DynamicTable.ColumnConfig = DynamicTable.ColumnConfig.new.callv(STRINGID_COLUMN_CONFIG)
-	string_id_column.custom_font_color = get_theme_color(&"accent_color", &"Editor")
-	string_id_column.h_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	columns.append(string_id_column) #0
+	if show_string_id:
+		var string_id_column: DynamicTable.ColumnConfig = DynamicTable.ColumnConfig.new.callv(STRINGID_COLUMN_CONFIG)
+		string_id_column.custom_font_color = get_theme_color(&"accent_color", &"Editor")
+		string_id_column.h_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		columns.append(string_id_column) #0
 
-	var uid_column: DynamicTable.ColumnConfig = DynamicTable.ColumnConfig.new.callv(UID_COLUMN_CONFIG)
-	uid_column.custom_font_color = get_theme_color(&"disabled_font_color", &"Editor")
-	uid_column.property_hint = PROPERTY_HINT_FILE
-	columns.append(uid_column) #1
+	if show_uid:
+		var uid_column: DynamicTable.ColumnConfig = DynamicTable.ColumnConfig.new.callv(UID_COLUMN_CONFIG)
+		uid_column.custom_font_color = get_theme_color(&"disabled_font_color", &"Editor")
+		uid_column.property_hint = PROPERTY_HINT_FILE
+		columns.append(uid_column) #1
+
 
 	for prop in properties_column_info:
 		if not _can_display_property(prop) or is_property_disabled(prop):

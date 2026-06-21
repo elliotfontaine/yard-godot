@@ -310,6 +310,23 @@ msgstr ""
 "Reorder columns so parent class properties appear before subclass ones.\n"
 "By default, columns follow the inspector order (subclass properties first)."
 
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Show UID"
+msgstr "Show UID"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Shows the UID of the resource in the second column."
+msgstr "Shows the UID of the resource in the second column."
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Show String ID"
+msgstr "Show String ID"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Shows the String ID of the resource in the first column."
+msgstr "Shows the String ID of the resource in the first column."
+
+
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "New Registry..."
 msgstr "New Registry..."

@@ -319,6 +319,22 @@ msgstr ""
 "Spalten neu anordnen, sodass Eigenschaften der Elternklasse vor denen der Unterklassen erscheinen.\n"
 "Standardmäßig folgen die Spalten der Inspektor-Reihenfolge (Unterklassen-Eigenschaften zuerst)."
 
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Show UID"
+msgstr "UID anzeigen"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Shows the UID of the resource in the second column."
+msgstr "Zeigt die UID der Ressource in der zweiten Spalte an."
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Show String ID"
+msgstr "String ID anzeigen"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Shows the String ID of the resource in the first column."
+msgstr "Zeigt die String ID der Ressource in der ersten Spalte an."
+
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "New Registry..."
 msgstr "Neue Registrierung…"
