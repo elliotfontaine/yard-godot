@@ -322,14 +322,6 @@ msgstr "UID Göster"
 msgid "Shows the UID of the resource in the second column."
 msgstr "Kaynağın UID'sini ikinci sütunda gösterir."
 
-#: addons/yard/editor_only/ui_scenes/registry_editor.gd
-msgid "Show String ID"
-msgstr "String ID Göster"
-
-#: addons/yard/editor_only/ui_scenes/registry_editor.gd
-msgid "Shows the String ID of the resource in the first column."
-msgstr "Kaynağın String ID'sini ilk sütunda gösterir."
-
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "New Registry..."
 msgstr "Yeni kayıt defteri…"

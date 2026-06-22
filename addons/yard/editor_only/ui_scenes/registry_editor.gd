@@ -464,12 +464,6 @@ func _populate_columns_popup_menu() -> void:
 		tr("Shows the UID of the resource in the second column."),
 		registry_table_view.show_uid,
 	)
-	_add_check_item(
-		popup,
-		tr("Show String ID"),
-		tr("Shows the String ID of the resource in the first column."),
-		registry_table_view.show_string_id,
-	)
 
 	if not registry_table_view.properties_column_info:
 		return
@@ -677,10 +671,6 @@ func _on_columns_menu_id_pressed(id: int) -> void:
 		2: # Show UID
 			popup.toggle_item_checked(2)
 			registry_table_view.show_uid = popup.is_item_checked(2)
-			registry_table_view.update_view()
-		3: # Show String ID
-			popup.toggle_item_checked(3)
-			registry_table_view.show_string_id = popup.is_item_checked(3)
 			registry_table_view.update_view()
 		_:
 			var prop_name: StringName = popup.get_item_tooltip(id)

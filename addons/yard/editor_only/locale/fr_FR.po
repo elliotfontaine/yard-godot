@@ -327,14 +327,6 @@ msgstr "Afficher l'UID"
 msgid "Shows the UID of the resource in the second column."
 msgstr "Affiche l'UID de la ressource dans la deuxième colonne."
 
-#: addons/yard/editor_only/ui_scenes/registry_editor.gd
-msgid "Show String ID"
-msgstr "Afficher String ID"
-
-#: addons/yard/editor_only/ui_scenes/registry_editor.gd
-msgid "Shows the String ID of the resource in the first column."
-msgstr "Affiche la String ID de la ressource dans la première colonne."
-
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "New Registry..."
 msgstr "Nouveau registre…"
