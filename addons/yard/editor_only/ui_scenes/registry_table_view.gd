@@ -480,6 +480,7 @@ func _can_display_property(property_info: Dictionary) -> bool:
 
 func _edit_entry_property(entry: StringName, property: StringName, old_value: Variant, new_value: Variant) -> void:
 	var uid := current_registry.get_uid(entry)
+	var string_id := current_registry.get_string_id(uid)
 	if not uid or not RegistryIO.is_uid_valid(uid):
 		return
 
@@ -521,17 +522,12 @@ func _edit_entry_property(entry: StringName, property: StringName, old_value: Va
 		)
 		return
 
-	res.set(property, new_value)
-	var old_is_string := typeof(old_value) in [TYPE_STRING, TYPE_STRING_NAME]
-	var new_is_string := typeof(res.get(property)) in [TYPE_STRING, TYPE_STRING_NAME]
-	YardLogger.info(
-		"Set %s—>%s from %s to %s" % [
-			current_registry.get_string_id(uid),
-			property,
-			'"' + old_value + '"' if old_is_string else old_value,
-			'"' + res.get(property) + '"' if new_is_string else res.get(property),
-		],
-	)
+	var undo_redo := EditorInterface.get_editor_undo_redo()
+	undo_redo.create_action("Set %s—>%s" % [string_id, property])
+	undo_redo.add_do_property(res, property, new_value)
+	undo_redo.add_undo_property(res, property, old_value)
+	undo_redo.add_undo_method(self, &"update_view")
+	undo_redo.commit_action()
 
 
 func _ask_confirm_delete_entries() -> void:
