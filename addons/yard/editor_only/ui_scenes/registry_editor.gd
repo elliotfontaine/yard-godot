@@ -458,6 +458,13 @@ func _populate_columns_popup_menu() -> void:
 		registry_table_view.current_cache_data.parent_props_first,
 	)
 
+	_add_check_item(
+		popup,
+		tr("Show UID"),
+		tr("Shows the UID of the resource in the second column."),
+		registry_table_view.show_uid,
+	)
+
 	if not registry_table_view.properties_column_info:
 		return
 
@@ -660,6 +667,10 @@ func _on_columns_menu_id_pressed(id: int) -> void:
 			popup.toggle_item_checked(1)
 			registry_table_view.current_cache_data.parent_props_first = popup.is_item_checked(1)
 			registry_table_view.current_cache_data.save()
+			registry_table_view.update_view()
+		2: # Show UID
+			popup.toggle_item_checked(2)
+			registry_table_view.show_uid = popup.is_item_checked(2)
 			registry_table_view.update_view()
 		_:
 			var prop_name: StringName = popup.get_item_tooltip(id)

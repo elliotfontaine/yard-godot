@@ -313,6 +313,14 @@ msgstr ""
 "Переупорядочивает столбцы так, чтобы свойства родительского класса отображались перед свойствами подклассов.\n"
 "По умолчанию столбцы следуют порядку инспектора (свойства подкласса первыми)."
 
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Show UID"
+msgstr "Показать UID"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Shows the UID of the resource in the second column."
+msgstr "Показывает UID ресурса во втором столбце."
+
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "New Registry..."
 msgstr "Новый реестр…"

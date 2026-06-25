@@ -294,6 +294,14 @@ msgid "Show Parent Properties First"
 msgstr "优先显示父类属性"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Show UID"
+msgstr "显示 UID"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Shows the UID of the resource in the second column."
+msgstr "在第二列显示资源的 UID。"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid ""
 "Reorder columns so parent class properties appear before subclass ones.\n"
 "By default, columns follow the inspector order (subclass properties first)."

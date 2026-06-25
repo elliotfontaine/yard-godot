@@ -312,6 +312,14 @@ msgstr ""
 "Zmienia kolejność kolumn tak, aby właściwości klasy nadrzędnej pojawiały się przed właściwościami podklas.\n"
 "Domyślnie kolumny odpowiadają kolejności inspektora (właściwości podklasy jako pierwsze)."
 
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Show UID"
+msgstr "Pokaż UID"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Shows the UID of the resource in the second column."
+msgstr "Wyświetla UID zasobu w drugiej kolumnie."
+
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "New Registry..."
 msgstr "Nowy rejestr…"

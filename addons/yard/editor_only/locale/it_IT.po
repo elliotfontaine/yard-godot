@@ -316,6 +316,14 @@ msgstr ""
 "Riordina le colonne in modo che le proprietà della classe padre appaiano prima di quelle delle sottoclassi.\n"
 "Per impostazione predefinita, le colonne seguono l'ordine dell'inspector (proprietà della sottoclasse per prime)."
 
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Show UID"
+msgstr "Mostra UID"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Shows the UID of the resource in the second column."
+msgstr "Mostra l'UID della risorsa nella seconda colonna."
+
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "New Registry..."
 msgstr "Nuovo registro…"
