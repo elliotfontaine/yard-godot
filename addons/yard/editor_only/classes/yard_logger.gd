@@ -1,7 +1,8 @@
 @tool
 extends Object
 
-const EditorThemeUtils := preload("res://addons/yard/editor_only/classes/editor_theme_utils.gd")
+const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const EditorThemeUtils := Namespace.EditorThemeUtils
 
 
 static func info(message: String) -> void:
