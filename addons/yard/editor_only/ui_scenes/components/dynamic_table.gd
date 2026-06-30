@@ -79,7 +79,6 @@ var sort_ascending: bool = true
 var _rows: Dictionary[StringName, Array] = { }
 var _base_order: Array[StringName] = [] # insertion order, source for filter
 var _order: Array[StringName] = [] # current visible filtered / sorted order
-var _total_rows := 0
 var _anchor_row: StringName = &"" # shift-select range anchor
 
 # Column model: the ordered list is both the model and the display order
@@ -220,7 +219,7 @@ func _draw() -> void:
 	_draw_header_column_range(n_frozen_columns, _columns.size(), scroll_x, frozen_w, vis_w)
 
 	for row_idx in range(_visible_rows_range[0], _visible_rows_range[1]):
-		if row_idx >= _total_rows:
+		if row_idx >= _order.size():
 			continue
 		var row := _order[row_idx]
 		var row_y := y_offset + (row_idx - _visible_rows_range[0]) * row_height
@@ -234,7 +233,7 @@ func _draw() -> void:
 	# Pass 2: frozen columns drawn on top
 	if n_frozen_columns > 0:
 		for row_idx in range(_visible_rows_range[0], _visible_rows_range[1]):
-			if row_idx >= _total_rows:
+			if row_idx >= _order.size():
 				continue
 			var row := _order[row_idx]
 			var row_y := y_offset + (row_idx - _visible_rows_range[0]) * row_height
@@ -248,7 +247,7 @@ func _draw() -> void:
 		draw_rect(Rect2(0, 0, frozen_w, header_height), header_color)
 		_draw_header_column_range(0, n_frozen_columns, 0.0, 0.0, vis_w)
 
-		var separator_bottom := header_height + mini(_total_rows, _visible_rows_range[1] - _visible_rows_range[0]) * row_height
+		var separator_bottom := header_height + mini(_order.size(), _visible_rows_range[1] - _visible_rows_range[0]) * row_height
 		draw_line(Vector2(frozen_w, 0), Vector2(frozen_w, separator_bottom), grid_color.darkened(0.2), 2.0)
 
 		if _v_scroll.visible:
@@ -301,7 +300,7 @@ func set_columns(columns: Array[ColumnConfig]) -> void:
 
 
 func get_column(col: StringName) -> ColumnConfig:
-	var idx := _column_index_by_id.get(col, -1)
+	var idx: int = _column_index_by_id.get(col, -1)
 	return _columns[idx] if idx >= 0 else null
 
 
@@ -325,8 +324,7 @@ func set_data(rows: Array, row_ids: Array[StringName]) -> void:
 		_base_order.append(row)
 	_order = _base_order.duplicate()
 
-	_total_rows = _order.size()
-	_visible_rows_range = [0, min(_total_rows, floori(size.y / row_height) if row_height > 0 else 0)]
+	_visible_rows_range = [0, min(_order.size(), floori(size.y / row_height) if row_height > 0 else 0)]
 
 	# Pad short rows
 	for row in _order:
@@ -373,7 +371,6 @@ func add_row(row: StringName, cells: Array) -> void:
 		_rows[row].append(CELL_INVALID)
 	_base_order.append(row)
 	_order.append(row)
-	_total_rows = _order.size()
 	_update_scrollbars()
 	queue_redraw()
 
@@ -391,7 +388,6 @@ func remove_row(row: StringName) -> void:
 		focused_col = &""
 	if _anchor_row == row:
 		_anchor_row = &""
-	_total_rows = _order.size()
 	_update_scrollbars()
 	queue_redraw()
 
@@ -572,9 +568,8 @@ func _reset_column_widths() -> void:
 func _update_scrollbars() -> void:
 	if not is_inside_tree():
 		return
-	if _total_rows == null or row_height == null:
-		_total_rows = 0 if _total_rows == null else _total_rows
-		row_height = 30.0 if row_height == null or row_height <= 0 else row_height
+	if row_height <= 0:
+		row_height = 30.0
 
 	var visible_width := size.x - (_v_scroll.size.x if _v_scroll.visible else 0.)
 	var visible_height := size.y - (_h_scroll.size.y if _h_scroll.visible else 0.) - header_height
@@ -593,7 +588,7 @@ func _update_scrollbars() -> void:
 	else:
 		_h_scroll.value = 0
 
-	var total_content_height := float(_total_rows) * row_height
+	var total_content_height := float(_order.size()) * row_height
 	_v_scroll.visible = total_content_height > visible_height
 	if _v_scroll.visible:
 		_v_scroll.max_value = total_content_height + row_height / 2
@@ -1246,7 +1241,6 @@ func _apply_filter(search_key: String) -> void:
 				if cell_value.contains(key_lower):
 					_order.append(row)
 
-	_total_rows = _order.size()
 	_v_scroll.value = 0
 
 	# Keep selection only for rows still visible after filter
@@ -1308,7 +1302,7 @@ func _get_row_at_y(y: float) -> int:
 	if y < header_height or row_height <= 0:
 		return -1
 	var row: int = floori((y - header_height) / row_height) + _visible_rows_range[0]
-	return row if row < _total_rows else -1
+	return row if row < _order.size() else -1
 
 
 func _get_text_baseline_y(cell_y: float, cell_height: float = -1.0) -> float:
@@ -1406,7 +1400,7 @@ func _toggle_checkbox(row: StringName, col: StringName) -> void:
 
 func _ensure_row_visible(row: StringName) -> void:
 	var row_idx := _order.find(row)
-	if row_idx < 0 or _total_rows == 0 or row_height == 0 or not _v_scroll.visible:
+	if row_idx < 0 or _order.is_empty() or row_height == 0 or not _v_scroll.visible:
 		return
 
 	var visible_area_height: float = size.y - header_height - (_h_scroll.size.y if _h_scroll.visible else 0.0)
@@ -1711,7 +1705,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 			_finalize_key_operation()
 			return
 		KEY_A:
-			if is_ctrl_cmd and _total_rows > 0:
+			if is_ctrl_cmd and not _order.is_empty():
 				select_all_rows()
 				multiple_rows_selected.emit(selected_rows)
 				_finalize_key_operation()
@@ -1723,14 +1717,14 @@ func _handle_key_input(event: InputEventKey) -> void:
 			_finalize_key_operation()
 			return
 		KEY_HOME:
-			if _total_rows == 0:
+			if _order.is_empty():
 				return
 			new_idx = 0
 			new_col_idx = 0 if not _columns.is_empty() else -1
 		KEY_END:
-			if _total_rows == 0:
+			if _order.is_empty():
 				return
-			new_idx = _total_rows - 1
+			new_idx = _order.size() - 1
 			new_col_idx = _columns.size() - 1 if not _columns.is_empty() else -1
 		KEY_UP:
 			if not is_cell_focused:
@@ -1739,7 +1733,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 		KEY_DOWN:
 			if not is_cell_focused:
 				return
-			new_idx = mini(_total_rows - 1, focused_idx + 1)
+			new_idx = mini(_order.size() - 1, focused_idx + 1)
 		KEY_LEFT:
 			if not is_cell_focused:
 				return
@@ -1755,7 +1749,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 		KEY_PAGEDOWN:
 			if not is_cell_focused:
 				return
-			new_idx = mini(_total_rows - 1, focused_idx + _page_row_count())
+			new_idx = mini(_order.size() - 1, focused_idx + _page_row_count())
 		KEY_SPACE:
 			if not is_cell_focused or not is_ctrl_cmd:
 				return
@@ -1793,7 +1787,7 @@ func _page_row_count() -> int:
 	return maxi(1, floori((size.y - header_height) / row_height) if row_height > 0 else 10)
 
 
-func _update_selection_after_navigation(old_row: StringName, old_idx: int, is_shift: bool, is_ctrl_cmd: bool) -> void:
+func _update_selection_after_navigation(old_row: StringName, _old_idx: int, is_shift: bool, is_ctrl_cmd: bool) -> void:
 	if is_shift:
 		if _anchor_row == &"":
 			_anchor_row = old_row if old_row != &"" else (_order[0] if not _order.is_empty() else &"")
@@ -1803,7 +1797,7 @@ func _update_selection_after_navigation(old_row: StringName, old_idx: int, is_sh
 		var focus_idx := _order.find(focused_row)
 		selected_rows.clear()
 		for i in range(mini(anchor_idx, focus_idx), maxi(anchor_idx, focus_idx) + 1):
-			if i >= 0 and i < _total_rows:
+			if i >= 0 and i < _order.size():
 				selected_rows.append(_order[i])
 		if selected_rows.size() > 1:
 			multiple_rows_selected.emit(selected_rows)
@@ -1895,9 +1889,9 @@ func _on_v_scroll_value_changed(value: float) -> void:
 	if row_height > 0:
 		_visible_rows_range[0] = floori(value / row_height)
 		_visible_rows_range[1] = _visible_rows_range[0] + floori((size.y - header_height) / row_height) + 1
-		_visible_rows_range[1] = min(_visible_rows_range[1], _total_rows)
+		_visible_rows_range[1] = min(_visible_rows_range[1], _order.size())
 	else:
-		_visible_rows_range = [0, _total_rows]
+		_visible_rows_range = [0, _order.size()]
 
 	if _text_editor_line_edit.visible:
 		_finish_editing(false)
