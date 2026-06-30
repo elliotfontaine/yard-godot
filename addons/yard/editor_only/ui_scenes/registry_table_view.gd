@@ -45,9 +45,8 @@ const ACCELERATORS_MAC: Dictionary = {
 const INVALID_UID := "uid://<invalid>"
 const UID_COLUMN_CONFIG := ["uid", "UID", TYPE_STRING]
 const STRINGID_COLUMN_CONFIG := ["string_id", "String ID", TYPE_STRING]
-const NON_PROP_COLUMNS_COUNT := 2
-const STRINGID_COLUMN := 0
-const UID_COLUMN := 1
+const STRINGID_COLUMN: StringName = &"string_id"
+const UID_COLUMN: StringName = &"uid"
 
 var current_cache_data: RegistryCacheData
 var properties_column_info: Array[Dictionary]
@@ -255,9 +254,8 @@ func update_view() -> void:
 
 	dynamic_table.set_columns(_build_columns())
 
-	for idx in dynamic_table.get_column_count():
-		var column := dynamic_table.get_column(idx)
-		match idx:
+	for column: DynamicTable.ColumnConfig in dynamic_table.get_all_columns():
+		match column.identifier:
 			UID_COLUMN:
 				column.current_width = current_cache_data.uid_column_width
 			STRINGID_COLUMN:
@@ -270,7 +268,7 @@ func update_view() -> void:
 	# set_data preserves focused_row and selected_rows for keys that still exist
 	dynamic_table.set_data(rows, row_ids)
 
-	if saved_sort_col >= 0:
+	if saved_sort_col != &"":
 		dynamic_table.ordering_data(saved_sort_col, saved_sort_asc)
 
 	if table_had_focus:
@@ -354,7 +352,7 @@ func get_res_row_data(res: Resource) -> Array[Variant]:
 func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 	var row := dynamic_table.focused_row
 	var col := dynamic_table.focused_col
-	var has_selected_cell := row != &"" and col != -1
+	var has_selected_cell := row != &"" and col != &""
 	var has_selected_row := row != &""
 	var cell_value: Variant = dynamic_table.get_cell_value(row, col) if has_selected_cell else null
 	var cant_be_cut := col in [UID_COLUMN, STRINGID_COLUMN]
@@ -605,7 +603,7 @@ func _delete_selected_entries() -> void:
 				"Failed to remove %s from %s." % [uid, current_registry.resource_path.get_file()],
 			)
 
-	dynamic_table.set_selected_cell(&"", -1)
+	dynamic_table.set_selected_cell(&"", &"")
 	update_view()
 
 
@@ -654,11 +652,8 @@ func _on_drag_end() -> void:
 	focus_panel.hide()
 
 
-func _on_cell_selected(string_id: StringName, col: int) -> void:
-	# WARNING: uncommenting it increases the chance of a crash occuring by a lot. Inexplicable,
-	# but supposedly related to switching selected cell with arrow keys. Only report: 'Abort trap: 6'
-	#print("Cell selected on row ", row, ", column ", column, " Cell value: ", dynamic_table.get_cell_value(row, column)) #, " Row value: ", dynamic_table.get_row_value(row))
-	if string_id != &"" and col != -1:
+func _on_cell_selected(string_id: StringName, col: StringName) -> void:
+	if string_id != &"" and col != &"":
 		var cell_value: Variant = dynamic_table.get_cell_value(string_id, col)
 		if cell_value is Resource:
 			_subresource_to_inspect = cell_value
@@ -670,7 +665,7 @@ func _on_cell_selected(string_id: StringName, col: int) -> void:
 				_uid_resource_to_inspect = uid
 
 
-func _on_cell_right_selected(string_id: StringName, _col: int, _mouse_pos: Vector2) -> void:
+func _on_cell_right_selected(string_id: StringName, _col: StringName, _mouse_pos: Vector2) -> void:
 	if string_id != &"":
 		edit_context_menu.popup(Rect2(DisplayServer.mouse_get_position(), Vector2.ZERO))
 
@@ -679,13 +674,12 @@ func _on_multiple_rows_selected(_ids: Array[StringName]) -> void:
 	pass
 
 
-func _on_cell_edited(string_id: StringName, column: int, old_value: Variant, new_value: Variant) -> void:
+func _on_cell_edited(string_id: StringName, column: StringName, old_value: Variant, new_value: Variant) -> void:
 	if column not in [UID_COLUMN, STRINGID_COLUMN]:
-		var col_config: DynamicTable.ColumnConfig = dynamic_table.get_column(column)
-		var prop_name: StringName = col_config.identifier
 		var uid := current_registry.get_uid(string_id)
+		var property := column
 		if RegistryIO.is_uid_valid(uid):
-			_edit_entry_property(uid, prop_name, old_value, new_value)
+			_edit_entry_property(uid, property, old_value, new_value)
 	elif column == STRINGID_COLUMN and new_value:
 		RegistryIO.rename_entry(current_registry, string_id, new_value)
 	elif column == UID_COLUMN and new_value:
@@ -694,16 +688,14 @@ func _on_cell_edited(string_id: StringName, column: int, old_value: Variant, new
 	update_view()
 
 
-func _on_column_resized(column: int, new_width: float) -> void:
+func _on_column_resized(column: StringName, new_width: float) -> void:
 	match column:
 		UID_COLUMN:
 			current_cache_data.uid_column_width = new_width
 		STRINGID_COLUMN:
 			current_cache_data.string_id_column_width = new_width
 		_:
-			var col_config: DynamicTable.ColumnConfig = dynamic_table.get_column(column)
-			var prop_name: StringName = col_config.identifier
-			current_cache_data.property_columns_widths[prop_name] = new_width
+			current_cache_data.property_columns_widths[column] = new_width
 
 	current_cache_data.save()
 

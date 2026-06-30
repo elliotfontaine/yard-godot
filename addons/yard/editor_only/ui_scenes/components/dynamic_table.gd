@@ -7,13 +7,13 @@
 @tool
 extends Control
 
-signal cell_selected(row_id: StringName, col: int)
+signal cell_selected(row_id: StringName, col: StringName)
 signal multiple_rows_selected(row_ids: Array[StringName])
-signal cell_right_selected(row_id: StringName, col: int, mouse_pos: Vector2)
-signal header_clicked(column: int)
-signal column_resized(column: int, new_width: float)
-signal progress_changed(row_id: StringName, col: int, new_value: float)
-signal cell_edited(row_id: StringName, col: int, old_value: Variant, new_value: Variant)
+signal cell_right_selected(row_id: StringName, col: StringName, mouse_pos: Vector2)
+signal header_clicked(column: StringName)
+signal column_resized(column: StringName, new_width: float)
+signal progress_changed(row_id: StringName, col: StringName, new_value: float)
+signal cell_edited(row_id: StringName, col: StringName, old_value: Variant, new_value: Variant)
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const ClassUtils := Namespace.ClassUtils
@@ -68,70 +68,80 @@ var font := get_theme_default_font()
 var mono_font: Font = EditorInterface.get_editor_theme().get_font("font", "CodeEdit")
 var font_size := get_theme_default_font_size()
 
-# Public selection / focus state (key-based)
+# Public state: selection, focus and sort (row/column keys)
 var selected_rows: Array[StringName] = []
 var focused_row: StringName = &""
-var focused_col: int = -1
-
-# Public sort state
-var sort_column: int = -1
+var focused_col: StringName = &""
+var sort_column: StringName = &""
 var sort_ascending: bool = true
 
-# Row storage: key -> cells array (model), ordered key lists (view)
+# Row model: key -> cells (the data), and the current display order
 var _rows: Dictionary[StringName, Array] = { }
 var _base_order: Array[StringName] = [] # insertion order, source for filter
-var _order: Array[StringName] = [] # current visible / sorted order
-
-var _columns: Array[ColumnConfig]
+var _order: Array[StringName] = [] # current visible filtered / sorted order
 var _total_rows := 0
-var _visible_rows_range: Array[int] = [0, 0]
+var _anchor_row: StringName = &"" # shift-select range anchor
+
+# Column model: the ordered list is both the model and the display order
+# (no column reordering feature exists). The map is a position cache.
+var _columns: Array[ColumnConfig]
+var _column_index_by_id: Dictionary[StringName, int] = { }
+
+# Scrolling
+var _h_scroll: HScrollBar
+var _v_scroll: VScrollBar
 var _h_scroll_position := 0
-var _resizing_column := -1
+var _visible_rows_range: Array[int] = [0, 0]
+
+# Column resizing (dragging a header divider)
+var _resizing_column: StringName = &""
 var _resizing_start_pos := 0
 var _resizing_start_width := 0
 var _mouse_over_divider := -1
 var _divider_width := 5
+
+# Sort icon (header rendering)
 var _icon_sort := " ▼ "
 
-var _anchor_row: StringName = &""
+# Column filter (double-click a header to search within that column)
+var _filter_line_edit: LineEdit
+var _filtered_column: StringName = &""
 
-var _dragging_progress := false
-var _dragging_start_value: Variant
-var _progress_drag_row: StringName = &""
-var _progress_drag_col: int = -1
-
-# Resource preview cache
-var _resource_thumb_cache: Dictionary = { }
-var _resource_thumb_pending: Dictionary = { }
-
-var _pan_delta_accumulation: Vector2 = Vector2.ZERO
-
-# Inline editing state
+# Inline cell editing
 var _edited_row: StringName = &""
-var _edited_col := -1
+var _edited_col: StringName = &""
 var _text_editor_line_edit: LineEdit
 var _color_editor: Control
 var _resource_editor: EditorResourcePicker
 var _path_editor: EditorFileDialog
 var _enum_editor: PopupMenu
 var _enum_editor_last_idx: int = -1
+
+# Click detection (single vs. double click)
 var _double_click_timer: Timer
 var _click_count := 0
 var _last_click_pos := Vector2.ZERO
 var _double_click_threshold := 400 # milliseconds
 var _click_position_threshold := 5 # pixels
 
-# Column filter
-var _filter_line_edit: LineEdit
-var _filtered_column := -1
+# Progress bar dragging
+var _dragging_progress := false
+var _dragging_start_value: Variant
+var _progress_drag_row: StringName = &""
+var _progress_drag_col: StringName = &""
+
+# Resource preview cache (thumbnails for resource / path columns)
+var _resource_thumb_cache: Dictionary = { }
+var _resource_thumb_pending: Dictionary = { }
 
 # Tooltip tracking
 var _tooltip_row: StringName = &""
-var _tooltip_col: int = -1
+var _tooltip_col: StringName = &""
 
-# Node references
-var _h_scroll: HScrollBar
-var _v_scroll: VScrollBar
+# Trackpad / touch pan gesture
+var _pan_delta_accumulation: Vector2 = Vector2.ZERO
+
+# Rendering
 var _pixelated_canvas_rid: RID
 
 
@@ -283,16 +293,25 @@ func set_native_theming(delay: int = 0) -> void:
 
 func set_columns(columns: Array[ColumnConfig]) -> void:
 	_columns = columns
+	_column_index_by_id.clear()
+	for i in _columns.size():
+		_column_index_by_id[_columns[i].identifier] = i
 	_reset_column_widths()
 	queue_redraw()
 
 
-func get_column(index: int) -> ColumnConfig:
-	return _columns[index] if index in range(_columns.size()) else null
+func get_column(col: StringName) -> ColumnConfig:
+	var idx := _column_index_by_id.get(col, -1)
+	return _columns[idx] if idx >= 0 else null
 
 
-func get_column_count() -> int:
-	return _columns.size()
+## Returns all columns, in display order.
+func get_all_columns() -> Array[ColumnConfig]:
+	return _columns.duplicate()
+
+
+func _column_index(col: StringName) -> int:
+	return _column_index_by_id.get(col, -1)
 
 
 ## Replace all rows. Preserves focused_row and selected_rows for keys that still exist.
@@ -324,7 +343,7 @@ func set_data(rows: Array, row_ids: Array[StringName]) -> void:
 
 	if not _rows.has(focused_row):
 		focused_row = &""
-		focused_col = -1
+		focused_col = &""
 	if not _rows.has(_anchor_row):
 		_anchor_row = &""
 
@@ -369,7 +388,7 @@ func remove_row(row: StringName) -> void:
 	selected_rows.erase(row)
 	if focused_row == row:
 		focused_row = &""
-		focused_col = -1
+		focused_col = &""
 	if _anchor_row == row:
 		_anchor_row = &""
 	_total_rows = _order.size()
@@ -377,23 +396,24 @@ func remove_row(row: StringName) -> void:
 	queue_redraw()
 
 
-func ordering_data(column_index: int, ascending: bool = true) -> void:
-	if not get_column(column_index):
+func ordering_data(column: StringName, ascending: bool = true) -> void:
+	var column_cfg := get_column(column)
+	if not column_cfg:
 		return
 	_finish_editing(false)
-	sort_column = column_index
+	sort_column = column
 	sort_ascending = ascending
-	var column := get_column(column_index)
+	var column_idx := _column_index(column)
 	_icon_sort = " ▼ " if ascending else " ▲ "
 
 	_order.sort_custom(
 		func(a: StringName, b: StringName) -> bool:
 			var a_cells: Array = _rows.get(a, [])
 			var b_cells: Array = _rows.get(b, [])
-			var va: Variant = a_cells[column_index] if column_index < a_cells.size() else null
-			var vb: Variant = b_cells[column_index] if column_index < b_cells.size() else null
-			var ka: Variant = _key_for_sort(va, column)
-			var kb: Variant = _key_for_sort(vb, column)
+			var va: Variant = a_cells[column_idx] if column_idx < a_cells.size() else null
+			var vb: Variant = b_cells[column_idx] if column_idx < b_cells.size() else null
+			var ka: Variant = _key_for_sort(va, column_cfg)
+			var kb: Variant = _key_for_sort(vb, column_cfg)
 			if ka == null and kb == null:
 				return false
 			if ka == null:
@@ -414,19 +434,21 @@ func ordering_data(column_index: int, ascending: bool = true) -> void:
 	queue_redraw()
 
 
-func update_cell(row: StringName, col: int, value: Variant) -> void:
-	if not _rows.has(row) or col < 0 or col >= _columns.size():
+func update_cell(row: StringName, col: StringName, value: Variant) -> void:
+	var col_idx := _column_index(col)
+	if not _rows.has(row) or col_idx < 0:
 		return
-	while _rows[row].size() <= col:
+	while _rows[row].size() <= col_idx:
 		_rows[row].append(CELL_INVALID)
-	_rows[row][col] = value
+	_rows[row][col_idx] = value
 	queue_redraw()
 
 
-func get_cell_value(row: StringName, col: int) -> Variant:
-	if not _rows.has(row) or col < 0 or col >= _rows[row].size():
+func get_cell_value(row: StringName, col: StringName) -> Variant:
+	var col_idx := _column_index(col)
+	if not _rows.has(row) or col_idx < 0 or col_idx >= _rows[row].size():
 		return null
-	var raw: Variant = _rows[row][col]
+	var raw: Variant = _rows[row][col_idx]
 	if is_cell_invalid(row, col):
 		return raw
 	if get_column(col) and get_column(col).is_numeric_column() and not _is_numeric_value(raw):
@@ -434,9 +456,9 @@ func get_cell_value(row: StringName, col: int) -> Variant:
 	return raw
 
 
-func set_selected_cell(row: StringName, col: int) -> void:
+func set_selected_cell(row: StringName, col: StringName) -> void:
 	var idx := _order.find(row)
-	if row != &"" and idx >= 0 and col >= 0 and col < _columns.size():
+	if row != &"" and idx >= 0 and col != &"" and get_column(col):
 		focused_row = row
 		focused_col = col
 		selected_rows.clear()
@@ -447,7 +469,7 @@ func set_selected_cell(row: StringName, col: int) -> void:
 		queue_redraw()
 	else:
 		focused_row = &""
-		focused_col = -1
+		focused_col = &""
 		selected_rows.clear()
 		_anchor_row = &""
 		queue_redraw()
@@ -461,17 +483,18 @@ func select_all_rows() -> void:
 	if focused_row == &"":
 		focused_row = _order[0]
 		_anchor_row = _order[0]
-		focused_col = 0 if _columns.size() > 0 else -1
+		focused_col = _columns[0].identifier if not _columns.is_empty() else &""
 	else:
 		_anchor_row = focused_row
 	_ensure_row_visible(focused_row)
 	_ensure_col_visible(focused_col)
 
 
-func is_cell_invalid(row: StringName, col: int) -> bool:
-	if not _rows.has(row) or col >= _rows[row].size():
+func is_cell_invalid(row: StringName, col: StringName) -> bool:
+	var col_idx := _column_index(col)
+	if not _rows.has(row) or col_idx < 0 or col_idx >= _rows[row].size():
 		return false
-	var raw: Variant = _rows[row][col]
+	var raw: Variant = _rows[row][col_idx]
 	return raw is String and raw == CELL_INVALID
 
 
@@ -560,7 +583,7 @@ func _update_scrollbars() -> void:
 	var visible_scrollable_w := visible_width - frozen_w
 	var total_scrollable_w := 0.0
 	for i in range(n_frozen_columns, _columns.size()):
-		total_scrollable_w += get_column(i).current_width
+		total_scrollable_w += _columns[i].current_width
 
 	_h_scroll.visible = total_scrollable_w > visible_scrollable_w
 	_h_scroll.offset_left = frozen_w
@@ -589,7 +612,7 @@ func _is_numeric_value(value: Variant) -> bool:
 	return str_val.is_valid_float() or str_val.is_valid_int()
 
 
-func _start_cell_editing(row: StringName, col: int) -> void:
+func _start_cell_editing(row: StringName, col: StringName) -> void:
 	var column := get_column(col)
 	if is_cell_invalid(row, col):
 		return
@@ -608,7 +631,7 @@ func _start_cell_editing(row: StringName, col: int) -> void:
 		YardLogger.warn("There is no editor for this type of cell.")
 
 
-func _open_text_editor(row: StringName, col: int) -> void:
+func _open_text_editor(row: StringName, col: StringName) -> void:
 	var cell_rect := _get_cell_rect(row, col)
 	if not cell_rect:
 		return
@@ -625,7 +648,7 @@ func _open_text_editor(row: StringName, col: int) -> void:
 	_text_editor_line_edit.select_all()
 
 
-func _open_color_editor(row: StringName, col: int) -> void:
+func _open_color_editor(row: StringName, col: StringName) -> void:
 	var cell_rect := _get_cell_rect(row, col)
 	if not cell_rect:
 		return
@@ -639,7 +662,7 @@ func _open_color_editor(row: StringName, col: int) -> void:
 	_color_editor.grab_focus()
 
 
-func _open_resource_editor(row: StringName, col: int) -> void:
+func _open_resource_editor(row: StringName, col: StringName) -> void:
 	_edited_row = row
 	_edited_col = col
 	var column := get_column(col)
@@ -656,7 +679,7 @@ func _open_resource_editor(row: StringName, col: int) -> void:
 			break
 
 
-func _open_path_editor(row: StringName, col: int) -> void:
+func _open_path_editor(row: StringName, col: StringName) -> void:
 	_edited_row = row
 	_edited_col = col
 	var cell_value: String = get_cell_value(row, col)
@@ -674,7 +697,7 @@ func _open_path_editor(row: StringName, col: int) -> void:
 	_path_editor.popup_centered_ratio(0.55)
 
 
-func _open_enum_editor(row: StringName, col: int) -> void:
+func _open_enum_editor(row: StringName, col: StringName) -> void:
 	_edited_row = row
 	_edited_col = col
 	var current_value: Variant = get_cell_value(row, col)
@@ -705,7 +728,7 @@ func _open_enum_editor(row: StringName, col: int) -> void:
 
 
 func _finish_editing(save_changes: bool = true) -> void:
-	if _edited_row == &"" and _edited_col == -1:
+	if _edited_row == &"" and _edited_col == &"":
 		return
 
 	if save_changes:
@@ -719,7 +742,7 @@ func _finish_editing(save_changes: bool = true) -> void:
 			cell_edited.emit(_edited_row, _edited_col, old_value, new_value)
 
 	_edited_row = &""
-	_edited_col = -1
+	_edited_col = &""
 	_text_editor_line_edit.hide()
 	_color_editor.hide()
 	queue_redraw()
@@ -751,42 +774,44 @@ func _get_editor_value_for_column(column: ColumnConfig) -> Variant:
 	return null
 
 
-func _get_cell_rect(row: StringName, col: int) -> Rect2:
+func _get_cell_rect(row: StringName, col: StringName) -> Rect2:
 	var row_idx := _order.find(row)
-	if row_idx < _visible_rows_range[0] or row_idx >= _visible_rows_range[1] or col >= _columns.size():
+	var col_idx := _column_index(col)
+	if row_idx < _visible_rows_range[0] or row_idx >= _visible_rows_range[1] or col_idx < 0:
 		return Rect2()
-	var cell_x := _get_col_x_pos(col)
+	var cell_x := _get_col_x_pos(col_idx)
 	var vis_w := size.x - (_v_scroll.size.x if _v_scroll.visible else 0.)
-	if cell_x + get_column(col).current_width <= 0 or cell_x >= vis_w:
+	var col_cfg := get_column(col)
+	if cell_x + col_cfg.current_width <= 0 or cell_x >= vis_w:
 		return Rect2()
 	var row_y := header_height + (row_idx - _visible_rows_range[0]) * row_height
-	return Rect2(cell_x, row_y, get_column(col).current_width, row_height)
+	return Rect2(cell_x, row_y, col_cfg.current_width, row_height)
 
 
-func _dispatch_cell_draw(cell_rect: Rect2, row: StringName, col_idx: int) -> void:
-	var col := get_column(col_idx)
-	if is_cell_invalid(row, col_idx):
-		_draw_cell_invalid(cell_rect, row, col_idx)
-	elif col.is_range_column():
-		_draw_cell_progress(cell_rect, row, col_idx)
-	elif col.is_boolean_column():
-		_draw_cell_bool(cell_rect, row, col_idx)
-	elif col.is_color_column():
-		_draw_cell_color(cell_rect, row, col_idx)
-	elif col.is_resource_column():
-		_draw_cell_resource(cell_rect, row, col_idx)
-	elif col.is_path_column():
-		_draw_cell_path(cell_rect, row, col_idx)
-	elif col.is_enum_column():
-		_draw_cell_enum(cell_rect, row, col_idx)
-	elif col.is_collection_column():
-		_draw_cell_collection(cell_rect, row, col_idx)
+func _dispatch_cell_draw(cell_rect: Rect2, row: StringName, col: StringName) -> void:
+	var column := get_column(col)
+	if is_cell_invalid(row, col):
+		_draw_cell_invalid(cell_rect, row, col)
+	elif column.is_range_column():
+		_draw_cell_progress(cell_rect, row, col)
+	elif column.is_boolean_column():
+		_draw_cell_bool(cell_rect, row, col)
+	elif column.is_color_column():
+		_draw_cell_color(cell_rect, row, col)
+	elif column.is_resource_column():
+		_draw_cell_resource(cell_rect, row, col)
+	elif column.is_path_column():
+		_draw_cell_path(cell_rect, row, col)
+	elif column.is_enum_column():
+		_draw_cell_enum(cell_rect, row, col)
+	elif column.is_collection_column():
+		_draw_cell_collection(cell_rect, row, col)
 	else:
-		_draw_cell_text(cell_rect, row, col_idx)
+		_draw_cell_text(cell_rect, row, col)
 
 
 func _draw_header_cell(col_idx: int, cell_x: float, vis_w: float) -> void:
-	var column := get_column(col_idx)
+	var column := _columns[col_idx]
 	draw_line(Vector2(cell_x, 0), Vector2(cell_x, header_height), grid_color)
 	draw_line(
 		Vector2(cell_x, header_height),
@@ -796,7 +821,7 @@ func _draw_header_cell(col_idx: int, cell_x: float, vis_w: float) -> void:
 
 	var header_text := column.header
 	var font_color := default_font_color
-	if col_idx == _filtered_column:
+	if column.identifier == _filtered_column:
 		font_color = header_filter_active_font_color
 		header_text += " (" + str(_order.size()) + ")"
 
@@ -813,7 +838,7 @@ func _draw_header_cell(col_idx: int, cell_x: float, vis_w: float) -> void:
 		font_color,
 	)
 
-	if col_idx == sort_column:
+	if column.identifier == sort_column:
 		var text_size := font.get_string_size(header_text, header_alignment, column.current_width, font_size)
 		var icon_align := (
 			HORIZONTAL_ALIGNMENT_RIGHT
@@ -843,7 +868,7 @@ func _draw_header_cell(col_idx: int, cell_x: float, vis_w: float) -> void:
 func _draw_header_column_range(col_from: int, col_to: int, start_x: float, clip_left: float, vis_w: float) -> void:
 	var hx := start_x
 	for col_idx in range(col_from, col_to):
-		var col := get_column(col_idx)
+		var col := _columns[col_idx]
 		if hx + col.current_width > clip_left and hx < vis_w:
 			_draw_header_cell(col_idx, hx, vis_w)
 		hx += col.current_width
@@ -852,19 +877,19 @@ func _draw_header_column_range(col_from: int, col_to: int, start_x: float, clip_
 func _draw_cells_column_range(row: StringName, row_y: float, col_from: int, col_to: int, start_x: float, clip_left: float, vis_w: float) -> void:
 	var col_x := start_x
 	for col_idx in range(col_from, col_to):
-		var col := get_column(col_idx)
+		var col := _columns[col_idx]
 		if col_x + col.current_width > clip_left and col_x < vis_w:
 			var cell_rect := Rect2(col_x, row_y, col.current_width, row_height)
 			draw_line(Vector2(col_x, row_y), Vector2(col_x, row_y + row_height), grid_color)
-			_dispatch_cell_draw(cell_rect, row, col_idx)
-			if row == focused_row and col_idx == focused_col:
+			_dispatch_cell_draw(cell_rect, row, col.identifier)
+			if row == focused_row and col.identifier == focused_col:
 				draw_rect(cell_rect.grow_individual(-1, -1, -2, -2), selected_cell_back_color, false, 2.0)
 		col_x += col.current_width
 	if col_to == _columns.size() and col_x <= vis_w and col_x > clip_left:
 		draw_line(Vector2(col_x, row_y), Vector2(col_x, row_y + row_height), grid_color)
 
 
-func _draw_cell_progress(rect: Rect2, row: StringName, col: int) -> void:
+func _draw_cell_progress(rect: Rect2, row: StringName, col: StringName) -> void:
 	var cell_value: float = get_cell_value(row, col)
 	var range_cfg := get_column(col).range_config
 	var progress: float = inverse_lerp(range_cfg.get(&"min"), range_cfg.get(&"max"), cell_value)
@@ -889,7 +914,7 @@ func _draw_cell_progress(rect: Rect2, row: StringName, col: int) -> void:
 	draw_rect(bar, progress_border_color, false, 1.0 * EditorThemeUtils.scale)
 
 
-func _draw_cell_bool(rect: Rect2, row: StringName, col: int) -> void:
+func _draw_cell_bool(rect: Rect2, row: StringName, col: StringName) -> void:
 	var cell_value: Variant = get_cell_value(row, col)
 	if cell_value is not bool:
 		_draw_cell_text(rect, row, col)
@@ -906,7 +931,7 @@ func _draw_cell_bool(rect: Rect2, row: StringName, col: int) -> void:
 	draw_texture(icon, pos)
 
 
-func _draw_cell_color(rect: Rect2, row: StringName, col: int) -> void:
+func _draw_cell_color(rect: Rect2, row: StringName, col: StringName) -> void:
 	var cell_value: Variant = get_cell_value(row, col)
 	if cell_value is not Color:
 		_draw_cell_text(rect, row, col)
@@ -942,7 +967,7 @@ func _draw_cell_color(rect: Rect2, row: StringName, col: int) -> void:
 	draw_rect(inner, Color(1, 1, 1, border_alpha), false, 1.0)
 
 
-func _draw_cell_resource(rect: Rect2, row: StringName, col: int) -> void:
+func _draw_cell_resource(rect: Rect2, row: StringName, col: StringName) -> void:
 	var cell_value: Variant = get_cell_value(row, col)
 	if cell_value is not Resource:
 		_draw_cell_text(rect, row, col, tr("<empty>"))
@@ -970,7 +995,7 @@ func _draw_cell_resource(rect: Rect2, row: StringName, col: int) -> void:
 	_draw_cell_text(text_rect, row, col, label)
 
 
-func _draw_cell_path(rect: Rect2, row: StringName, col: int) -> void:
+func _draw_cell_path(rect: Rect2, row: StringName, col: StringName) -> void:
 	var cell_value: Variant = get_cell_value(row, col)
 	var is_invalid_uid: bool = cell_value == INVALID_UID
 	if not get_column(col).property_hint == PROPERTY_HINT_FILE:
@@ -1013,7 +1038,7 @@ func _draw_filtered_texture_rect(texture: Texture2D, rect: Rect2) -> void:
 		draw_texture_rect(texture, rect, false)
 
 
-func _draw_cell_text(rect: Rect2, row: StringName, col: int, text_override: String = "", color_override: Color = Color.TRANSPARENT) -> void:
+func _draw_cell_text(rect: Rect2, row: StringName, col: StringName, text_override: String = "", color_override: Color = Color.TRANSPARENT) -> void:
 	var cell_value := str(get_cell_value(row, col))
 
 	var column := get_column(col)
@@ -1045,7 +1070,7 @@ func _draw_cell_text(rect: Rect2, row: StringName, col: int, text_override: Stri
 	)
 
 
-func _draw_cell_enum(rect: Rect2, row: StringName, col: int) -> void:
+func _draw_cell_enum(rect: Rect2, row: StringName, col: StringName) -> void:
 	var cell_value: Variant = get_cell_value(row, col)
 	var column := get_column(col)
 	var value_str := ""
@@ -1074,11 +1099,11 @@ func _draw_cell_enum(rect: Rect2, row: StringName, col: int) -> void:
 	)
 
 
-func _draw_cell_invalid(rect: Rect2, _row: StringName, _col: int) -> void:
+func _draw_cell_invalid(rect: Rect2, _row: StringName, _col: StringName) -> void:
 	draw_rect(rect, invalid_cell_color, true)
 
 
-func _draw_cell_collection(rect: Rect2, row: StringName, col: int) -> void:
+func _draw_cell_collection(rect: Rect2, row: StringName, col: StringName) -> void:
 	var cell_value: Variant = get_cell_value(row, col)
 	if cell_value is not Array and cell_value is not Dictionary:
 		_draw_cell_text(rect, row, col)
@@ -1184,13 +1209,14 @@ func _fit_texture_rect(texture: Texture2D, container: Rect2, anchor_to_left := f
 	return Rect2(container.position + Vector2(offset_x, offset_y), thumb_size)
 
 
-func _start_filtering(col_idx: int) -> void:
-	if _filtered_column == col_idx and _filter_line_edit.visible:
+func _start_filtering(col: StringName) -> void:
+	if _filtered_column == col and _filter_line_edit.visible:
 		return
 
+	var col_idx := _column_index(col)
 	var col_x := _get_col_x_pos(col_idx)
-	var header_rect := Rect2(col_x, 0, get_column(col_idx).current_width, header_height)
-	_filtered_column = col_idx
+	var header_rect := Rect2(col_x, 0, get_column(col).current_width, header_height)
+	_filtered_column = col
 	_filter_line_edit.position = header_rect.position + Vector2(1, 1)
 	_filter_line_edit.size = header_rect.size - Vector2(2, 2)
 	_filter_line_edit.text = ""
@@ -1203,19 +1229,20 @@ func _apply_filter(search_key: String) -> void:
 		return
 
 	_filter_line_edit.visible = false
-	if _filtered_column == -1:
+	if _filtered_column == &"":
 		return
 
 	if search_key.is_empty():
 		_order = _base_order.duplicate()
-		_filtered_column = -1
+		_filtered_column = &""
 	else:
 		_order.clear()
+		var filtered_col_idx := _column_index(_filtered_column)
 		var key_lower := search_key.to_lower()
 		for row in _base_order:
 			var row_data: Array = _rows.get(row, [])
-			if _filtered_column < row_data.size() and row_data[_filtered_column] != null:
-				var cell_value := str(row_data[_filtered_column]).to_lower()
+			if filtered_col_idx < row_data.size() and row_data[filtered_col_idx] != null:
+				var cell_value := str(row_data[filtered_col_idx]).to_lower()
 				if cell_value.contains(key_lower):
 					_order.append(row)
 
@@ -1231,7 +1258,7 @@ func _apply_filter(search_key: String) -> void:
 	if not _order.has(focused_row):
 		focused_row = &""
 
-	sort_column = -1
+	sort_column = &""
 
 	_update_scrollbars()
 	queue_redraw()
@@ -1263,14 +1290,14 @@ func _get_col_at_x(x: float) -> int:
 
 	if x < frozen_w:
 		for col_idx in n_frozen_columns:
-			if x < col_x + get_column(col_idx).current_width:
+			if x < col_x + _columns[col_idx].current_width:
 				return col_idx
-			col_x += get_column(col_idx).current_width
+			col_x += _columns[col_idx].current_width
 		return -1
 
 	col_x = frozen_w - _h_scroll_position
 	for col_idx in range(n_frozen_columns, _columns.size()):
-		var col_end := col_x + get_column(col_idx).current_width
+		var col_end := col_x + _columns[col_idx].current_width
 		if x >= maxf(col_x, frozen_w) and x < col_end:
 			return col_idx
 		col_x = col_end
@@ -1294,7 +1321,7 @@ func _get_text_baseline_y(cell_y: float, cell_height: float = -1.0) -> float:
 func _get_frozen_width() -> float:
 	var w := 0.0
 	for i in mini(n_frozen_columns, _columns.size()):
-		w += get_column(i).current_width
+		w += _columns[i].current_width
 	return w
 
 
@@ -1302,12 +1329,12 @@ func _get_col_x_pos(col_idx: int) -> float:
 	if col_idx < n_frozen_columns:
 		var x := 0.0
 		for i in col_idx:
-			x += get_column(i).current_width
+			x += _columns[i].current_width
 		return x
 	else:
 		var x := _get_frozen_width() - _h_scroll_position
 		for i in range(n_frozen_columns, col_idx):
-			x += get_column(i).current_width
+			x += _columns[i].current_width
 		return x
 
 
@@ -1317,7 +1344,7 @@ func _check_mouse_over_divider(mouse_pos: Vector2) -> void:
 
 	if mouse_pos.y < header_height:
 		for col_idx in _columns.size():
-			var divider_x := _get_col_x_pos(col_idx) + get_column(col_idx).current_width
+			var divider_x := _get_col_x_pos(col_idx) + _columns[col_idx].current_width
 			if col_idx >= n_frozen_columns and divider_x <= _get_frozen_width():
 				continue
 			var divider_rect := Rect2(divider_x - _divider_width / 2.0, 0, _divider_width, header_height)
@@ -1331,7 +1358,7 @@ func _check_mouse_over_divider(mouse_pos: Vector2) -> void:
 
 func _update_tooltip(mouse_pos: Vector2) -> void:
 	var new_row: StringName = &""
-	var new_col := -1
+	var new_col: StringName = &""
 	var new_tooltip := ""
 
 	var col_idx := _get_col_at_x(mouse_pos.x)
@@ -1342,18 +1369,19 @@ func _update_tooltip(mouse_pos: Vector2) -> void:
 			self.tooltip_text = new_tooltip
 		return
 
+	var col := _columns[col_idx].identifier
 	if mouse_pos.y < header_height:
-		new_tooltip = get_column(col_idx).header
+		new_tooltip = get_column(col).header
 		new_row = &"<header>"
-		new_col = col_idx
+		new_col = col
 	else:
 		var row_idx := _get_row_at_y(mouse_pos.y)
 		if row_idx >= 0:
 			new_row = _order[row_idx]
-			new_col = col_idx
-			var column := get_column(col_idx)
+			new_col = col
+			var column := get_column(col)
 			if not column.is_range_column() and not column.is_boolean_column():
-				new_tooltip = str(get_cell_value(new_row, col_idx))
+				new_tooltip = str(get_cell_value(new_row, col))
 
 	if new_row != _tooltip_row or new_col != _tooltip_col:
 		_tooltip_row = new_row
@@ -1363,13 +1391,13 @@ func _update_tooltip(mouse_pos: Vector2) -> void:
 
 func _is_clicking_progress_bar(mouse_pos: Vector2) -> bool:
 	var row_idx := _get_row_at_y(mouse_pos.y)
-	var col := _get_col_at_x(mouse_pos.x)
-	if row_idx < 0 or col == -1:
+	var col_idx := _get_col_at_x(mouse_pos.x)
+	if row_idx < 0 or col_idx < 0:
 		return false
-	return get_column(col).is_range_column()
+	return _columns[col_idx].is_range_column()
 
 
-func _toggle_checkbox(row: StringName, col: int) -> void:
+func _toggle_checkbox(row: StringName, col: StringName) -> void:
 	var old_val := bool(get_cell_value(row, col))
 	var new_val := !old_val
 	update_cell(row, col, new_val)
@@ -1393,16 +1421,17 @@ func _ensure_row_visible(row: StringName) -> void:
 	_v_scroll.value = clamp(_v_scroll.value, 0, _v_scroll.max_value)
 
 
-func _ensure_col_visible(col_idx: int) -> void:
-	if _columns.is_empty() or col_idx < 0 or col_idx >= _columns.size() or not _h_scroll.visible:
+func _ensure_col_visible(col: StringName) -> void:
+	var col_idx := _column_index(col)
+	if _columns.is_empty() or col_idx < 0 or not _h_scroll.visible:
 		return
 	if col_idx < n_frozen_columns:
 		return
 
 	var col_scroll_pos := 0.0
 	for i in range(n_frozen_columns, col_idx):
-		col_scroll_pos += get_column(i).current_width
-	var col_scroll_end := col_scroll_pos + get_column(col_idx).current_width
+		col_scroll_pos += _columns[i].current_width
+	var col_scroll_end := col_scroll_pos + _columns[col_idx].current_width
 	var visible_scrollable_w := _h_scroll.page
 
 	if col_scroll_pos < _h_scroll.value:
@@ -1410,7 +1439,7 @@ func _ensure_col_visible(col_idx: int) -> void:
 	elif col_scroll_end > _h_scroll.value + visible_scrollable_w:
 		_h_scroll.value = (
 			col_scroll_end - visible_scrollable_w
-			if get_column(col_idx).current_width <= visible_scrollable_w
+			if _columns[col_idx].current_width <= visible_scrollable_w
 			else col_scroll_pos
 		)
 	_h_scroll.value = clamp(_h_scroll.value, 0.0, _h_scroll.max_value)
@@ -1425,9 +1454,9 @@ func _handle_pan_gesture(event: InputEventPanGesture) -> void:
 func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
 	var m_pos := event.position
 
-	if _dragging_progress and _progress_drag_row != &"" and _progress_drag_col >= 0:
+	if _dragging_progress and _progress_drag_row != &"" and _progress_drag_col != &"":
 		_handle_progress_drag(m_pos)
-	elif _resizing_column in range(_columns.size()):
+	elif _resizing_column != &"":
 		var delta_x: float = m_pos.x - _resizing_start_pos
 		var new_width: float = max(
 			_resizing_start_width + delta_x,
@@ -1492,13 +1521,14 @@ func _handle_left_press(event: InputEventMouseButton) -> void:
 		_handle_cell_click(m_pos, event)
 		if _is_clicking_progress_bar(m_pos):
 			var row_idx := _get_row_at_y(m_pos.y)
+			var col_idx := _get_col_at_x(m_pos.x)
 			_progress_drag_row = _order[row_idx]
-			_progress_drag_col = _get_col_at_x(m_pos.x)
+			_progress_drag_col = _columns[col_idx].identifier
 			_dragging_start_value = get_cell_value(_progress_drag_row, _progress_drag_col)
 			_dragging_progress = true
 
 	if _mouse_over_divider >= 0:
-		_resizing_column = _mouse_over_divider
+		_resizing_column = _columns[_mouse_over_divider].identifier
 		_resizing_start_pos = int(m_pos.x)
 		_resizing_start_width = int(get_column(_resizing_column).current_width)
 
@@ -1508,18 +1538,18 @@ func _handle_left_release() -> void:
 		var new_val: Variant = get_cell_value(_progress_drag_row, _progress_drag_col)
 		update_cell(_progress_drag_row, _progress_drag_col, new_val)
 		cell_edited.emit(_progress_drag_row, _progress_drag_col, _dragging_start_value, new_val)
-	_resizing_column = -1
+	_resizing_column = &""
 	_dragging_progress = false
 	_progress_drag_row = &""
-	_progress_drag_col = -1
+	_progress_drag_col = &""
 
 
 func _handle_progress_drag(mouse_pos: Vector2) -> void:
-	if _progress_drag_row == &"" or _progress_drag_col < 0 or _progress_drag_col >= _columns.size():
+	if _progress_drag_row == &"" or _progress_drag_col == &"":
 		return
 
 	var margin := 4.0
-	var bar_x := _get_col_x_pos(_progress_drag_col) + margin
+	var bar_x := _get_col_x_pos(_column_index(_progress_drag_col)) + margin
 	var bar_w := get_column(_progress_drag_col).current_width - margin * 2.0
 	if bar_w <= 0:
 		return
@@ -1535,21 +1565,23 @@ func _handle_progress_drag(mouse_pos: Vector2) -> void:
 	if not range_cfg.has(&"or_less"):
 		new_progress = max(new_progress, range_cfg.get(&"min"))
 
-	if _rows.has(_progress_drag_row) and _progress_drag_col < _rows[_progress_drag_row].size():
-		_rows[_progress_drag_row][_progress_drag_col] = new_progress
+	var col_idx := _column_index(_progress_drag_col)
+	if _rows.has(_progress_drag_row) and col_idx < _rows[_progress_drag_row].size():
+		_rows[_progress_drag_row][col_idx] = new_progress
 		progress_changed.emit(_progress_drag_row, _progress_drag_col, new_progress)
 		queue_redraw()
 
 
 func _handle_checkbox_click(mouse_pos: Vector2) -> bool:
 	var row_idx := _get_row_at_y(mouse_pos.y)
-	var col := _get_col_at_x(mouse_pos.x)
-	if row_idx < 0 or col == -1:
+	var col_idx := _get_col_at_x(mouse_pos.x)
+	if row_idx < 0 or col_idx == -1:
 		return false
-	if not get_column(col).is_boolean_column():
+	if not _columns[col_idx].is_boolean_column():
 		return false
 
 	var row := _order[row_idx]
+	var col := _columns[col_idx].identifier
 	var rect := _get_cell_rect(row, col)
 	var icon: Texture2D = get_theme_icon(&"checked", &"CheckBox")
 	var icon_rect := Rect2(rect.get_center() - icon.get_size() / 2, icon.get_size())
@@ -1560,17 +1592,18 @@ func _handle_checkbox_click(mouse_pos: Vector2) -> bool:
 
 
 func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> void:
-	if _edited_col >= 0:
+	if _edited_col != &"":
 		var column := get_column(_edited_col)
 		var save := not (column.is_resource_column() or column.is_path_column() or column.is_enum_column())
 		_finish_editing(save)
 
 	var clicked_idx := _get_row_at_y(mouse_pos.y)
-	var clicked_col := _get_col_at_x(mouse_pos.x)
-	if clicked_idx < 0 or clicked_col == -1:
+	var clicked_col_idx := _get_col_at_x(mouse_pos.x)
+	if clicked_idx < 0 or clicked_col_idx == -1:
 		return
 
 	var clicked_row := _order[clicked_idx]
+	var clicked_col := _columns[clicked_col_idx].identifier
 	focused_row = clicked_row
 	focused_col = clicked_col
 
@@ -1601,8 +1634,9 @@ func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> voi
 
 func _handle_right_click(mouse_pos: Vector2) -> void:
 	var clicked_idx := _get_row_at_y(mouse_pos.y)
-	var clicked_col := _get_col_at_x(mouse_pos.x)
+	var clicked_col_idx := _get_col_at_x(mouse_pos.x)
 	var clicked_row := _order[clicked_idx] if clicked_idx >= 0 else &""
+	var clicked_col := _columns[clicked_col_idx].identifier if clicked_col_idx >= 0 else &""
 
 	if selected_rows.size() <= 1:
 		set_selected_cell(clicked_row, clicked_col)
@@ -1617,8 +1651,9 @@ func _handle_double_click(mouse_pos: Vector2) -> void:
 	var row_idx := _get_row_at_y(mouse_pos.y)
 	if row_idx >= 0:
 		var row := _order[row_idx]
-		var col := _get_col_at_x(mouse_pos.x)
-		if col != -1:
+		var col_idx := _get_col_at_x(mouse_pos.x)
+		if col_idx != -1:
+			var col := _columns[col_idx].identifier
 			if not (selected_rows.size() == 1 and selected_rows[0] == row and focused_row == row and focused_col == col):
 				set_selected_cell(row, col)
 			_start_cell_editing(row, col)
@@ -1629,12 +1664,13 @@ func _handle_header_click(mouse_pos: Vector2) -> void:
 		var col_x := _get_col_x_pos(col_idx)
 		if (
 			mouse_pos.x >= col_x + _divider_width / 2.0
-			and mouse_pos.x < col_x + get_column(col_idx).current_width - _divider_width / 2.0
+			and mouse_pos.x < col_x + _columns[col_idx].current_width - _divider_width / 2.0
 		):
+			var col := _columns[col_idx].identifier
 			_finish_editing(false)
-			sort_ascending = not sort_ascending if sort_column == col_idx else true
-			ordering_data(col_idx, sort_ascending)
-			header_clicked.emit(col_idx)
+			sort_ascending = not sort_ascending if sort_column == col else true
+			ordering_data(col, sort_ascending)
+			header_clicked.emit(col)
 			break
 
 
@@ -1642,8 +1678,9 @@ func _handle_header_double_click(mouse_pos: Vector2) -> void:
 	_finish_editing(false)
 	var col_idx := _get_col_at_x(mouse_pos.x)
 	if col_idx != -1:
-		_ensure_col_visible(col_idx)
-		_start_filtering(col_idx)
+		var col := _columns[col_idx].identifier
+		_ensure_col_visible(col)
+		_start_filtering(col)
 
 
 func _handle_key_input(event: InputEventKey) -> void:
@@ -1656,11 +1693,12 @@ func _handle_key_input(event: InputEventKey) -> void:
 	var keycode := event.keycode
 	var is_shift := event.is_shift_pressed()
 	var is_ctrl_cmd := event.is_ctrl_pressed() or event.is_meta_pressed()
-	var is_cell_focused := focused_row != &"" and focused_col != -1
+	var is_cell_focused := focused_row != &"" and focused_col != &""
 
 	var focused_idx := _order.find(focused_row) if focused_row != &"" else -1
+	var focused_col_idx := _column_index(focused_col) if focused_col != &"" else -1
 	var new_idx := focused_idx
-	var new_col := focused_col
+	var new_col_idx := focused_col_idx
 
 	match keycode:
 		KEY_ENTER, KEY_KP_ENTER:
@@ -1681,19 +1719,19 @@ func _handle_key_input(event: InputEventKey) -> void:
 		KEY_ESCAPE:
 			if selected_rows.is_empty() and focused_row == &"":
 				return
-			set_selected_cell(&"", -1)
+			set_selected_cell(&"", &"")
 			_finalize_key_operation()
 			return
 		KEY_HOME:
 			if _total_rows == 0:
 				return
 			new_idx = 0
-			new_col = 0 if not _columns.is_empty() else -1
+			new_col_idx = 0 if not _columns.is_empty() else -1
 		KEY_END:
 			if _total_rows == 0:
 				return
 			new_idx = _total_rows - 1
-			new_col = _columns.size() - 1 if not _columns.is_empty() else -1
+			new_col_idx = _columns.size() - 1 if not _columns.is_empty() else -1
 		KEY_UP:
 			if not is_cell_focused:
 				return
@@ -1705,11 +1743,11 @@ func _handle_key_input(event: InputEventKey) -> void:
 		KEY_LEFT:
 			if not is_cell_focused:
 				return
-			new_col = maxi(0, focused_col - 1)
+			new_col_idx = maxi(0, focused_col_idx - 1)
 		KEY_RIGHT:
 			if not is_cell_focused:
 				return
-			new_col = mini(_columns.size() - 1, focused_col + 1)
+			new_col_idx = mini(_columns.size() - 1, focused_col_idx + 1)
 		KEY_PAGEUP:
 			if not is_cell_focused:
 				return
@@ -1733,6 +1771,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 			return
 
 	var new_row := _order[new_idx] if new_idx >= 0 and new_idx < _order.size() else &""
+	var new_col := _columns[new_col_idx].identifier if new_col_idx >= 0 and new_col_idx < _columns.size() else &""
 	var old_row := focused_row
 	var old_col := focused_col
 	focused_row = new_row
@@ -1903,7 +1942,7 @@ func _on_resource_cell_thumb_ready(resource_path: String, preview: Texture2D, th
 #endregion
 
 class ColumnConfig:
-	var identifier: String
+	var identifier: StringName
 	var header: String
 	var type: Variant.Type
 	var property_hint: PropertyHint
@@ -1943,7 +1982,7 @@ class ColumnConfig:
 	var _enum_keys_map_ready := false
 
 
-	func _init(p_identifier: String, p_header: String, p_type: Variant.Type, p_alignment: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT) -> void:
+	func _init(p_identifier: StringName, p_header: String, p_type: Variant.Type, p_alignment: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT) -> void:
 		identifier = p_identifier
 		header = p_header
 		type = p_type
