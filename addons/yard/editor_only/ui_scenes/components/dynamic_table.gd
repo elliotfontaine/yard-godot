@@ -105,6 +105,7 @@ var _icon_sort := " ▼ "
 # Column filter (double-click a header to search within that column)
 var _filter_line_edit: LineEdit
 var _filtered_column: StringName = &""
+var _filter_text: String = ""
 
 # Inline cell editing
 var _edited_row: StringName = &""
@@ -203,7 +204,7 @@ func _gui_input(event: InputEvent) -> void:
 
 func _draw() -> void:
 	RenderingServer.canvas_item_clear(_pixelated_canvas_rid)
-	if not is_inside_tree() or _columns.is_empty() or _order.is_empty():
+	if not is_inside_tree() or _columns.is_empty():
 		return
 
 	var frozen_w := _get_frozen_width()
@@ -314,7 +315,7 @@ func _column_index(col: StringName) -> int:
 
 
 ## Replace all rows. Preserves focused_row and selected_rows for keys that still exist.
-## Preserves the current sort: re-applies it after rebuilding _order.
+## Re-applies the active filter and sort after rebuilding.
 func set_data(rows: Array, row_ids: Array[StringName]) -> void:
 	_rows.clear()
 	_base_order.clear()
@@ -323,6 +324,7 @@ func set_data(rows: Array, row_ids: Array[StringName]) -> void:
 		_rows[row] = rows[i].duplicate() if i < rows.size() else []
 		_base_order.append(row)
 	_order = _base_order.duplicate()
+	_rebuild_filtered_order()
 
 	_visible_rows_range = [0, min(_order.size(), floori(size.y / row_height) if row_height > 0 else 0)]
 
@@ -498,6 +500,12 @@ func is_cell_invalid(row: StringName, col: StringName) -> bool:
 ## /!\ These are not the rows in view (when there is overflow + HScrollbar)
 func get_displayed_rows() -> Array[StringName]:
 	return _order.duplicate()
+
+
+## Clears the active column filter without rebuilding data.
+func clear_filter() -> void:
+	_filtered_column = &""
+	_filter_text = ""
 
 
 ## Call after changing n_frozen_columns or other layout properties.
@@ -1228,19 +1236,12 @@ func _apply_filter(search_key: String) -> void:
 		return
 
 	if search_key.is_empty():
-		_order = _base_order.duplicate()
 		_filtered_column = &""
+		_filter_text = ""
 	else:
-		_order.clear()
-		var filtered_col_idx := _column_index(_filtered_column)
-		var key_lower := search_key.to_lower()
-		for row in _base_order:
-			var row_data: Array = _rows.get(row, [])
-			if filtered_col_idx < row_data.size() and row_data[filtered_col_idx] != null:
-				var cell_value := str(row_data[filtered_col_idx]).to_lower()
-				if cell_value.contains(key_lower):
-					_order.append(row)
+		_filter_text = search_key
 
+	_rebuild_filtered_order()
 	_v_scroll.value = 0
 
 	# Keep selection only for rows still visible after filter
@@ -1256,6 +1257,20 @@ func _apply_filter(search_key: String) -> void:
 
 	_update_scrollbars()
 	queue_redraw()
+
+
+func _rebuild_filtered_order() -> void:
+	if _filtered_column == &"" or _filter_text.is_empty():
+		_order = _base_order.duplicate()
+		return
+	_order.clear()
+	var col_idx := _column_index(_filtered_column)
+	var key_lower := _filter_text.to_lower()
+	for row in _base_order:
+		var row_data: Array = _rows.get(row, [])
+		if col_idx >= 0 and col_idx < row_data.size() and row_data[col_idx] != null:
+			if str(row_data[col_idx]).to_lower().contains(key_lower):
+				_order.append(row)
 
 
 func _key_for_sort(value: Variant, column: ColumnConfig) -> Variant:

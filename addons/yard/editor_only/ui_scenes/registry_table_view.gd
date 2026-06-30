@@ -60,6 +60,7 @@ var current_registry: Registry:
 		if current_cache_data:
 			_setup_add_entry()
 		if is_another:
+			dynamic_table.clear_filter()
 			dynamic_table.sort_column = STRINGID_COLUMN
 			dynamic_table.sort_ascending = true
 		update_view()
