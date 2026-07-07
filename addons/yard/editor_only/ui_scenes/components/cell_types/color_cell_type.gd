@@ -5,6 +5,9 @@ extends "res://addons/yard/editor_only/ui_scenes/components/cell_types/cell_type
 ## commits the current color (it behaves like an inline picker, despite the
 ## dialog-like buttons).
 
+const EditorIconButton := Namespace.EditorIconButton
+
+
 static func matches(column: ColumnConfig) -> bool:
 	return column.is_color_column()
 
@@ -105,13 +108,15 @@ class ColorPopup extends PanelContainer:
 
 		var cancel_button := Button.new()
 		cancel_button.text = tr("Cancel")
-		cancel_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		cancel_button.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN | Control.SIZE_EXPAND
 		cancel_button.pressed.connect(func() -> void: canceled.emit())
 		hbox.add_child(cancel_button)
 
-		var select_button := Button.new()
+		var select_button := EditorIconButton.new()
 		select_button.text = tr("Select")
-		select_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		select_button.size_flags_horizontal = Control.SIZE_SHRINK_END | Control.SIZE_EXPAND
+		select_button.icon_name = &"ArrowRight"
+		select_button.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		select_button.pressed.connect(func() -> void: color_selected.emit(color_picker.color))
 		hbox.add_child(select_button)
 

@@ -7,8 +7,8 @@ extends PopupMenu
 		for id: int in v.keys():
 			var idx := get_item_index(id)
 			var icon_name := v[id]
-			if has_theme_icon(icon_name, "EditorIcons"):
-				set_item_icon(idx, get_theme_icon(icon_name, "EditorIcons"))
+			if has_theme_icon(icon_name, &"EditorIcons"):
+				set_item_icon(idx, get_theme_icon(icon_name, &"EditorIcons"))
 
 
 func _ready() -> void:

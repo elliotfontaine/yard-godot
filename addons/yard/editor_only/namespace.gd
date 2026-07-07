@@ -20,6 +20,13 @@ const MultiOptionEditorProperty = preload("res://addons/yard/editor_only/ui_scen
 const REGISTRY_EDITOR_SCENE := preload("res://addons/yard/editor_only/ui_scenes/registry_editor.tscn")
 const REGISTRY_TABLE_VIEW_SCENE := preload("res://addons/yard/editor_only/ui_scenes/registry_table_view.tscn")
 
+# Editor Themed Controls
+const EditorIconButton = preload("res://addons/yard/editor_only/classes/editor_icon_button.gd")
+const EditorIconLineEdit = preload("res://addons/yard/editor_only/classes/editor_icon_line_edit.gd")
+const EditorIconMenuButton = preload("res://addons/yard/editor_only/classes/editor_icon_menu_button.gd")
+const EditorIconPopupMenu = preload("res://addons/yard/editor_only/classes/editor_icon_popup_menu.gd")
+const EditorIconTextureButton = preload("res://addons/yard/editor_only/classes/editor_icon_texture_button.gd")
+
 # Data Table
 const DynamicTable := preload("res://addons/yard/editor_only/ui_scenes/components/dynamic_table.gd")
 const ColumnConfig := preload("res://addons/yard/editor_only/ui_scenes/components/column_config.gd")
