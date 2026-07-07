@@ -2,7 +2,7 @@ extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.g
 ## Range/progress-bar columns (numeric type + PROPERTY_HINT_RANGE). Has no editor
 ## of its own; ColumnConfig.get_editor_cell_type() falls back to NumericCellType's
 ## editor when a range cell is double-clicked. Drag-to-adjust is the main
-## interaction: DynamicTable tracks which cell is being dragged (same as it
+## interaction: DataTable tracks which cell is being dragged (same as it
 ## already tracks the edited cell) and calls compute_drag_value each frame.
 
 static func matches(column: ColumnConfig) -> bool:

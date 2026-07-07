@@ -20,7 +20,7 @@ const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const RegistryIO := Namespace.RegistryIO
 const ClassUtils := Namespace.ClassUtils
 const EditorThemeUtils := Namespace.EditorThemeUtils
-const DynamicTable := Namespace.DynamicTable
+const DataTable := Namespace.DataTable
 const YardLogger := Namespace.YardLogger
 const RegistryCacheData := Namespace.YardEditorCache.RegistryCacheData
 
@@ -60,9 +60,9 @@ var current_registry: Registry:
 		if current_cache_data:
 			_setup_add_entry()
 		if is_another:
-			dynamic_table.clear_filter()
-			dynamic_table.sort_column = STRINGID_COLUMN
-			dynamic_table.sort_ascending = true
+			data_table.clear_filter()
+			data_table.sort_column = STRINGID_COLUMN
+			data_table.sort_ascending = true
 		update_view()
 
 var toggle_button_forward := false:
@@ -73,15 +73,15 @@ var toggle_button_forward := false:
 var id_columns_frozen := true:
 	set(frozen):
 		id_columns_frozen = frozen
-		dynamic_table.n_frozen_columns = 2 if frozen else 0
-		dynamic_table.refresh_layout()
+		data_table.n_frozen_columns = 2 if frozen else 0
+		data_table.refresh_layout()
 
 var _texture_rect_parent: Button
 var _res_picker: EditorResourcePicker
 var _uid_resource_to_inspect: String
 var _subresource_to_inspect: Resource
 
-@onready var dynamic_table: DynamicTable = %DynamicTable
+@onready var data_table: DataTable = %DataTable
 @onready var toggle_registry_panel_button: Button = %ToggleRegistryPanelButton
 @onready var add_entry_container: HBoxContainer = %AddEntryContainer
 @onready var resource_picker_container: PanelContainer = %ResourcePickerContainer
@@ -101,11 +101,11 @@ func _ready() -> void:
 		_on_inspector_property_edited,
 	)
 
-	dynamic_table.cell_selected.connect(_on_cell_selected)
-	dynamic_table.cell_right_selected.connect(_on_cell_right_selected)
-	dynamic_table.cell_edited.connect(_on_cell_edited)
-	dynamic_table.column_resized.connect(_on_column_resized)
-	dynamic_table.multiple_rows_selected.connect(_on_multiple_rows_selected)
+	data_table.cell_selected.connect(_on_cell_selected)
+	data_table.cell_right_selected.connect(_on_cell_right_selected)
+	data_table.cell_edited.connect(_on_cell_edited)
+	data_table.column_resized.connect(_on_column_resized)
+	data_table.multiple_rows_selected.connect(_on_multiple_rows_selected)
 	entry_name_line_edit.text_submitted.connect(_on_new_entry_text_submitted)
 
 	var accelerators := ACCELERATORS_MAC if OS.get_name() == "macOS" else ACCELERATORS_WIN
@@ -167,7 +167,7 @@ func _shortcut_input(event: InputEvent) -> void:
 	if not event.is_pressed() or event.is_echo():
 		return
 
-	if dynamic_table.has_focus() and edit_context_menu.activate_item_by_event(event):
+	if data_table.has_focus() and edit_context_menu.activate_item_by_event(event):
 		get_viewport().set_input_as_handled()
 
 
@@ -225,14 +225,14 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 func update_view() -> void:
 	if not current_registry:
 		add_entry_container.visible = false
-		dynamic_table.set_columns([])
-		dynamic_table.set_data([], [])
+		data_table.set_columns([])
+		data_table.set_data([], [])
 		return
 
-	var saved_sort_col := dynamic_table.sort_column
-	var saved_sort_asc := dynamic_table.sort_ascending
+	var saved_sort_col := data_table.sort_column
+	var saved_sort_asc := data_table.sort_ascending
 	var focus_owner := get_viewport().gui_get_focus_owner() if get_viewport() else null
-	var table_had_focus := focus_owner and (dynamic_table == focus_owner or dynamic_table.is_ancestor_of(focus_owner))
+	var table_had_focus := focus_owner and (data_table == focus_owner or data_table.is_ancestor_of(focus_owner))
 
 	add_entry_container.visible = true
 
@@ -253,9 +253,9 @@ func update_view() -> void:
 		rows.append(entry_data)
 		row_ids.append(string_id)
 
-	dynamic_table.set_columns(_build_columns())
+	data_table.set_columns(_build_columns())
 
-	for column: DynamicTable.ColumnConfig in dynamic_table.get_all_columns():
+	for column: DataTable.ColumnConfig in data_table.get_all_columns():
 		match column.identifier:
 			UID_COLUMN:
 				column.current_width = current_cache_data.uid_column_width
@@ -267,20 +267,20 @@ func update_view() -> void:
 					column.current_width = current_cache_data.property_columns_widths[prop_name]
 
 	# set_data preserves focused_row and selected_rows for keys that still exist
-	dynamic_table.set_data(rows, row_ids)
+	data_table.set_data(rows, row_ids)
 
 	if saved_sort_col != &"":
-		dynamic_table.ordering_data(saved_sort_col, saved_sort_asc)
+		data_table.ordering_data(saved_sort_col, saved_sort_asc)
 
 	if table_had_focus:
-		dynamic_table.grab_focus()
+		data_table.grab_focus()
 
 
 func do_edit_menu_action(action_id: int) -> void:
 	if not current_registry:
 		return
-	var focused_row := dynamic_table.focused_row
-	var focused_col := dynamic_table.focused_col
+	var focused_row := data_table.focused_row
+	var focused_col := data_table.focused_col
 	match action_id:
 		EditMenuAction.DELETE_ENTRIES:
 			_ask_confirm_delete_entries()
@@ -295,17 +295,17 @@ func do_edit_menu_action(action_id: int) -> void:
 		EditMenuAction.DUPLICATE_ENTRIES:
 			_duplicate_selected_entries()
 		EditMenuAction.CUT_CELL_VALUE:
-			var value: Variant = dynamic_table.get_cell_value(focused_row, focused_col)
-			if not dynamic_table.is_cell_invalid(focused_row, focused_col):
+			var value: Variant = data_table.get_cell_value(focused_row, focused_col)
+			if not data_table.is_cell_invalid(focused_row, focused_col):
 				clipboard = value
 				_on_cell_edited(focused_row, focused_col, value, null)
 		EditMenuAction.COPY_CELL_VALUE:
-			var value: Variant = dynamic_table.get_cell_value(focused_row, focused_col)
-			if not dynamic_table.is_cell_invalid(focused_row, focused_col):
+			var value: Variant = data_table.get_cell_value(focused_row, focused_col)
+			if not data_table.is_cell_invalid(focused_row, focused_col):
 				clipboard = value
 		EditMenuAction.PASTE_TO_CELL:
-			var value: Variant = dynamic_table.get_cell_value(focused_row, focused_col)
-			if not dynamic_table.is_cell_invalid(focused_row, focused_col):
+			var value: Variant = data_table.get_cell_value(focused_row, focused_col)
+			if not data_table.is_cell_invalid(focused_row, focused_col):
 				_on_cell_edited(focused_row, focused_col, value, clipboard)
 		EditMenuAction.SELECT_ALL:
 			_select_all()
@@ -346,18 +346,18 @@ func get_res_row_data(res: Resource) -> Array[Variant]:
 		if prop[&"name"] in res:
 			row.append(res.get(prop[&"name"]))
 		else:
-			row.append(DynamicTable.CELL_INVALID)
+			row.append(DataTable.CELL_INVALID)
 	return row
 
 
 func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
-	var row := dynamic_table.focused_row
-	var col := dynamic_table.focused_col
+	var row := data_table.focused_row
+	var col := data_table.focused_col
 	var has_selected_cell := row != &"" and col != &""
 	var has_selected_row := row != &""
-	var cell_value: Variant = dynamic_table.get_cell_value(row, col) if has_selected_cell else null
+	var cell_value: Variant = data_table.get_cell_value(row, col) if has_selected_cell else null
 	var cant_be_cut := col in [UID_COLUMN, STRINGID_COLUMN]
-	var is_cell_invalid: bool = cell_value is String and cell_value == dynamic_table.CELL_INVALID
+	var is_cell_invalid: bool = cell_value is String and cell_value == data_table.CELL_INVALID
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), !has_selected_row)
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.DUPLICATE_ENTRIES), !has_selected_row)
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.COPY_STRING_ID), !has_selected_row)
@@ -370,29 +370,29 @@ func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 	for select_action: int in [EditMenuAction.SELECT_ALL, EditMenuAction.INVERT_SELECTION, EditMenuAction.UNSELECT]:
 		edit_menu.set_item_disabled(edit_menu.get_item_index(select_action), false)
 
-	if dynamic_table.selected_rows.size() > 1:
+	if data_table.selected_rows.size() > 1:
 		edit_menu.set_item_text(
 			edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES),
-			tr("Delete Entries (%s)") % dynamic_table.selected_rows.size(),
+			tr("Delete Entries (%s)") % data_table.selected_rows.size(),
 		)
 		edit_menu.set_item_text(
 			edit_menu.get_item_index(EditMenuAction.DUPLICATE_ENTRIES),
-			tr("Duplicate Entries (%s)") % dynamic_table.selected_rows.size(),
+			tr("Duplicate Entries (%s)") % data_table.selected_rows.size(),
 		)
 	else:
 		edit_menu.set_item_text(edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), tr("Delete Entry"))
 		edit_menu.set_item_text(edit_menu.get_item_index(EditMenuAction.DUPLICATE_ENTRIES), tr("Duplicate Entry"))
 
 
-func _build_columns() -> Array[DynamicTable.ColumnConfig]:
-	var columns: Array[DynamicTable.ColumnConfig] = []
+func _build_columns() -> Array[DataTable.ColumnConfig]:
+	var columns: Array[DataTable.ColumnConfig] = []
 
-	var string_id_column: DynamicTable.ColumnConfig = DynamicTable.ColumnConfig.new.callv(STRINGID_COLUMN_CONFIG)
+	var string_id_column: DataTable.ColumnConfig = DataTable.ColumnConfig.new.callv(STRINGID_COLUMN_CONFIG)
 	string_id_column.custom_font_color = get_theme_color(&"accent_color", &"Editor")
 	string_id_column.h_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	columns.append(string_id_column)
 
-	var uid_column: DynamicTable.ColumnConfig = DynamicTable.ColumnConfig.new.callv(UID_COLUMN_CONFIG)
+	var uid_column: DataTable.ColumnConfig = DataTable.ColumnConfig.new.callv(UID_COLUMN_CONFIG)
 	uid_column.custom_font_color = get_theme_color(&"disabled_font_color", &"Editor")
 	uid_column.property_hint = PROPERTY_HINT_FILE
 	columns.append(uid_column)
@@ -407,7 +407,7 @@ func _build_columns() -> Array[DynamicTable.ColumnConfig]:
 		var hint: PropertyHint = prop[&"hint"]
 		var hint_string: String = prop[&"hint_string"]
 		var class_string: String = prop[&"class_name"]
-		var column := DynamicTable.ColumnConfig.new(
+		var column := DataTable.ColumnConfig.new(
 			prop[&"name"],
 			prop_header,
 			prop_type,
@@ -457,8 +457,8 @@ func _group_props_by_class(found_props: Dictionary) -> Dictionary[String, Array]
 
 func _can_display_property(property_info: Dictionary) -> bool:
 	return (
-		property_info[&"type"] not in [TYPE_CALLABLE, TYPE_SIGNAL]
-		and property_info[&"usage"] & PROPERTY_USAGE_EDITOR != 0
+			property_info[&"type"] not in [TYPE_CALLABLE, TYPE_SIGNAL]
+			and property_info[&"usage"] & PROPERTY_USAGE_EDITOR != 0
 	)
 
 
@@ -481,10 +481,10 @@ func _edit_entry_property(uid: StringName, property: StringName, old_value: Vari
 	var valid := false
 	for prop_type: String in prop_types:
 		if (
-			(ClassUtils.is_type_builtin(typeof(new_value)) and type_string(typeof(new_value)) == prop_type)
-			or (typeof(new_value) in [TYPE_INT, TYPE_FLOAT] and prop_type in [type_string(TYPE_INT), type_string(TYPE_FLOAT)])
-			or ClassUtils.is_class_of(new_value, prop_type)
-			or (new_value == null and typeof(old_value) == TYPE_OBJECT)
+				(ClassUtils.is_type_builtin(typeof(new_value)) and type_string(typeof(new_value)) == prop_type)
+				or (typeof(new_value) in [TYPE_INT, TYPE_FLOAT] and prop_type in [type_string(TYPE_INT), type_string(TYPE_FLOAT)])
+				or ClassUtils.is_class_of(new_value, prop_type)
+				or (new_value == null and typeof(old_value) == TYPE_OBJECT)
 		):
 			valid = true
 			break
@@ -515,8 +515,8 @@ func _edit_entry_property(uid: StringName, property: StringName, old_value: Vari
 
 func _ask_confirm_delete_entries() -> void:
 	var dialogtext := "Are you sure you want to delete %s?"
-	if dynamic_table.selected_rows.size() > 1:
-		delete_entries_confirmation_dialog.dialog_text = dialogtext % ["these " + str(dynamic_table.selected_rows.size()) + " entries"]
+	if data_table.selected_rows.size() > 1:
+		delete_entries_confirmation_dialog.dialog_text = dialogtext % ["these " + str(data_table.selected_rows.size()) + " entries"]
 	else:
 		delete_entries_confirmation_dialog.dialog_text = dialogtext % "this entry"
 	delete_entries_confirmation_dialog.show()
@@ -588,7 +588,7 @@ func _add_entry_from_picker(res: Resource, string_id: StringName) -> void:
 
 func _toggle_add_entry_button() -> void:
 	add_entry_button.disabled = !(
-		_res_picker and _res_picker.edited_resource and entry_name_line_edit.text
+			_res_picker and _res_picker.edited_resource and entry_name_line_edit.text
 	)
 
 
@@ -597,19 +597,19 @@ func _toggle_edit_context_menu_items() -> void:
 
 
 func _delete_selected_entries() -> void:
-	for string_id: StringName in dynamic_table.selected_rows:
+	for string_id: StringName in data_table.selected_rows:
 		var uid := current_registry.get_uid(string_id)
 		if RegistryIO.erase_entry(current_registry, uid) != OK:
 			YardLogger.error(
 				"Failed to remove %s from %s." % [uid, current_registry.resource_path.get_file()],
 			)
 
-	dynamic_table.set_selected_cell(&"", &"")
+	data_table.set_selected_cell(&"", &"")
 	update_view()
 
 
 func _duplicate_selected_entries() -> void:
-	for string_id: StringName in dynamic_table.selected_rows:
+	for string_id: StringName in data_table.selected_rows:
 		var uid := current_registry.get_uid(string_id)
 		if RegistryIO.duplicate_entry(current_registry, uid) != OK:
 			YardLogger.error(
@@ -619,23 +619,23 @@ func _duplicate_selected_entries() -> void:
 
 
 func _select_all() -> void:
-	dynamic_table.select_all_rows()
-	dynamic_table.queue_redraw()
+	data_table.select_all_rows()
+	data_table.queue_redraw()
 
 
 func _invert_selection() -> void:
-	var selection := dynamic_table.selected_rows
+	var selection := data_table.selected_rows
 	var inverted: Array[StringName] = []
-	for row: StringName in dynamic_table.get_displayed_rows():
+	for row: StringName in data_table.get_displayed_rows():
 		if row not in selection:
 			inverted.append(row)
-	dynamic_table.selected_rows = inverted
-	dynamic_table.queue_redraw()
+	data_table.selected_rows = inverted
+	data_table.queue_redraw()
 
 
 func _unselect() -> void:
-	dynamic_table.selected_rows = []
-	dynamic_table.queue_redraw()
+	data_table.selected_rows = []
+	data_table.queue_redraw()
 
 
 func _on_drag_begin() -> void:
@@ -655,7 +655,7 @@ func _on_drag_end() -> void:
 
 func _on_cell_selected(string_id: StringName, col: StringName) -> void:
 	if string_id != &"" and col != &"":
-		var cell_value: Variant = dynamic_table.get_cell_value(string_id, col)
+		var cell_value: Variant = data_table.get_cell_value(string_id, col)
 		if cell_value is Resource:
 			_subresource_to_inspect = cell_value
 			_uid_resource_to_inspect = ""

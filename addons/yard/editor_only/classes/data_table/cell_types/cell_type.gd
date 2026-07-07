@@ -1,12 +1,12 @@
 extends RefCounted
-## Base class for column-type-specific cell behavior in DynamicTable: drawing,
+## Base class for column-type-specific cell behavior in DataTable: drawing,
 ## the cell editor, and type-specific input (drag, direct click, Enter key).
 ##
 ## Every method is static and no subclass is ever instantiated. They're
 ## referenced as plain GDScript scripts (like ClassUtils, YardLogger, etc.
 ## elsewhere in this addon) and called directly on the script reference.
 ## ColumnConfig.get_cell_type() / get_editor_cell_type() resolve which script
-## applies to a given column; DynamicTable never names a concrete subclass.
+## applies to a given column; DataTable never names a concrete subclass.
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const ColumnConfig := Namespace.ColumnConfig
@@ -108,7 +108,7 @@ static func draw_filtered_texture_rect(canvas: CanvasItem, pixelated_canvas_rid:
 
 
 # Editing: stateless factory. create_editor builds a fresh Node each time,
-# already parented under `owner` and ready to use. DynamicTable keeps the
+# already parented under `owner` and ready to use. DataTable keeps the
 # returned Node (the only cell-editing instance that can exist at once) and
 # queue_free()s it when done; read_editor_value reads the committed value back
 # off that same Node.
@@ -132,7 +132,7 @@ static func suppresses_tooltip() -> bool:
 	return false
 
 
-## `value` is guaranteed non-null by the caller (DynamicTable.ordering_data).
+## `value` is guaranteed non-null by the caller (DataTable.ordering_data).
 static func get_sort_key(value: Variant, _column: ColumnConfig) -> Variant:
 	return str(value)
 

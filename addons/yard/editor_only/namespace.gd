@@ -28,7 +28,7 @@ const EditorIconPopupMenu = preload("res://addons/yard/editor_only/classes/edito
 const EditorIconTextureButton = preload("res://addons/yard/editor_only/classes/editor_icon_controls/editor_icon_texture_button.gd")
 
 # Data Table
-const DynamicTable := preload("res://addons/yard/editor_only/classes/data_table/dynamic_table.gd")
+const DataTable := preload("res://addons/yard/editor_only/classes/data_table/data_table.gd")
 const ColumnConfig := preload("res://addons/yard/editor_only/classes/data_table/column_config.gd")
 const CellStyle := preload("res://addons/yard/editor_only/classes/data_table/cell_types/cell_style.gd")
 const CellType := preload("res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd")

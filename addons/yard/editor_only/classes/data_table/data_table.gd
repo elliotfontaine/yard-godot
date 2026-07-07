@@ -100,7 +100,7 @@ var _filter_text: String = ""
 
 # Inline cell editing. The CellType script family is entirely static (never
 # instantiated). ColumnConfig resolves which script applies to a column, and
-# these two fields are the only editing-related state DynamicTable keeps: the
+# these two fields are the only editing-related state DataTable keeps: the
 # one editor Node that can exist at a time, and the script responsible for it.
 var _edited_row: StringName = &""
 var _edited_col: StringName = &""
@@ -705,9 +705,9 @@ func _draw_header_cell(col_idx: int, cell_x: float, vis_w: float) -> void:
 	if column.identifier == sort_column:
 		var text_size := font.get_string_size(header_text, header_alignment, column.current_width, font_size)
 		var icon_align := (
-			HORIZONTAL_ALIGNMENT_RIGHT
-			if header_alignment in [HORIZONTAL_ALIGNMENT_LEFT, HORIZONTAL_ALIGNMENT_CENTER]
-			else HORIZONTAL_ALIGNMENT_LEFT
+				HORIZONTAL_ALIGNMENT_RIGHT
+				if header_alignment in [HORIZONTAL_ALIGNMENT_LEFT, HORIZONTAL_ALIGNMENT_CENTER]
+				else HORIZONTAL_ALIGNMENT_LEFT
 		)
 		draw_string(
 			font,
@@ -960,9 +960,9 @@ func _ensure_col_visible(col: StringName) -> void:
 		_h_scroll.value = col_scroll_pos
 	elif col_scroll_end > _h_scroll.value + visible_scrollable_w:
 		_h_scroll.value = (
-			col_scroll_end - visible_scrollable_w
-			if _columns[col_idx].current_width <= visible_scrollable_w
-			else col_scroll_pos
+				col_scroll_end - visible_scrollable_w
+				if _columns[col_idx].current_width <= visible_scrollable_w
+				else col_scroll_pos
 		)
 	_h_scroll.value = clamp(_h_scroll.value, 0.0, _h_scroll.max_value)
 
@@ -1017,9 +1017,9 @@ func _handle_mouse_button(event: InputEventMouseButton) -> void:
 func _handle_left_press(event: InputEventMouseButton) -> void:
 	var m_pos := event.position
 	var is_double_click := (
-		_click_count == 1
-		and _double_click_timer.time_left > 0
-		and _last_click_pos.distance_to(m_pos) < _click_position_threshold
+			_click_count == 1
+			and _double_click_timer.time_left > 0
+			and _last_click_pos.distance_to(m_pos) < _click_position_threshold
 	)
 
 	if is_double_click:
@@ -1164,8 +1164,8 @@ func _handle_header_click(mouse_pos: Vector2) -> void:
 	for col_idx in _columns.size():
 		var col_x := _get_col_x_pos(col_idx)
 		if (
-			mouse_pos.x >= col_x + _divider_width / 2.0
-			and mouse_pos.x < col_x + _columns[col_idx].current_width - _divider_width / 2.0
+				mouse_pos.x >= col_x + _divider_width / 2.0
+				and mouse_pos.x < col_x + _columns[col_idx].current_width - _divider_width / 2.0
 		):
 			var col := _columns[col_idx].identifier
 			_finish_editing(false)
@@ -1383,8 +1383,8 @@ func _on_editor_settings_changed() -> void:
 	var changed_settings := EditorInterface.get_editor_settings().get_changed_settings()
 	for setting in changed_settings:
 		if (
-			setting in ["interface/editor/main_font_size", "interface/editor/display_scale"]
-			or setting.begins_with("interface/theme")
+				setting in ["interface/editor/main_font_size", "interface/editor/display_scale"]
+				or setting.begins_with("interface/theme")
 		):
 			set_native_theming(3)
 

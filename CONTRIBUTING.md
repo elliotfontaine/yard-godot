@@ -62,7 +62,7 @@ const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const RegistryIO := Namespace.RegistryIO
 const ClassUtils := Namespace.ClassUtils
 const EditorThemeUtils := Namespace.EditorThemeUtils
-const DynamicTable := Namespace.DynamicTable
+const DataTable := Namespace.DataTable
 const RegistryCacheData := Namespace.YardEditorCache.RegistryCacheData
 ```
 
@@ -76,7 +76,7 @@ The core display loosely follows the [Model-View-Adapter](https://en.wikipedia.o
 - **Adapter**: `RegistryTableView` — translates registry entries into rows and column
   configs, and calls `RegistryIO` when a cell is edited. This is where most
   registry-specific UI logic lives.
-- **View**: `DynamicTable` — a generic spreadsheet over a flat `Array[Array]` of
+- **View**: `DataTable` — a generic spreadsheet over a flat `Array[Array]` of
   `Variant` values. It has no knowledge of `Registry` or any YARD-specific logic.
   Keep it that way.
 
@@ -84,11 +84,11 @@ The core display loosely follows the [Model-View-Adapter](https://en.wikipedia.o
 registries are open, handles file operations (open, close, recent), and owns the top
 bar menus. It drives the MVA trio by setting `registry_table_view.current_registry`.
 
-![Plugin UI architecture overview, highlighting the RegistryEditor, RegistryTableView and DynamicTable scenes](/etc/plugin_ui_architecture.png)
+![Plugin UI architecture overview, highlighting the RegistryEditor, RegistryTableView and DataTable scenes](/etc/plugin_ui_architecture.png)
 
 When working on a new feature, this layering tells you where to make the change:
-registry display or editing logic belongs in `RegistryTableView`; spreadsheet rendering
-in `DynamicTable`; plugin-level operations (menus, file I/O) in `RegistryEditor`.
+registry display / editing logic belongs in `RegistryTableView`; spreadsheet rendering / cell editing
+in `DataTable`; plugin-level operations (top-level menus, file I/O) in `RegistryEditor`.
 
 ## Code conventions
 

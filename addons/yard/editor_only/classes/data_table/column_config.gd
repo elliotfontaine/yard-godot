@@ -1,5 +1,5 @@
 extends RefCounted
-## Column schema for DynamicTable, plus per-column dispatch to the CellType
+## Column schema for DataTable, plus per-column dispatch to the CellType
 ## script responsible for it (see get_cell_type() below).
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
