@@ -10,16 +10,16 @@ const SELECTED_VALUE_META := &"selected_value"
 
 
 static func matches(column: ColumnConfig) -> bool:
-	return column.is_enum_column()
+	return column.property_hint == PROPERTY_HINT_ENUM
 
 
 static func draw_cell(canvas: CanvasItem, rect: Rect2, value: Variant, column: ColumnConfig, style: CellStyle) -> void:
 	var value_str: String
-	if not column.is_numeric_column():
+	if not _is_numeric(column):
 		value_str = str(value)
 	else:
 		var int_value := value as int
-		var map := column.enum_values_map
+		var map: Dictionary = column.get_cached(&"enum_values_map", parse_enum_hint_string.bind(column.hint_string))
 		value_str = "%s:%s" % [map[int_value], int_value] if map.has(int_value) else "?:%d" % int_value
 
 	var color := Color(value_str.hash()) + Color(0.25, 0.25, 0.25, 1.0)
@@ -37,7 +37,7 @@ static func commits_on_click_away() -> bool:
 ## Replicates today's absence of a dedicated sort branch for enums: numeric-backed
 ## enums sort by the raw int value, others fall back to string comparison.
 static func get_sort_key(value: Variant, column: ColumnConfig) -> Variant:
-	if column.is_numeric_column():
+	if _is_numeric(column):
 		return float(value)
 	return str(value)
 
@@ -46,7 +46,7 @@ static func create_editor(owner: Control, _rect: Rect2, value: Variant, column: 
 	var editor := PopupMenu.new()
 	owner.add_child(editor)
 
-	var is_numeric := column.is_numeric_column()
+	var is_numeric := _is_numeric(column)
 
 	@warning_ignore("incompatible_ternary")
 	var value_iter: Variant = -1 if is_numeric else ""
@@ -86,3 +86,7 @@ static func read_editor_value(editor: Node, _column: ColumnConfig) -> Variant:
 	if not editor.has_meta(SELECTED_VALUE_META):
 		return null
 	return editor.get_meta(SELECTED_VALUE_META)
+
+
+static func _is_numeric(column: ColumnConfig) -> bool:
+	return column.type in [TYPE_INT, TYPE_FLOAT]

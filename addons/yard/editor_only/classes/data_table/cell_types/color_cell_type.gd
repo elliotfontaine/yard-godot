@@ -1,15 +1,14 @@
 @tool
 extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
-## Color columns. The picker popup is built programmatically (see Popup below)
-## rather than from a separate scene. Clicking away from an open editor still
-## commits the current color (it behaves like an inline picker, despite the
-## dialog-like buttons).
+## Color columns. Clicking away from an open editor still commits the current
+## color (it behaves like an inline picker, despite the dialog-like buttons
+## shown at the bottom of the cell editor).
 
 const EditorIconButton := Namespace.EditorIconButton
 
 
 static func matches(column: ColumnConfig) -> bool:
-	return column.is_color_column()
+	return column.type == TYPE_COLOR
 
 
 static func draw_cell(canvas: CanvasItem, rect: Rect2, value: Variant, column: ColumnConfig, style: CellStyle) -> void:

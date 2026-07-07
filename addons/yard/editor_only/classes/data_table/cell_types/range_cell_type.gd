@@ -6,12 +6,12 @@ extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.g
 ## already tracks the edited cell) and calls compute_drag_value each frame.
 
 static func matches(column: ColumnConfig) -> bool:
-	return column.is_range_column()
+	return column.type in [TYPE_FLOAT, TYPE_INT] and column.property_hint == PROPERTY_HINT_RANGE
 
 
 static func draw_cell(canvas: CanvasItem, rect: Rect2, value: Variant, column: ColumnConfig, style: CellStyle) -> void:
 	var cell_value: float = value
-	var range_cfg := column.range_config
+	var range_cfg := _get_range_config(column)
 	var progress: float = inverse_lerp(range_cfg.get(&"min"), range_cfg.get(&"max"), cell_value)
 	var progress_color := _get_interpolated_three_colors(style.progress_bar_start_color, style.progress_bar_middle_color, style.progress_bar_end_color, progress)
 
@@ -62,7 +62,7 @@ static func compute_drag_value(mouse_pos: Vector2, column: ColumnConfig, cell_x:
 	if bar_w <= 0:
 		return null
 
-	var range_cfg := column.range_config
+	var range_cfg := _get_range_config(column)
 	var weight := (mouse_pos.x - bar_x) / bar_w
 	var new_value: float = snappedf(
 		lerpf(range_cfg.get(&"min"), range_cfg.get(&"max"), weight),
@@ -73,3 +73,23 @@ static func compute_drag_value(mouse_pos: Vector2, column: ColumnConfig, cell_x:
 	if not range_cfg.has(&"or_less"):
 		new_value = max(new_value, range_cfg.get(&"min"))
 	return new_value
+
+
+static func _get_range_config(column: ColumnConfig) -> Dictionary:
+	return column.get_cached(&"range_config", func() -> Dictionary: return _compute_range_config(column))
+
+
+static func _compute_range_config(column: ColumnConfig) -> Dictionary[StringName, Variant]:
+	var hint_elements := column.hint_string.split(",", false)
+	var result: Dictionary[StringName, Variant] = {
+		&"min": float(hint_elements[0]) if hint_elements.size() > 0 else 0.0,
+		&"max": float(hint_elements[1]) if hint_elements.size() > 1 else 1.0,
+		&"step": float(hint_elements[2]) if hint_elements.size() > 2 else (0.001 if column.type == TYPE_FLOAT else 1.0),
+	}
+	for hint_str in hint_elements.slice(3):
+		match hint_str:
+			"or_greater":
+				result[&"or_greater"] = true
+			"or_less":
+				result[&"or_less"] = true
+	return result

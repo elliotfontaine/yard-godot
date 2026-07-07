@@ -7,7 +7,7 @@ const INVALID_UID := "uid://<invalid>"
 
 
 static func matches(column: ColumnConfig) -> bool:
-	return column.is_path_column()
+	return column.type == TYPE_STRING and column.property_hint in [PROPERTY_HINT_FILE, PROPERTY_HINT_FILE_PATH, PROPERTY_HINT_DIR]
 
 
 static func draw_cell(canvas: CanvasItem, rect: Rect2, value: Variant, column: ColumnConfig, style: CellStyle) -> void:

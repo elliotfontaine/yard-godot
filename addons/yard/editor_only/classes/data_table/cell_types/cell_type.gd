@@ -3,8 +3,7 @@ extends RefCounted
 ## the cell editor, and type-specific input (drag, direct click, Enter key).
 ##
 ## Every method is static and no subclass is ever instantiated. They're
-## referenced as plain GDScript scripts (like ClassUtils, YardLogger, etc.
-## elsewhere in this addon) and called directly on the script reference.
+## referenced as plain GDScript scripts and called directly on the script reference.
 ## ColumnConfig.get_cell_type() / get_editor_cell_type() resolve which script
 ## applies to a given column; DataTable never names a concrete subclass.
 
@@ -132,9 +131,26 @@ static func suppresses_tooltip() -> bool:
 	return false
 
 
-## `value` is guaranteed non-null by the caller (DataTable.ordering_data).
 static func get_sort_key(value: Variant, _column: ColumnConfig) -> Variant:
 	return str(value)
+
+
+## Shared enum hint_string parser: "A,B:1,C" -> {0:"A", 1:"B", 2:"C"}. Used by
+## EnumCellType directly, and by CollectionCellType after it extracts the
+## relevant sub-hint from a compound array/dictionary hint_string.
+static func parse_enum_hint_string(enum_hint_string: String) -> Dictionary[int, String]:
+	var map: Dictionary[int, String] = { }
+	var next_implicit := 0
+	for entry: String in enum_hint_string.split(",", false):
+		var colon := entry.rfind(":")
+		if colon == -1:
+			map[next_implicit] = entry
+			next_implicit += 1
+		else:
+			var explicit_val := entry.substr(colon + 1).to_int()
+			map[explicit_val] = entry.substr(0, colon)
+			next_implicit = explicit_val + 1
+	return map
 
 
 # Direct input (click, Enter key). Empty Dictionary means "not handled, do the

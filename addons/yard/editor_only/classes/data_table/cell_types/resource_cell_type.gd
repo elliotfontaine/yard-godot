@@ -7,7 +7,7 @@ const ClassUtils := preload("res://addons/yard/editor_only/classes/class_utils.g
 
 
 static func matches(column: ColumnConfig) -> bool:
-	return column.is_resource_column()
+	return column.type == TYPE_OBJECT and column.property_hint == PROPERTY_HINT_RESOURCE_TYPE
 
 
 static func draw_cell(canvas: CanvasItem, rect: Rect2, value: Variant, column: ColumnConfig, style: CellStyle) -> void:

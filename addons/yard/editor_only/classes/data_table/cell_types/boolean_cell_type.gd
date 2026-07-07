@@ -3,7 +3,7 @@ extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.g
 ## no separate cell editor.
 
 static func matches(column: ColumnConfig) -> bool:
-	return column.is_boolean_column()
+	return column.type == TYPE_BOOL
 
 
 static func draw_cell(canvas: CanvasItem, rect: Rect2, value: Variant, column: ColumnConfig, style: CellStyle) -> void:
