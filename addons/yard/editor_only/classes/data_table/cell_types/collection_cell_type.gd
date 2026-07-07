@@ -1,4 +1,4 @@
-extends "res://addons/yard/editor_only/ui_scenes/components/cell_types/cell_type.gd"
+extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
 ## Array/Dictionary columns. Read-only: no editor, no special input. The
 ## enum-array / enum-key-dictionary / enum-value-dictionary hint variants only
 ## affect how individual elements are formatted here, not a separate type.

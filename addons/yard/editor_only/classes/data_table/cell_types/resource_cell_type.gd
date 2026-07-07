@@ -1,4 +1,4 @@
-extends "res://addons/yard/editor_only/ui_scenes/components/cell_types/cell_type.gd"
+extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
 ## Resource columns: a thumbnail + filename, edited via Godot's own
 ## EditorResourcePicker. Clicking away does not commit; the picker manages
 ## its own commit/cancel through its popup.

@@ -1,5 +1,5 @@
 @tool
-extends "res://addons/yard/editor_only/ui_scenes/components/cell_types/cell_type.gd"
+extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
 ## Color columns. The picker popup is built programmatically (see Popup below)
 ## rather than from a separate scene. Clicking away from an open editor still
 ## commits the current color (it behaves like an inline picker, despite the

@@ -1,4 +1,4 @@
-extends "res://addons/yard/editor_only/ui_scenes/components/cell_types/cell_type.gd"
+extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
 ## Boolean columns: a checkbox icon, toggled by a direct click or Enter, with
 ## no separate cell editor.
 

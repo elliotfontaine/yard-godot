@@ -1,4 +1,4 @@
-extends "res://addons/yard/editor_only/ui_scenes/components/cell_types/text_cell_type.gd"
+extends "res://addons/yard/editor_only/classes/data_table/cell_types/text_cell_type.gd"
 ## Integer and float columns. Shares the LineEdit editor with StringCellType via
 ## TextCellType, but parses the committed text back into an int or float.
 ## Also serves as the editing fallback for RangeCellType, which has no editor

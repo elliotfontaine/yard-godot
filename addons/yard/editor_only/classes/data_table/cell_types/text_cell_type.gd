@@ -1,4 +1,4 @@
-extends "res://addons/yard/editor_only/ui_scenes/components/cell_types/cell_type.gd"
+extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
 ## Shared LineEdit-based editor for StringCellType and NumericCellType. Not used
 ## directly as a handler; the two subclasses only differ in how the committed
 ## text is parsed back into a value.

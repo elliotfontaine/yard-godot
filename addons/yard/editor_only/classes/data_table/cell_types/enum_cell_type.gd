@@ -1,4 +1,4 @@
-extends "res://addons/yard/editor_only/ui_scenes/components/cell_types/cell_type.gd"
+extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
 ## Enum columns (any type with PROPERTY_HINT_ENUM), edited via a PopupMenu.
 ## Draw color is a deterministic pseudo-random hash of the display string,
 ## ignoring the column's normal font-color resolution. The chosen value has to

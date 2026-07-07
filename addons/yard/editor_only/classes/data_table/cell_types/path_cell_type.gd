@@ -1,4 +1,4 @@
-extends "res://addons/yard/editor_only/ui_scenes/components/cell_types/cell_type.gd"
+extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
 ## Path/file columns, edited via Godot's own EditorFileDialog. Only the FILE
 ## hint gets thumbnail + invalid-UID rendering; FILE_PATH/DIR fall back to
 ## plain (mono-font) text.

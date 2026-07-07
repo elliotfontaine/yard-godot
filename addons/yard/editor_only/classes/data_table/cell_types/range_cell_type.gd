@@ -1,4 +1,4 @@
-extends "res://addons/yard/editor_only/ui_scenes/components/cell_types/cell_type.gd"
+extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
 ## Range/progress-bar columns (numeric type + PROPERTY_HINT_RANGE). Has no editor
 ## of its own; ColumnConfig.get_editor_cell_type() falls back to NumericCellType's
 ## editor when a range cell is double-clicked. Drag-to-adjust is the main
