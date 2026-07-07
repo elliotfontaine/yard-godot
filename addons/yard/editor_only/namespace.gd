@@ -13,13 +13,27 @@ const YardLogger := preload("res://addons/yard/editor_only/classes/yard_logger.g
 const RegistryEditor := preload("res://addons/yard/editor_only/ui_scenes/registry_editor.gd")
 const RegistryTableView := preload("res://addons/yard/editor_only/ui_scenes/registry_table_view.gd")
 const MarkdownLabel := preload("res://addons/yard/editor_only/classes/markdownlabel/markdownlabel.gd")
-const DynamicTable := preload("res://addons/yard/editor_only/ui_scenes/components/dynamic_table.gd")
 const RegistriesItemList := preload("res://addons/yard/editor_only/ui_scenes/components/registries_itemlist.gd")
 const NewRegistryDialog := preload("res://addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd")
 const EditorPropertyOptionWrapper := preload("res://addons/yard/editor_only/ui_scenes/components/editor_property_option_wrapper.gd")
 const MultiOptionEditorProperty = preload("res://addons/yard/editor_only/ui_scenes/components/multi_option_editor_property.gd")
 const REGISTRY_EDITOR_SCENE := preload("res://addons/yard/editor_only/ui_scenes/registry_editor.tscn")
 const REGISTRY_TABLE_VIEW_SCENE := preload("res://addons/yard/editor_only/ui_scenes/registry_table_view.tscn")
+
+# Data Table
+const DynamicTable := preload("res://addons/yard/editor_only/ui_scenes/components/dynamic_table.gd")
+const ColumnConfig := preload("res://addons/yard/editor_only/ui_scenes/components/column_config.gd")
+const CellStyle := preload("res://addons/yard/editor_only/ui_scenes/components/cell_types/cell_style.gd")
+const CellType := preload("res://addons/yard/editor_only/ui_scenes/components/cell_types/cell_type.gd")
+const StringCellType := preload("res://addons/yard/editor_only/ui_scenes/components/cell_types/string_cell_type.gd")
+const NumericCellType := preload("res://addons/yard/editor_only/ui_scenes/components/cell_types/numeric_cell_type.gd")
+const BooleanCellType := preload("res://addons/yard/editor_only/ui_scenes/components/cell_types/boolean_cell_type.gd")
+const RangeCellType := preload("res://addons/yard/editor_only/ui_scenes/components/cell_types/range_cell_type.gd")
+const ColorCellType := preload("res://addons/yard/editor_only/ui_scenes/components/cell_types/color_cell_type.gd")
+const ResourceCellType := preload("res://addons/yard/editor_only/ui_scenes/components/cell_types/resource_cell_type.gd")
+const PathCellType := preload("res://addons/yard/editor_only/ui_scenes/components/cell_types/path_cell_type.gd")
+const EnumCellType := preload("res://addons/yard/editor_only/ui_scenes/components/cell_types/enum_cell_type.gd")
+const CollectionCellType := preload("res://addons/yard/editor_only/ui_scenes/components/cell_types/collection_cell_type.gd")
 
 # Misc
 const FILESYSTEM_CREATE_CONTEXT_MENU_PLUGIN = preload("res://addons/yard/editor_only/editor_context_menu_plugin.gd")

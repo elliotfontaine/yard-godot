@@ -2,8 +2,6 @@
 # https://github.com/jospic/dynamicdatatable
 # Heavily modified / rewritten by Elliot Fontaine, 2026
 
-# BEHOLD THE 2000-LINES BEAST.
-
 @tool
 extends Control
 
@@ -17,17 +15,14 @@ signal cell_edited(row_id: StringName, col: StringName, old_value: Variant, new_
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const ClassUtils := Namespace.ClassUtils
+const ColumnConfig := Namespace.ColumnConfig
+const CellType := Namespace.CellType
+const CellStyle := Namespace.CellStyle
 const EditorThemeUtils := Namespace.EditorThemeUtils
 const AnyIcon := Namespace.AnyIcon
 const YardLogger := Namespace.YardLogger
 
-const H_ALIGNMENT_MARGINS = {
-	HORIZONTAL_ALIGNMENT_LEFT: 5,
-	HORIZONTAL_ALIGNMENT_CENTER: 0,
-	HORIZONTAL_ALIGNMENT_RIGHT: -5,
-}
 const CELL_INVALID := "<CELL_INVALID>"
-const INVALID_UID := "uid://<invalid>"
 
 # Theming properties
 @export_group("Custom YARD Properties")
@@ -48,10 +43,6 @@ const INVALID_UID := "uid://<invalid>"
 @export var selected_cell_back_color: Color = Color(0.0, 0.0, 1.0, 0.5)
 @export var row_color: Color = Color(0.55, 0.55, 0.55, 1.0)
 @export var alternate_row_color: Color = Color(0.45, 0.45, 0.45, 1.0)
-@export_group("Checkbox")
-@export var checkbox_checked_color: Color = Color(0.0, 0.8, 0.0)
-@export var checkbox_unchecked_color: Color = Color(0.8, 0.0, 0.0)
-@export var checkbox_border_color: Color = Color(0.8, 0.8, 0.8)
 @export_group("Progress bar")
 @export var progress_bar_start_color: Color = Color.RED
 @export var progress_bar_middle_color: Color = Color.ORANGE
@@ -65,7 +56,7 @@ const INVALID_UID := "uid://<invalid>"
 
 # Fonts
 var font := get_theme_default_font()
-var mono_font: Font = EditorInterface.get_editor_theme().get_font("font", "CodeEdit")
+var mono_font: Font = EditorInterface.get_editor_theme().get_font(&"font", &"CodeEdit")
 var font_size := get_theme_default_font_size()
 
 # Public state: selection, focus and sort (row/column keys)
@@ -107,15 +98,21 @@ var _filter_line_edit: LineEdit
 var _filtered_column: StringName = &""
 var _filter_text: String = ""
 
-# Inline cell editing
+# Inline cell editing. The CellType script family is entirely static (never
+# instantiated). ColumnConfig resolves which script applies to a column, and
+# these two fields are the only editing-related state DynamicTable keeps: the
+# one editor Node that can exist at a time, and the script responsible for it.
 var _edited_row: StringName = &""
 var _edited_col: StringName = &""
-var _text_editor_line_edit: LineEdit
-var _color_editor: Control
-var _resource_editor: EditorResourcePicker
-var _path_editor: EditorFileDialog
-var _enum_editor: PopupMenu
-var _enum_editor_last_idx: int = -1
+var _current_editor_node: Node
+var _current_editor_handler: GDScript # The script extends CellType
+var _style: CellStyle
+
+# Progress bar dragging (Range columns). Tracked here for the same reason as
+# _edited_row/_edited_col above: only one interaction can be in flight.
+var _dragging_row: StringName = &""
+var _dragging_col: StringName = &""
+var _dragging_start_value: Variant
 
 # Click detection (single vs. double click)
 var _double_click_timer: Timer
@@ -123,12 +120,6 @@ var _click_count := 0
 var _last_click_pos := Vector2.ZERO
 var _double_click_threshold := 400 # milliseconds
 var _click_position_threshold := 5 # pixels
-
-# Progress bar dragging
-var _dragging_progress := false
-var _dragging_start_value: Variant
-var _progress_drag_row: StringName = &""
-var _progress_drag_col: StringName = &""
 
 # Resource preview cache (thumbnails for resource / path columns)
 var _resource_thumb_cache: Dictionary = { }
@@ -146,6 +137,9 @@ var _pixelated_canvas_rid: RID
 
 
 func _ready() -> void:
+	_style = CellStyle.new()
+	_refresh_style()
+
 	if Engine.is_editor_hint() and not EditorInterface.get_edited_scene_root() == self:
 		EditorInterface.get_editor_settings().settings_changed.connect(_on_editor_settings_changed)
 		EditorInterface.get_resource_previewer().preview_invalidated.connect(_on_resource_previewer_preview_invalidated)
@@ -159,6 +153,8 @@ func _ready() -> void:
 	_pixelated_canvas_rid = RenderingServer.canvas_item_create()
 	RenderingServer.canvas_item_set_parent(_pixelated_canvas_rid, get_canvas_item())
 	RenderingServer.canvas_item_set_default_texture_filter(_pixelated_canvas_rid, RenderingServer.CANVAS_ITEM_TEXTURE_FILTER_NEAREST)
+	_style.pixelated_canvas_rid = _pixelated_canvas_rid
+	_style.get_thumbnail = _get_or_queue_thumbnail
 
 	_h_scroll = HScrollBar.new()
 	_h_scroll.set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE)
@@ -208,6 +204,7 @@ func _draw() -> void:
 		return
 
 	var frozen_w := _get_frozen_width()
+	_style.frozen_width = frozen_w
 	var scroll_x := frozen_w - _h_scroll_position
 	var vis_w := size.x - (_v_scroll.size.x if _v_scroll.visible else 0.0)
 	var y_offset := header_height
@@ -288,6 +285,7 @@ func set_native_theming(delay: int = 0) -> void:
 	row_height = font_size * 2
 	header_height = font_size * 2
 
+	_refresh_style()
 	queue_redraw()
 
 
@@ -403,6 +401,7 @@ func ordering_data(column: StringName, ascending: bool = true) -> void:
 	sort_ascending = ascending
 	var column_idx := _column_index(column)
 	_icon_sort = " ▼ " if ascending else " ▲ "
+	var handler := column_cfg.get_cell_type()
 
 	_order.sort_custom(
 		func(a: StringName, b: StringName) -> bool:
@@ -410,8 +409,8 @@ func ordering_data(column: StringName, ascending: bool = true) -> void:
 			var b_cells: Array = _rows.get(b, [])
 			var va: Variant = a_cells[column_idx] if column_idx < a_cells.size() else null
 			var vb: Variant = b_cells[column_idx] if column_idx < b_cells.size() else null
-			var ka: Variant = _key_for_sort(va, column_cfg)
-			var kb: Variant = _key_for_sort(vb, column_cfg)
+			var ka: Variant = handler.get_sort_key(va, column_cfg) if va != null else null
+			var kb: Variant = handler.get_sort_key(vb, column_cfg) if vb != null else null
 			if ka == null and kb == null:
 				return false
 			if ka == null:
@@ -526,44 +525,35 @@ func _setup_filtering_components() -> void:
 
 
 func _setup_editing_components() -> void:
-	_text_editor_line_edit = LineEdit.new()
-	_text_editor_line_edit.text_submitted.connect(_on_text_editor_text_submitted)
-	_text_editor_line_edit.focus_exited.connect(_on_text_editor_focus_exited)
-	_text_editor_line_edit.hide()
-	add_child(_text_editor_line_edit)
-
 	if base_height_from_line_edit:
-		header_height = _text_editor_line_edit.size.y
-		row_height = _text_editor_line_edit.size.y
-
-	# TODO: Make inner class instead of packed scene, for portability
-	_color_editor = preload("uid://cuhed17jgms48").instantiate()
-	_color_editor.color_selected.connect(_on_color_editor_color_selected)
-	_color_editor.canceled.connect(_on_color_editor_canceled)
-	_color_editor.hide()
-	add_child(_color_editor)
-
-	_resource_editor = EditorResourcePicker.new()
-	_resource_editor.resource_changed.connect(_on_resource_editor_resource_changed)
-	_resource_editor.hide()
-	add_child(_resource_editor)
-
-	_path_editor = EditorFileDialog.new()
-	_path_editor.disable_overwrite_warning = true
-	_path_editor.dir_selected.connect(_on_path_editor_path_selected)
-	_path_editor.file_selected.connect(_on_path_editor_path_selected)
-	add_child(_path_editor)
-
-	_enum_editor = PopupMenu.new()
-	_enum_editor.index_pressed.connect(_on_enum_editor_index_pressed)
-	_enum_editor.popup_hide.connect(_on_enum_editor_popup_hide)
-	add_child(_enum_editor)
+		var probe := LineEdit.new()
+		add_child(probe)
+		header_height = probe.size.y
+		row_height = probe.size.y
+		probe.queue_free()
 
 	_double_click_timer = Timer.new()
 	_double_click_timer.wait_time = _double_click_threshold / 1000.0
 	_double_click_timer.one_shot = true
 	_double_click_timer.timeout.connect(_on_double_click_timeout)
 	add_child(_double_click_timer)
+
+
+func _refresh_style() -> void:
+	_style.font = font
+	_style.mono_font = mono_font
+	_style.font_size = font_size
+	_style.default_font_color = default_font_color
+	_style.error_color = get_theme_color(&"error_color", &"Editor")
+	_style.checkbox_checked_icon = get_theme_icon(&"checked", &"CheckBox")
+	_style.checkbox_unchecked_icon = get_theme_icon(&"unchecked", &"CheckBox")
+	_style.file_dead_icon = get_theme_icon(&"FileDead", &"EditorIcons")
+	_style.progress_bar_start_color = progress_bar_start_color
+	_style.progress_bar_middle_color = progress_bar_middle_color
+	_style.progress_bar_end_color = progress_bar_end_color
+	_style.progress_background_color = progress_background_color
+	_style.progress_border_color = progress_border_color
+	_style.progress_text_color_light = progress_text_color_light
 
 
 func _reset_column_widths() -> void:
@@ -615,119 +605,30 @@ func _is_numeric_value(value: Variant) -> bool:
 	return str_val.is_valid_float() or str_val.is_valid_int()
 
 
+func _toggle_cell(row: StringName, col: StringName, new_value: Variant) -> void:
+	var old_value: Variant = get_cell_value(row, col)
+	update_cell(row, col, new_value)
+	cell_edited.emit(row, col, old_value, new_value)
+
+
 func _start_cell_editing(row: StringName, col: StringName) -> void:
-	var column := get_column(col)
 	if is_cell_invalid(row, col):
 		return
 
-	if column.is_color_column():
-		_open_color_editor(row, col)
-	elif column.is_resource_column():
-		_open_resource_editor(row, col)
-	elif column.is_path_column():
-		_open_path_editor(row, col)
-	elif column.is_enum_column():
-		_open_enum_editor(row, col)
-	elif column.is_numeric_column() or column.is_string_column():
-		_open_text_editor(row, col)
-	else:
+	var column := get_column(col)
+	var handler := column.get_editor_cell_type()
+	if not handler.has_editor():
 		YardLogger.warn("There is no editor for this type of cell.")
+		return
 
-
-func _open_text_editor(row: StringName, col: StringName) -> void:
 	var cell_rect := _get_cell_rect(row, col)
 	if not cell_rect:
 		return
 
-	var cell_value: Variant = get_cell_value(row, col)
 	_edited_row = row
 	_edited_col = col
-	_text_editor_line_edit.position = cell_rect.position
-	_text_editor_line_edit.size = cell_rect.size
-	_text_editor_line_edit.text = str(cell_value) if cell_value != null else ""
-	_text_editor_line_edit.alignment = get_column(col).h_alignment
-	_text_editor_line_edit.show()
-	_text_editor_line_edit.grab_focus()
-	_text_editor_line_edit.select_all()
-
-
-func _open_color_editor(row: StringName, col: StringName) -> void:
-	var cell_rect := _get_cell_rect(row, col)
-	if not cell_rect:
-		return
-
-	var cell_value: Color = get_cell_value(row, col)
-	_edited_row = row
-	_edited_col = col
-	_color_editor.position = cell_rect.get_center() + global_position
-	_color_editor.color = cell_value
-	_color_editor.show()
-	_color_editor.grab_focus()
-
-
-func _open_resource_editor(row: StringName, col: StringName) -> void:
-	_edited_row = row
-	_edited_col = col
-	var column := get_column(col)
-	_resource_editor.edited_resource = null
-	_resource_editor.base_type = "Resource"
-	if not column.hint_string.is_empty():
-		var valid_types := Array(column.hint_string.split(",", false)).filter(ClassUtils.is_valid)
-		if not valid_types.is_empty():
-			_resource_editor.base_type = ",".join(valid_types)
-
-	for child in _resource_editor.get_children(true):
-		if child is Button and child.tooltip_text == "Quick Load":
-			child.pressed.emit()
-			break
-
-
-func _open_path_editor(row: StringName, col: StringName) -> void:
-	_edited_row = row
-	_edited_col = col
-	var cell_value: String = get_cell_value(row, col)
-	var column := get_column(col)
-	if column.property_hint in [PROPERTY_HINT_FILE, PROPERTY_HINT_FILE_PATH]:
-		_path_editor.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
-	if column.property_hint in [PROPERTY_HINT_DIR]:
-		_path_editor.file_mode = EditorFileDialog.FILE_MODE_OPEN_DIR
-
-	if FileAccess.file_exists(cell_value):
-		var current_path := ResourceUID.ensure_path(cell_value)
-		_path_editor.current_dir = current_path.get_base_dir()
-		_path_editor.current_path = current_path
-
-	_path_editor.popup_centered_ratio(0.55)
-
-
-func _open_enum_editor(row: StringName, col: StringName) -> void:
-	_edited_row = row
-	_edited_col = col
-	var current_value: Variant = get_cell_value(row, col)
-	var column := get_column(col)
-	var is_numeric := column.is_numeric_column()
-
-	@warning_ignore("incompatible_ternary")
-	var value_iter: Variant = -1 if is_numeric else ""
-
-	_enum_editor.clear()
-	for choice: String in column.hint_string.split(",", false):
-		var colon := choice.rfind(":")
-		var text: String
-		if colon != -1:
-			text = choice.substr(0, colon)
-			value_iter = choice.substr(colon + 1).to_int()
-		else:
-			text = choice
-			value_iter = value_iter + 1 if is_numeric else text
-
-		_enum_editor.add_radio_check_item(text)
-		_enum_editor.set_item_metadata(_enum_editor.item_count - 1, value_iter)
-		if current_value == value_iter:
-			_enum_editor.toggle_item_checked(_enum_editor.item_count - 1)
-
-	_enum_editor.position = DisplayServer.mouse_get_position()
-	_enum_editor.popup()
+	_current_editor_handler = handler
+	_current_editor_node = handler.create_editor(self, cell_rect, get_cell_value(row, col), column, _on_editor_finished)
 
 
 func _finish_editing(save_changes: bool = true) -> void:
@@ -737,44 +638,18 @@ func _finish_editing(save_changes: bool = true) -> void:
 	if save_changes:
 		var column := get_column(_edited_col)
 		var old_value: Variant = get_cell_value(_edited_row, _edited_col)
-		var new_value: Variant = _get_editor_value_for_column(column)
+		var new_value: Variant = _current_editor_handler.read_editor_value(_current_editor_node, column)
 		if typeof(new_value) == column.type:
-			if column.is_path_column() and column.property_hint == PROPERTY_HINT_FILE:
-				new_value = ResourceUID.path_to_uid(new_value)
 			update_cell(_edited_row, _edited_col, new_value)
 			cell_edited.emit(_edited_row, _edited_col, old_value, new_value)
 
 	_edited_row = &""
 	_edited_col = &""
-	_text_editor_line_edit.hide()
-	_color_editor.hide()
+	if _current_editor_node:
+		_current_editor_node.queue_free()
+		_current_editor_node = null
+	_current_editor_handler = null
 	queue_redraw()
-
-
-func _get_editor_value_for_column(column: ColumnConfig) -> Variant:
-	if column.is_color_column():
-		return _color_editor.color
-	elif column.is_resource_column():
-		return _resource_editor.edited_resource
-	elif column.is_path_column():
-		return _path_editor.current_path
-	elif column.is_enum_column():
-		if _enum_editor_last_idx != -1:
-			var new: Variant = _enum_editor.get_item_metadata(_enum_editor_last_idx)
-			_enum_editor_last_idx = -1
-			return new
-		else:
-			return null
-
-	var text := _text_editor_line_edit.text
-	if column.is_string_column():
-		return text
-	elif column.is_integer_column() and text.is_valid_int():
-		return int(text)
-	elif column.is_float_column() and text.is_valid_float():
-		return float(text)
-
-	return null
 
 
 func _get_cell_rect(row: StringName, col: StringName) -> Rect2:
@@ -792,25 +667,11 @@ func _get_cell_rect(row: StringName, col: StringName) -> Rect2:
 
 
 func _dispatch_cell_draw(cell_rect: Rect2, row: StringName, col: StringName) -> void:
-	var column := get_column(col)
 	if is_cell_invalid(row, col):
-		_draw_cell_invalid(cell_rect, row, col)
-	elif column.is_range_column():
-		_draw_cell_progress(cell_rect, row, col)
-	elif column.is_boolean_column():
-		_draw_cell_bool(cell_rect, row, col)
-	elif column.is_color_column():
-		_draw_cell_color(cell_rect, row, col)
-	elif column.is_resource_column():
-		_draw_cell_resource(cell_rect, row, col)
-	elif column.is_path_column():
-		_draw_cell_path(cell_rect, row, col)
-	elif column.is_enum_column():
-		_draw_cell_enum(cell_rect, row, col)
-	elif column.is_collection_column():
-		_draw_cell_collection(cell_rect, row, col)
-	else:
-		_draw_cell_text(cell_rect, row, col)
+		draw_rect(cell_rect, invalid_cell_color, true)
+		return
+	var column := get_column(col)
+	column.get_cell_type().draw_cell(self, cell_rect, get_cell_value(row, col), column, _style)
 
 
 func _draw_header_cell(col_idx: int, cell_x: float, vis_w: float) -> void:
@@ -829,8 +690,8 @@ func _draw_header_cell(col_idx: int, cell_x: float, vis_w: float) -> void:
 		header_text += " (" + str(_order.size()) + ")"
 
 	var header_alignment := HORIZONTAL_ALIGNMENT_LEFT
-	var x_margin: int = H_ALIGNMENT_MARGINS.get(header_alignment)
-	var baseline_y := _get_text_baseline_y(0.0, header_height)
+	var x_margin: int = CellType.H_ALIGNMENT_MARGINS.get(header_alignment)
+	var baseline_y := CellType.get_text_baseline_y(font, font_size, 0.0, header_height)
 	draw_string(
 		font,
 		Vector2(cell_x + x_margin, baseline_y),
@@ -892,298 +753,6 @@ func _draw_cells_column_range(row: StringName, row_y: float, col_from: int, col_
 		draw_line(Vector2(col_x, row_y), Vector2(col_x, row_y + row_height), grid_color)
 
 
-func _draw_cell_progress(rect: Rect2, row: StringName, col: StringName) -> void:
-	var cell_value: float = get_cell_value(row, col)
-	var range_cfg := get_column(col).range_config
-	var progress: float = inverse_lerp(range_cfg.get(&"min"), range_cfg.get(&"max"), cell_value)
-	var progress_color := _get_interpolated_three_colors(progress_bar_start_color, progress_bar_middle_color, progress_bar_end_color, progress)
-
-	var bar := rect.grow(-2.0 * EditorThemeUtils.scale)
-	var fill := Rect2(bar.position, Vector2(bar.size.x * clampf(progress, 0.0, 1.0), bar.size.y))
-
-	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_CENTER)
-	var numeric_text := str(snappedf(cell_value, 0.001))
-	var display_text := _get_display_text(numeric_text, font, rect.size.x - absf(x_margin_val))
-	var text_width := font.get_string_size(display_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-	var text_pos := Vector2(rect.position.x + (rect.size.x - text_width) / 2.0, _get_text_baseline_y(rect.position.y))
-	var fill_width: float = maxf(0.001, fill.position.x + fill.size.x - text_pos.x - abs(x_margin_val) + 5 * EditorThemeUtils.scale)
-
-	draw_rect(bar, progress_background_color)
-	draw_string(font, text_pos, display_text, HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - abs(x_margin_val), font_size, progress_text_color_light)
-	draw_rect(fill, progress_color)
-	@warning_ignore("integer_division")
-	draw_string_outline(font, text_pos, display_text, HORIZONTAL_ALIGNMENT_LEFT, fill_width, font_size, font_size / 3, progress_color)
-	draw_string(font, text_pos, display_text, HORIZONTAL_ALIGNMENT_LEFT, fill_width, font_size, Color.BLACK)
-	draw_rect(bar, progress_border_color, false, 1.0 * EditorThemeUtils.scale)
-
-
-func _draw_cell_bool(rect: Rect2, row: StringName, col: StringName) -> void:
-	var cell_value: Variant = get_cell_value(row, col)
-	if cell_value is not bool:
-		_draw_cell_text(rect, row, col)
-		return
-
-	var icon_name := &"checked" if (cell_value as bool) else &"unchecked"
-	var icon: Texture2D = get_theme_icon(icon_name, &"CheckBox")
-	if icon == null:
-		return
-
-	var inner := rect.grow(-2.0)
-	var tex_size := icon.get_size()
-	var pos := inner.position + (inner.size - tex_size) / 2.0
-	draw_texture(icon, pos)
-
-
-func _draw_cell_color(rect: Rect2, row: StringName, col: StringName) -> void:
-	var cell_value: Variant = get_cell_value(row, col)
-	if cell_value is not Color:
-		_draw_cell_text(rect, row, col)
-		return
-
-	var color: Color = cell_value
-	var inner := rect.grow(-2.0)
-	if inner.size.x <= 0.0 or inner.size.y <= 0.0:
-		return
-
-	var border_alpha := 0.65 if color.a < 0.25 else 0.35
-
-	if color.a < 1.0:
-		var tile := 6.0
-		var x0 := inner.position.x
-		var y0 := inner.position.y
-		var x1 := inner.end.x
-		var y1 := inner.end.y
-		var y := y0
-		var row_i := 0
-		while y < y1:
-			var x := x0
-			var col_i := 0
-			while x < x1:
-				var bg := Color(0, 0, 0, 0.10) if ((row_i + col_i) % 2) == 0 else Color(1, 1, 1, 0.10)
-				draw_rect(Rect2(Vector2(x, y), Vector2(min(tile, x1 - x), min(tile, y1 - y))), bg, true)
-				x += tile
-				col_i += 1
-			y += tile
-			row_i += 1
-
-	draw_rect(inner, color, true)
-	draw_rect(inner, Color(1, 1, 1, border_alpha), false, 1.0)
-
-
-func _draw_cell_resource(rect: Rect2, row: StringName, col: StringName) -> void:
-	var cell_value: Variant = get_cell_value(row, col)
-	if cell_value is not Resource:
-		_draw_cell_text(rect, row, col, tr("<empty>"))
-		return
-
-	var inner := rect.grow(-2.0)
-	if inner.size.x <= 0.0 or inner.size.y <= 0.0:
-		return
-
-	var res: Resource = cell_value
-	var label := "<" + res.resource_path.get_file() + ">"
-	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_LEFT)
-	var thumb_width := 0.0
-	var texture: Texture2D = res if res is Texture2D else _get_or_queue_thumbnail(
-		res.resource_path,
-		ClassUtils.get_type_name(res),
-	)
-	if texture != null:
-		var thumb_rect := _fit_texture_rect(texture, inner, true)
-		thumb_rect.position.x += x_margin_val
-		thumb_width = thumb_rect.size.x
-		_draw_filtered_texture_rect(texture, thumb_rect)
-
-	var text_rect := inner.grow_individual(-thumb_width - x_margin_val, 0, 0, 0)
-	_draw_cell_text(text_rect, row, col, label)
-
-
-func _draw_cell_path(rect: Rect2, row: StringName, col: StringName) -> void:
-	var cell_value: Variant = get_cell_value(row, col)
-	var is_invalid_uid: bool = cell_value == INVALID_UID
-	if not get_column(col).property_hint == PROPERTY_HINT_FILE:
-		_draw_cell_text(rect, row, col)
-		return
-
-	var inner := rect.grow(-2.0)
-	if inner.size.x <= 0.0 or inner.size.y <= 0.0:
-		return
-
-	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_LEFT)
-	var thumb_width := 0.0
-	var texture: Texture2D
-	if is_invalid_uid:
-		texture = get_theme_icon(&"FileDead", &"EditorIcons")
-	elif ResourceLoader.exists(cell_value):
-		texture = _get_or_queue_thumbnail(cell_value)
-
-	if texture != null:
-		var thumb_rect := _fit_texture_rect(texture, inner, true)
-		thumb_rect.position.x += x_margin_val
-		thumb_width = thumb_rect.size.x
-		_draw_filtered_texture_rect(texture, thumb_rect)
-
-	var text_rect := inner.grow_individual(-thumb_width - x_margin_val, 0, 0, 0)
-	if is_invalid_uid:
-		_draw_cell_text(text_rect, row, col, "", get_theme_color(&"error_color", &"Editor"))
-	else:
-		_draw_cell_text(text_rect, row, col)
-
-
-func _draw_filtered_texture_rect(texture: Texture2D, rect: Rect2) -> void:
-	var ratio := rect.size / texture.get_size()
-	if minf(ratio.x, ratio.y) > 1.5 * EditorInterface.get_editor_scale() and rect.end.x > _get_frozen_width():
-		if texture is AtlasTexture:
-			RenderingServer.canvas_item_add_texture_rect_region(_pixelated_canvas_rid, rect, texture.get_rid(), texture.region)
-		else:
-			RenderingServer.canvas_item_add_texture_rect(_pixelated_canvas_rid, rect, texture.get_rid())
-	else:
-		draw_texture_rect(texture, rect, false)
-
-
-func _draw_cell_text(rect: Rect2, row: StringName, col: StringName, text_override: String = "", color_override: Color = Color.TRANSPARENT) -> void:
-	var cell_value := str(get_cell_value(row, col))
-
-	var column := get_column(col)
-	var text_font: Font = font
-	var h_alignment := column.h_alignment
-	if column.custom_font:
-		text_font = column.custom_font
-	elif column.is_path_column():
-		text_font = mono_font
-
-	var full_text := text_override if text_override else cell_value
-	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(h_alignment)
-	var baseline_y := _get_text_baseline_y(rect.position.y)
-	var display_text := _get_display_text(full_text, text_font, rect.size.x - absf(x_margin_val))
-	var text_color := default_font_color
-	if color_override != Color.TRANSPARENT:
-		text_color = color_override
-	elif column.custom_font_color:
-		text_color = column.custom_font_color
-
-	draw_string(
-		text_font,
-		Vector2(rect.position.x + x_margin_val, baseline_y),
-		display_text,
-		h_alignment,
-		max(0.001, rect.size.x - abs(x_margin_val)),
-		font_size,
-		text_color,
-	)
-
-
-func _draw_cell_enum(rect: Rect2, row: StringName, col: StringName) -> void:
-	var cell_value: Variant = get_cell_value(row, col)
-	var column := get_column(col)
-	var value_str := ""
-
-	if not column.is_numeric_column():
-		value_str = str(cell_value)
-	else:
-		var int_value := cell_value as int
-		var map := column.enum_values_map
-		value_str = "%s:%s" % [map[int_value], int_value] if map.has(int_value) else "?:%d" % int_value
-
-	var text_font: Font = column.custom_font if column.custom_font else font
-	var h_alignment := HORIZONTAL_ALIGNMENT_CENTER
-	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(h_alignment)
-	var display_text := _get_display_text(value_str, text_font, rect.size.x - absf(x_margin_val))
-	var color := Color(value_str.hash()) + Color(0.25, 0.25, 0.25, 1.0)
-	var baseline_y := _get_text_baseline_y(rect.position.y)
-	draw_string(
-		text_font,
-		Vector2(rect.position.x + x_margin_val, baseline_y),
-		display_text,
-		h_alignment,
-		rect.size.x - abs(x_margin_val),
-		font_size,
-		color,
-	)
-
-
-func _draw_cell_invalid(rect: Rect2, _row: StringName, _col: StringName) -> void:
-	draw_rect(rect, invalid_cell_color, true)
-
-
-func _draw_cell_collection(rect: Rect2, row: StringName, col: StringName) -> void:
-	var cell_value: Variant = get_cell_value(row, col)
-	if cell_value is not Array and cell_value is not Dictionary:
-		_draw_cell_text(rect, row, col)
-	else:
-		var column := get_column(col)
-		_draw_cell_text(rect, row, col, _format_collection_text(cell_value, column))
-
-
-func _format_collection_text(collection: Variant, column: ColumnConfig) -> String:
-	var is_dict := collection is Dictionary
-	var items: Array = (collection as Dictionary).keys() if is_dict else (collection as Array)
-	var keys_map: Dictionary = column.enum_keys_map if column.is_enum_key_dictionary_column() else { }
-	var values_map: Dictionary = column.enum_values_map if column.is_enum_value_dictionary_column() or column.is_enum_array_column() else { }
-	var parts: Array[String] = []
-	for i in mini(items.size(), 3):
-		if is_dict:
-			var key: Variant = items[i]
-			var val: Variant = (collection as Dictionary)[key]
-			parts.append(
-				"%s: %s" % [
-					_format_collection_elem(key, keys_map),
-					_format_collection_elem(val, values_map),
-				],
-			)
-		else:
-			parts.append(_format_collection_elem(items[i], values_map))
-
-	var result := ", ".join(parts)
-	var remaining := items.size() - 3
-	if remaining > 0:
-		result += tr(" and {remaining} more").format({ &"remaining": remaining })
-	return "{ %s }" % result if is_dict else "[%s]" % result
-
-
-static func _format_collection_elem(elem: Variant, enum_map: Dictionary = { }) -> String:
-	if elem is Resource:
-		return "<%s>" % (elem as Resource).resource_path.get_file()
-	if elem is Array:
-		return "Array(%d)" % (elem as Array).size()
-	if elem is Dictionary:
-		return "Dict(%d)" % (elem as Dictionary).size()
-	if elem is int and not enum_map.is_empty():
-		var int_elem := elem as int
-		return enum_map[int_elem] if enum_map.has(int_elem) else "?:%d" % int_elem
-	return str(elem)
-
-
-func _get_display_text(cell_value: String, text_font: Font, max_width: float) -> String:
-	var text_size := text_font.get_string_size(cell_value, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
-	if text_size.x <= max_width:
-		return cell_value
-
-	var ellipsis := "..."
-	var ellipsis_width := text_font.get_string_size(ellipsis, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-	var max_text_width := max_width - ellipsis_width
-
-	if max_text_width <= 0:
-		return ellipsis
-
-	var truncated_text := ""
-	for i in range(cell_value.length()):
-		var test_text := cell_value.substr(0, i + 1)
-		var test_width := text_font.get_string_size(test_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-		if test_width > max_text_width:
-			break
-		truncated_text = test_text
-	return truncated_text + ellipsis
-
-
-func _get_interpolated_three_colors(start_color: Color, mid_color: Color, end_color: Color, progress: float) -> Color:
-	var clamped_t := clampf(progress, 0.0, 1.0)
-	if clamped_t <= 0.5:
-		return start_color.lerp(mid_color, clamped_t * 2.0)
-	else:
-		return mid_color.lerp(end_color, (clamped_t - 0.5) * 2.0)
-
-
 func _get_or_queue_thumbnail(resource_path: String, type_name: String = "Resource") -> Texture2D:
 	if _resource_thumb_cache.has(resource_path):
 		return _resource_thumb_cache[resource_path]
@@ -1196,20 +765,6 @@ func _get_or_queue_thumbnail(resource_path: String, type_name: String = "Resourc
 			{ &"resource_path": resource_path, &"class": type_name },
 		)
 	return null
-
-
-func _fit_texture_rect(texture: Texture2D, container: Rect2, anchor_to_left := false) -> Rect2:
-	var tex_size := texture.get_size()
-	var tex_aspect := tex_size.x / tex_size.y
-	var cell_aspect := container.size.x / container.size.y
-	var thumb_size: Vector2
-	if tex_aspect > cell_aspect:
-		thumb_size = Vector2(container.size.x, container.size.x / tex_aspect)
-	else:
-		thumb_size = Vector2(container.size.y * tex_aspect, container.size.y)
-	var offset_x := 0.0 if anchor_to_left else (container.size.x - thumb_size.x) / 2.0
-	var offset_y := (container.size.y - thumb_size.y) / 2.0
-	return Rect2(container.position + Vector2(offset_x, offset_y), thumb_size)
 
 
 func _start_filtering(col: StringName) -> void:
@@ -1273,26 +828,6 @@ func _rebuild_filtered_order() -> void:
 				_order.append(row)
 
 
-func _key_for_sort(value: Variant, column: ColumnConfig) -> Variant:
-	if value == null:
-		return null
-	if column.is_range_column() or column.is_numeric_column():
-		return float(value)
-	if column.is_boolean_column():
-		return (1 if bool(value) else 0)
-	if column.is_color_column():
-		var c := Color(value)
-		return [c.h, c.s, c.v, c.a]
-	if column.is_resource_column():
-		if value is Resource:
-			var r: Resource = value
-			if r.resource_path != "":
-				return r.resource_path.get_file()
-			return str(r.get_class()) + ":" + str(r.get_instance_id())
-		return str(value)
-	return str(value)
-
-
 func _get_col_at_x(x: float) -> int:
 	var frozen_w := _get_frozen_width()
 	var col_x := 0.0
@@ -1318,13 +853,6 @@ func _get_row_at_y(y: float) -> int:
 		return -1
 	var row: int = floori((y - header_height) / row_height) + _visible_rows_range[0]
 	return row if row < _order.size() else -1
-
-
-func _get_text_baseline_y(cell_y: float, cell_height: float = -1.0) -> float:
-	var h := cell_height if cell_height >= 0.0 else row_height
-	var ascent := font.get_ascent(font_size)
-	var descent := font.get_descent(font_size)
-	return cell_y + (h + ascent - descent) / 2.0
 
 
 func _get_frozen_width() -> float:
@@ -1389,28 +917,13 @@ func _update_tooltip(mouse_pos: Vector2) -> void:
 			new_row = _order[row_idx]
 			new_col = col
 			var column := get_column(col)
-			if not column.is_range_column() and not column.is_boolean_column():
+			if not column.get_cell_type().suppresses_tooltip():
 				new_tooltip = str(get_cell_value(new_row, col))
 
 	if new_row != _tooltip_row or new_col != _tooltip_col:
 		_tooltip_row = new_row
 		_tooltip_col = new_col
 		self.tooltip_text = new_tooltip
-
-
-func _is_clicking_progress_bar(mouse_pos: Vector2) -> bool:
-	var row_idx := _get_row_at_y(mouse_pos.y)
-	var col_idx := _get_col_at_x(mouse_pos.x)
-	if row_idx < 0 or col_idx < 0:
-		return false
-	return _columns[col_idx].is_range_column()
-
-
-func _toggle_checkbox(row: StringName, col: StringName) -> void:
-	var old_val := bool(get_cell_value(row, col))
-	var new_val := !old_val
-	update_cell(row, col, new_val)
-	cell_edited.emit(row, col, old_val, new_val)
 
 
 func _ensure_row_visible(row: StringName) -> void:
@@ -1463,7 +976,7 @@ func _handle_pan_gesture(event: InputEventPanGesture) -> void:
 func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
 	var m_pos := event.position
 
-	if _dragging_progress and _progress_drag_row != &"" and _progress_drag_col != &"":
+	if _dragging_row != &"":
 		_handle_progress_drag(m_pos)
 	elif _resizing_column != &"":
 		var delta_x: float = m_pos.x - _resizing_start_pos
@@ -1526,15 +1039,25 @@ func _handle_left_press(event: InputEventMouseButton) -> void:
 		if not _filter_line_edit.visible:
 			_handle_header_click(m_pos)
 	else:
-		_handle_checkbox_click(m_pos)
+		var row_idx := _get_row_at_y(m_pos.y)
+		var col_idx := _get_col_at_x(m_pos.x)
+		var row: StringName = _order[row_idx] if row_idx >= 0 else &""
+		var col: StringName = _columns[col_idx].identifier if col_idx != -1 else &""
+
+		if row != &"" and col != &"":
+			var column := get_column(col)
+			var cell_value: Variant = get_cell_value(row, col)
+			var cell_type := column.get_cell_type()
+			var result: Dictionary = cell_type.handle_click(m_pos, _get_cell_rect(row, col), cell_value, column, _style)
+			match result.get(&"action", &""):
+				&"toggle":
+					_toggle_cell(row, col, result[&"value"])
+				&"drag":
+					_dragging_row = row
+					_dragging_col = col
+					_dragging_start_value = cell_value
+
 		_handle_cell_click(m_pos, event)
-		if _is_clicking_progress_bar(m_pos):
-			var row_idx := _get_row_at_y(m_pos.y)
-			var col_idx := _get_col_at_x(m_pos.x)
-			_progress_drag_row = _order[row_idx]
-			_progress_drag_col = _columns[col_idx].identifier
-			_dragging_start_value = get_cell_value(_progress_drag_row, _progress_drag_col)
-			_dragging_progress = true
 
 	if _mouse_over_divider >= 0:
 		_resizing_column = _columns[_mouse_over_divider].identifier
@@ -1543,67 +1066,36 @@ func _handle_left_press(event: InputEventMouseButton) -> void:
 
 
 func _handle_left_release() -> void:
-	if _dragging_progress:
-		var new_val: Variant = get_cell_value(_progress_drag_row, _progress_drag_col)
-		update_cell(_progress_drag_row, _progress_drag_col, new_val)
-		cell_edited.emit(_progress_drag_row, _progress_drag_col, _dragging_start_value, new_val)
+	if _dragging_row != &"":
+		var new_val: Variant = get_cell_value(_dragging_row, _dragging_col)
+		update_cell(_dragging_row, _dragging_col, new_val)
+		cell_edited.emit(_dragging_row, _dragging_col, _dragging_start_value, new_val)
+		_dragging_row = &""
+		_dragging_col = &""
+		_dragging_start_value = null
 	_resizing_column = &""
-	_dragging_progress = false
-	_progress_drag_row = &""
-	_progress_drag_col = &""
 
 
 func _handle_progress_drag(mouse_pos: Vector2) -> void:
-	if _progress_drag_row == &"" or _progress_drag_col == &"":
+	var col_idx := _column_index(_dragging_col)
+	if col_idx < 0:
 		return
 
-	var margin := 4.0
-	var bar_x := _get_col_x_pos(_column_index(_progress_drag_col)) + margin
-	var bar_w := get_column(_progress_drag_col).current_width - margin * 2.0
-	if bar_w <= 0:
+	var cell_x := _get_col_x_pos(col_idx)
+	var column := get_column(_dragging_col)
+	var new_value: Variant = column.get_cell_type().compute_drag_value(mouse_pos, column, cell_x, column.current_width)
+	if new_value == null:
 		return
 
-	var range_cfg := get_column(_progress_drag_col).range_config
-	var weight := (mouse_pos.x - bar_x) / bar_w
-	var new_progress: float = snappedf(
-		lerpf(range_cfg.get(&"min"), range_cfg.get(&"max"), weight),
-		range_cfg.get(&"step"),
-	)
-	if not range_cfg.has(&"or_greater"):
-		new_progress = min(new_progress, range_cfg.get(&"max"))
-	if not range_cfg.has(&"or_less"):
-		new_progress = max(new_progress, range_cfg.get(&"min"))
-
-	var col_idx := _column_index(_progress_drag_col)
-	if _rows.has(_progress_drag_row) and col_idx < _rows[_progress_drag_row].size():
-		_rows[_progress_drag_row][col_idx] = new_progress
-		progress_changed.emit(_progress_drag_row, _progress_drag_col, new_progress)
+	if _rows.has(_dragging_row) and col_idx < _rows[_dragging_row].size():
+		_rows[_dragging_row][col_idx] = new_value
+		progress_changed.emit(_dragging_row, _dragging_col, new_value)
 		queue_redraw()
-
-
-func _handle_checkbox_click(mouse_pos: Vector2) -> bool:
-	var row_idx := _get_row_at_y(mouse_pos.y)
-	var col_idx := _get_col_at_x(mouse_pos.x)
-	if row_idx < 0 or col_idx == -1:
-		return false
-	if not _columns[col_idx].is_boolean_column():
-		return false
-
-	var row := _order[row_idx]
-	var col := _columns[col_idx].identifier
-	var rect := _get_cell_rect(row, col)
-	var icon: Texture2D = get_theme_icon(&"checked", &"CheckBox")
-	var icon_rect := Rect2(rect.get_center() - icon.get_size() / 2, icon.get_size())
-	if icon_rect.has_point(mouse_pos):
-		_toggle_checkbox(row, col)
-		return true
-	return false
 
 
 func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> void:
 	if _edited_col != &"":
-		var column := get_column(_edited_col)
-		var save := not (column.is_resource_column() or column.is_path_column() or column.is_enum_column())
+		var save: bool = _current_editor_handler == null or _current_editor_handler.commits_on_click_away()
 		_finish_editing(save)
 
 	var clicked_idx := _get_row_at_y(mouse_pos.y)
@@ -1693,7 +1185,7 @@ func _handle_header_double_click(mouse_pos: Vector2) -> void:
 
 
 func _handle_key_input(event: InputEventKey) -> void:
-	if _text_editor_line_edit.visible:
+	if _current_editor_node != null and _current_editor_node is LineEdit:
 		if event.keycode == KEY_ESCAPE:
 			_finish_editing(false)
 			get_viewport().set_input_as_handled()
@@ -1713,8 +1205,10 @@ func _handle_key_input(event: InputEventKey) -> void:
 		KEY_ENTER, KEY_KP_ENTER:
 			if not is_cell_focused:
 				return
-			if get_column(focused_col).is_boolean_column():
-				_toggle_checkbox(focused_row, focused_col)
+			var column := get_column(focused_col)
+			var result: Dictionary = column.get_cell_type().handle_enter(get_cell_value(focused_row, focused_col), column)
+			if result.has(&"action"):
+				_toggle_cell(focused_row, focused_col, result[&"value"])
 			else:
 				_start_cell_editing(focused_row, focused_col)
 			_finalize_key_operation()
@@ -1852,41 +1346,8 @@ func _on_resized() -> void:
 	queue_redraw()
 
 
-func _on_text_editor_text_submitted(_text: String) -> void:
-	_finish_editing(true)
-
-
-func _on_text_editor_focus_exited() -> void:
-	_finish_editing(true)
-
-
-func _on_color_editor_color_selected(_color: Color) -> void:
-	_finish_editing(true)
-
-
-func _on_color_editor_canceled() -> void:
-	_finish_editing(false)
-
-
-func _on_resource_editor_resource_changed(_res: Resource) -> void:
-	_finish_editing(true)
-
-
-func _on_path_editor_path_selected(path: String) -> void:
-	var column := get_column(focused_col)
-	if column and column.property_hint in [PROPERTY_HINT_DIR]:
-		_path_editor.current_path = path.path_join("")
-	_finish_editing(true)
-
-
-func _on_enum_editor_index_pressed(idx: int) -> void:
-	_enum_editor_last_idx = idx
-	_finish_editing(true)
-
-
-func _on_enum_editor_popup_hide() -> void:
-	await get_tree().create_timer(0.05).timeout
-	_finish_editing(false)
+func _on_editor_finished(save_changes: bool) -> void:
+	_finish_editing(save_changes)
 
 
 func _on_double_click_timeout() -> void:
@@ -1895,7 +1356,7 @@ func _on_double_click_timeout() -> void:
 
 func _on_h_scroll_changed(value: float) -> void:
 	_h_scroll_position = int(value)
-	if _text_editor_line_edit.visible:
+	if _current_editor_node != null and _current_editor_node is LineEdit:
 		_finish_editing(false)
 	queue_redraw()
 
@@ -1908,7 +1369,7 @@ func _on_v_scroll_value_changed(value: float) -> void:
 	else:
 		_visible_rows_range = [0, _order.size()]
 
-	if _text_editor_line_edit.visible:
+	if _current_editor_node != null and _current_editor_node is LineEdit:
 		_finish_editing(false)
 	queue_redraw()
 
@@ -1949,178 +1410,3 @@ func _on_resource_cell_thumb_ready(resource_path: String, preview: Texture2D, th
 	queue_redraw()
 
 #endregion
-
-class ColumnConfig:
-	var identifier: StringName
-	var header: String
-	var type: Variant.Type
-	var property_hint: PropertyHint
-	var hint_string: String
-	var class_string: String
-	var h_alignment: HorizontalAlignment
-	var custom_font_color: Color
-	var custom_font: Font
-	var minimum_width: float:
-		set(value):
-			minimum_width = value
-			current_width = current_width
-	var current_width: float:
-		set(value):
-			current_width = max(value, minimum_width)
-	var enum_values_map: Dictionary[int, String]:
-		get:
-			if not _enum_values_map_ready:
-				enum_values_map = _parse_enum_hint_string(_get_enum_value_hint_string())
-				_enum_values_map_ready = true
-			return enum_values_map
-	var enum_keys_map: Dictionary[int, String]:
-		get:
-			if not _enum_keys_map_ready:
-				enum_keys_map = _parse_enum_hint_string(_get_enum_key_hint_string())
-				_enum_keys_map_ready = true
-			return enum_keys_map
-	var range_config: Dictionary[StringName, Variant]:
-		get:
-			if not _range_config_ready:
-				range_config = _compute_range_config()
-				_range_config_ready = true
-			return range_config
-
-	var _range_config_ready := false
-	var _enum_values_map_ready := false
-	var _enum_keys_map_ready := false
-
-
-	func _init(p_identifier: StringName, p_header: String, p_type: Variant.Type, p_alignment: HorizontalAlignment = HORIZONTAL_ALIGNMENT_LEFT) -> void:
-		identifier = p_identifier
-		header = p_header
-		type = p_type
-		h_alignment = p_alignment
-		if self.is_numeric_column():
-			h_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-
-
-	func is_path_column() -> bool:
-		var is_filesystem_hint := property_hint in [
-			PROPERTY_HINT_FILE,
-			PROPERTY_HINT_FILE_PATH,
-			PROPERTY_HINT_DIR,
-		]
-		return type == TYPE_STRING and is_filesystem_hint
-
-
-	func is_range_column() -> bool:
-		return type in [TYPE_FLOAT, TYPE_INT] and property_hint == PROPERTY_HINT_RANGE
-
-
-	func is_boolean_column() -> bool:
-		return type == TYPE_BOOL
-
-
-	func is_string_column() -> bool:
-		return type == TYPE_STRING
-
-
-	func is_numeric_column() -> bool:
-		return type in [TYPE_INT, TYPE_FLOAT]
-
-
-	func is_integer_column() -> bool:
-		return type == TYPE_INT
-
-
-	func is_float_column() -> bool:
-		return type == TYPE_FLOAT
-
-
-	func is_color_column() -> bool:
-		return type == TYPE_COLOR
-
-
-	func is_enum_column() -> bool:
-		return property_hint == PROPERTY_HINT_ENUM
-
-
-	func is_resource_column() -> bool:
-		return type == TYPE_OBJECT and property_hint == PROPERTY_HINT_RESOURCE_TYPE
-
-
-	func is_array_column() -> bool:
-		return type == TYPE_ARRAY
-
-
-	func is_dictionary_column() -> bool:
-		return type == TYPE_DICTIONARY
-
-
-	func is_collection_column() -> bool:
-		return is_array_column() or is_dictionary_column()
-
-
-	func is_enum_array_column() -> bool:
-		return is_array_column() and hint_string and _is_enum_collection_hint(hint_string)
-
-
-	func is_enum_key_dictionary_column() -> bool:
-		return is_dictionary_column() and hint_string and _is_enum_collection_hint(_dict_key_hint_part())
-
-
-	func is_enum_value_dictionary_column() -> bool:
-		return is_dictionary_column() and hint_string and _is_enum_collection_hint(_dict_value_hint_part())
-
-
-	func _get_enum_value_hint_string() -> String:
-		if is_array_column():
-			return hint_string.split(":", true, 1)[1]
-		if is_dictionary_column():
-			return _dict_value_hint_part().split(":", true, 1)[1]
-		return hint_string
-
-
-	func _get_enum_key_hint_string() -> String:
-		return _dict_key_hint_part().split(":", true, 1)[1]
-
-
-	func _dict_key_hint_part() -> String:
-		return hint_string.split(";", true, 1)[0]
-
-
-	func _dict_value_hint_part() -> String:
-		return hint_string.split(";", true, 1)[1]
-
-
-	func _is_enum_collection_hint(hint: String) -> bool:
-		return hint.length() > 3 and hint[1] == "/" and int(hint[2]) == PROPERTY_HINT_ENUM
-
-
-	static func _parse_enum_hint_string(enum_hint_string: String) -> Dictionary[int, String]:
-		var map: Dictionary[int, String] = { }
-		var next_implicit := 0
-		for entry: String in enum_hint_string.split(",", false):
-			var colon := entry.rfind(":")
-			if colon == -1:
-				map[next_implicit] = entry
-				next_implicit += 1
-			else:
-				var explicit_val := entry.substr(colon + 1).to_int()
-				map[explicit_val] = entry.substr(0, colon)
-				next_implicit = explicit_val + 1
-		return map
-
-
-	func _compute_range_config() -> Dictionary[StringName, Variant]:
-		if not is_range_column():
-			return { }
-		var hint_elements := hint_string.split(",", false)
-		var result: Dictionary[StringName, Variant] = {
-			&"min": float(hint_elements[0]) if hint_elements.size() > 0 else 0.0,
-			&"max": float(hint_elements[1]) if hint_elements.size() > 1 else 1.0,
-			&"step": float(hint_elements[2]) if hint_elements.size() > 2 else (0.001 if is_float_column() else 1.0),
-		}
-		for hint_str in hint_elements.slice(3):
-			match hint_str:
-				"or_greater":
-					result[&"or_greater"] = true
-				"or_less":
-					result[&"or_less"] = true
-		return result
