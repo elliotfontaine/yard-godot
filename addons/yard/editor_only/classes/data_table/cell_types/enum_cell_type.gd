@@ -1,13 +1,7 @@
 extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
 ## Enum columns (any type with PROPERTY_HINT_ENUM), edited via a PopupMenu.
 ## Draw color is a deterministic pseudo-random hash of the display string,
-## ignoring the column's normal font-color resolution. The chosen value has to
-## survive from the index_pressed callback to read_editor_value (the popup may
-## already be hidden by then), so it's stashed as metadata on the editor Node
-## itself rather than as instance state.
-
-const SELECTED_VALUE_META := &"selected_value"
-
+## ignoring the column's normal font-color resolution.
 
 static func matches(column: ColumnConfig) -> bool:
 	return column.property_hint == PROPERTY_HINT_ENUM
@@ -34,8 +28,6 @@ static func commits_on_click_away() -> bool:
 	return false
 
 
-## Replicates today's absence of a dedicated sort branch for enums: numeric-backed
-## enums sort by the raw int value, others fall back to string comparison.
 static func get_sort_key(value: Variant, column: ColumnConfig) -> Variant:
 	if _is_numeric(column):
 		return float(value)
@@ -43,13 +35,14 @@ static func get_sort_key(value: Variant, column: ColumnConfig) -> Variant:
 
 
 static func create_editor(owner: Control, _rect: Rect2, value: Variant, column: ColumnConfig, on_finished: Callable) -> Node:
-	var editor := PopupMenu.new()
-	owner.add_child(editor)
+	var popup_menu := PopupMenu.new()
+	owner.add_child(popup_menu)
 
 	var is_numeric := _is_numeric(column)
 
 	@warning_ignore("incompatible_ternary")
 	var value_iter: Variant = -1 if is_numeric else ""
+	var checked_idx := -1
 
 	for choice: String in column.hint_string.split(",", false):
 		var colon := choice.rfind(":")
@@ -61,31 +54,36 @@ static func create_editor(owner: Control, _rect: Rect2, value: Variant, column: 
 			text = choice
 			value_iter = value_iter + 1 if is_numeric else text
 
-		editor.add_radio_check_item(text)
-		editor.set_item_metadata(editor.item_count - 1, value_iter)
+		popup_menu.add_radio_check_item(text)
+		popup_menu.set_item_metadata(popup_menu.item_count - 1, value_iter)
 		if value == value_iter:
-			editor.toggle_item_checked(editor.item_count - 1)
+			checked_idx = popup_menu.item_count - 1
+			popup_menu.set_item_checked(checked_idx, true)
 
-	editor.index_pressed.connect(
+	popup_menu.index_pressed.connect(
 		func(idx: int) -> void:
-			editor.set_meta(SELECTED_VALUE_META, editor.get_item_metadata(idx))
-			on_finished.call(true)
+			if checked_idx != -1:
+				popup_menu.set_item_checked(checked_idx, false)
+			popup_menu.set_item_checked(idx, true)
+			on_finished.call(true) # Not good. Why does it know callback signature?!
 	)
-	editor.popup_hide.connect(
+	popup_menu.popup_hide.connect(
 		func() -> void:
-			await editor.get_tree().create_timer(0.05).timeout
-			on_finished.call(false)
+			await popup_menu.get_tree().create_timer(0.05).timeout
+			on_finished.call(false) # Same issue
 	)
 
-	editor.position = DisplayServer.mouse_get_position()
-	editor.popup()
-	return editor
+	popup_menu.position = DisplayServer.mouse_get_position()
+	popup_menu.popup()
+	return popup_menu
 
 
 static func read_editor_value(editor: Node, _column: ColumnConfig) -> Variant:
-	if not editor.has_meta(SELECTED_VALUE_META):
-		return null
-	return editor.get_meta(SELECTED_VALUE_META)
+	var popup_menu: PopupMenu = editor
+	for idx in popup_menu.item_count:
+		if popup_menu.is_item_checked(idx):
+			return popup_menu.get_item_metadata(idx)
+	return null
 
 
 static func _is_numeric(column: ColumnConfig) -> bool:
