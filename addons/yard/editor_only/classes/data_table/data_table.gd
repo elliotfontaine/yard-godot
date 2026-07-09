@@ -108,11 +108,13 @@ var _current_editor_node: Node
 var _current_editor_handler: GDScript # The script extends CellType
 var _style: CellStyle
 
-# Progress bar dragging (Range columns). Tracked here for the same reason as
-# _edited_row/_edited_col above: only one interaction can be in flight.
-var _dragging_row: StringName = &""
-var _dragging_col: StringName = &""
-var _dragging_start_value: Variant
+# Live cell interaction claimed via CellType.handle_input (e.g. a Range drag).
+# Only one interaction can be in flight. Once claimed, routing for follow-up
+# motion/release events is pinned to this (row, col), so the interaction can
+# survive the mouse leaving the cell's rect.
+var _live_edit_row: StringName = &""
+var _live_edit_col: StringName = &""
+var _live_edit_start_value: Variant
 
 # Click detection (single vs. double click)
 var _double_click_timer: Timer
@@ -600,12 +602,6 @@ func _is_numeric_value(value: Variant) -> bool:
 	return str_val.is_valid_float() or str_val.is_valid_int()
 
 
-func _toggle_cell(row: StringName, col: StringName, new_value: Variant) -> void:
-	var old_value: Variant = get_cell_value(row, col)
-	update_cell(row, col, new_value)
-	cell_edited.emit(row, col, old_value, new_value)
-
-
 func _start_cell_editing(row: StringName, col: StringName) -> void:
 	if is_cell_invalid(row, col):
 		return
@@ -971,8 +967,8 @@ func _handle_pan_gesture(event: InputEventPanGesture) -> void:
 func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
 	var m_pos := event.position
 
-	if _dragging_row != &"":
-		_handle_progress_drag(m_pos)
+	if _live_edit_row != &"":
+		_dispatch_cell_input(event, _live_edit_row, _live_edit_col)
 	elif _resizing_column != &"":
 		var delta_x: float = m_pos.x - _resizing_start_pos
 		var new_width: float = max(
@@ -1006,7 +1002,7 @@ func _handle_mouse_button(event: InputEventMouseButton) -> void:
 	else:
 		match event.button_index:
 			MOUSE_BUTTON_LEFT:
-				_handle_left_release()
+				_handle_left_release(event)
 
 
 func _handle_left_press(event: InputEventMouseButton) -> void:
@@ -1039,19 +1035,9 @@ func _handle_left_press(event: InputEventMouseButton) -> void:
 		var row: StringName = _order[row_idx] if row_idx >= 0 else &""
 		var col: StringName = _columns[col_idx].identifier if col_idx != -1 else &""
 
-		if row != &"" and col != &"":
-			var column := get_column(col)
-			var cell_value: Variant = get_cell_value(row, col)
-			var cell_type := column.get_cell_type()
-			var result: Dictionary = cell_type.handle_click(m_pos, _get_cell_rect(row, col), cell_value, column, _style)
-			match result.get(&"action", &""):
-				&"toggle":
-					_toggle_cell(row, col, result[&"value"])
-				&"drag":
-					_dragging_row = row
-					_dragging_col = col
-					_dragging_start_value = cell_value
-
+		var is_select_modifier := event.shift_pressed or event.ctrl_pressed or event.meta_pressed
+		if not is_select_modifier:
+			_dispatch_cell_input(event, row, col)
 		_handle_cell_click(m_pos, event)
 
 	if _mouse_over_divider >= 0:
@@ -1060,38 +1046,50 @@ func _handle_left_press(event: InputEventMouseButton) -> void:
 		_resizing_start_width = int(get_column(_resizing_column).current_width)
 
 
-func _handle_left_release() -> void:
-	if _dragging_row != &"":
-		var new_val: Variant = get_cell_value(_dragging_row, _dragging_col)
-		update_cell(_dragging_row, _dragging_col, new_val)
-		cell_edited.emit(_dragging_row, _dragging_col, _dragging_start_value, new_val)
-		_dragging_row = &""
-		_dragging_col = &""
-		_dragging_start_value = null
+func _handle_left_release(event: InputEventMouseButton) -> void:
+	if _live_edit_row != &"":
+		_dispatch_cell_input(event, _live_edit_row, _live_edit_col)
 	_resizing_column = &""
 
 
-func _handle_progress_drag(mouse_pos: Vector2) -> void:
-	var col_idx := _column_index(_dragging_col)
-	if col_idx < 0:
-		return
+## Lets the CellType at (row, col) claim an InputEvent (true) or pass it
+## through (false). On claim, pins live-edit routing so follow-up motion or
+## release events keep reaching this cell even after the cursor leaves it.
+func _dispatch_cell_input(event: InputEvent, row: StringName, col: StringName) -> bool:
+	if row == &"" or col == &"":
+		return false
 
-	var cell_x := _get_col_x_pos(col_idx)
-	var column := get_column(_dragging_col)
-	var new_value: Variant = column.get_cell_type().compute_drag_value(mouse_pos, column, cell_x, column.current_width)
-	if new_value == null:
-		return
+	var column := get_column(col)
+	var cell_value: Variant = get_cell_value(row, col)
+	var rect := _get_cell_rect(row, col)
+	var result: Dictionary = column.get_cell_type().handle_input(event, rect, cell_value, column, _style)
+	if result.is_empty():
+		return false
 
-	if _rows.has(_dragging_row) and col_idx < _rows[_dragging_row].size():
-		_rows[_dragging_row][col_idx] = new_value
-		progress_changed.emit(_dragging_row, _dragging_col, new_value)
-		queue_redraw()
+	if result.has(&"value"):
+		update_cell(row, col, result[&"value"])
+
+	if result.get(&"commit", false):
+		var old_value: Variant = _live_edit_start_value if row == _live_edit_row and col == _live_edit_col else cell_value
+		cell_edited.emit(row, col, old_value, get_cell_value(row, col))
+		_live_edit_row = &""
+		_live_edit_col = &""
+		_live_edit_start_value = null
+	else:
+		if _live_edit_row != row or _live_edit_col != col:
+			_live_edit_row = row
+			_live_edit_col = col
+			_live_edit_start_value = cell_value
+		if result.has(&"value"):
+			progress_changed.emit(row, col, result[&"value"])
+
+	queue_redraw()
+	return true
 
 
 func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> void:
 	if _edited_col != &"":
-		var save: bool = _current_editor_handler == null or _current_editor_handler.commits_on_click_away()
-		_finish_editing(save)
+		_finish_editing(false)
 
 	var clicked_idx := _get_row_at_y(mouse_pos.y)
 	var clicked_col_idx := _get_col_at_x(mouse_pos.x)
@@ -1200,11 +1198,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 		KEY_ENTER, KEY_KP_ENTER:
 			if not is_cell_focused:
 				return
-			var column := get_column(focused_col)
-			var result: Dictionary = column.get_cell_type().handle_enter(get_cell_value(focused_row, focused_col), column)
-			if result.has(&"action"):
-				_toggle_cell(focused_row, focused_col, result[&"value"])
-			else:
+			if not _dispatch_cell_input(event, focused_row, focused_col):
 				_start_cell_editing(focused_row, focused_col)
 			_finalize_key_operation()
 			return

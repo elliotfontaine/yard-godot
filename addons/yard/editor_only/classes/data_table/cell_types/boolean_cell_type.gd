@@ -28,15 +28,16 @@ static func get_sort_key(value: Variant, _column: ColumnConfig) -> Variant:
 	return 1 if bool(value) else 0
 
 
-static func handle_click(mouse_pos: Vector2, rect: Rect2, value: Variant, _column: ColumnConfig, style: CellStyle) -> Dictionary:
-	var icon := style.checkbox_checked_icon
-	if icon == null:
+static func handle_input(event: InputEvent, rect: Rect2, value: Variant, _column: ColumnConfig, style: CellStyle) -> Dictionary:
+	var is_click: bool = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+	var is_enter: bool = event is InputEventKey and event.pressed and event.keycode in [KEY_ENTER, KEY_KP_ENTER]
+	if not (is_click or is_enter):
 		return { }
-	var icon_rect := Rect2(rect.get_center() - icon.get_size() / 2.0, icon.get_size())
-	if not icon_rect.has_point(mouse_pos):
-		return { }
-	return { &"action": &"toggle", &"value": not bool(value) }
-
-
-static func handle_enter(value: Variant, _column: ColumnConfig) -> Dictionary:
-	return { &"action": &"toggle", &"value": not bool(value) }
+	if is_click:
+		var icon := style.checkbox_checked_icon
+		if icon == null:
+			return { }
+		var icon_rect := Rect2(rect.get_center() - icon.get_size() / 2.0, icon.get_size())
+		if not icon_rect.has_point(event.position):
+			return { }
+	return { &"value": not bool(value), &"commit": true }

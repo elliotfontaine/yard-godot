@@ -2,8 +2,7 @@ extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.g
 ## Range/progress-bar columns (numeric type + PROPERTY_HINT_RANGE). Has no editor
 ## of its own; ColumnConfig.get_editor_cell_type() falls back to NumericCellType's
 ## editor when a range cell is double-clicked. Drag-to-adjust is the main
-## interaction: DataTable tracks which cell is being dragged (same as it
-## already tracks the edited cell) and calls compute_drag_value each frame.
+## interaction.
 
 static func matches(column: ColumnConfig) -> bool:
 	return column.type in [TYPE_FLOAT, TYPE_INT] and column.property_hint == PROPERTY_HINT_RANGE
@@ -51,11 +50,21 @@ static func get_sort_key(value: Variant, _column: ColumnConfig) -> Variant:
 	return float(value)
 
 
-static func handle_click(_mouse_pos: Vector2, _rect: Rect2, _value: Variant, _column: ColumnConfig, _style: CellStyle) -> Dictionary:
-	return { &"action": &"drag" }
+static func handle_input(event: InputEvent, rect: Rect2, _value: Variant, column: ColumnConfig, _style: CellStyle) -> Dictionary:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			return { &"commit": false } # claim the drag; value doesn't move until motion
+		var released_value: Variant = _compute_drag_value(event.position, column, rect.position.x, rect.size.x)
+		return { &"value": released_value, &"commit": true } if released_value != null else { &"commit": true }
+
+	if event is InputEventMouseMotion and (event.button_mask & MOUSE_BUTTON_MASK_LEFT):
+		var new_value: Variant = _compute_drag_value(event.position, column, rect.position.x, rect.size.x)
+		return { &"value": new_value, &"commit": false } if new_value != null else { }
+
+	return { }
 
 
-static func compute_drag_value(mouse_pos: Vector2, column: ColumnConfig, cell_x: float, cell_width: float) -> Variant:
+static func _compute_drag_value(mouse_pos: Vector2, column: ColumnConfig, cell_x: float, cell_width: float) -> Variant:
 	var margin := 4.0
 	var bar_x := cell_x + margin
 	var bar_w := cell_width - margin * 2.0

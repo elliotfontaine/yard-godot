@@ -24,10 +24,6 @@ static func has_editor() -> bool:
 	return true
 
 
-static func commits_on_click_away() -> bool:
-	return false
-
-
 static func get_sort_key(value: Variant, column: ColumnConfig) -> Variant:
 	if _is_numeric(column):
 		return float(value)

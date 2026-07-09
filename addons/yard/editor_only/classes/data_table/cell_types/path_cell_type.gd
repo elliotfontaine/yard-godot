@@ -45,10 +45,6 @@ static func has_editor() -> bool:
 	return true
 
 
-static func commits_on_click_away() -> bool:
-	return false
-
-
 static func create_editor(owner: Control, _rect: Rect2, value: Variant, column: ColumnConfig, on_finished: Callable) -> Node:
 	var editor := EditorFileDialog.new()
 	owner.add_child(editor)

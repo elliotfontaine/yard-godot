@@ -123,8 +123,13 @@ static func read_editor_value(_editor: Node, _column: ColumnConfig) -> Variant:
 	return null
 
 
-static func commits_on_click_away() -> bool:
-	return true
+## Handles an InputEvent targeting this cell (press, motion while held,
+## release, or a keyboard event while focused). Return `{}` to leave it
+## unhandled. Return a Dictionary to claim it: &"value" (optional) applies
+## immediately; &"commit" (default false) finalizes vs. keeps the
+## interaction open for more events. A release must eventually commit.
+static func handle_input(_event: InputEvent, _rect: Rect2, _value: Variant, _column: ColumnConfig, _style: CellStyle) -> Dictionary:
+	return { }
 
 
 static func suppresses_tooltip() -> bool:
@@ -151,13 +156,3 @@ static func parse_enum_hint_string(enum_hint_string: String) -> Dictionary[int, 
 			map[explicit_val] = entry.substr(0, colon)
 			next_implicit = explicit_val + 1
 	return map
-
-
-# Direct input (click, Enter key). Empty Dictionary means "not handled, do the
-# default thing" (normal cell selection, or opening the editor on Enter).
-static func handle_click(_mouse_pos: Vector2, _rect: Rect2, _value: Variant, _column: ColumnConfig, _style: CellStyle) -> Dictionary:
-	return { }
-
-
-static func handle_enter(_value: Variant, _column: ColumnConfig) -> Dictionary:
-	return { }

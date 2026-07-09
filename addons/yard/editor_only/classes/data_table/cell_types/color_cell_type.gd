@@ -60,8 +60,8 @@ static func create_editor(owner: Control, rect: Rect2, value: Variant, _column: 
 	owner.add_child(popup)
 	popup.position = rect.get_center() + owner.global_position
 	popup.color = value
-	popup.color_selected.connect(func(_c: Color) -> void: on_finished.call(true))
-	popup.canceled.connect(func() -> void: on_finished.call(false))
+	popup.color_selected.connect(on_finished.bind(true))
+	popup.canceled.connect(on_finished.bind(false))
 	popup.show()
 	popup.grab_focus()
 	return popup
@@ -116,7 +116,7 @@ class ColorPopup extends PanelContainer:
 		select_button.size_flags_horizontal = Control.SIZE_SHRINK_END | Control.SIZE_EXPAND
 		select_button.icon_name = &"ArrowRight"
 		select_button.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		select_button.pressed.connect(func() -> void: color_selected.emit(color_picker.color))
+		select_button.pressed.connect(color_selected.emit.bind(color_picker.color))
 		hbox.add_child(select_button)
 
 
