@@ -30,7 +30,7 @@ const EditorIconTextureButton = preload("res://addons/yard/editor_only/classes/e
 # Data Table
 const DataTable := preload("res://addons/yard/editor_only/classes/data_table/data_table.gd")
 const ColumnConfig := preload("res://addons/yard/editor_only/classes/data_table/column_config.gd")
-const CellStyle := preload("res://addons/yard/editor_only/classes/data_table/cell_types/cell_style.gd")
+const CellStyle := preload("res://addons/yard/editor_only/classes/data_table/cell_style.gd")
 const CellType := preload("res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd")
 const StringCellType := preload("res://addons/yard/editor_only/classes/data_table/cell_types/string_cell_type.gd")
 const NumericCellType := preload("res://addons/yard/editor_only/classes/data_table/cell_types/numeric_cell_type.gd")
