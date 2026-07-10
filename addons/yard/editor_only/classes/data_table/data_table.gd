@@ -25,8 +25,6 @@ const YardLogger := Namespace.YardLogger
 const CELL_INVALID := "<CELL_INVALID>"
 
 # Theming properties
-@export_group("Custom YARD Properties")
-@export var base_height_from_line_edit: bool = false
 @export_group("Default color")
 @export var default_font_color: Color = Color(1.0, 1.0, 1.0)
 @export_group("Header")
@@ -149,29 +147,7 @@ func _ready() -> void:
 
 	self.focus_mode = Control.FOCUS_ALL
 
-	_setup_editing_components()
-	_setup_filtering_components()
-
-	_pixelated_canvas_rid = RenderingServer.canvas_item_create()
-	RenderingServer.canvas_item_set_parent(_pixelated_canvas_rid, get_canvas_item())
-	RenderingServer.canvas_item_set_default_texture_filter(_pixelated_canvas_rid, RenderingServer.CANVAS_ITEM_TEXTURE_FILTER_NEAREST)
-	_style.pixelated_canvas_rid = _pixelated_canvas_rid
-	_style.get_thumbnail = _get_or_queue_thumbnail
-
-	_h_scroll = HScrollBar.new()
-	_h_scroll.set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE)
-	_h_scroll.offset_top = -8 * get_theme_default_base_scale()
-	_h_scroll.value_changed.connect(_on_h_scroll_changed)
-
-	_v_scroll = VScrollBar.new()
-	_v_scroll.set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE)
-	_v_scroll.offset_top = header_height
-	_v_scroll.offset_left = -8 * get_theme_default_base_scale()
-	_v_scroll.value_changed.connect(_on_v_scroll_value_changed)
-
-	add_child(_h_scroll)
-	add_child(_v_scroll)
-
+	_setup_components()
 	_reset_column_widths()
 
 	resized.connect(_on_resized)
@@ -513,27 +489,38 @@ func refresh_layout() -> void:
 
 #region PRIVATE METHODS
 
-func _setup_filtering_components() -> void:
+func _setup_components() -> void:
+	_double_click_timer = Timer.new()
+	_double_click_timer.wait_time = _double_click_threshold / 1000.0
+	_double_click_timer.one_shot = true
+	_double_click_timer.timeout.connect(_on_double_click_timeout)
+	add_child(_double_click_timer)
+
 	_filter_line_edit = LineEdit.new()
 	_filter_line_edit.visible = false
 	_filter_line_edit.text_submitted.connect(_apply_filter)
 	_filter_line_edit.focus_exited.connect(_on_filter_focus_exited)
 	add_child(_filter_line_edit)
 
+	_pixelated_canvas_rid = RenderingServer.canvas_item_create()
+	RenderingServer.canvas_item_set_parent(_pixelated_canvas_rid, get_canvas_item())
+	RenderingServer.canvas_item_set_default_texture_filter(_pixelated_canvas_rid, RenderingServer.CANVAS_ITEM_TEXTURE_FILTER_NEAREST)
+	_style.pixelated_canvas_rid = _pixelated_canvas_rid
+	_style.get_thumbnail = _get_or_queue_thumbnail
 
-func _setup_editing_components() -> void:
-	if base_height_from_line_edit:
-		var probe := LineEdit.new()
-		add_child(probe)
-		header_height = probe.size.y
-		row_height = probe.size.y
-		probe.queue_free()
+	_h_scroll = HScrollBar.new()
+	_h_scroll.set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE)
+	_h_scroll.offset_top = -8 * get_theme_default_base_scale()
+	_h_scroll.value_changed.connect(_on_h_scroll_changed)
 
-	_double_click_timer = Timer.new()
-	_double_click_timer.wait_time = _double_click_threshold / 1000.0
-	_double_click_timer.one_shot = true
-	_double_click_timer.timeout.connect(_on_double_click_timeout)
-	add_child(_double_click_timer)
+	_v_scroll = VScrollBar.new()
+	_v_scroll.set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE)
+	_v_scroll.offset_top = header_height
+	_v_scroll.offset_left = -8 * get_theme_default_base_scale()
+	_v_scroll.value_changed.connect(_on_v_scroll_value_changed)
+
+	add_child(_h_scroll)
+	add_child(_v_scroll)
 
 
 func _refresh_style() -> void:
