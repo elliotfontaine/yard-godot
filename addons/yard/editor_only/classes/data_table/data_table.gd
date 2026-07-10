@@ -14,13 +14,15 @@ signal progress_changed(row_id: StringName, col: StringName, new_value: float)
 signal cell_edited(row_id: StringName, col: StringName, old_value: Variant, new_value: Variant)
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
-const ClassUtils := Namespace.ClassUtils
+# Core logic of DataTable.
 const ColumnConfig := Namespace.ColumnConfig
-const CellType := Namespace.CellType
 const CellStyle := Namespace.CellStyle
+const CellType := Namespace.CellType
+# YARD-specific. Remove these to use DataTable standalone.
 const EditorThemeUtils := Namespace.EditorThemeUtils
-const AnyIcon := Namespace.AnyIcon
+const ClassUtils := Namespace.ClassUtils
 const YardLogger := Namespace.YardLogger
+const AnyIcon := Namespace.AnyIcon
 
 const CELL_INVALID := "<CELL_INVALID>"
 
