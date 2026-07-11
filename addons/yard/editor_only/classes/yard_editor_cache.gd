@@ -8,7 +8,7 @@ const _BASE_DIR := "res://.godot/plugins/yard/"
 
 
 class RegistryCacheData:
-	const _REGISTRY_CACHE_VERSION := 2
+	const _REGISTRY_CACHE_VERSION := 3
 	const _REGISTRIES_DIR := _BASE_DIR + "registries/"
 	const _SECTION_GENERAL := "general"
 	const _SECTION_TABLE := "table"
@@ -21,6 +21,7 @@ class RegistryCacheData:
 	]
 	var version: int = _REGISTRY_CACHE_VERSION
 	var disabled_columns: Array[StringName] = BUILTIN_RESOURCE_PROPERTIES.duplicate()
+	var frozen_columns: Array[StringName] = [&"string_id", &"uid"] # duplicated literals: RegistryTableView.STRINGID_COLUMN / UID_COLUMN
 	var parent_props_first: bool = false
 	var uid_column_width: float = 200.0
 	var string_id_column_width: float = 200.0
@@ -37,6 +38,7 @@ class RegistryCacheData:
 		var cfg := ConfigFile.new()
 		cfg.set_value(_SECTION_GENERAL, "version", version)
 		cfg.set_value(_SECTION_TABLE, "disabled_columns", disabled_columns)
+		cfg.set_value(_SECTION_TABLE, "frozen_columns", frozen_columns)
 		cfg.set_value(_SECTION_TABLE, "parent_props_first", parent_props_first)
 		cfg.set_value(_SECTION_TABLE, "uid_column_width", uid_column_width)
 		cfg.set_value(_SECTION_TABLE, "string_id_column_width", string_id_column_width)
@@ -57,6 +59,7 @@ class RegistryCacheData:
 			RegistryCacheData._update_format(data, cfg)
 
 		data.disabled_columns = cfg.get_value(_SECTION_TABLE, "disabled_columns", data.disabled_columns)
+		data.frozen_columns = cfg.get_value(_SECTION_TABLE, "frozen_columns", data.frozen_columns)
 		data.parent_props_first = cfg.get_value(_SECTION_TABLE, "parent_props_first", data.parent_props_first)
 		data.uid_column_width = cfg.get_value(_SECTION_TABLE, "uid_column_width", data.uid_column_width)
 		data.string_id_column_width = cfg.get_value(_SECTION_TABLE, "string_id_column_width", data.string_id_column_width)
@@ -81,6 +84,10 @@ class RegistryCacheData:
 		if _data.version < 2:
 			_data.parent_props_first = false
 			_data.version = 2
+
+		if _data.version < 3:
+			_data.frozen_columns = [&"string_id", &"uid"]
+			_data.version = 3
 
 		_data.version = _REGISTRY_CACHE_VERSION
 

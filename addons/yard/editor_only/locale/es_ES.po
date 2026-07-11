@@ -78,6 +78,7 @@ msgid "Toggle Files Panel"
 msgstr "Mostrar/ocultar panel de archivos"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "String ID"
 msgstr "ID textual"
 
@@ -300,12 +301,20 @@ msgid "Select a registry first"
 msgstr "Seleccione primero un registro"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
-msgid "Freeze ID Columns"
-msgstr "Fijar columnas de ID"
+msgid "ID Columns"
+msgstr "Columnas de ID"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
-msgid "Keep the UID and string ID columns visible while scrolling horizontally."
-msgstr "Mantiene las columnas UID e ID textual visibles al desplazarse horizontalmente."
+msgid "UID"
+msgstr "UID"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Hidden"
+msgstr "Oculto"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Frozen"
+msgstr "Fijado"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "Show Parent Properties First"

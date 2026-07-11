@@ -78,6 +78,7 @@ msgid "Toggle Files Panel"
 msgstr "显示/隐藏文件面板"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "String ID"
 msgstr "字符串 ID"
 
@@ -282,12 +283,20 @@ msgid "Select a registry first"
 msgstr "请先选择一个注册表"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
-msgid "Freeze ID Columns"
-msgstr "固定 ID 列"
+msgid "ID Columns"
+msgstr "ID 列"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
-msgid "Keep the UID and string ID columns visible while scrolling horizontally."
-msgstr "在水平滚动时保持 UID 和字符串 ID 列可见。"
+msgid "UID"
+msgstr "UID"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Hidden"
+msgstr "隐藏"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Frozen"
+msgstr "固定"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "Show Parent Properties First"

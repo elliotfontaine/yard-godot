@@ -78,6 +78,7 @@ msgid "Toggle Files Panel"
 msgstr "Dosya panelini göster/gizle"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "String ID"
 msgstr "Metin ID"
 
@@ -295,12 +296,20 @@ msgid "Select a registry first"
 msgstr "Önce bir kayıt defteri seçin"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
-msgid "Freeze ID Columns"
-msgstr "ID sütunlarını sabitle"
+msgid "ID Columns"
+msgstr "ID Sütunları"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
-msgid "Keep the UID and string ID columns visible while scrolling horizontally."
-msgstr "Yatay kaydırma sırasında UID ve Metin ID sütunlarını görünür tutar."
+msgid "UID"
+msgstr "UID"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Hidden"
+msgstr "Gizli"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Frozen"
+msgstr "Sabit"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "Show Parent Properties First"

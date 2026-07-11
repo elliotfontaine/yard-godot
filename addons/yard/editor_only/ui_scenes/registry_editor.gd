@@ -20,6 +20,7 @@ enum FileMenuAction {
 	SORT = 32,
 	CLEAR_RECENT = 40,
 }
+const ColumnMenuAction := RegistryTableView.ColumnMenuAction # Enum
 const EditMenuAction := RegistryTableView.EditMenuAction # Enum
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
@@ -36,6 +37,8 @@ const FuzzySearch := Namespace.FuzzySearch
 const YardLogger := Namespace.YardLogger
 const FuzzySearchResult := FuzzySearch.FuzzySearchResult
 const BUILTIN_RESOURCE_PROPERTIES: Array[StringName] = RegistryCacheData.BUILTIN_RESOURCE_PROPERTIES
+const STRINGID_COLUMN := RegistryTableView.STRINGID_COLUMN
+const UID_COLUMN := RegistryTableView.UID_COLUMN
 
 const ACCELERATORS_WIN: Dictionary = {
 	FileMenuAction.NEW: KEY_MASK_CTRL | KEY_N,
@@ -435,18 +438,12 @@ func _populate_open_recent_submenu() -> void:
 
 func _populate_columns_popup_menu() -> void:
 	var popup := columns_menu_button.get_popup()
-	popup.clear()
+	popup.clear(true)
+	# free_submenus=true, avoids leaking a PopupMenu Node per column per open
 
 	if not registry_table_view.current_registry:
 		popup.add_separator("Select a registry first")
 		return
-
-	_add_check_item(
-		popup,
-		tr("Freeze ID Columns"),
-		tr("Keep the UID and string ID columns visible while scrolling horizontally."),
-		registry_table_view.id_columns_frozen,
-	)
 
 	_add_check_item(
 		popup,
@@ -457,6 +454,11 @@ func _populate_columns_popup_menu() -> void:
 		),
 		registry_table_view.current_cache_data.parent_props_first,
 	)
+
+	popup.add_separator(tr("ID Columns"))
+	popup.set_item_auto_translate_mode(popup.item_count - 1, AUTO_TRANSLATE_MODE_DISABLED)
+	_add_column_submenu_item(popup, STRINGID_COLUMN, tr("String ID"), { }, false)
+	_add_column_submenu_item(popup, UID_COLUMN, tr("UID"), { }, false)
 
 	if not registry_table_view.properties_column_info:
 		return
@@ -470,13 +472,13 @@ func _populate_columns_popup_menu() -> void:
 				popup.add_separator(separator_label)
 				popup.set_item_auto_translate_mode(popup.item_count - 1, AUTO_TRANSLATE_MODE_DISABLED)
 		elif prop_name not in BUILTIN_RESOURCE_PROPERTIES:
-			_add_column_check_item(popup, prop)
+			_add_column_submenu_item(popup, prop_name, prop_name.capitalize(), prop)
 
 	popup.add_separator("Resource/RefCounted")
 	popup.set_item_auto_translate_mode(popup.item_count - 1, AUTO_TRANSLATE_MODE_DISABLED)
 	for prop: Dictionary in registry_table_view.properties_column_info:
 		if prop[&"name"] in BUILTIN_RESOURCE_PROPERTIES:
-			_add_column_check_item(popup, prop)
+			_add_column_submenu_item(popup, prop[&"name"], String(prop[&"name"]).capitalize(), prop)
 
 
 func _add_check_item(popup: PopupMenu, label: String, tooltip: String, checked: bool) -> void:
@@ -486,14 +488,31 @@ func _add_check_item(popup: PopupMenu, label: String, tooltip: String, checked: 
 	popup.set_item_checked(idx, checked)
 
 
-func _add_column_check_item(popup: PopupMenu, prop: Dictionary) -> void:
-	var prop_name: String = prop[&"name"]
-	popup.add_check_item(prop_name.capitalize())
+func _add_column_submenu_item(popup: PopupMenu, identifier: StringName, label: String, prop: Dictionary = { }, include_hide: bool = true) -> void:
+	popup.add_submenu_node_item(label, _build_column_submenu(identifier, include_hide))
 	var idx := popup.item_count - 1
-	popup.set_item_auto_translate_mode(idx, AUTO_TRANSLATE_MODE_DISABLED)
-	popup.set_item_tooltip(idx, prop_name)
-	popup.set_item_icon(idx, AnyIcon.get_property_icon_from_dict(prop))
-	popup.set_item_checked(idx, prop_name not in registry_table_view.current_cache_data.disabled_columns)
+	popup.set_item_tooltip(idx, str(identifier))
+	if not prop.is_empty():
+		popup.set_item_auto_translate_mode(idx, AUTO_TRANSLATE_MODE_DISABLED)
+		popup.set_item_icon(idx, AnyIcon.get_property_icon_from_dict(prop))
+
+
+func _build_column_submenu(identifier: StringName, include_hide: bool) -> PopupMenu:
+	var submenu := PopupMenu.new()
+	submenu.hide_on_checkable_item_selection = false
+	if include_hide:
+		submenu.add_check_item(tr("Hidden"), ColumnMenuAction.HIDDEN)
+		submenu.set_item_checked(
+			submenu.get_item_index(ColumnMenuAction.HIDDEN),
+			identifier in registry_table_view.current_cache_data.disabled_columns,
+		)
+	submenu.add_check_item(tr("Frozen"), ColumnMenuAction.FROZEN)
+	submenu.set_item_checked(
+		submenu.get_item_index(ColumnMenuAction.FROZEN),
+		identifier in registry_table_view.current_cache_data.frozen_columns,
+	)
+	submenu.id_pressed.connect(_on_column_submenu_id_pressed.bind(identifier, submenu))
+	return submenu
 
 
 func _do_file_menu_action(action_id: int) -> void:
@@ -651,26 +670,35 @@ func _on_registry_context_menu_id_pressed(id: int) -> void:
 
 func _on_columns_menu_id_pressed(id: int) -> void:
 	var popup := columns_menu_button.get_popup()
-
 	match id:
-		0: # Freeze ID Columns
+		0: # Parent props first
+			var cache := registry_table_view.current_cache_data
 			popup.toggle_item_checked(0)
-			registry_table_view.id_columns_frozen = popup.is_item_checked(0)
-		1: # Parent props first
-			popup.toggle_item_checked(1)
-			registry_table_view.current_cache_data.parent_props_first = popup.is_item_checked(1)
-			registry_table_view.current_cache_data.save()
+			cache.parent_props_first = popup.is_item_checked(0)
+			cache.save()
 			registry_table_view.update_view()
-		_:
-			var prop_name: StringName = popup.get_item_tooltip(id)
-			popup.toggle_item_checked(id)
-			if popup.is_item_checked(id):
-				registry_table_view.current_cache_data.disabled_columns.erase(prop_name)
+
+
+func _on_column_submenu_id_pressed(action_id: int, identifier: StringName, submenu: PopupMenu) -> void:
+	var item_idx := submenu.get_item_index(action_id)
+	submenu.toggle_item_checked(item_idx)
+	var checked := submenu.is_item_checked(item_idx)
+	var cache := registry_table_view.current_cache_data
+	match action_id:
+		ColumnMenuAction.HIDDEN:
+			if checked:
+				if identifier not in cache.disabled_columns:
+					cache.disabled_columns.append(identifier)
 			else:
-				if not prop_name in registry_table_view.current_cache_data.disabled_columns:
-					registry_table_view.current_cache_data.disabled_columns.append(prop_name)
-			registry_table_view.current_cache_data.save()
-			registry_table_view.update_view()
+				cache.disabled_columns.erase(identifier)
+		ColumnMenuAction.FROZEN:
+			if checked:
+				if identifier not in cache.frozen_columns:
+					cache.frozen_columns.append(identifier)
+			else:
+				cache.frozen_columns.erase(identifier)
+	cache.save()
+	registry_table_view.update_view()
 
 
 func _on_itemlist_registries_dropped(registries: Array[Registry]) -> void:
@@ -743,8 +771,8 @@ func _on_toggle_registries_pressed() -> void:
 func _on_new_registry_dialog_settings_saved() -> void:
 	_update_registries_itemlist()
 	if (
-		new_registry_dialog._state == new_registry_dialog.RegistryDialogState.REGISTRY_SETTINGS
-		and new_registry_dialog.edited_registry == registry_table_view.current_registry
+			new_registry_dialog._state == new_registry_dialog.RegistryDialogState.REGISTRY_SETTINGS
+			and new_registry_dialog.edited_registry == registry_table_view.current_registry
 	):
 		select_registry(_current_registry_uid)
 

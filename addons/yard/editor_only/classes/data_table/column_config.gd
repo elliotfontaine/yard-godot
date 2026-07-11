@@ -44,6 +44,7 @@ var minimum_width: float:
 var current_width: float:
 	set(value):
 		current_width = max(value, minimum_width)
+var frozen: bool = false
 
 var _cache: Dictionary = { }
 

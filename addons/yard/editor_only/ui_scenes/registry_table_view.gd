@@ -15,6 +15,10 @@ enum EditMenuAction {
 	INVERT_SELECTION = 10,
 	UNSELECT = 11,
 }
+enum ColumnMenuAction {
+	HIDDEN = 0,
+	FROZEN = 1
+}
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const RegistryIO := Namespace.RegistryIO
@@ -69,12 +73,6 @@ var toggle_button_forward := false:
 	set(forward):
 		var icon_name := &"Forward" if forward else &"Back"
 		toggle_registry_panel_button.icon = get_theme_icon(icon_name, &"EditorIcons")
-
-var id_columns_frozen := true:
-	set(frozen):
-		id_columns_frozen = frozen
-		data_table.n_frozen_columns = 2 if frozen else 0
-		data_table.refresh_layout()
 
 var _texture_rect_parent: Button
 var _res_picker: EditorResourcePicker
@@ -133,7 +131,6 @@ func _ready() -> void:
 
 	grow_horizontal = Control.GROW_DIRECTION_END
 	grow_vertical = Control.GROW_DIRECTION_END
-	id_columns_frozen = id_columns_frozen # to refresh
 
 
 func _process(_delta: float) -> void:
@@ -239,17 +236,18 @@ func update_view() -> void:
 	var resources: Dictionary[StringName, Resource] = current_registry.load_all_blocking()
 	set_columns_data(resources.values())
 
-	var rows: Array[Array] = []
+	var rows: Array[Dictionary] = []
 	var row_ids: Array[StringName] = []
 	for uid in current_registry.get_all_uids():
 		var string_id: StringName = current_registry.get_string_id(uid)
-		var entry_data: Array[Variant] = [string_id]
+		var entry_data: Dictionary[StringName, Variant] = { }
+		entry_data.set(STRINGID_COLUMN, string_id)
 		if RegistryIO.is_uid_valid(uid):
-			entry_data.append(uid)
-			entry_data.append_array(get_res_row_data(current_registry.load_entry(uid)))
+			entry_data.set(UID_COLUMN, uid)
+			entry_data.merge(get_resource_row_data(current_registry.load_entry(uid)))
 		else:
-			entry_data.append(INVALID_UID)
-			entry_data.append_array(get_res_row_data(null))
+			entry_data.set(UID_COLUMN, INVALID_UID)
+			entry_data.merge(get_resource_row_data(null))
 		rows.append(entry_data)
 		row_ids.append(string_id)
 
@@ -296,16 +294,16 @@ func do_edit_menu_action(action_id: int) -> void:
 			_duplicate_selected_entries()
 		EditMenuAction.CUT_CELL_VALUE:
 			var value: Variant = data_table.get_cell_value(focused_row, focused_col)
-			if not data_table.is_cell_invalid(focused_row, focused_col):
+			if data_table.is_cell_valid(focused_row, focused_col):
 				clipboard = value
 				_on_cell_edited(focused_row, focused_col, value, null)
 		EditMenuAction.COPY_CELL_VALUE:
 			var value: Variant = data_table.get_cell_value(focused_row, focused_col)
-			if not data_table.is_cell_invalid(focused_row, focused_col):
+			if data_table.is_cell_valid(focused_row, focused_col):
 				clipboard = value
 		EditMenuAction.PASTE_TO_CELL:
 			var value: Variant = data_table.get_cell_value(focused_row, focused_col)
-			if not data_table.is_cell_invalid(focused_row, focused_col):
+			if data_table.is_cell_valid(focused_row, focused_col):
 				_on_cell_edited(focused_row, focused_col, value, clipboard)
 		EditMenuAction.SELECT_ALL:
 			_select_all()
@@ -335,18 +333,17 @@ func set_columns_data(resources: Array[Resource]) -> void:
 				properties_column_info.append(prop)
 
 
-func get_res_row_data(res: Resource) -> Array[Variant]:
+func get_resource_row_data(res: Resource) -> Dictionary[StringName, Variant]:
 	if properties_column_info.is_empty() or not res:
-		return []
+		return { }
 
-	var row: Array[Variant] = []
+	var row: Dictionary[StringName, Variant] = { }
 	for prop: Dictionary in properties_column_info:
 		if is_property_disabled(prop) or ClassUtils.is_class_property(prop):
 			continue
-		if prop[&"name"] in res:
-			row.append(res.get(prop[&"name"]))
-		else:
-			row.append(DataTable.CELL_INVALID)
+		var prop_name: StringName = prop[&"name"]
+		if prop_name in res:
+			row.set(prop_name, res.get(prop_name))
 	return row
 
 
@@ -355,9 +352,8 @@ func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 	var col := data_table.focused_col
 	var has_selected_cell := row != &"" and col != &""
 	var has_selected_row := row != &""
-	var cell_value: Variant = data_table.get_cell_value(row, col) if has_selected_cell else null
 	var cant_be_cut := col in [UID_COLUMN, STRINGID_COLUMN]
-	var is_cell_invalid: bool = cell_value is String and cell_value == data_table.CELL_INVALID
+	var is_cell_invalid: bool = not data_table.is_cell_valid(row, col)
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES), !has_selected_row)
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.DUPLICATE_ENTRIES), !has_selected_row)
 	edit_menu.set_item_disabled(edit_menu.get_item_index(EditMenuAction.COPY_STRING_ID), !has_selected_row)
@@ -390,11 +386,13 @@ func _build_columns() -> Array[DataTable.ColumnConfig]:
 	var string_id_column: DataTable.ColumnConfig = DataTable.ColumnConfig.new.callv(STRINGID_COLUMN_CONFIG)
 	string_id_column.custom_font_color = get_theme_color(&"accent_color", &"Editor")
 	string_id_column.h_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	string_id_column.frozen = STRINGID_COLUMN in current_cache_data.frozen_columns
 	columns.append(string_id_column)
 
 	var uid_column: DataTable.ColumnConfig = DataTable.ColumnConfig.new.callv(UID_COLUMN_CONFIG)
 	uid_column.custom_font_color = get_theme_color(&"disabled_font_color", &"Editor")
 	uid_column.property_hint = PROPERTY_HINT_FILE
+	uid_column.frozen = UID_COLUMN in current_cache_data.frozen_columns
 	columns.append(uid_column)
 
 	for prop in properties_column_info:
@@ -412,6 +410,7 @@ func _build_columns() -> Array[DataTable.ColumnConfig]:
 			prop_header,
 			prop_type,
 		)
+		column.frozen = column.identifier in current_cache_data.frozen_columns
 
 		if hint:
 			column.property_hint = hint
@@ -457,8 +456,8 @@ func _group_props_by_class(found_props: Dictionary) -> Dictionary[String, Array]
 
 func _can_display_property(property_info: Dictionary) -> bool:
 	return (
-			property_info[&"type"] not in [TYPE_CALLABLE, TYPE_SIGNAL]
-			and property_info[&"usage"] & PROPERTY_USAGE_EDITOR != 0
+		property_info[&"type"] not in [TYPE_CALLABLE, TYPE_SIGNAL]
+		and property_info[&"usage"] & PROPERTY_USAGE_EDITOR != 0
 	)
 
 
@@ -481,10 +480,10 @@ func _edit_entry_property(uid: StringName, property: StringName, old_value: Vari
 	var valid := false
 	for prop_type: String in prop_types:
 		if (
-				(ClassUtils.is_type_builtin(typeof(new_value)) and type_string(typeof(new_value)) == prop_type)
-				or (typeof(new_value) in [TYPE_INT, TYPE_FLOAT] and prop_type in [type_string(TYPE_INT), type_string(TYPE_FLOAT)])
-				or ClassUtils.is_class_of(new_value, prop_type)
-				or (new_value == null and typeof(old_value) == TYPE_OBJECT)
+			(ClassUtils.is_type_builtin(typeof(new_value)) and type_string(typeof(new_value)) == prop_type)
+			or (typeof(new_value) in [TYPE_INT, TYPE_FLOAT] and prop_type in [type_string(TYPE_INT), type_string(TYPE_FLOAT)])
+			or ClassUtils.is_class_of(new_value, prop_type)
+			or (new_value == null and typeof(old_value) == TYPE_OBJECT)
 		):
 			valid = true
 			break
@@ -588,7 +587,7 @@ func _add_entry_from_picker(res: Resource, string_id: StringName) -> void:
 
 func _toggle_add_entry_button() -> void:
 	add_entry_button.disabled = !(
-			_res_picker and _res_picker.edited_resource and entry_name_line_edit.text
+		_res_picker and _res_picker.edited_resource and entry_name_line_edit.text
 	)
 
 

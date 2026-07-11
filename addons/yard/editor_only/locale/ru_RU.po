@@ -78,6 +78,7 @@ msgid "Toggle Files Panel"
 msgstr "Показать/скрыть панель файлов"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "String ID"
 msgstr "Строковый ID"
 
@@ -294,12 +295,20 @@ msgid "Select a registry first"
 msgstr "Сначала выберите реестр"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
-msgid "Freeze ID Columns"
-msgstr "Закрепить столбцы ID"
+msgid "ID Columns"
+msgstr "Столбцы ID"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
-msgid "Keep the UID and string ID columns visible while scrolling horizontally."
-msgstr "Сохраняет видимость столбцов UID и строкового ID при горизонтальной прокрутке."
+msgid "UID"
+msgstr "UID"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Hidden"
+msgstr "Скрыто"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Frozen"
+msgstr "Закреплено"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "Show Parent Properties First"

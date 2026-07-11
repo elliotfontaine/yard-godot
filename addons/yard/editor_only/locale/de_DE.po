@@ -78,6 +78,7 @@ msgid "Toggle Files Panel"
 msgstr "Dateibereich ein-/ausblenden"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "String ID"
 msgstr "Text-ID"
 
@@ -300,12 +301,20 @@ msgid "Select a registry first"
 msgstr "Zuerst eine Registrierung auswählen"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
-msgid "Freeze ID Columns"
-msgstr "ID-Spalten fixieren"
+msgid "ID Columns"
+msgstr "ID-Spalten"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
-msgid "Keep the UID and string ID columns visible while scrolling horizontally."
-msgstr "Hält die Spalten UID und Text-ID beim horizontalen Scrollen sichtbar."
+msgid "UID"
+msgstr "UID"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Hidden"
+msgstr "Ausgeblendet"
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.gd
+msgid "Frozen"
+msgstr "Fixiert"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "Show Parent Properties First"

@@ -24,8 +24,6 @@ const ClassUtils := Namespace.ClassUtils
 const YardLogger := Namespace.YardLogger
 const AnyIcon := Namespace.AnyIcon
 
-const CELL_INVALID := "<CELL_INVALID>"
-
 # Theming properties
 @export_group("Default color")
 @export var default_font_color: Color = Color(1.0, 1.0, 1.0)
@@ -36,7 +34,6 @@ const CELL_INVALID := "<CELL_INVALID>"
 @export_group("Size and grid")
 @export var default_minimum_column_width: float = 50.0
 @export var row_height: float = 30.0
-@export var n_frozen_columns: int = 0
 @export var grid_color: Color = Color(0.8, 0.8, 0.8)
 @export_group("Rows")
 @export var selected_row_back_color: Color = Color(0.0, 0.0, 1.0, 0.5)
@@ -67,15 +64,16 @@ var sort_column: StringName = &""
 var sort_ascending: bool = true
 
 # Row model: key -> cells (the data), and the current display order
-var _rows: Dictionary[StringName, Array] = { }
+var _rows: Dictionary[StringName, Dictionary] = { }
 var _base_order: Array[StringName] = [] # insertion order, source for filter
 var _order: Array[StringName] = [] # current visible filtered / sorted order
 var _anchor_row: StringName = &"" # shift-select range anchor
 
-# Column model: the ordered list is both the model and the display order
-# (no column reordering feature exists). The map is a position cache.
-var _columns: Array[ColumnConfig]
-var _column_index_by_id: Dictionary[StringName, int] = { }
+# Column model.
+var _column_base_order: Array[ColumnConfig] = []
+var _columns: Array[ColumnConfig] = []
+var _column_index_by_id: Dictionary[StringName, int] = { } # Position cache into _columns.
+var n_frozen_columns: int = 0 ## Derived value
 
 # Scrolling
 var _h_scroll: HScrollBar
@@ -270,10 +268,8 @@ func set_native_theming(delay: int = 0) -> void:
 
 
 func set_columns(columns: Array[ColumnConfig]) -> void:
-	_columns = columns
-	_column_index_by_id.clear()
-	for i in _columns.size():
-		_column_index_by_id[_columns[i].identifier] = i
+	_column_base_order = columns
+	_rebuild_display_columns()
 	_reset_column_widths()
 	queue_redraw()
 
@@ -288,29 +284,30 @@ func get_all_columns() -> Array[ColumnConfig]:
 	return _columns.duplicate()
 
 
-func _column_index(col: StringName) -> int:
-	return _column_index_by_id.get(col, -1)
+## Toggles freeze on a single column by identifier, preserving relative order
+## within both the frozen and scrollable groups. No-op if the column doesn't exist.
+func set_column_frozen(identifier: StringName, frozen: bool) -> void:
+	var column := get_column(identifier)
+	if not column or column.frozen == frozen:
+		return
+	column.frozen = frozen
+	_rebuild_display_columns()
+	refresh_layout()
 
 
 ## Replace all rows. Preserves focused_row and selected_rows for keys that still exist.
 ## Re-applies the active filter and sort after rebuilding.
-func set_data(rows: Array, row_ids: Array[StringName]) -> void:
+func set_data(rows: Array[Dictionary], row_ids: Array[StringName]) -> void:
 	_rows.clear()
 	_base_order.clear()
 	for i in row_ids.size():
-		var row := row_ids[i]
-		_rows[row] = rows[i].duplicate() if i < rows.size() else []
-		_base_order.append(row)
+		var row_id := row_ids[i]
+		_rows[row_id] = rows[i].duplicate() if i < rows.size() else { }
+		_base_order.append(row_id)
 	_order = _base_order.duplicate()
 	_rebuild_filtered_order()
 
 	_visible_rows_range = [0, min(_order.size(), floori(size.y / row_height) if row_height > 0 else 0)]
-
-	# Pad short rows
-	for row in _order:
-		var row_data: Array = _rows[row]
-		while row_data.size() < _columns.size():
-			row_data.append(CELL_INVALID)
 
 	# Preserve selection / focus for rows that still exist
 	var kept_rows: Array[StringName] = []
@@ -333,22 +330,18 @@ func set_data(rows: Array, row_ids: Array[StringName]) -> void:
 
 
 ## Update a single row in place without rebuilding the full dataset.
-func update_row(row: StringName, cells: Array) -> void:
+func update_row(row: StringName, cells: Dictionary[StringName, Variant]) -> void:
 	if not _rows.has(row):
 		return
 	_rows[row] = cells.duplicate()
-	while _rows[row].size() < _columns.size():
-		_rows[row].append(CELL_INVALID)
 	queue_redraw()
 
 
 ## Append a new row. No-op if the row already exists.
-func add_row(row: StringName, cells: Array) -> void:
+func add_row(row: StringName, cells: Dictionary[StringName, Variant]) -> void:
 	if _rows.has(row):
 		return
 	_rows[row] = cells.duplicate()
-	while _rows[row].size() < _columns.size():
-		_rows[row].append(CELL_INVALID)
 	_base_order.append(row)
 	_order.append(row)
 	_update_scrollbars()
@@ -379,16 +372,15 @@ func ordering_data(column: StringName, ascending: bool = true) -> void:
 	_finish_editing(false)
 	sort_column = column
 	sort_ascending = ascending
-	var column_idx := _column_index(column)
 	_icon_sort = " ▼ " if ascending else " ▲ "
 	var handler := column_cfg.get_cell_type()
 
 	_order.sort_custom(
 		func(a: StringName, b: StringName) -> bool:
-			var a_cells: Array = _rows.get(a, [])
-			var b_cells: Array = _rows.get(b, [])
-			var va: Variant = a_cells[column_idx] if column_idx < a_cells.size() else null
-			var vb: Variant = b_cells[column_idx] if column_idx < b_cells.size() else null
+			var a_cells: Dictionary[StringName, Variant] = _rows.get(a, { })
+			var b_cells: Dictionary[StringName, Variant] = _rows.get(b, { })
+			var va: Variant = a_cells.get(column, null)
+			var vb: Variant = b_cells.get(column, null)
 			var ka: Variant = handler.get_sort_key(va, column_cfg) if va != null else null
 			var kb: Variant = handler.get_sort_key(vb, column_cfg) if vb != null else null
 			if ka == null and kb == null:
@@ -412,20 +404,16 @@ func ordering_data(column: StringName, ascending: bool = true) -> void:
 
 
 func update_cell(row: StringName, col: StringName, value: Variant) -> void:
-	var col_idx := _column_index(col)
-	if not _rows.has(row) or col_idx < 0:
+	if not is_cell_valid(row, col):
 		return
-	while _rows[row].size() <= col_idx:
-		_rows[row].append(CELL_INVALID)
-	_rows[row][col_idx] = value
+	_rows[row][col] = value
 	queue_redraw()
 
 
 func get_cell_value(row: StringName, col: StringName) -> Variant:
-	var col_idx := _column_index(col)
-	if not _rows.has(row) or col_idx < 0 or col_idx >= _rows[row].size():
+	if not is_cell_valid(row, col):
 		return null
-	return _rows[row][col_idx]
+	return _rows[row][col]
 
 
 func set_selected_cell(row: StringName, col: StringName) -> void:
@@ -462,12 +450,8 @@ func select_all_rows() -> void:
 	_ensure_col_visible(focused_col)
 
 
-func is_cell_invalid(row: StringName, col: StringName) -> bool:
-	var col_idx := _column_index(col)
-	if not _rows.has(row) or col_idx < 0 or col_idx >= _rows[row].size():
-		return false
-	var raw_value: Variant = _rows[row][col_idx]
-	return raw_value is String and raw_value == CELL_INVALID
+func is_cell_valid(row: StringName, col: StringName) -> bool:
+	return _rows.has(row) and _rows[row].has(col)
 
 
 ## Returns the rows currently visible (after sort/filter), in display order.
@@ -482,7 +466,8 @@ func clear_filter() -> void:
 	_filter_text = ""
 
 
-## Call after changing n_frozen_columns or other layout properties.
+## Call after changing column widths or other layout properties. (Freeze
+## changes via set_column_frozen()/set_columns() already call this.)
 func refresh_layout() -> void:
 	_update_scrollbars()
 	queue_redraw()
@@ -549,6 +534,18 @@ func _reset_column_widths() -> void:
 		column.current_width = header_size.x
 
 
+func _rebuild_display_columns() -> void:
+	var frozen_cols: Array[ColumnConfig] = []
+	var scrollable_cols: Array[ColumnConfig] = []
+	for col in _column_base_order:
+		(frozen_cols if col.frozen else scrollable_cols).append(col)
+	_columns = frozen_cols + scrollable_cols
+	n_frozen_columns = frozen_cols.size()
+	_column_index_by_id.clear()
+	for i in _columns.size():
+		_column_index_by_id[_columns[i].identifier] = i
+
+
 func _update_scrollbars() -> void:
 	if not is_inside_tree():
 		return
@@ -584,6 +581,10 @@ func _update_scrollbars() -> void:
 	_on_v_scroll_value_changed(_v_scroll.value)
 
 
+func _get_column_index(col: StringName) -> int:
+	return _column_index_by_id.get(col, -1)
+
+
 func _is_numeric_value(value: Variant) -> bool:
 	if value == null:
 		return false
@@ -592,7 +593,7 @@ func _is_numeric_value(value: Variant) -> bool:
 
 
 func _start_cell_editing(row: StringName, col: StringName) -> void:
-	if is_cell_invalid(row, col):
+	if not is_cell_valid(row, col):
 		return
 
 	var column := get_column(col)
@@ -634,7 +635,7 @@ func _finish_editing(save_changes: bool = true) -> void:
 
 func _get_cell_rect(row: StringName, col: StringName) -> Rect2:
 	var row_idx := _order.find(row)
-	var col_idx := _column_index(col)
+	var col_idx := _get_column_index(col)
 	if row_idx < _visible_rows_range[0] or row_idx >= _visible_rows_range[1] or col_idx < 0:
 		return Rect2()
 	var cell_x := _get_col_x_pos(col_idx)
@@ -647,7 +648,7 @@ func _get_cell_rect(row: StringName, col: StringName) -> Rect2:
 
 
 func _dispatch_cell_draw(cell_rect: Rect2, row: StringName, col: StringName) -> void:
-	if is_cell_invalid(row, col):
+	if not is_cell_valid(row, col):
 		draw_rect(cell_rect, invalid_cell_color, true)
 		return
 	var column := get_column(col)
@@ -751,7 +752,7 @@ func _start_filtering(col: StringName) -> void:
 	if _filtered_column == col and _filter_line_edit.visible:
 		return
 
-	var col_idx := _column_index(col)
+	var col_idx := _get_column_index(col)
 	var col_x := _get_col_x_pos(col_idx)
 	var header_rect := Rect2(col_x, 0, get_column(col).current_width, header_height)
 	_filtered_column = col
@@ -799,12 +800,11 @@ func _rebuild_filtered_order() -> void:
 		_order = _base_order.duplicate()
 		return
 	_order.clear()
-	var col_idx := _column_index(_filtered_column)
 	var key_lower := _filter_text.to_lower()
 	for row in _base_order:
-		var row_data: Array = _rows.get(row, [])
-		if col_idx >= 0 and col_idx < row_data.size() and row_data[col_idx] != null:
-			if str(row_data[col_idx]).to_lower().contains(key_lower):
+		var row_data: Dictionary[StringName, Dictionary] = _rows.get(row, { })
+		if is_cell_valid(row, _filtered_column):
+			if str(row_data[_filtered_column]).to_lower().contains(key_lower):
 				_order.append(row)
 
 
@@ -924,7 +924,7 @@ func _ensure_row_visible(row: StringName) -> void:
 
 
 func _ensure_col_visible(col: StringName) -> void:
-	var col_idx := _column_index(col)
+	var col_idx := _get_column_index(col)
 	if _columns.is_empty() or col_idx < 0 or not _h_scroll.visible:
 		return
 	if col_idx < n_frozen_columns:
@@ -1179,7 +1179,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 	var is_cell_focused := focused_row != &"" and focused_col != &""
 
 	var focused_idx := _order.find(focused_row) if focused_row != &"" else -1
-	var focused_col_idx := _column_index(focused_col) if focused_col != &"" else -1
+	var focused_col_idx := _get_column_index(focused_col) if focused_col != &"" else -1
 	var new_idx := focused_idx
 	var new_col_idx := focused_col_idx
 
