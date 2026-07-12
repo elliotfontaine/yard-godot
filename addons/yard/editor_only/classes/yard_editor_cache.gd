@@ -20,8 +20,8 @@ class RegistryCacheData:
 		&"metadata/_custom_type_script",
 	]
 	var version: int = _REGISTRY_CACHE_VERSION
-	var disabled_columns: Array[StringName] = BUILTIN_RESOURCE_PROPERTIES.duplicate()
-	var frozen_columns: Array[StringName] = [&"string_id", &"uid"] # duplicated literals: RegistryTableView.STRINGID_COLUMN / UID_COLUMN
+	var disabled_columns: Array[StringName] = BUILTIN_RESOURCE_PROPERTIES.duplicate() # = hidden columns
+	var frozen_columns: Array[StringName] = [&"string_id", &"uid"]
 	var parent_props_first: bool = false
 	var uid_column_width: float = 200.0
 	var string_id_column_width: float = 200.0

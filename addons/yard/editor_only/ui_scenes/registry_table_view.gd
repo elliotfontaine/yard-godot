@@ -17,7 +17,7 @@ enum EditMenuAction {
 }
 enum ColumnMenuAction {
 	HIDDEN = 0,
-	FROZEN = 1
+	FROZEN = 1,
 }
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
@@ -313,8 +313,8 @@ func do_edit_menu_action(action_id: int) -> void:
 			_unselect()
 
 
-func is_property_disabled(property_info: Dictionary) -> bool:
-	return property_info[&"name"] in current_cache_data.disabled_columns
+func is_column_disabled(column_id: StringName) -> bool:
+	return column_id in current_cache_data.disabled_columns
 
 
 func set_columns_data(resources: Array[Resource]) -> void:
@@ -339,9 +339,9 @@ func get_resource_row_data(res: Resource) -> Dictionary[StringName, Variant]:
 
 	var row: Dictionary[StringName, Variant] = { }
 	for prop: Dictionary in properties_column_info:
-		if is_property_disabled(prop) or ClassUtils.is_class_property(prop):
-			continue
 		var prop_name: StringName = prop[&"name"]
+		if is_column_disabled(prop_name) or ClassUtils.is_class_property(prop):
+			continue
 		if prop_name in res:
 			row.set(prop_name, res.get(prop_name))
 	return row
@@ -383,23 +383,25 @@ func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 func _build_columns() -> Array[DataTable.ColumnConfig]:
 	var columns: Array[DataTable.ColumnConfig] = []
 
-	var string_id_column: DataTable.ColumnConfig = DataTable.ColumnConfig.new.callv(STRINGID_COLUMN_CONFIG)
-	string_id_column.custom_font_color = get_theme_color(&"accent_color", &"Editor")
-	string_id_column.h_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	string_id_column.frozen = STRINGID_COLUMN in current_cache_data.frozen_columns
-	columns.append(string_id_column)
+	if not is_column_disabled(STRINGID_COLUMN):
+		var string_id_column: DataTable.ColumnConfig = DataTable.ColumnConfig.new.callv(STRINGID_COLUMN_CONFIG)
+		string_id_column.custom_font_color = get_theme_color(&"accent_color", &"Editor")
+		string_id_column.h_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		string_id_column.frozen = STRINGID_COLUMN in current_cache_data.frozen_columns
+		columns.append(string_id_column)
 
-	var uid_column: DataTable.ColumnConfig = DataTable.ColumnConfig.new.callv(UID_COLUMN_CONFIG)
-	uid_column.custom_font_color = get_theme_color(&"disabled_font_color", &"Editor")
-	uid_column.property_hint = PROPERTY_HINT_FILE
-	uid_column.frozen = UID_COLUMN in current_cache_data.frozen_columns
-	columns.append(uid_column)
+	if not is_column_disabled(UID_COLUMN):
+		var uid_column: DataTable.ColumnConfig = DataTable.ColumnConfig.new.callv(UID_COLUMN_CONFIG)
+		uid_column.custom_font_color = get_theme_color(&"disabled_font_color", &"Editor")
+		uid_column.property_hint = PROPERTY_HINT_FILE
+		uid_column.frozen = UID_COLUMN in current_cache_data.frozen_columns
+		columns.append(uid_column)
 
 	for prop in properties_column_info:
-		if not _can_display_property(prop) or is_property_disabled(prop):
+		var prop_name: String = prop[&"name"]
+		if not _can_display_property(prop) or is_column_disabled(prop_name):
 			continue
 
-		var prop_name: String = prop[&"name"]
 		var prop_header := prop_name.capitalize()
 		var prop_type: Variant.Type = prop[&"type"]
 		var hint: PropertyHint = prop[&"hint"]

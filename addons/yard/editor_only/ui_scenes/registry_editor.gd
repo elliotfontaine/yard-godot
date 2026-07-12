@@ -457,8 +457,8 @@ func _populate_columns_popup_menu() -> void:
 
 	popup.add_separator(tr("ID Columns"))
 	popup.set_item_auto_translate_mode(popup.item_count - 1, AUTO_TRANSLATE_MODE_DISABLED)
-	_add_column_submenu_item(popup, STRINGID_COLUMN, tr("String ID"), { }, false)
-	_add_column_submenu_item(popup, UID_COLUMN, tr("UID"), { }, false)
+	_add_column_submenu_item(popup, STRINGID_COLUMN, tr("String ID"), { })
+	_add_column_submenu_item(popup, UID_COLUMN, tr("UID"), { })
 
 	if not registry_table_view.properties_column_info:
 		return
@@ -488,8 +488,8 @@ func _add_check_item(popup: PopupMenu, label: String, tooltip: String, checked: 
 	popup.set_item_checked(idx, checked)
 
 
-func _add_column_submenu_item(popup: PopupMenu, identifier: StringName, label: String, prop: Dictionary = { }, include_hide: bool = true) -> void:
-	popup.add_submenu_node_item(label, _build_column_submenu(identifier, include_hide))
+func _add_column_submenu_item(popup: PopupMenu, identifier: StringName, label: String, prop: Dictionary = { }) -> void:
+	popup.add_submenu_node_item(label, _build_column_submenu(identifier))
 	var idx := popup.item_count - 1
 	popup.set_item_tooltip(idx, str(identifier))
 	if not prop.is_empty():
@@ -497,15 +497,14 @@ func _add_column_submenu_item(popup: PopupMenu, identifier: StringName, label: S
 		popup.set_item_icon(idx, AnyIcon.get_property_icon_from_dict(prop))
 
 
-func _build_column_submenu(identifier: StringName, include_hide: bool) -> PopupMenu:
+func _build_column_submenu(identifier: StringName) -> PopupMenu:
 	var submenu := PopupMenu.new()
 	submenu.hide_on_checkable_item_selection = false
-	if include_hide:
-		submenu.add_check_item(tr("Hidden"), ColumnMenuAction.HIDDEN)
-		submenu.set_item_checked(
-			submenu.get_item_index(ColumnMenuAction.HIDDEN),
-			identifier in registry_table_view.current_cache_data.disabled_columns,
-		)
+	submenu.add_check_item(tr("Hidden"), ColumnMenuAction.HIDDEN)
+	submenu.set_item_checked(
+		submenu.get_item_index(ColumnMenuAction.HIDDEN),
+		identifier in registry_table_view.current_cache_data.disabled_columns,
+	)
 	submenu.add_check_item(tr("Frozen"), ColumnMenuAction.FROZEN)
 	submenu.set_item_checked(
 		submenu.get_item_index(ColumnMenuAction.FROZEN),
