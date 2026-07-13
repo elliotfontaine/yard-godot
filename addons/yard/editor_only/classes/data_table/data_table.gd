@@ -1,6 +1,8 @@
-# Originally based on dynamicdatatable by Giuseppe Pica (jospic), MIT licensed.
-# https://github.com/jospic/dynamicdatatable
-# Heavily modified / rewritten by Elliot Fontaine, 2026
+# SPDX-FileCopyrightText: 2023, Giuseppe Pica (jospic) <https://github.com/jospic/dynamicdatatable>
+# SPDX-FileCopyrightText: 2025-2026, Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>
+# SPDX-FileCopyrightText: 2026-present, YARD contributors (see AUTHORS.md)
+#
+# SPDX-License-Identifier: MIT
 
 @tool
 extends Control

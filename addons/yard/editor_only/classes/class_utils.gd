@@ -1,9 +1,10 @@
+# SPDX-FileCopyrightText: 2025, Wagner Ferreira (WagnerGFX) <https://github.com/WagnerGFX/gdscript_utilities>
+# SPDX-FileCopyrightText: 2025-2026, Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>
+# SPDX-FileCopyrightText: 2026-present, YARD contributors (see AUTHORS.md)
+#
+# SPDX-License-Identifier: MIT
+
 extends Object
-
-# MIT LICENSE
-# Copyright (c) 2025 Wagner GFX
-# https://github.com/WagnerGFX/gdscript_utilities
-
 ## Provides utility functions to handle types directly, instead of instances or variables.
 ##
 ## This class supports user-created [Script]s and Native Classes like [Object], [Resource] and [Node].

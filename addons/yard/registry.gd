@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2025-2026, Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>
+# SPDX-FileCopyrightText: 2026-present, YARD contributors (see AUTHORS.md)
+#
+# SPDX-License-Identifier: MIT
+
 @tool
 @icon("res://addons/yard/editor_only/assets/yard.svg")
 @warning_ignore_start("unused_private_class_variable")

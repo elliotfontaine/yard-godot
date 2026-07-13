@@ -1,0 +1,61 @@
+version = 1
+
+# Godot Scenes and Resources
+[[annotations]]
+path = ["addons/yard/**.tscn", "addons/yard/**.tres"]
+SPDX-FileCopyrightText = [
+    "2025-2026, Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>",
+    "2026-present, YARD contributors (see AUTHORS.md)",
+]
+SPDX-License-Identifier = "MIT"
+
+# Godot Uncopyrightable Files
+[[annotations]]
+path = ["project.godot", "**.import", "**.uid", "addons/yard/plugin.cfg"]
+SPDX-FileCopyrightText = [
+    "2025-2026, Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>",
+    "2026-present, YARD contributors (see AUTHORS.md)",
+]
+SPDX-License-Identifier = "CC0-1.0"
+
+# Pull Request Template
+[[annotations]]
+path = ".github/pull_request_template.md"
+precedence = "override"
+SPDX-FileCopyrightText = [
+    "2025-2026, Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>",
+    "2026-present, YARD contributors (see AUTHORS.md)",
+]
+SPDX-License-Identifier = "CC0-1.0"
+
+# Original Art
+[[annotations]]
+path = [
+    "icon.png",
+    "icon.svg",
+    "addons/yard/editor_only/assets/ui_example.png",
+    "addons/yard/editor_only/assets/yard.svg",
+    "addons/yard/editor_only/assets/yard_dark.svg",
+    "addons/yard/editor_only/assets/yard_light.svg",
+    "etc/editor_screenshot.png",
+    "etc/featured_asset_store.png",
+    "etc/logo_blue.png",
+    "etc/logo_white.png",
+    "etc/plugin_ui_architecture.png",
+    "etc/preview_1.png",
+    "etc/preview_2.png",
+    "etc/preview_3.png",
+    "etc/preview_code_1.png",
+]
+precedence = "override"
+SPDX-FileCopyrightText = [
+    "2025-2026, Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>",
+    "2026-present, YARD contributors (see AUTHORS.md)",
+]
+SPDX-License-Identifier = "CC0-1.0"
+
+# GitHub Invertocat Icon
+[[annotations]]
+path = ["addons/yard/editor_only/assets/github_icon.svg"]
+SPDX-FileCopyrightText = "2026 GitHub Inc."
+SPDX-License-Identifier = "MIT"

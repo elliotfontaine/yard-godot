@@ -1,3 +1,10 @@
+<!--
+SPDX-FileCopyrightText: 2025-2026, Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>
+SPDX-FileCopyrightText: 2026-present, YARD contributors (see AUTHORS.md)
+
+SPDX-License-Identifier: MIT
+-->
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
@@ -32,6 +39,7 @@ All editor-only code lives under `addons/yard/editor_only/` and is **never shipp
 ### Registry data model
 
 A `Registry` `.tres` file stores:
+
 - `_uids_to_string_ids` / `_string_ids_to_uids` — bidirectional UID ↔ string ID map
 - `_property_index` — nested dictionary baked in the editor: `property → value → set of string IDs`
 - Scan settings (class restrictions, scan directories, rulesets) as `_scan_rulesets: Array[Dictionary]`
@@ -45,6 +53,7 @@ A registry has one default `RegistryScanRuleset` and zero or more additional rul
 ### Class restriction system
 
 Class restrictions accept three forms:
+
 - Native class name: `"Resource"`, `"Node2D"`
 - Script global class name: `"Enemy"`, `"Item"`
 - Quoted script path: `'"res://scripts/my_type.gd"'`

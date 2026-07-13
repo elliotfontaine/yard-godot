@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025-2026, Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>
+# SPDX-FileCopyrightText: 2026-present, YARD contributors (see AUTHORS.md)
+#
+# SPDX-License-Identifier: MIT
 extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
 ## Shared LineEdit-based editor for StringCellType and NumericCellType. Not used
 ## directly as a handler; the two subclasses only differ in how the committed

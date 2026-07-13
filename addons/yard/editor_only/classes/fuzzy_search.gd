@@ -1,10 +1,16 @@
-## fuzzy_search.gd
-## Near-direct port of Godot's core/string/fuzzy_search.{h,cpp} to GDScript.
-## Reproduced API:  FuzzySearch, FuzzySearchToken, FuzzyTokenMatch, FuzzySearchResult.
-extends RefCounted
+# SPDX-FileCopyrightText: 2014-present Godot Engine contributors (see https://github.com/godotengine/godot/blob/master/AUTHORS.md)
+# SPDX-FileCopyrightText: 2007-2014 Juan Linietsky, Ariel Manzur
+#
+# SPDX-License-Identifier: MIT
+#
+# GDScript port of Godot's core/string/fuzzy_search.{h,cpp}.
+# Original C++ class by Adam Johnston (https://github.com/a-johnston).
 
+extends RefCounted
+## Reproduced API:  FuzzySearch, FuzzySearchToken, FuzzyTokenMatch, FuzzySearchResult.
 ## Note: If `class_name FuzzySearch` is enabled, inner classes can access static
-## helpers directly and the external namespace indirection can be removed.
+## helpers directly and the external namespace indirections can be removed.
+
 #class_name FuzzySearch
 
 const CULL_FACTOR: float = 0.1

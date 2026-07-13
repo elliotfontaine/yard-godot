@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2025-2026, Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>
+# SPDX-FileCopyrightText: 2026-present, YARD contributors (see AUTHORS.md)
+#
+# SPDX-License-Identifier: MIT
+
 @tool
 extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
 ## Color columns. Clicking away from an open editor still commits the current

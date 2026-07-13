@@ -1,3 +1,10 @@
+<!--
+SPDX-FileCopyrightText: 2025-2026, Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>
+SPDX-FileCopyrightText: 2026-present, YARD contributors (see AUTHORS.md)
+
+SPDX-License-Identifier: MIT
+-->
+
 # Contributing to YARD
 
 Thanks for your interest in contributing! This guide covers setup, project structure, and the conventions to follow.

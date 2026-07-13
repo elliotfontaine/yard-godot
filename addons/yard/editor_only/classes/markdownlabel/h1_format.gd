@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023, Daenvil <https://github.com/daenvil/MarkdownLabel>
+#
+# SPDX-License-Identifier: MIT
+
 @tool
 extends Resource
 

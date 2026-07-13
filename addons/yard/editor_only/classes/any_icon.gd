@@ -1,6 +1,6 @@
-# MIT License
-# Copyright (c) 2025 Patou (xorblo-doitus)
-# https://github.com/xorblo-doitus/AnyIcon
+# SPDX-FileCopyrightText: 2025, Patou (xorblo-doitus) <https://github.com/xorblo-doitus/AnyIcon>
+#
+# SPDX-License-Identifier: MIT
 
 @tool
 extends Object

@@ -1,9 +1,12 @@
-## Source: String Wrangler
-## Created by Matthew Janes (IndieGameDad) - MIT 2025
+# SPDX-FileCopyrightText: 2025, Matthew Janes (IndieGameDad) <https://github.com/yulrun/stringwrangler-plugin>
+# SPDX-FileCopyrightText: 2025-2026, Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>
+# SPDX-FileCopyrightText: 2026-present, YARD contributors (see AUTHORS.md)
+#
+# SPDX-License-Identifier: MIT
 
+@tool
 ## A generic editor property for selecting multiple string options.
 ## Dynamically disables already-selected entries and supports clean UI expansion.
-@tool
 extends EditorProperty
 
 var available_options: Array[String] = []

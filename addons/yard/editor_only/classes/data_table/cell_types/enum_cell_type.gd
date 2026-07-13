@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025-2026, Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>
+# SPDX-FileCopyrightText: 2026-present, YARD contributors (see AUTHORS.md)
+#
+# SPDX-License-Identifier: MIT
 extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
 ## Enum columns (any type with PROPERTY_HINT_ENUM), edited via a PopupMenu.
 ## Draw color is a deterministic pseudo-random hash of the display string,
@@ -16,8 +20,7 @@ static func draw_cell(canvas: CanvasItem, rect: Rect2, value: Variant, column: C
 		var map: Dictionary = column.get_cached(&"enum_values_map", parse_enum_hint_string.bind(column.hint_string))
 		value_str = "%s:%s" % [map[int_value], int_value] if map.has(int_value) else "?:%d" % int_value
 
-	var color := Color(value_str.hash()) + Color(0.25, 0.25, 0.25, 1.0)
-	draw_text(canvas, rect, value_str, resolve_font(column, style.font), style.font_size, HORIZONTAL_ALIGNMENT_CENTER, color)
+	draw_text(canvas, rect, value_str, resolve_font(column, style.font), style.font_size, HORIZONTAL_ALIGNMENT_CENTER, _hashed_color(value_str))
 
 
 static func has_editor() -> bool:
@@ -84,3 +87,12 @@ static func read_editor_value(editor: Node, _column: ColumnConfig) -> Variant:
 
 static func _is_numeric(column: ColumnConfig) -> bool:
 	return column.type in [TYPE_INT, TYPE_FLOAT]
+
+
+# SPDX-SnippetBegin
+# SPDX-SnippetCopyrightText: Copyright 2022 Gennady Krupenyov (Don Tnowe) <https://github.com/don-tnowe/godot-resources-as-sheets-plugin>
+#
+# SPDX-License-Identifier: MIT
+static func _hashed_color(text: String) -> Color:
+	return Color(text.hash()) + Color(0.25, 0.25, 0.25, 1.0)
+# SPDX-SnippetEnd
