@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_move")
 name = "Live Wire"
-description = "The user shocks the target with crackling current. This may also paralyze the target."
+description = "The user shocks the target with crackling current. This may also leave the target numb."
 type = &"electric"
-move_handler = &"paralyze_target"
+move_handler = &"numb_target"
 flags = Array[StringName]([&"contact"])
 power = 55
 total_pp = 20

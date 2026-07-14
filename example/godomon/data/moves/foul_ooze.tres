@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1_move")
 name = "Foul Ooze"
-description = "The user hurls a glob of foul ooze at the target. This may also poison the target."
+description = "The user hurls a glob of foul ooze at the target. This may also corrode the target."
 type = &"blight"
 category = 1
-move_handler = &"poison_target"
+move_handler = &"corrosion_target"
 power = 65
 total_pp = 15
 effect_chance = 30

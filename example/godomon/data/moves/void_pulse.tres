@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1_move")
 name = "Void Pulse"
-description = "The user blasts the target with a pulse of warped space. This may also confuse the target."
+description = "The user blasts the target with a pulse of warped space. This may also send the target into a frenzy."
 type = &"cosmic"
 category = 1
-move_handler = &"confuse_target"
+move_handler = &"frenzy_target"
 power = 60
 total_pp = 15
 effect_chance = 30

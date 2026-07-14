@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_move")
 name = "Frost Fang"
-description = "The user bites the target with frost-covered fangs. This may also freeze the target."
+description = "The user bites the target with frost-covered fangs. This may also leave the target numb."
 type = &"ice"
-move_handler = &"freeze_target"
+move_handler = &"numb_target"
 flags = Array[StringName]([&"contact", &"biting"])
 power = 65
 total_pp = 15

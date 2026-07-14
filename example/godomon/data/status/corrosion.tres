@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="GdmStatus" format=3 uid="uid://h7yqdrq4vpsm"]
+
+[ext_resource type="Script" uid="uid://b5qrrcm7j6ydr" path="res://example/godomon/data/_classes/gdm_status.gd" id="1_wxati"]
+
+[resource]
+script = ExtResource("1_wxati")
+name = "Corrosion"
+description = "The monster takes damage every turn and its Defense slowly rusts away."
+status_handler = &"corrosion"
+apply_message = "{0} is corroding!"
+already_message = "{0} is already corroding!"
+trigger_message = "{0} is eaten away by corrosion!"
+cure_message = "{0}'s corrosion was cleansed!"
+color = Color(0.42, 0.68, 0.29, 1)
+short_label = "CRR"
+metadata/_custom_type_script = "uid://b5qrrcm7j6ydr"

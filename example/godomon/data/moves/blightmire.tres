@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1_move")
 name = "Blightmire"
-description = "The user spreads a toxic mire across the foe's side. Foes entering battle are poisoned by it."
+description = "The user spreads a toxic mire across the foe's side. Foes entering battle are left corroding."
 type = &"blight"
 category = 2
 target = 16

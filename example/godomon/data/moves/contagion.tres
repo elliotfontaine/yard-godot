@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1_move")
 name = "Contagion"
-description = "The user unleashes a wave of disease at the target. This may also poison the target."
+description = "The user unleashes a wave of disease at the target. This may also corrode the target."
 type = &"blight"
 category = 1
-move_handler = &"poison_target"
+move_handler = &"corrosion_target"
 power = 100
 accuracy = 85
 effect_chance = 20

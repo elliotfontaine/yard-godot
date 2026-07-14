@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="GdmStatus" format=3 uid="uid://bm1gyjinpsaci"]
+
+[ext_resource type="Script" uid="uid://b5qrrcm7j6ydr" path="res://example/godomon/data/_classes/gdm_status.gd" id="1_7iwau"]
+
+[resource]
+script = ExtResource("1_7iwau")
+name = "Frenzy"
+description = "The monster attacks wildly each turn, hitting random targets and ignoring commands."
+apply_message = "{0} flew into a frenzy!"
+already_message = "{0} is already frenzied!"
+trigger_message = "{0} thrashes about wildly!"
+cure_message = "{0} calmed down!"
+color = Color(0.85, 0.25, 0.35, 1)
+short_label = "FRZ"
+metadata/_custom_type_script = "uid://b5qrrcm7j6ydr"

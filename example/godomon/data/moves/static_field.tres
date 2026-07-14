@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_move")
 name = "Static Field"
-description = "The user surrounds the target with crackling static. This paralyzes the target."
+description = "The user surrounds the target with crackling static. This leaves the target numb."
 type = &"electric"
 category = 2
-move_handler = &"paralyze_target"
+move_handler = &"numb_target"
 accuracy = 90
 total_pp = 20

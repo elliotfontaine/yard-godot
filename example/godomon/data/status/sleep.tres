@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="GdmStatus" format=3 uid="uid://4kpx2xteda2o"]
+
+[ext_resource type="Script" uid="uid://b5qrrcm7j6ydr" path="res://example/godomon/data/_classes/gdm_status.gd" id="1_5w3dp"]
+
+[resource]
+script = ExtResource("1_5w3dp")
+name = "Sleep"
+description = "The monster is fast asleep and cannot act until it wakes up."
+status_handler = &"sleep"
+apply_message = "{0} fell asleep!"
+already_message = "{0} is already asleep!"
+trigger_message = "{0} is fast asleep."
+cure_message = "{0} woke up!"
+color = Color(0.56, 0.56, 0.56, 1)
+short_label = "SLP"
+metadata/_custom_type_script = "uid://b5qrrcm7j6ydr"

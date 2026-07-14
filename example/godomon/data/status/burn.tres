@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="GdmStatus" format=3 uid="uid://btj362dscrtc6"]
+
+[ext_resource type="Script" uid="uid://b5qrrcm7j6ydr" path="res://example/godomon/data/_classes/gdm_status.gd" id="1_wqak0"]
+
+[resource]
+script = ExtResource("1_wqak0")
+name = "Burn"
+description = "The monster takes damage every turn and its Attack is halved."
+status_handler = &"burn"
+apply_message = "{0} was burned!"
+already_message = "{0} is already burned!"
+trigger_message = "{0} is hurt by its burn!"
+cure_message = "{0}'s burn was healed!"
+color = Color(0.906, 0.322, 0.153, 1)
+short_label = "BRN"
+metadata/_custom_type_script = "uid://b5qrrcm7j6ydr"

@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_move")
 name = "Star Daze"
-description = "The user dazzles the target with swirling starlight. This confuses the target."
+description = "The user dazzles the target with swirling starlight. This sends the target into a frenzy."
 type = &"cosmic"
 category = 2
-move_handler = &"confuse_target"
+move_handler = &"frenzy_target"
 accuracy = 85
 total_pp = 15

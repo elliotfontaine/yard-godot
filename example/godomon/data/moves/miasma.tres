@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1_move")
 name = "Miasma"
-description = "The user releases a cloud of toxic gas. This poisons the target."
+description = "The user releases a cloud of toxic gas. This corrodes the target."
 type = &"blight"
 category = 2
-move_handler = &"poison_target"
+move_handler = &"corrosion_target"
 flags = Array[StringName]([&"gas"])
 accuracy = 80
 total_pp = 15

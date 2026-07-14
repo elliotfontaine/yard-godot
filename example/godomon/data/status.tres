@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="Registry" format=3 uid="uid://bnvuw74whiwbq"]
+
+[ext_resource type="Script" uid="uid://dqtv77mng5dyh" path="res://addons/yard/registry.gd" id="1_eupoh"]
+
+[resource]
+script = ExtResource("1_eupoh")
+_version = 2
+_scan_auto = false
+_scan_rulesets = Array[Dictionary]([{
+&"allowed_file_extensions": Array[String]([]),
+&"class_restrictions": Array[StringName]([&"GdmStatus"]),
+&"recursive_scan": false,
+&"scan_directories": Array[String](["res://example/godomon/data/status"]),
+&"scan_regex_exclude": "",
+&"scan_regex_include": ""
+}])
+_uids_to_string_ids = Dictionary[StringName, StringName]({
+&"uid://4kpx2xteda2o": &"sleep",
+&"uid://b2v3x8ivv8qgi": &"numb",
+&"uid://bm1gyjinpsaci": &"frenzy",
+&"uid://btj362dscrtc6": &"burn",
+&"uid://dujfwptgg17gl": &"terror",
+&"uid://h7yqdrq4vpsm": &"corrosion"
+})
+_string_ids_to_uids = Dictionary[StringName, StringName]({
+&"burn": &"uid://btj362dscrtc6",
+&"corrosion": &"uid://h7yqdrq4vpsm",
+&"frenzy": &"uid://bm1gyjinpsaci",
+&"numb": &"uid://b2v3x8ivv8qgi",
+&"sleep": &"uid://4kpx2xteda2o",
+&"terror": &"uid://dujfwptgg17gl"
+})

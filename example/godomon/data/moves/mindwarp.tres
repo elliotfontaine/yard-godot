@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1_move")
 name = "Mindwarp"
-description = "The user twists the target's thoughts into knots. This may also confuse the target."
+description = "The user twists the target's thoughts into knots. This may also send the target into a frenzy."
 type = &"mind"
 category = 1
-move_handler = &"confuse_target"
+move_handler = &"frenzy_target"
 power = 60
 total_pp = 15
 effect_chance = 30

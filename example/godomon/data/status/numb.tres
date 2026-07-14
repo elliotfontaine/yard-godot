@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="GdmStatus" format=3 uid="uid://b2v3x8ivv8qgi"]
+
+[ext_resource type="Script" uid="uid://b5qrrcm7j6ydr" path="res://example/godomon/data/_classes/gdm_status.gd" id="1_ijxd4"]
+
+[resource]
+script = ExtResource("1_ijxd4")
+name = "Numb"
+description = "The monster's Speed is halved and it may be too numb to act."
+status_handler = &"numb"
+apply_message = "{0} went numb!"
+already_message = "{0} is already numb!"
+trigger_message = "{0} is too numb to move!"
+cure_message = "{0} shook off its numbness!"
+color = Color(0.51, 0.79, 0.91, 1)
+short_label = "NMB"
+metadata/_custom_type_script = "uid://b5qrrcm7j6ydr"

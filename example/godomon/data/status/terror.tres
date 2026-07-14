@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="GdmStatus" format=3 uid="uid://dujfwptgg17gl"]
+
+[ext_resource type="Script" uid="uid://b5qrrcm7j6ydr" path="res://example/godomon/data/_classes/gdm_status.gd" id="1_gqjgb"]
+
+[resource]
+script = ExtResource("1_gqjgb")
+name = "Terror"
+description = "The monster is too frightened to use its strongest moves and may flee in panic."
+status_handler = &"terror"
+apply_message = "{0} is gripped by terror!"
+already_message = "{0} is already terrified!"
+trigger_message = "{0} cowers in fear!"
+cure_message = "{0} regained its courage!"
+color = Color(0.44, 0.35, 0.63, 1)
+short_label = "TRR"
+metadata/_custom_type_script = "uid://b5qrrcm7j6ydr"

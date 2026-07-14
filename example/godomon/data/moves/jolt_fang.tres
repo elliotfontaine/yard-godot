@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_move")
 name = "Jolt Fang"
-description = "The user bites the target with electrified fangs. This may also paralyze the target."
+description = "The user bites the target with electrified fangs. This may also leave the target numb."
 type = &"electric"
-move_handler = &"paralyze_target"
+move_handler = &"numb_target"
 flags = Array[StringName]([&"contact", &"biting"])
 power = 65
 total_pp = 15

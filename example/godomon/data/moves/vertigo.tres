@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_move")
 name = "Vertigo"
-description = "The user fills the target's mind with dizzying static. This confuses the target."
+description = "The user fills the target's mind with dizzying static. This sends the target into a frenzy."
 type = &"mind"
 category = 2
-move_handler = &"confuse_target"
+move_handler = &"frenzy_target"
 accuracy = 85
 total_pp = 15

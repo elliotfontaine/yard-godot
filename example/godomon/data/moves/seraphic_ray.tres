@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1_move")
 name = "Seraphic Ray"
-description = "The user bathes the target in searing holy radiance. This may also confuse the target."
+description = "The user bathes the target in searing holy radiance. This may also send the target into a frenzy."
 type = &"sacred"
 category = 1
-move_handler = &"confuse_target"
+move_handler = &"frenzy_target"
 power = 55
 total_pp = 15
 effect_chance = 30

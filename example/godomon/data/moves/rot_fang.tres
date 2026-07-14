@@ -5,9 +5,9 @@
 [resource]
 script = ExtResource("1_move")
 name = "Rot Fang"
-description = "The user bites the target with decaying fangs. This may also poison the target."
+description = "The user bites the target with decaying fangs. This may also corrode the target."
 type = &"blight"
-move_handler = &"poison_target"
+move_handler = &"corrosion_target"
 flags = Array[StringName]([&"contact", &"biting"])
 power = 75
 total_pp = 15
