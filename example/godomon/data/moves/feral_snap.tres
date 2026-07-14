@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://cmydeu78giqo6"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Feral Snap"
+description = "The user snaps at the target with wild feral fangs. This may also make the target flinch."
+type = &"wild"
+move_handler = &"flinch_target"
+flags = Array[StringName]([&"contact", &"biting"])
+power = 45
+total_pp = 20
+effect_chance = 20

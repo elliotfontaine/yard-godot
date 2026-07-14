@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://c15b505t45t70"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Suppress"
+description = "The user smothers the target's fighting instinct. This lowers the target's Attack."
+type = &"mind"
+category = 2
+move_handler = &"lower_target_atk_1"
+accuracy = 90
+total_pp = 20

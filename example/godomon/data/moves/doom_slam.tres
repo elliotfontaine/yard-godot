@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://b4isa40pgibax"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Doom Slam"
+description = "The user crushes the target beneath a wave of dread. The user must rest on the next turn."
+type = &"dread"
+move_handler = &"recharge_after"
+flags = Array[StringName]([&"contact"])
+power = 115
+accuracy = 90
+total_pp = 10

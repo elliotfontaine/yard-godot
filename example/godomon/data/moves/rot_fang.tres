@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://cgu8ahbjvf5h5"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Rot Fang"
+description = "The user bites the target with decaying fangs. This may also poison the target."
+type = &"blight"
+move_handler = &"poison_target"
+flags = Array[StringName]([&"contact", &"biting"])
+power = 75
+total_pp = 15
+effect_chance = 30

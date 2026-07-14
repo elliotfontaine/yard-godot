@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://c6dupqrk5bjy7"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Guard Crush"
+description = "The user slams a heavy blow into the target's guard. This may also lower the target's Defense."
+type = &"brawl"
+move_handler = &"lower_target_def_1"
+flags = Array[StringName]([&"contact"])
+power = 75
+total_pp = 15
+effect_chance = 30

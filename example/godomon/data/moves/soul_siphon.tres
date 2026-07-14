@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://dxb4n6oivjo3c"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Soul Siphon"
+description = "The user drains the target's life force. The user's HP is restored by half the damage dealt."
+type = &"dread"
+move_handler = &"drain_half"
+flags = Array[StringName]([&"contact", &"heal_on_hit"])
+power = 70
+total_pp = 10

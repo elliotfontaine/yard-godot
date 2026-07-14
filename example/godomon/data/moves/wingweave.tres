@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://cogrvyjnlopnr"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Wingweave"
+description = "The user weaves through the air in an unpredictable pattern. This raises the user's evasiveness."
+type = &"wind"
+category = 2
+target = 1
+move_handler = &"raise_user_eva_1"
+accuracy = 0
+total_pp = 20

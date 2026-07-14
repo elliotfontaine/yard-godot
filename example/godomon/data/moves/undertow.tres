@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://c1u6lybhenfw6"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Undertow"
+description = "The user drags the target into a swirling current. The target cannot flee for four to five turns."
+type = &"water"
+category = 1
+move_handler = &"trap_target"
+power = 55
+accuracy = 90
+total_pp = 15

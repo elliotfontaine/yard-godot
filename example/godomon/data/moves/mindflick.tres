@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://c1ftm13syo28q"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Mindflick"
+description = "The user strikes with a sudden burst of thought. This move always goes first."
+type = &"mind"
+category = 1
+power = 40
+total_pp = 20
+priority = 1

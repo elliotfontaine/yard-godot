@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://dbkq5sr5v2rc4"]
+
+[ext_resource type="Texture2D" uid="uid://s7x22xm2yurw" path="res://example/godomon/assets/monsters/geckrow/back.webp" id="1_4fgdh"]
+[ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="2_tamnb"]
+[ext_resource type="Texture2D" uid="uid://csdmg0xvlcftd" path="res://example/godomon/assets/monsters/geckrow/front.webp" id="3_tgg6n"]
+[ext_resource type="Texture2D" uid="uid://v4x7np3lgd0q" path="res://example/godomon/assets/monsters/geckrow/menu.webp" id="4_l1jbf"]
+[ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="5_xhkg6"]
+
+[sub_resource type="Resource" id="Resource_dl27c"]
+script = ExtResource("2_tamnb")
+target = &"goanopy"
+parameter = 16
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
+[resource]
+script = ExtResource("5_xhkg6")
+name = "Geckrow"
+type_1 = &"plant"
+evolutions = Array[ExtResource("2_tamnb")]([SubResource("Resource_dl27c")])
+base_hp = 62
+base_attack = 56
+base_defense = 50
+base_sp_attack = 48
+base_sp_defense = 60
+base_speed = 42
+gender_ratio = 2
+growth_rate = 3
+base_exp = 64
+evs = Dictionary[StringName, int]({
+&"hp": 1
+})
+catch_rate = 45
+egg_groups = Array[int]([0, 12])
+step_cycles = 20
+category = "Gecko"
+dex_entry = "Geckrow live in humid jungles and constantly climb the large trees. In the morning, they soak up the sunlight from the canopy, but when the day turns too hot, they descend to the floor to cool themselves in mud pools."
+height = 0.3
+weight = 5.0
+color = 4
+front_normal = ExtResource("3_tgg6n")
+back_normal = ExtResource("1_4fgdh")
+menu_normal = ExtResource("4_l1jbf")
+metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

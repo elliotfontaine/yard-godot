@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://d332tncq6khw2"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Radiance"
+description = "The user gathers radiant energy to shield its spirit. This raises the user's Sp. Def."
+type = &"sacred"
+category = 2
+target = 1
+move_handler = &"raise_user_spdef_1"
+accuracy = 0
+total_pp = 20

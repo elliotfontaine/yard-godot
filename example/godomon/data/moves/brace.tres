@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://d2u54sck11b8p"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Brace"
+description = "The user braces for impact, guarding its body. This protects the user from attacks this turn."
+type = &"brawl"
+category = 2
+target = 1
+move_handler = &"protect_self"
+accuracy = 0
+total_pp = 15
+priority = 4

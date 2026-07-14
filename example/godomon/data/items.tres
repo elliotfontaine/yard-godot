@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Registry" format=3 uid="uid://cxvrivcf1cdk4"]
+
+[ext_resource type="Script" uid="uid://dqtv77mng5dyh" path="res://addons/yard/registry.gd" id="1_yxbpf"]
+
+[resource]
+script = ExtResource("1_yxbpf")
+_version = 2
+_scan_auto = false
+_scan_rulesets = Array[Dictionary]([{
+&"allowed_file_extensions": Array[String]([]),
+&"class_restrictions": Array[StringName]([&"GdmItem"]),
+&"recursive_scan": false,
+&"scan_directories": Array[String](["res://example/godomon/data/items"]),
+&"scan_regex_exclude": "",
+&"scan_regex_include": ""
+}])

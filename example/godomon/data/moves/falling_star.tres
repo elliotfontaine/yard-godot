@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://drsrpbkja1hlb"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Falling Star"
+description = "The user hurls a chunk of star rock at the target."
+type = &"cosmic"
+power = 70
+total_pp = 15

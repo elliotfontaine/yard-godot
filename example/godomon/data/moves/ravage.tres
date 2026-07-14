@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://p2nm37k20li6"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Ravage"
+description = "The user tears into the target in a sudden savage burst. This may also make the target flinch."
+type = &"primal"
+move_handler = &"flinch_target"
+flags = Array[StringName]([&"contact"])
+power = 50
+total_pp = 20
+effect_chance = 20

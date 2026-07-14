@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://cwm3apg257m7h"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Deluge"
+description = "The user calls down a crushing wall of water. It hits hard but can miss."
+type = &"water"
+category = 1
+power = 110
+accuracy = 80

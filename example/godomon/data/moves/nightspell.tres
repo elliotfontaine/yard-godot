@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://d3u7l33mo4oyj"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Nightspell"
+description = "The user weaves a spell of deep nightmares. This puts the target to sleep."
+type = &"dread"
+category = 2
+move_handler = &"sleep_target"
+accuracy = 75
+total_pp = 10

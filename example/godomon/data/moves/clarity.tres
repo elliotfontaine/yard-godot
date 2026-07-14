@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://dl0355it77irc"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Clarity"
+description = "The user clears its mind to a single sharp point. This raises the user's Sp. Atk."
+type = &"mind"
+category = 2
+target = 1
+move_handler = &"raise_user_spatk_1"
+accuracy = 0
+total_pp = 20

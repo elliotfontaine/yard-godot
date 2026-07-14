@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GdmElement" format=3 uid="uid://csfaokouplku"]
+
+[ext_resource type="Script" uid="uid://djm3ds2ynq5xx" path="res://example/godomon/data/_classes/gdm_element.gd" id="1_p7gnw"]
+
+[resource]
+script = ExtResource("1_p7gnw")
+name = "Sacred"
+color = Color(0.9372549, 0.4392157, 0.9372549, 1)
+strong_against = Array[StringName]([&"dread", &"primal"])
+weak_against = Array[StringName]([&"sacred", &"cosmic"])
+metadata/_custom_type_script = "uid://djm3ds2ynq5xx"

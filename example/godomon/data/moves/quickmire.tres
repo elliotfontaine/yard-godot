@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://bp02cug8sdgby"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Quickmire"
+description = "The user swallows the target in shifting sand. The target cannot flee for four to five turns."
+type = &"earth"
+move_handler = &"trap_target"
+power = 45
+accuracy = 85
+total_pp = 15

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://bufo3xwq6eqs3"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Smolder"
+description = "The user ignites a slow heat inside the target. This leaves the target with a burn."
+type = &"fire"
+category = 2
+move_handler = &"burn_target"
+accuracy = 85
+total_pp = 15

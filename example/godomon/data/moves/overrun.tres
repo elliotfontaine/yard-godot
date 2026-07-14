@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://hec0dqulsrf2"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Overrun"
+description = "The user pours everything into one wild charge. The user must rest on the next turn."
+type = &"wild"
+move_handler = &"recharge_after"
+flags = Array[StringName]([&"contact"])
+power = 120
+accuracy = 90
+total_pp = 10

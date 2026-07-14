@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GdmElement" format=3 uid="uid://bttmip8hipe3p"]
+
+[ext_resource type="Script" uid="uid://djm3ds2ynq5xx" path="res://example/godomon/data/_classes/gdm_element.gd" id="1_fxaa0"]
+
+[resource]
+script = ExtResource("1_fxaa0")
+name = "Metal"
+color = Color(0.37254903, 0.6313726, 0.72156864, 1)
+strong_against = Array[StringName]([&"ice", &"sacred"])
+weak_against = Array[StringName]([&"metal", &"fire", &"water", &"electric"])
+metadata/_custom_type_script = "uid://djm3ds2ynq5xx"

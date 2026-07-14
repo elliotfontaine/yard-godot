@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://bexwhoqblyfu6"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Rime Armor"
+description = "The user coats its body in a shell of solid rime. This raises the user's Defense."
+type = &"ice"
+category = 2
+target = 1
+move_handler = &"raise_user_def_1"
+accuracy = 0
+total_pp = 20

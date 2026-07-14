@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://b68wrxefeuoop"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "High Ascent"
+description = "The user soars high into the sky. It strikes the target on the next turn."
+type = &"wind"
+move_handler = &"charge_skyward"
+power = 85
+accuracy = 95
+total_pp = 10

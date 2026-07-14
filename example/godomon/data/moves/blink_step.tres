@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://c5t8vjcimj05u"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Blink Step"
+description = "The user blinks briefly out of normal space. This raises the user's evasiveness."
+type = &"cosmic"
+category = 2
+target = 1
+move_handler = &"raise_user_eva_1"
+accuracy = 0
+total_pp = 20

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://dq0i50fpmgcxl"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Night Howl"
+description = "The user lets out a chilling howl. This may also make the target flinch."
+type = &"dread"
+category = 1
+move_handler = &"flinch_target"
+flags = Array[StringName]([&"sound"])
+power = 60
+total_pp = 15
+effect_chance = 20

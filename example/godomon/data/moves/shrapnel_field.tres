@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://bn0vr0g8iwjwf"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Shrapnel Field"
+description = "The user scatters sharp metal shrapnel on the foe's side. Foes entering battle are hurt by it."
+type = &"metal"
+category = 2
+target = 16
+move_handler = &"hazard_metal"
+accuracy = 0
+total_pp = 10

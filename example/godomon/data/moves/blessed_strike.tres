@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://xjw4v38x8cch"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Blessed Strike"
+description = "The user strikes the target with a beam of pure light. This may also lower the target's Sp. Atk."
+type = &"sacred"
+category = 1
+move_handler = &"lower_target_spatk_1"
+power = 60
+total_pp = 15
+effect_chance = 30

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://wsl0kn1r3hie"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Void Pulse"
+description = "The user blasts the target with a pulse of warped space. This may also confuse the target."
+type = &"cosmic"
+category = 1
+move_handler = &"confuse_target"
+power = 60
+total_pp = 15
+effect_chance = 30

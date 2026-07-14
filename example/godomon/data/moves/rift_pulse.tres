@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://cg6yvngs8jcx"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Rift Pulse"
+description = "The user unleashes a pulse of raw primordial energy at the target."
+type = &"primal"
+category = 1
+power = 70
+total_pp = 15

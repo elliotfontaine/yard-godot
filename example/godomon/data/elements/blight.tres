@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="GdmElement" format=3 uid="uid://dtlbna5vf7dka"]
+
+[ext_resource type="Script" uid="uid://djm3ds2ynq5xx" path="res://example/godomon/data/_classes/gdm_element.gd" id="1_5jcef"]
+
+[resource]
+script = ExtResource("1_5jcef")
+name = "Blight"
+color = Color(0.5568628, 0.2509804, 0.78039217, 1)
+strong_against = Array[StringName]([&"plant", &"mind", &"sacred"])
+weak_against = Array[StringName]([&"blight", &"earth", &"dread", &"brawl"])
+immune_targets = Array[StringName]([&"metal"])
+metadata/_custom_type_script = "uid://djm3ds2ynq5xx"

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://dv6weso1q542w"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Grim Glare"
+description = "The user fixes the target with a grim hollow stare. This lowers the target's Sp. Atk."
+type = &"dread"
+category = 2
+move_handler = &"lower_target_spatk_1"
+accuracy = 90
+total_pp = 20

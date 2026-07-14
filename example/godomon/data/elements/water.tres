@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GdmElement" format=3 uid="uid://cc6qukhnkf8vp"]
+
+[ext_resource type="Script" uid="uid://djm3ds2ynq5xx" path="res://example/godomon/data/_classes/gdm_element.gd" id="1_xmkyq"]
+
+[resource]
+script = ExtResource("1_xmkyq")
+name = "Water"
+color = Color(0.16078432, 0.5019608, 0.9372549, 1)
+strong_against = Array[StringName]([&"fire", &"earth", &"metal"])
+weak_against = Array[StringName]([&"water", &"plant", &"primal"])
+metadata/_custom_type_script = "uid://djm3ds2ynq5xx"

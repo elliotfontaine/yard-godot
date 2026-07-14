@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://dk3caxed6uuq7"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Wilt"
+description = "The user saps the target's strength with a withering touch. This lowers the target's Attack."
+type = &"blight"
+category = 2
+move_handler = &"lower_target_atk_1"
+flags = Array[StringName]([&"contact"])
+accuracy = 90
+total_pp = 20

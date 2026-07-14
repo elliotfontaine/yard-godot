@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://d3nrm26yoopg1"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Vine Snare"
+description = "The user roots the target in place with grasping vines. The target cannot flee for four to five turns."
+type = &"plant"
+category = 2
+move_handler = &"root_target"
+accuracy = 90
+total_pp = 20

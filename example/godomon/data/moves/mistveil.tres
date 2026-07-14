@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://dun82o4xbem0i"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Mistveil"
+description = "The user wraps its side in a protective mist for five turns. This stops stat-lowering effects from foes."
+type = &"water"
+category = 2
+target = 15
+move_handler = &"prevent_stat_loss"
+accuracy = 0
+total_pp = 15

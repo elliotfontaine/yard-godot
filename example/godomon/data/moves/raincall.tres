@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://x84vwpv3vs8h"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Raincall"
+description = "The user summons heavy rain for five turns. This boosts the power of Water-type moves."
+type = &"water"
+category = 2
+target = 17
+move_handler = &"weather_rain"
+accuracy = 0

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://vn0k4j70opla"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Sap Siphon"
+description = "The user plants a draining sprout on the target. This saps the target's HP every turn."
+type = &"plant"
+category = 2
+move_handler = &"leech_target"
+accuracy = 90
+total_pp = 10

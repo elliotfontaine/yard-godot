@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://b000j4m82t0bq"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Pyroclasm"
+description = "The user engulfs the target in a fiery eruption. This may also leave the target with a burn."
+type = &"fire"
+category = 1
+move_handler = &"burn_target"
+power = 110
+accuracy = 85
+effect_chance = 30

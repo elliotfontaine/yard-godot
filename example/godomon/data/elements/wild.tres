@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GdmElement" format=3 uid="uid://dd2krithcn7uf"]
+
+[ext_resource type="Script" uid="uid://djm3ds2ynq5xx" path="res://example/godomon/data/_classes/gdm_element.gd" id="1_x0i7t"]
+
+[resource]
+script = ExtResource("1_x0i7t")
+name = "Wild"
+color = Color(0.627451, 0.6313726, 0.627451, 1)
+weak_against = Array[StringName]([&"metal", &"earth"])
+immune_targets = Array[StringName]([&"dread"])
+metadata/_custom_type_script = "uid://djm3ds2ynq5xx"

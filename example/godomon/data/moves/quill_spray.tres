@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://d0c2iluqy8l7f"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Quill Spray"
+description = "The user fires a spray of toxic quills. This move hits two to five times in a row."
+type = &"blight"
+move_handler = &"multi_hit_2_5"
+power = 18
+total_pp = 20

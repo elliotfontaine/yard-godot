@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://csisffr1wrkeo"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Plague Bite"
+description = "The user bites the target with an infectious plague. The user's HP is restored by half the damage dealt."
+type = &"blight"
+move_handler = &"drain_half"
+flags = Array[StringName]([&"contact", &"biting", &"heal_on_hit"])
+power = 70
+total_pp = 10

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://c2snmxon3p4yv"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Overcharge"
+description = "The user floods its body with electric current. This raises the user's Speed."
+type = &"electric"
+category = 2
+target = 1
+move_handler = &"raise_user_spd_1"
+accuracy = 0
+total_pp = 20

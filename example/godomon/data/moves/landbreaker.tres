@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://cjlk8igom3py8"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Landbreaker"
+description = "The user drives the target hard into the ground. The user is also hurt a little by the recoil."
+type = &"earth"
+move_handler = &"recoil_quarter"
+flags = Array[StringName]([&"contact"])
+power = 100
+accuracy = 90
+total_pp = 15

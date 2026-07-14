@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://dj377h341lgru"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Fossilguard"
+description = "The user hardens its hide to the density of old stone. This raises the user's Defense."
+type = &"primal"
+category = 2
+target = 1
+move_handler = &"raise_user_def_1"
+accuracy = 0
+total_pp = 20

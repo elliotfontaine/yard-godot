@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://1h1e7ix4hraf"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Rustfang"
+description = "The user bites down with salty, rusted fangs. This may also lower the target's Defense."
+type = &"water"
+move_handler = &"lower_target_def_1"
+flags = Array[StringName]([&"contact", &"biting"])
+power = 75
+total_pp = 15
+effect_chance = 30

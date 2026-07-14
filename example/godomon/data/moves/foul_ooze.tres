@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://cw464x7u3fkwr"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Foul Ooze"
+description = "The user hurls a glob of foul ooze at the target. This may also poison the target."
+type = &"blight"
+category = 1
+move_handler = &"poison_target"
+power = 65
+total_pp = 15
+effect_chance = 30

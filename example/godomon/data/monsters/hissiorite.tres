@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://pks0tenrsiu0"]
+
+[ext_resource type="Texture2D" uid="uid://dd5tjnwsmib7f" path="res://example/godomon/assets/monsters/hissiorite/back.webp" id="1_8ipbv"]
+[ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_668oc"]
+[ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_qr3vn"]
+[ext_resource type="Texture2D" uid="uid://cpcft4r0ffgt1" path="res://example/godomon/assets/monsters/hissiorite/front.webp" id="3_4q3sv"]
+[ext_resource type="Texture2D" uid="uid://b7q67x8spknw5" path="res://example/godomon/assets/monsters/hissiorite/menu.webp" id="4_30w2w"]
+
+[resource]
+script = ExtResource("2_qr3vn")
+name = "Hissiorite"
+type_1 = &"fire"
+front_normal = ExtResource("3_4q3sv")
+back_normal = ExtResource("1_8ipbv")
+menu_normal = ExtResource("4_30w2w")
+metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

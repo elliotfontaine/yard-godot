@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://qgoft5vk31ta"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Iron Shackles"
+description = "The user binds the target in heavy iron shackles. The target cannot flee for four to five turns."
+type = &"metal"
+move_handler = &"trap_target"
+flags = Array[StringName]([&"contact"])
+power = 45
+accuracy = 85
+total_pp = 15

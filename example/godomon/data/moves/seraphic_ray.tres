@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://cubs7m1718wxv"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Seraphic Ray"
+description = "The user bathes the target in searing holy radiance. This may also confuse the target."
+type = &"sacred"
+category = 1
+move_handler = &"confuse_target"
+power = 55
+total_pp = 15
+effect_chance = 30

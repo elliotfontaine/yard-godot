@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://nj4nhdspj8et"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Riptide Dash"
+description = "The user rides a sudden current to strike the target. This move always goes first."
+type = &"water"
+flags = Array[StringName]([&"contact"])
+power = 40
+total_pp = 20
+priority = 1

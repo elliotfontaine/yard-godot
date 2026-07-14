@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://dyt60ogic56vq"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Clang Strike"
+description = "The user slams the target with a deafening clang. This may also make the target flinch."
+type = &"metal"
+move_handler = &"flinch_target"
+flags = Array[StringName]([&"contact"])
+power = 45
+total_pp = 20
+effect_chance = 20

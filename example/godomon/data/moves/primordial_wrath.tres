@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://dhjaqxciw3jjk"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Primordial Wrath"
+description = "The user calls forth the wrath of a forgotten age. It hits hard but can miss."
+type = &"primal"
+category = 1
+power = 125
+accuracy = 75

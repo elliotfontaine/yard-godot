@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://obmaih1470ft"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Ashen Veil"
+description = "The user covers its side in ash for five turns. This lowers the accuracy of incoming attacks."
+type = &"fire"
+category = 2
+target = 15
+move_handler = &"ashen_veil"
+accuracy = 0
+total_pp = 10

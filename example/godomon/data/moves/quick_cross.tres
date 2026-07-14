@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://g6dlg7g7bsq6"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Quick Cross"
+description = "The user throws a swift punch at the target. A reliable opening attack."
+type = &"brawl"
+flags = Array[StringName]([&"contact", &"punching"])
+power = 40
+total_pp = 30

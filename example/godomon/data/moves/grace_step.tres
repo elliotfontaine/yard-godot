@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://g4kd1oj2ycwg"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Grace Step"
+description = "The user moves with effortless radiant grace to strike. This move always goes first."
+type = &"sacred"
+flags = Array[StringName]([&"contact"])
+power = 40
+total_pp = 20
+priority = 1

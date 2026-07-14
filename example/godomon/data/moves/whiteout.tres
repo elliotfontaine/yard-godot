@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://x1vlgqay8ktu"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Whiteout"
+description = "The user summons a blinding blizzard for five turns. This boosts the power of Ice-type moves."
+type = &"ice"
+category = 2
+target = 17
+move_handler = &"field_charge_ice"
+accuracy = 0

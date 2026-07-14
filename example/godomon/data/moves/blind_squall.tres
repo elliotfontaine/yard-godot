@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://bpctqy4itssqf"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Blind Squall"
+description = "The user whips up a stinging squall of grit. This lowers the target's accuracy."
+type = &"wind"
+category = 2
+move_handler = &"lower_target_acc_1"
+accuracy = 85
+total_pp = 15

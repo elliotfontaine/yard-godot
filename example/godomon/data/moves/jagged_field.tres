@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://b0evwvadghrgl"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Jagged Field"
+description = "The user litters the foe's side with jagged stones. Foes entering battle are hurt by it."
+type = &"earth"
+category = 2
+target = 16
+move_handler = &"hazard_earth"
+accuracy = 0
+total_pp = 10

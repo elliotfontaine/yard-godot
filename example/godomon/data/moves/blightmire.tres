@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://dikgpofiqtxdr"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Blightmire"
+description = "The user spreads a toxic mire across the foe's side. Foes entering battle are poisoned by it."
+type = &"blight"
+category = 2
+target = 16
+move_handler = &"hazard_blight"
+accuracy = 0
+total_pp = 10

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://dg0namk8db4nr"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Vertigo"
+description = "The user fills the target's mind with dizzying static. This confuses the target."
+type = &"mind"
+category = 2
+move_handler = &"confuse_target"
+accuracy = 85
+total_pp = 15

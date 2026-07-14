@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="Registry" format=3 uid="uid://k2yyt35u8f25"]
+
+[ext_resource type="Script" uid="uid://dqtv77mng5dyh" path="res://addons/yard/registry.gd" id="1_o5qsg"]
+
+[resource]
+script = ExtResource("1_o5qsg")
+_version = 2
+_scan_auto = false
+_scan_rulesets = Array[Dictionary]([{
+&"allowed_file_extensions": Array[String]([]),
+&"class_restrictions": Array[StringName]([&"GdmMonster"]),
+&"recursive_scan": false,
+&"scan_directories": Array[String](["res://example/godomon/data/monsters"]),
+&"scan_regex_exclude": "",
+&"scan_regex_include": ""
+}])
+_uids_to_string_ids = Dictionary[StringName, StringName]({
+&"uid://b0x3s34hjgykc": &"firomenis",
+&"uid://bhtlc6fho7put": &"goanopy",
+&"uid://bodjsbva5fv0a": &"pythonova",
+&"uid://c8lk1fsrle51c": &"cobarett",
+&"uid://ce8lgh64rx0dj": &"varanitor",
+&"uid://dbkq5sr5v2rc4": &"geckrow",
+&"uid://nxvgr128g208": &"merlicun",
+&"uid://pks0tenrsiu0": &"hissiorite"
+})
+_string_ids_to_uids = Dictionary[StringName, StringName]({
+&"cobarett": &"uid://c8lk1fsrle51c",
+&"firomenis": &"uid://b0x3s34hjgykc",
+&"geckrow": &"uid://dbkq5sr5v2rc4",
+&"goanopy": &"uid://bhtlc6fho7put",
+&"hissiorite": &"uid://pks0tenrsiu0",
+&"merlicun": &"uid://nxvgr128g208",
+&"pythonova": &"uid://bodjsbva5fv0a",
+&"varanitor": &"uid://ce8lgh64rx0dj"
+})

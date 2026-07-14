@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://cbjbtopsiwmqe"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Maelstrom"
+description = "The user summons a howling storm to batter the target. It hits hard but can miss."
+type = &"wind"
+category = 1
+power = 115
+accuracy = 80

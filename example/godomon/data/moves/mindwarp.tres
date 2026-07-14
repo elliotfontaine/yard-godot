@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://b3k8wxk2m6q3f"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Mindwarp"
+description = "The user twists the target's thoughts into knots. This may also confuse the target."
+type = &"mind"
+category = 1
+move_handler = &"confuse_target"
+power = 60
+total_pp = 15
+effect_chance = 30

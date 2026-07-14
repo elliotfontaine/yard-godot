@@ -1,0 +1,54 @@
+[gd_resource type="Resource" script_class="Registry" format=3 uid="uid://ca3btuhj2qmq1"]
+
+[ext_resource type="Script" uid="uid://dqtv77mng5dyh" path="res://addons/yard/registry.gd" id="1_fwj1g"]
+
+[resource]
+script = ExtResource("1_fwj1g")
+_version = 2
+_scan_auto = false
+_scan_rulesets = Array[Dictionary]([{
+&"allowed_file_extensions": Array[String]([]),
+&"class_restrictions": Array[StringName]([&"GdmElement"]),
+&"recursive_scan": false,
+&"scan_directories": Array[String](["res://example/godomon/data/elements"]),
+&"scan_regex_exclude": "",
+&"scan_regex_include": ""
+}])
+_uids_to_string_ids = Dictionary[StringName, StringName]({
+&"uid://b5oo765gxhwsu": &"wind",
+&"uid://bd6fnm0upeaj6": &"mind",
+&"uid://bflh10tploe33": &"primal",
+&"uid://btoud3jy4odpy": &"cosmic",
+&"uid://bttmip8hipe3p": &"metal",
+&"uid://bwsqibu37r1c6": &"fire",
+&"uid://cc6qukhnkf8vp": &"water",
+&"uid://cjfq6kka5btaf": &"earth",
+&"uid://csfaokouplku": &"sacred",
+&"uid://dd2krithcn7uf": &"wild",
+&"uid://djw16jxr6cjh": &"electric",
+&"uid://dk8pdml3wuk6t": &"dread",
+&"uid://dpwapymvbx1s7": &"ice",
+&"uid://drb57dkud2sxr": &"???",
+&"uid://dtlbna5vf7dka": &"blight",
+&"uid://dyx0ddo6o0oee": &"plant",
+&"uid://q70wyr5sqt5f": &"brawl"
+})
+_string_ids_to_uids = Dictionary[StringName, StringName]({
+&"???": &"uid://drb57dkud2sxr",
+&"blight": &"uid://dtlbna5vf7dka",
+&"brawl": &"uid://q70wyr5sqt5f",
+&"cosmic": &"uid://btoud3jy4odpy",
+&"dread": &"uid://dk8pdml3wuk6t",
+&"earth": &"uid://cjfq6kka5btaf",
+&"electric": &"uid://djw16jxr6cjh",
+&"fire": &"uid://bwsqibu37r1c6",
+&"ice": &"uid://dpwapymvbx1s7",
+&"metal": &"uid://bttmip8hipe3p",
+&"mind": &"uid://bd6fnm0upeaj6",
+&"plant": &"uid://dyx0ddo6o0oee",
+&"primal": &"uid://bflh10tploe33",
+&"sacred": &"uid://csfaokouplku",
+&"water": &"uid://cc6qukhnkf8vp",
+&"wild": &"uid://dd2krithcn7uf",
+&"wind": &"uid://b5oo765gxhwsu"
+})

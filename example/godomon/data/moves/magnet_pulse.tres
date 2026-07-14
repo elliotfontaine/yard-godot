@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://ctswcx54md0t7"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Magnet Pulse"
+description = "The user grips the target with a pulse of magnetism. This may also lower the target's Speed."
+type = &"metal"
+category = 1
+move_handler = &"lower_target_spd_1"
+power = 60
+total_pp = 20
+effect_chance = 30

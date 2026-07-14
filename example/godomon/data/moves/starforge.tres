@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://b3qxatq5855tc"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Starforge"
+description = "The user gathers cosmic energy within its core. This raises the user's Sp. Atk."
+type = &"cosmic"
+category = 2
+target = 1
+move_handler = &"raise_user_spatk_1"
+accuracy = 0
+total_pp = 20

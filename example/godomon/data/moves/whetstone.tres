@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://r7vt30ayjdxo"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Whetstone"
+description = "The user sharpens its edges on a whetstone. This raises the user's Attack."
+type = &"metal"
+category = 2
+target = 1
+move_handler = &"raise_user_atk_1"
+accuracy = 0
+total_pp = 20

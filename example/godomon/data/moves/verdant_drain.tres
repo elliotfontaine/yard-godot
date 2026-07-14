@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://bk5pmtow3ohju"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Verdant Drain"
+description = "The user drains the target's energy. The user's HP is restored by half the damage dealt."
+type = &"plant"
+category = 1
+move_handler = &"drain_half"
+flags = Array[StringName]([&"heal_on_hit"])
+power = 75
+total_pp = 10

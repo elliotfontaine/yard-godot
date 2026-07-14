@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://c5f35dlasffdj"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Stoneguard"
+description = "The user hardens its skin like solid stone. This raises the user's Defense."
+type = &"earth"
+category = 2
+target = 1
+move_handler = &"raise_user_def_1"
+accuracy = 0
+total_pp = 20

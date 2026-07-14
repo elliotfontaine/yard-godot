@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://mvsexaob2g2k"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Mind Snare"
+description = "The user grips the target's mind with telekinesis. The target cannot flee for four to five turns."
+type = &"mind"
+category = 1
+move_handler = &"trap_target"
+power = 45
+accuracy = 85
+total_pp = 15

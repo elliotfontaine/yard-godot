@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://bodjsbva5fv0a"]
+
+[ext_resource type="Texture2D" uid="uid://ddpaxgy65xqcb" path="res://example/godomon/assets/monsters/pythonova/back.webp" id="1_ad8sp"]
+[ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_dn77u"]
+[ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_ydvrq"]
+[ext_resource type="Texture2D" uid="uid://vv5v1nkvkdkf" path="res://example/godomon/assets/monsters/pythonova/front.webp" id="3_1gm2g"]
+[ext_resource type="Texture2D" uid="uid://dyknveigivia5" path="res://example/godomon/assets/monsters/pythonova/menu.webp" id="4_c08b2"]
+
+[resource]
+script = ExtResource("2_ydvrq")
+name = "Pythonova"
+type_1 = &"fire"
+front_normal = ExtResource("3_1gm2g")
+back_normal = ExtResource("1_ad8sp")
+menu_normal = ExtResource("4_c08b2")
+metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

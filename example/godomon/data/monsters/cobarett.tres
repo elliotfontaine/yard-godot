@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://c8lk1fsrle51c"]
+
+[ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_6e4dl"]
+[ext_resource type="Texture2D" uid="uid://dj2v2k27tki0b" path="res://example/godomon/assets/monsters/cobarett/back.webp" id="1_riank"]
+[ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_jh1gy"]
+[ext_resource type="Texture2D" uid="uid://mslnrjb8nryv" path="res://example/godomon/assets/monsters/cobarett/front.webp" id="3_evwi3"]
+[ext_resource type="Texture2D" uid="uid://cg2tpc4mqbqup" path="res://example/godomon/assets/monsters/cobarett/menu.webp" id="4_gq6ef"]
+
+[resource]
+script = ExtResource("2_jh1gy")
+name = "Cobarett"
+type_1 = &"fire"
+front_normal = ExtResource("3_evwi3")
+back_normal = ExtResource("1_riank")
+menu_normal = ExtResource("4_gq6ef")
+metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

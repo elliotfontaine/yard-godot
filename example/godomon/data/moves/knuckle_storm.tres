@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://c5v6qgig1spx"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Knuckle Storm"
+description = "The user unleashes a flurry of quick punches. This move hits two to five times in a row."
+type = &"brawl"
+move_handler = &"multi_hit_2_5"
+flags = Array[StringName]([&"contact", &"punching"])
+power = 18
+total_pp = 20

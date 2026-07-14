@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://b0x3s34hjgykc"]
+
+[ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_5wiho"]
+[ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_ur4jd"]
+
+[resource]
+script = ExtResource("2_ur4jd")
+name = "Firomenis"
+type_2 = &"wind"
+metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

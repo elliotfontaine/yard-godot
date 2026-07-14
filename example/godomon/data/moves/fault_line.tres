@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://blpvlinpfa01l"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Fault Line"
+description = "The user cracks the ground with a violent shockwave. It strikes all foes nearby."
+type = &"earth"
+target = 8
+power = 95
+accuracy = 90
+total_pp = 10

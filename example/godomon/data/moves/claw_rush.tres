@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://coqnknn23x45i"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Claw Rush"
+description = "The user rakes the target with a flurry of claws. This move hits two to five times in a row."
+type = &"wild"
+move_handler = &"multi_hit_2_5"
+flags = Array[StringName]([&"contact"])
+power = 17
+total_pp = 20

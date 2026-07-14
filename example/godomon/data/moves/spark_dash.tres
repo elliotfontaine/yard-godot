@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://bsu1dnhyffu5f"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Spark Dash"
+description = "The user darts at the target in a flash of light. This move always goes first."
+type = &"electric"
+flags = Array[StringName]([&"contact"])
+power = 40
+total_pp = 20
+priority = 1

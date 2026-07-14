@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://dx4700447x3wt"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Molten Volley"
+description = "The user hurls globs of molten rock at the target. This move hits two to five times in a row."
+type = &"fire"
+category = 1
+move_handler = &"multi_hit_2_5"
+power = 20
+accuracy = 95
+total_pp = 20

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://b83xxyr270q5o"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Tidal Guard"
+description = "The user hardens its hide with layered salt. This raises the user's Defense."
+type = &"water"
+category = 2
+target = 1
+move_handler = &"raise_user_def_2"
+accuracy = 0
+total_pp = 15

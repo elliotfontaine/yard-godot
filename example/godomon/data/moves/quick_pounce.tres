@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://dpaq8tmua6ghc"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Quick Pounce"
+description = "The user pounces on the target before it can react. This move always goes first."
+type = &"wild"
+flags = Array[StringName]([&"contact"])
+power = 40
+total_pp = 20
+priority = 1

@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="GdmElement" format=3 uid="uid://drb57dkud2sxr"]
+
+[ext_resource type="Script" uid="uid://djm3ds2ynq5xx" path="res://example/godomon/data/_classes/gdm_element.gd" id="1_j38l2"]
+
+[resource]
+script = ExtResource("1_j38l2")
+name = "???"
+metadata/_custom_type_script = "uid://djm3ds2ynq5xx"

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://b50am57yacspm"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Dim Veil"
+description = "The user wraps the target in dim clinging shadow. This may also lower the target's accuracy."
+type = &"dread"
+category = 1
+move_handler = &"lower_target_acc_1"
+power = 55
+total_pp = 15
+effect_chance = 30

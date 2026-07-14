@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GdmElement" format=3 uid="uid://b5oo765gxhwsu"]
+
+[ext_resource type="Script" uid="uid://djm3ds2ynq5xx" path="res://example/godomon/data/_classes/gdm_element.gd" id="1_wncfm"]
+
+[resource]
+script = ExtResource("1_wncfm")
+name = "Wind"
+color = Color(0.5019608, 0.7137255, 0.9254902, 1)
+strong_against = Array[StringName]([&"plant", &"brawl", &"blight"])
+weak_against = Array[StringName]([&"electric", &"metal"])
+metadata/_custom_type_script = "uid://djm3ds2ynq5xx"

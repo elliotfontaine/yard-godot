@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://dimshmtkutwgh"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Overload"
+description = "The user unleashes every volt it can hold at once. The user must rest on the next turn."
+type = &"electric"
+move_handler = &"recharge_after"
+flags = Array[StringName]([&"contact"])
+power = 120
+accuracy = 85
+total_pp = 10

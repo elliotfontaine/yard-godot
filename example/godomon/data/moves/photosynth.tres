@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://c2en4115lt1qd"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Photosynth"
+description = "The user soaks up light to heal half its max HP. It heals even more in harsh sunlight."
+type = &"plant"
+category = 2
+target = 1
+move_handler = &"heal_half_weather"
+accuracy = 0

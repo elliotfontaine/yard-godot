@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://r2lxqcklxl45"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Frost Step"
+description = "The user glides across the ice for a swift strike. This move always goes first."
+type = &"ice"
+flags = Array[StringName]([&"contact"])
+power = 40
+total_pp = 20
+priority = 1

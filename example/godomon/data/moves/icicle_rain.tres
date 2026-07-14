@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="GdmMove" format=3 uid="uid://d4d5oe3myvb4i"]
+
+[ext_resource type="Script" uid="uid://dbkveliunt5hc" path="res://example/godomon/data/_classes/gdm_move.gd" id="1_move"]
+
+[resource]
+script = ExtResource("1_move")
+name = "Icicle Rain"
+description = "The user rains sharp icicles down on the target. This move hits two to five times in a row."
+type = &"ice"
+move_handler = &"multi_hit_2_5"
+power = 17
+total_pp = 20
