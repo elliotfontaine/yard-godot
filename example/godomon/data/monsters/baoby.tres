@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://cf6y3rk4o36xp"]
+
+[ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_si43g"]
+[ext_resource type="Texture2D" uid="uid://b17cgy3dw6n1o" path="res://example/godomon/assets/monsters/baoby/back.webp" id="1_vbqf6"]
+[ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_6qstg"]
+[ext_resource type="Texture2D" uid="uid://cm613m2f68emy" path="res://example/godomon/assets/monsters/baoby/front.webp" id="3_qcfhi"]
+[ext_resource type="Texture2D" uid="uid://b2uxb8sd4jkk2" path="res://example/godomon/assets/monsters/baoby/icon.webp" id="4_jaaas"]
+[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/???/overworld.webp" id="5_knm44"]
+
+[resource]
+script = ExtResource("2_6qstg")
+name = "Baoby"
+type_1 = &"plant"
+front_normal = ExtResource("3_qcfhi")
+back_normal = ExtResource("1_vbqf6")
+menu_normal = ExtResource("4_jaaas")
+overworld_normal = ExtResource("5_knm44")
+metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

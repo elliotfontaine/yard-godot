@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b7q67x8spknw5"
-path="res://.godot/imported/menu.webp-4dfded101fe23a29f3be0f201b867bdd.ctex"
+uid="uid://b61vc8kkjou7c"
+path="res://.godot/imported/front.webp-be8ff9284443735a08ddea72d12c891f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://example/godomon/assets/monsters/hissiorite/menu.webp"
-dest_files=["res://.godot/imported/menu.webp-4dfded101fe23a29f3be0f201b867bdd.ctex"]
+source_file="res://example/godomon/assets/monsters/lollybog/front.webp"
+dest_files=["res://.godot/imported/front.webp-be8ff9284443735a08ddea72d12c891f.ctex"]
 
 [params]
 

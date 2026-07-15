@@ -4,7 +4,8 @@
 [ext_resource type="Texture2D" uid="uid://di4fks3kaymm4" path="res://example/godomon/assets/monsters/goanopy/back.webp" id="1_xywak"]
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_ab1lj"]
 [ext_resource type="Texture2D" uid="uid://nv43koavg5ay" path="res://example/godomon/assets/monsters/goanopy/front.webp" id="3_61ymj"]
-[ext_resource type="Texture2D" uid="uid://bygfha182tgco" path="res://example/godomon/assets/monsters/goanopy/menu.webp" id="4_6wbc5"]
+[ext_resource type="Texture2D" uid="uid://bygfha182tgco" path="res://example/godomon/assets/monsters/goanopy/icon.webp" id="4_61ymj"]
+[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/???/overworld.webp" id="5_6wbc5"]
 
 [sub_resource type="Resource" id="Resource_5kvhr"]
 script = ExtResource("1_5kvhr")
@@ -19,5 +20,6 @@ type_1 = &"plant"
 evolutions = Array[ExtResource("1_5kvhr")]([SubResource("Resource_5kvhr")])
 front_normal = ExtResource("3_61ymj")
 back_normal = ExtResource("1_xywak")
-menu_normal = ExtResource("4_6wbc5")
+menu_normal = ExtResource("4_61ymj")
+overworld_normal = ExtResource("5_6wbc5")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

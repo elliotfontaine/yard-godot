@@ -4,7 +4,8 @@
 [ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_dn77u"]
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_ydvrq"]
 [ext_resource type="Texture2D" uid="uid://vv5v1nkvkdkf" path="res://example/godomon/assets/monsters/pythonova/front.webp" id="3_1gm2g"]
-[ext_resource type="Texture2D" uid="uid://dyknveigivia5" path="res://example/godomon/assets/monsters/pythonova/menu.webp" id="4_c08b2"]
+[ext_resource type="Texture2D" uid="uid://dyknveigivia5" path="res://example/godomon/assets/monsters/pythonova/icon.webp" id="4_1gm2g"]
+[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/???/overworld.webp" id="5_c08b2"]
 
 [resource]
 script = ExtResource("2_ydvrq")
@@ -12,5 +13,6 @@ name = "Pythonova"
 type_1 = &"fire"
 front_normal = ExtResource("3_1gm2g")
 back_normal = ExtResource("1_ad8sp")
-menu_normal = ExtResource("4_c08b2")
+menu_normal = ExtResource("4_1gm2g")
+overworld_normal = ExtResource("5_c08b2")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://dqcm16td8wutu"]
+
+[ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_cahy7"]
+[ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_4p5hu"]
+
+[resource]
+script = ExtResource("2_4p5hu")
+name = "Trantima"
+type_1 = &"primal"
+type_2 = &"metal"
+metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

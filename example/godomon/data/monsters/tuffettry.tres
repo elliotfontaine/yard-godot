@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://c06micpr6slh"]
+
+[ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_rf5lc"]
+[ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_kvsmt"]
+
+[resource]
+script = ExtResource("2_kvsmt")
+name = "Tuffettry"
+type_1 = &"sacred"
+metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

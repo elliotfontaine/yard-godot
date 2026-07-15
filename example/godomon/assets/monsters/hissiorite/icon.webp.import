@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dyknveigivia5"
-path="res://.godot/imported/menu.webp-d5e34ae48f1fab325b383dca7badd4a4.ctex"
+uid="uid://b7q67x8spknw5"
+path="res://.godot/imported/icon.webp-c43dadfb17689541e95fdab8d765e969.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://example/godomon/assets/monsters/pythonova/menu.webp"
-dest_files=["res://.godot/imported/menu.webp-d5e34ae48f1fab325b383dca7badd4a4.ctex"]
+source_file="res://example/godomon/assets/monsters/hissiorite/icon.webp"
+dest_files=["res://.godot/imported/icon.webp-c43dadfb17689541e95fdab8d765e969.ctex"]
 
 [params]
 

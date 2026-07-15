@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://v4x7np3lgd0q"
-path="res://.godot/imported/menu.webp-97a86e2a9da7113135287914bcdcdf57.ctex"
+uid="uid://d2i4qb3iyfhy7"
+path="res://.godot/imported/icon.webp-8c6a63e5490d09d5882538acfa378ca4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://example/godomon/assets/monsters/geckrow/menu.webp"
-dest_files=["res://.godot/imported/menu.webp-97a86e2a9da7113135287914bcdcdf57.ctex"]
+source_file="res://example/godomon/assets/monsters/anu/icon.webp"
+dest_files=["res://.godot/imported/icon.webp-8c6a63e5490d09d5882538acfa378ca4.ctex"]
 
 [params]
 

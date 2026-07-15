@@ -1,10 +1,19 @@
 [gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://b0x3s34hjgykc"]
 
 [ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_5wiho"]
+[ext_resource type="Texture2D" uid="uid://bvote40ftyfxo" path="res://example/godomon/assets/monsters/firomenis/back.webp" id="1_pa4ma"]
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_ur4jd"]
+[ext_resource type="Texture2D" uid="uid://dr1jgkcu8513a" path="res://example/godomon/assets/monsters/firomenis/front.webp" id="3_4sdp6"]
+[ext_resource type="Texture2D" uid="uid://c2fi1u4a7itto" path="res://example/godomon/assets/monsters/firomenis/icon.webp" id="4_eimye"]
+[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/???/overworld.webp" id="5_mrgby"]
 
 [resource]
 script = ExtResource("2_ur4jd")
 name = "Firomenis"
+type_1 = &"blight"
 type_2 = &"wind"
+front_normal = ExtResource("3_4sdp6")
+back_normal = ExtResource("1_pa4ma")
+menu_normal = ExtResource("4_eimye")
+overworld_normal = ExtResource("5_mrgby")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

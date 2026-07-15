@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://bh1bx57rhc5oc"]
+
+[ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_kkdmp"]
+[ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_0nw7q"]
+
+[resource]
+script = ExtResource("2_0nw7q")
+name = "Kankersaur"
+type_1 = &"earth"
+type_2 = &"blight"
+metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

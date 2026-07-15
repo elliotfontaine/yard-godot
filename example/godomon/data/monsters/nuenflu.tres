@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://07mhp5i74on6"]
+
+[ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_k2g3s"]
+[ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_ipihy"]
+
+[resource]
+script = ExtResource("2_ipihy")
+name = "Nuenflu"
+type_1 = &"ice"
+type_2 = &"blight"
+metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

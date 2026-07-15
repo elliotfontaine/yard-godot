@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://c4v2bfc8smyts"]
+
+[ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_426bs"]
+[ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_orxl7"]
+
+[resource]
+script = ExtResource("2_orxl7")
+name = "Rocotton"
+type_1 = &"sacred"
+metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

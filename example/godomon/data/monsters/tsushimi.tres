@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://lwraryrn23pv"]
+
+[ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_ftm8p"]
+[ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_7p64m"]
+
+[resource]
+script = ExtResource("2_7p64m")
+name = "Tsushimi"
+type_1 = &"water"
+metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

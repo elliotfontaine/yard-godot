@@ -4,6 +4,8 @@
 [ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_pc55f"]
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_mnue8"]
 [ext_resource type="Texture2D" uid="uid://clgs2ga5833hj" path="res://example/godomon/assets/monsters/varanitor/front.webp" id="3_28wnf"]
+[ext_resource type="Texture2D" uid="uid://3my0jttp3o5u" path="res://example/godomon/assets/monsters/???/icon.webp" id="4_esuf0"]
+[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/???/overworld.webp" id="5_cpxfo"]
 
 [resource]
 script = ExtResource("2_mnue8")
@@ -12,4 +14,6 @@ type_1 = &"plant"
 type_2 = &"earth"
 front_normal = ExtResource("3_28wnf")
 back_normal = ExtResource("1_0381u")
+menu_normal = ExtResource("4_esuf0")
+overworld_normal = ExtResource("5_cpxfo")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

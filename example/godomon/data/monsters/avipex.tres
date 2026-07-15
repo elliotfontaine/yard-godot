@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://ygawppwajimv"]
+
+[ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_w1qm4"]
+[ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_4gke5"]
+
+[resource]
+script = ExtResource("2_4gke5")
+name = "Avipex"
+type_1 = &"water"
+type_2 = &"wind"
+metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"
