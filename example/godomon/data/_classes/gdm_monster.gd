@@ -127,8 +127,8 @@ enum BodyColor {
 @export_group("Graphics")
 @export_subgroup("Sprites")
 @export var front_normal: CompressedTexture2D
-@export var back_normal: CompressedTexture2D
 @export var front_shiny: CompressedTexture2D
+@export var back_normal: CompressedTexture2D
 @export var back_shiny: CompressedTexture2D
 @export var menu_normal: CompressedTexture2D
 @export var menu_shiny: CompressedTexture2D

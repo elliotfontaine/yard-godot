@@ -1,11 +1,24 @@
 [gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://cd8qbwjc7n8yr"]
 
+[ext_resource type="Texture2D" uid="uid://b3r1gtd1pc71f" path="res://example/godomon/assets/monsters/battler/back_normal/Kankwart.png" id="1_eutci"]
 [ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_i7i6q"]
+[ext_resource type="Texture2D" uid="uid://wp7qwthqqj3k" path="res://example/godomon/assets/monsters/battler/back_shiny/Kankwart.png" id="2_k4acp"]
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_vt2tg"]
+[ext_resource type="Texture2D" uid="uid://3my0jttp3o5u" path="res://example/godomon/assets/monsters/icon/none.webp" id="4_eutci"]
+[ext_resource type="Texture2D" uid="uid://bsnokec0ejxok" path="res://example/godomon/assets/monsters/battler/front_normal/Kankwart.png" id="4_wx7b7"]
+[ext_resource type="Texture2D" uid="uid://c3lxl81o1gaxs" path="res://example/godomon/assets/monsters/battler/front_shiny/Kankwart.png" id="5_ehjfk"]
+[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/overworld/none.webp" id="5_k4acp"]
 
 [resource]
 script = ExtResource("2_vt2tg")
 name = "Kankwart"
 type_1 = &"earth"
 type_2 = &"blight"
+color = 2
+front_normal = ExtResource("4_wx7b7")
+front_shiny = ExtResource("5_ehjfk")
+back_normal = ExtResource("1_eutci")
+back_shiny = ExtResource("2_k4acp")
+menu_normal = ExtResource("4_eutci")
+overworld_normal = ExtResource("5_k4acp")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

@@ -1,10 +1,25 @@
 [gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://ci7iirsgvi2uk"]
 
 [ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_aetpw"]
+[ext_resource type="Texture2D" uid="uid://rufsubvec421" path="res://example/godomon/assets/monsters/battler/back_normal/TobishimiB5.png" id="1_sq7wr"]
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_lmolk"]
+[ext_resource type="Texture2D" uid="uid://dguxtcgp5u08k" path="res://example/godomon/assets/monsters/battler/back_shiny/TobishimiB5S.png" id="2_w5t0v"]
+[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/overworld/none.webp" id="2_yvlsp"]
+[ext_resource type="Texture2D" uid="uid://6dusla0qbe63" path="res://example/godomon/assets/monsters/battler/front_normal/TobishimiF.png" id="4_xgj05"]
+[ext_resource type="Texture2D" uid="uid://dlxm0tlthg6he" path="res://example/godomon/assets/monsters/battler/front_shiny/TobishimiFS.png" id="5_o33gj"]
+[ext_resource type="Texture2D" uid="uid://b2a5eeiy1mk61" path="res://example/godomon/assets/monsters/icon/normal/Tobishimi.png" id="6_cyl1e"]
+[ext_resource type="Texture2D" uid="uid://dgrqahkk6sil8" path="res://example/godomon/assets/monsters/icon/shiny/TobishimiS.png" id="7_krv5d"]
 
 [resource]
 script = ExtResource("2_lmolk")
 name = "Tobishimi"
 type_1 = &"water"
+color = 7
+front_normal = ExtResource("4_xgj05")
+front_shiny = ExtResource("5_o33gj")
+back_normal = ExtResource("1_sq7wr")
+back_shiny = ExtResource("2_w5t0v")
+menu_normal = ExtResource("6_cyl1e")
+menu_shiny = ExtResource("7_krv5d")
+overworld_normal = ExtResource("2_yvlsp")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

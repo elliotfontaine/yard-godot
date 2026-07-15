@@ -1,10 +1,25 @@
 [gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://ct3yjqwuokgmi"]
 
 [ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_0vanl"]
+[ext_resource type="Texture2D" uid="uid://jr4hv010qg04" path="res://example/godomon/assets/monsters/battler/back_normal/DrashimiB5.png" id="1_p2o3h"]
+[ext_resource type="Texture2D" uid="uid://c5nlxp0dovbp8" path="res://example/godomon/assets/monsters/battler/back_shiny/DrashimiB5S.png" id="2_5bj71"]
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_ao2h4"]
+[ext_resource type="Texture2D" uid="uid://bonccyot4k7l4" path="res://example/godomon/assets/monsters/battler/front_normal/DrashimiF.png" id="4_4wx7u"]
+[ext_resource type="Texture2D" uid="uid://35miqu7y35a8" path="res://example/godomon/assets/monsters/battler/front_shiny/DrashimiFS.png" id="5_o0kge"]
+[ext_resource type="Texture2D" uid="uid://blnloydoxw8c8" path="res://example/godomon/assets/monsters/icon/normal/Drashimi.png" id="6_ve0m7"]
+[ext_resource type="Texture2D" uid="uid://dpllov7e0y8xb" path="res://example/godomon/assets/monsters/icon/shiny/DrashimiS.png" id="7_pekpg"]
+[ext_resource type="Texture2D" uid="uid://c3bsg363xofb2" path="res://example/godomon/assets/monsters/overworld/normal/Drashimi.png" id="8_p2o3h"]
 
 [resource]
 script = ExtResource("2_ao2h4")
 name = "Drashimi"
 type_1 = &"water"
+color = 8
+front_normal = ExtResource("4_4wx7u")
+front_shiny = ExtResource("5_o0kge")
+back_normal = ExtResource("1_p2o3h")
+back_shiny = ExtResource("2_5bj71")
+menu_normal = ExtResource("6_ve0m7")
+menu_shiny = ExtResource("7_pekpg")
+overworld_normal = ExtResource("8_p2o3h")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

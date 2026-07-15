@@ -1,18 +1,24 @@
 [gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://cf6y3rk4o36xp"]
 
+[ext_resource type="Texture2D" uid="uid://ckm4j5e71w4rr" path="res://example/godomon/assets/monsters/battler/front_normal/Baoby.png" id="1_jaaas"]
 [ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_si43g"]
-[ext_resource type="Texture2D" uid="uid://b17cgy3dw6n1o" path="res://example/godomon/assets/monsters/baoby/back.webp" id="1_vbqf6"]
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_6qstg"]
-[ext_resource type="Texture2D" uid="uid://cm613m2f68emy" path="res://example/godomon/assets/monsters/baoby/front.webp" id="3_qcfhi"]
-[ext_resource type="Texture2D" uid="uid://b2uxb8sd4jkk2" path="res://example/godomon/assets/monsters/baoby/icon.webp" id="4_jaaas"]
-[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/???/overworld.webp" id="5_knm44"]
+[ext_resource type="Texture2D" uid="uid://cra5t4go0hmyf" path="res://example/godomon/assets/monsters/battler/back_shiny/BaobyB5S.png" id="2_knm44"]
+[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/overworld/none.webp" id="2_lc1a4"]
+[ext_resource type="Texture2D" uid="uid://2310j1bxrecq" path="res://example/godomon/assets/monsters/battler/front_shiny/BaobyS.png" id="4_m8atu"]
+[ext_resource type="Texture2D" uid="uid://n4ridgm417xy" path="res://example/godomon/assets/monsters/icon/normal/Baoby.png" id="5_wy07g"]
+[ext_resource type="Texture2D" uid="uid://bsoaaklcd35gm" path="res://example/godomon/assets/monsters/icon/shiny/BaobyS.png" id="6_7i6hl"]
 
 [resource]
 script = ExtResource("2_6qstg")
 name = "Baoby"
 type_1 = &"plant"
-front_normal = ExtResource("3_qcfhi")
-back_normal = ExtResource("1_vbqf6")
-menu_normal = ExtResource("4_jaaas")
-overworld_normal = ExtResource("5_knm44")
+color = 2
+front_normal = ExtResource("1_jaaas")
+front_shiny = ExtResource("4_m8atu")
+back_normal = ExtResource("1_jaaas")
+back_shiny = ExtResource("2_knm44")
+menu_normal = ExtResource("5_wy07g")
+menu_shiny = ExtResource("6_7i6hl")
+overworld_normal = ExtResource("2_lc1a4")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

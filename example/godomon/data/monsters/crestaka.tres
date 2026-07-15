@@ -1,10 +1,19 @@
 [gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://i6q534w0hh0e"]
 
 [ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_akrwv"]
+[ext_resource type="Texture2D" uid="uid://d4b865dda72rh" path="res://example/godomon/assets/monsters/battler/front_normal/Crestaka.png" id="2_g2eoy"]
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_pokdu"]
+[ext_resource type="Texture2D" uid="uid://dqsvovjm5qjij" path="res://example/godomon/assets/monsters/battler/front_shiny/Crestaka.png" id="3_4a85s"]
+[ext_resource type="Texture2D" uid="uid://3my0jttp3o5u" path="res://example/godomon/assets/monsters/icon/none.webp" id="4_2voj7"]
+[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/overworld/none.webp" id="5_48ay2"]
 
 [resource]
 script = ExtResource("2_pokdu")
 name = "Crestaka"
 type_1 = &"water"
+color = 1
+front_normal = ExtResource("2_g2eoy")
+front_shiny = ExtResource("3_4a85s")
+menu_normal = ExtResource("4_2voj7")
+overworld_normal = ExtResource("5_48ay2")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

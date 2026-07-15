@@ -1,11 +1,24 @@
 [gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://bf1nj41fbjphr"]
 
 [ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_bs0f4"]
+[ext_resource type="Texture2D" uid="uid://cs8ctjqeum873" path="res://example/godomon/assets/monsters/battler/back_normal/Lollybog.png" id="1_n13gr"]
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_5pmys"]
+[ext_resource type="Texture2D" uid="uid://dcmjaskw3qij5" path="res://example/godomon/assets/monsters/battler/back_shiny/Lollybog.png" id="2_d5hfm"]
+[ext_resource type="Texture2D" uid="uid://cdslhgoc66ny4" path="res://example/godomon/assets/monsters/battler/front_normal/Lollybog.png" id="4_fbrku"]
+[ext_resource type="Texture2D" uid="uid://3my0jttp3o5u" path="res://example/godomon/assets/monsters/icon/none.webp" id="4_n13gr"]
+[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/overworld/none.webp" id="5_d5hfm"]
+[ext_resource type="Texture2D" uid="uid://clnlgldors2op" path="res://example/godomon/assets/monsters/battler/front_shiny/Lollybog.png" id="5_mw6bn"]
 
 [resource]
 script = ExtResource("2_5pmys")
 name = "Lollybog"
 type_1 = &"dread"
 type_2 = &"primal"
+color = 6
+front_normal = ExtResource("4_fbrku")
+front_shiny = ExtResource("5_mw6bn")
+back_normal = ExtResource("1_n13gr")
+back_shiny = ExtResource("2_d5hfm")
+menu_normal = ExtResource("4_n13gr")
+overworld_normal = ExtResource("5_d5hfm")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

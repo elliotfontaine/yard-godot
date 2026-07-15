@@ -1,11 +1,24 @@
 [gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://bh1bx57rhc5oc"]
 
+[ext_resource type="Texture2D" uid="uid://chn051v7crhcw" path="res://example/godomon/assets/monsters/battler/back_normal/Kankersaur.png" id="1_30obm"]
 [ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_kkdmp"]
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_0nw7q"]
+[ext_resource type="Texture2D" uid="uid://6sodnixocb6q" path="res://example/godomon/assets/monsters/battler/back_shiny/Kankersaur.png" id="2_2q7dr"]
+[ext_resource type="Texture2D" uid="uid://bwab251rf0ja" path="res://example/godomon/assets/monsters/battler/front_normal/Kankersaur.png" id="4_8e1qb"]
+[ext_resource type="Texture2D" uid="uid://3my0jttp3o5u" path="res://example/godomon/assets/monsters/icon/none.webp" id="4_30obm"]
+[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/overworld/none.webp" id="5_2q7dr"]
+[ext_resource type="Texture2D" uid="uid://ccvgx1rqgbjt5" path="res://example/godomon/assets/monsters/battler/front_shiny/Kankersaur.png" id="5_bxw5d"]
 
 [resource]
 script = ExtResource("2_0nw7q")
 name = "Kankersaur"
 type_1 = &"earth"
 type_2 = &"blight"
+color = 5
+front_normal = ExtResource("4_8e1qb")
+front_shiny = ExtResource("5_bxw5d")
+back_normal = ExtResource("1_30obm")
+back_shiny = ExtResource("2_2q7dr")
+menu_normal = ExtResource("4_30obm")
+overworld_normal = ExtResource("5_2q7dr")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

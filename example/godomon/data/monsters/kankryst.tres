@@ -1,11 +1,24 @@
 [gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://bwyhwx4dfqbl4"]
 
 [ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_3x3eh"]
+[ext_resource type="Texture2D" uid="uid://bwst2hv8xgtxn" path="res://example/godomon/assets/monsters/battler/back_normal/Kankryst.png" id="1_irtbp"]
+[ext_resource type="Texture2D" uid="uid://bbqsunh5b7vak" path="res://example/godomon/assets/monsters/battler/back_shiny/Kankryst.png" id="2_7yib5"]
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_o01fb"]
+[ext_resource type="Texture2D" uid="uid://3my0jttp3o5u" path="res://example/godomon/assets/monsters/icon/none.webp" id="4_irtbp"]
+[ext_resource type="Texture2D" uid="uid://bdlkgvuco6lpu" path="res://example/godomon/assets/monsters/battler/front_normal/Kankryst.png" id="4_iwc2j"]
+[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/overworld/none.webp" id="5_7yib5"]
+[ext_resource type="Texture2D" uid="uid://bjhbckl8w8mfc" path="res://example/godomon/assets/monsters/battler/front_shiny/Kankryst.png" id="5_ge0js"]
 
 [resource]
 script = ExtResource("2_o01fb")
 name = "Kankryst"
 type_1 = &"earth"
 type_2 = &"blight"
+color = 2
+front_normal = ExtResource("4_iwc2j")
+front_shiny = ExtResource("5_ge0js")
+back_normal = ExtResource("1_irtbp")
+back_shiny = ExtResource("2_7yib5")
+menu_normal = ExtResource("4_irtbp")
+overworld_normal = ExtResource("5_7yib5")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

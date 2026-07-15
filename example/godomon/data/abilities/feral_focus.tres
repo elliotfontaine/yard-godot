@@ -5,5 +5,5 @@
 [resource]
 script = ExtResource("1_ability")
 name = "Feral Focus"
-description = "The monster's Attack rises while it is afflicted with Frenzy."
+description = "The monster's Attack rises when it is afflicted with Frenzy."
 ability_handler = &"boost_while_afflicted_frenzy_atk"

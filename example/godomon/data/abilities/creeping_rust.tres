@@ -5,5 +5,5 @@
 [resource]
 script = ExtResource("1_ability")
 name = "Creeping Rust"
-description = "Any attacker that hit the monster with a contact move that turn is left with Corrosion."
+description = "Any attacker that hit the monster with a contact move is afflicted with Corrosion."
 ability_handler = &"spread_status_contact_corrosion"

@@ -2,10 +2,20 @@
 
 [ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_w1qm4"]
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_4gke5"]
+[ext_resource type="Texture2D" uid="uid://nrdausaamjg0" path="res://example/godomon/assets/monsters/battler/front_normal/Avipex.png" id="2_kjgkx"]
+[ext_resource type="Texture2D" uid="uid://pmgo7f443str" path="res://example/godomon/assets/monsters/battler/front_shiny/Avipex.png" id="3_lpyfx"]
+[ext_resource type="Texture2D" uid="uid://3my0jttp3o5u" path="res://example/godomon/assets/monsters/icon/none.webp" id="4_s7ky5"]
+[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/overworld/none.webp" id="5_sqmlf"]
 
 [resource]
 script = ExtResource("2_4gke5")
 name = "Avipex"
 type_1 = &"water"
 type_2 = &"wind"
+color = 1
+front_normal = ExtResource("2_kjgkx")
+front_shiny = ExtResource("3_lpyfx")
+menu_normal = ExtResource("4_s7ky5")
+menu_shiny = ExtResource("4_s7ky5")
+overworld_normal = ExtResource("5_sqmlf")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"
