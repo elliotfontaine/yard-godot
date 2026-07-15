@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="GdmAbility" format=3 uid="uid://ciyp5ns8xnptm"]
+
+[ext_resource type="Script" uid="uid://c25g41fqm0fyx" path="res://example/godomon/data/_classes/gdm_ability.gd" id="1_ability"]
+
+[resource]
+script = ExtResource("1_ability")
+name = "Sunfed"
+description = "The monster's Sp. Atk rises while the sun is harsh."
+ability_handler = &"weather_boost_spatk_sun"

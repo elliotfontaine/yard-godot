@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="GdmAbility" format=3 uid="uid://b8kk8551psdme"]
+
+[ext_resource type="Script" uid="uid://c25g41fqm0fyx" path="res://example/godomon/data/_classes/gdm_ability.gd" id="1_ability"]
+
+[resource]
+script = ExtResource("1_ability")
+name = "Last Ember"
+description = "When the monster's HP drops below one third, its Fire-type moves grow stronger."
+ability_handler = &"pinch_boost_fire"

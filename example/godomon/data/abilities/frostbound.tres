@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="GdmAbility" format=3 uid="uid://c2xa3latjli8i"]
+
+[ext_resource type="Script" uid="uid://c25g41fqm0fyx" path="res://example/godomon/data/_classes/gdm_ability.gd" id="1_ability"]
+
+[resource]
+script = ExtResource("1_ability")
+name = "Frostbound"
+description = "Whenever the monster is hit by an Ice-type move, its Defense rises instead of taking damage."
+ability_handler = &"absorb_ice_boost_def"

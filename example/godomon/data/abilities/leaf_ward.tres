@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="GdmAbility" format=3 uid="uid://bh2xlb2lfcd73"]
+
+[ext_resource type="Script" uid="uid://c25g41fqm0fyx" path="res://example/godomon/data/_classes/gdm_ability.gd" id="1_ability"]
+
+[resource]
+script = ExtResource("1_ability")
+name = "Leaf Ward"
+description = "Whenever the monster is hit by a Plant-type move, it heals instead of taking damage."
+ability_handler = &"absorb_plant_heal"

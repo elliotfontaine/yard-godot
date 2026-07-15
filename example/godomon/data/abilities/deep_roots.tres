@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="GdmAbility" format=3 uid="uid://tm7epo2ttncy"]
+
+[ext_resource type="Script" uid="uid://c25g41fqm0fyx" path="res://example/godomon/data/_classes/gdm_ability.gd" id="1_ability"]
+
+[resource]
+script = ExtResource("1_ability")
+name = "Deep Roots"
+description = "The monster cannot be forced to switch out by another monster's move or ability."
+ability_handler = &"cannot_be_forced_out"

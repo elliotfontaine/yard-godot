@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="GdmAbility" format=3 uid="uid://dphb7k5pamu06"]
+
+[ext_resource type="Script" uid="uid://c25g41fqm0fyx" path="res://example/godomon/data/_classes/gdm_ability.gd" id="1_ability"]
+
+[resource]
+script = ExtResource("1_ability")
+name = "Alpha Instinct"
+description = "The monster's Attack rises whenever one of its moves lands a critical hit."
+ability_handler = &"boost_atk_on_own_crit"

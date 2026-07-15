@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="GdmAbility" format=3 uid="uid://cj2aky82cuy4"]
+
+[ext_resource type="Script" uid="uid://c25g41fqm0fyx" path="res://example/godomon/data/_classes/gdm_ability.gd" id="1_ability"]
+
+[resource]
+script = ExtResource("1_ability")
+name = "Steady Recovery"
+description = "Restores a little of the monster's max HP at the end of every turn."
+ability_handler = &"heal_end_of_turn_flat"

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="GdmAbility" format=3 uid="uid://bjsl3h1uhuog1"]
+
+[ext_resource type="Script" uid="uid://c25g41fqm0fyx" path="res://example/godomon/data/_classes/gdm_ability.gd" id="1_ability"]
+
+[resource]
+script = ExtResource("1_ability")
+name = "Creeping Frost"
+description = "Lowers the Speed of opposing monsters when the monster enters battle."
+ability_handler = &"lower_foe_speed_on_switch_in"

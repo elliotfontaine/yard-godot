@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="GdmAbility" format=3 uid="uid://bdnhuxnifgf05"]
+
+[ext_resource type="Script" uid="uid://c25g41fqm0fyx" path="res://example/godomon/data/_classes/gdm_ability.gd" id="1_ability"]
+
+[resource]
+script = ExtResource("1_ability")
+name = "Springwell"
+description = "Whenever the monster is hit by a Water-type move, it heals instead of taking damage."
+ability_handler = &"absorb_water_heal"

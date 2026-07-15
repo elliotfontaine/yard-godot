@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="GdmAbility" format=3 uid="uid://ddotj0vved2pm"]
+
+[ext_resource type="Script" uid="uid://c25g41fqm0fyx" path="res://example/godomon/data/_classes/gdm_ability.gd" id="1_ability"]
+
+[resource]
+script = ExtResource("1_ability")
+name = "Thornplate"
+description = "Deals damage equal to one eighth of the attacker's max HP when it makes contact with the monster."
+ability_handler = &"contact_damage_eighth"

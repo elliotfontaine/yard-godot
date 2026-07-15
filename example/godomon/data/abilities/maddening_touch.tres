@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="GdmAbility" format=3 uid="uid://cav208vokn4c"]
+
+[ext_resource type="Script" uid="uid://c25g41fqm0fyx" path="res://example/godomon/data/_classes/gdm_ability.gd" id="1_ability"]
+
+[resource]
+script = ExtResource("1_ability")
+name = "Maddening Touch"
+description = "Has a 30% chance to inflict Frenzy on any attacker that hits the monster with a contact move."
+ability_handler = &"contact_frenzy_30"
