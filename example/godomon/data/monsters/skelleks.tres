@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://buyiv1mklk0jl"]
+
+[ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dneegcs0wljqv" path="res://example/godomon/assets/monsters/battler/front_normal/Skelleks.png" id="2_frontn"]
+[ext_resource type="Texture2D" uid="uid://c4sqav41k5a1m" path="res://example/godomon/assets/monsters/battler/front_shiny/Skelleks.png" id="3_fronts"]
+[ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="3_yu0dl"]
+[ext_resource type="Texture2D" uid="uid://ta67cgjk85tb" path="res://example/godomon/assets/monsters/battler/back_normal/Skelleks.png" id="4_backn"]
+[ext_resource type="Texture2D" uid="uid://ln1qjxuvbxvx" path="res://example/godomon/assets/monsters/battler/back_shiny/Skelleks.png" id="5_backs"]
+
+[resource]
+script = ExtResource("1_script")
+name = "Skelleks"
+type_1 = &"dread"
+type_2 = &"electric"
+front_normal = ExtResource("2_frontn")
+front_shiny = ExtResource("3_fronts")
+back_normal = ExtResource("4_backn")
+back_shiny = ExtResource("5_backs")

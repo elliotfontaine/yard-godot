@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://p1ha30y8aowg"]
+
+[ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bcv2d4v5kt4ae" path="res://example/godomon/assets/monsters/battler/front_normal/Hoolihog.png" id="2_frontn"]
+[ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="3_ec17d"]
+[ext_resource type="Texture2D" uid="uid://d2dokp3pdjdh0" path="res://example/godomon/assets/monsters/battler/front_shiny/Hoolihog.png" id="3_fronts"]
+[ext_resource type="Texture2D" uid="uid://dtp4h7v48g8rn" path="res://example/godomon/assets/monsters/battler/back_normal/Hoolihog.png" id="4_backn"]
+[ext_resource type="Texture2D" uid="uid://bgrdi4exu3hmw" path="res://example/godomon/assets/monsters/battler/back_shiny/Hoolihog.png" id="5_backs"]
+
+[resource]
+script = ExtResource("1_script")
+name = "Hoolihog"
+type_2 = &"dread"
+color = 5
+front_normal = ExtResource("2_frontn")
+front_shiny = ExtResource("3_fronts")
+back_normal = ExtResource("4_backn")
+back_shiny = ExtResource("5_backs")

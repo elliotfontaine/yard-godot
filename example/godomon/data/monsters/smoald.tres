@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://bq6wcok0yvgke"]
+
+[ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://crj1gg7ibjgyf" path="res://example/godomon/assets/monsters/battler/front_normal/Smoald.png" id="2_frontn"]
+[ext_resource type="Texture2D" uid="uid://c0j6ni53vp3si" path="res://example/godomon/assets/monsters/battler/front_shiny/Smoald.png" id="3_fronts"]
+[ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="3_q23kg"]
+[ext_resource type="Texture2D" uid="uid://dsb08ilibfucu" path="res://example/godomon/assets/monsters/battler/back_normal/Smoald.png" id="4_backn"]
+[ext_resource type="Texture2D" uid="uid://bt1ofsxprwxn8" path="res://example/godomon/assets/monsters/battler/back_shiny/Smoald.png" id="5_backs"]
+
+[resource]
+script = ExtResource("1_script")
+name = "Smoald"
+type_1 = &"fire"
+color = 9
+front_normal = ExtResource("2_frontn")
+front_shiny = ExtResource("3_fronts")
+back_normal = ExtResource("4_backn")
+back_shiny = ExtResource("5_backs")
