@@ -2,10 +2,22 @@
 # SPDX-FileCopyrightText: 2026-present, YARD contributors (see AUTHORS.md)
 #
 # SPDX-License-Identifier: MIT
+@icon("res://example/godomon/assets/class_icons/atom.svg")
+@tool
 class_name GdmEvolution
 extends Resource
 
-enum Method { LEVEL, ITEM, TRADE, HAPPINESS, LEVEL_DAY, LEVEL_NIGHT, HOLD_ITEM, KNOWS_MOVE, LOCATION }
+enum Method {
+	LEVEL,
+	ITEM,
+	TRADE,
+	HAPPINESS,
+	LEVEL_DAY,
+	LEVEL_NIGHT,
+	HOLD_ITEM,
+	KNOWS_MOVE,
+	LOCATION,
+}
 
 @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://example/godomon/data/monsters.tres") var target: StringName
 @export var method: Method = Method.LEVEL
@@ -16,7 +28,8 @@ enum Method { LEVEL, ITEM, TRADE, HAPPINESS, LEVEL_DAY, LEVEL_NIGHT, HOLD_ITEM, 
 func _to_string() -> String:
 	var elements := []
 	elements.append(target if target else &"UNDEFINED")
-	elements.append(str(method))
+	if method in Method.values():
+		elements.append(Method.keys()[method])
 	if parameter:
 		elements.append(str(parameter))
 	if parameter_id:

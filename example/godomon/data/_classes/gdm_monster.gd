@@ -2,6 +2,8 @@
 # SPDX-FileCopyrightText: 2026-present, YARD contributors (see AUTHORS.md)
 #
 # SPDX-License-Identifier: MIT
+@tool
+@icon("res://example/godomon/assets/class_icons/dragon.svg")
 class_name GdmMonster
 extends Resource
 
@@ -26,20 +28,20 @@ enum GrowthRate {
 }
 
 enum EggGroup {
-	MONSTER,
-	SEA_CREATURE,
-	BUG,
-	FLYING,
-	FIELD,
-	FAIRY,
-	VEGETAL,
-	HUMANLIKE,
-	SHELLFISH,
-	MINERAL,
-	AMORPHOUS,
-	FISH,
-	DRAGON,
-	UNDISCOVERED,
+	MONSTER = 1 << 0,
+	SEA_CREATURE = 1 << 1,
+	BUG = 1 << 2,
+	FLYING = 1 << 3,
+	FIELD = 1 << 4,
+	FAIRY = 1 << 5,
+	VEGETAL = 1 << 6,
+	HUMANLIKE = 1 << 7,
+	SHELLFISH = 1 << 8,
+	MINERAL = 1 << 9,
+	AMORPHOUS = 1 << 10,
+	FISH = 1 << 11,
+	DRAGON = 1 << 12,
+	UNDISCOVERED = 1 << 13,
 }
 
 ## Body shape silhouette, used for dex sorting/filtering
@@ -105,10 +107,10 @@ enum BodyColor {
 @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://example/godomon/data/abilities.tres") var hidden_abilities: Array[StringName]
 
 @export_group("Breeding")
-@export var egg_groups: Array[EggGroup] = [EggGroup.UNDISCOVERED]
 @export var step_cycles: int = 1
 @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://example/godomon/data/items.tres") var incense: StringName
 @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://example/godomon/data/monsters.tres") var custom_offspring: Array[StringName]
+@export var egg_groups: int = EggGroup.UNDISCOVERED # See `_validate_property`
 
 @export_group("Wild Held Items")
 @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://example/godomon/data/items.tres") var wild_item_common: Array[StringName] # 50%
@@ -142,3 +144,9 @@ enum BodyColor {
 @export_group("Audio")
 @export var cry: AudioStream
 @export var cry_faint: AudioStream
+
+
+func _validate_property(property: Dictionary) -> void:
+	if property.name == "egg_groups":
+		property.hint = PROPERTY_HINT_FLAGS
+		property.hint_string = ",".join(EggGroup.keys())

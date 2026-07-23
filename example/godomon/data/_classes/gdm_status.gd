@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2026-present, YARD contributors (see AUTHORS.md)
 #
 # SPDX-License-Identifier: MIT
+@icon("res://example/godomon/assets/class_icons/spiral.svg")
 class_name GdmStatus
 extends Resource
 
