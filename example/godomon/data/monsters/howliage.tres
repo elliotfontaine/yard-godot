@@ -7,17 +7,11 @@
 [ext_resource type="Texture2D" uid="uid://cra1i7bg11yg1" path="res://example/godomon/assets/monsters/battler/back_normal/Howliage.png" id="4_backn"]
 [ext_resource type="Texture2D" uid="uid://g2y0on7s3ret" path="res://example/godomon/assets/monsters/battler/back_shiny/Howliage.png" id="5_backs"]
 
-[sub_resource type="Resource" id="Resource_414uh"]
-script = ExtResource("3_414uh")
-target = &"botanine"
-parameter = 36
-metadata/_custom_type_script = "uid://dh362naomk3hc"
-
 [resource]
 script = ExtResource("1_script")
 name = "Howliage"
 type_2 = &"plant"
-evolutions = Array[ExtResource("3_414uh")]([SubResource("Resource_414uh")])
+gender_ratio = 2
 color = 4
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")

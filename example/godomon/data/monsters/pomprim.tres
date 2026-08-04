@@ -12,6 +12,7 @@ script = ExtResource("2_0y4x4")
 name = "Pomprim"
 type_1 = &"plant"
 type_2 = &"sacred"
+gender_ratio = 1
 color = 4
 shape = 11
 front_normal = ExtResource("4_wnocm")

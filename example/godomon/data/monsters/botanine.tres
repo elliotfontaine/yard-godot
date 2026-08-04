@@ -11,6 +11,7 @@
 script = ExtResource("1_script")
 name = "Botanine"
 type_2 = &"plant"
+gender_ratio = 2
 color = 4
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")

@@ -7,16 +7,10 @@
 [ext_resource type="Texture2D" uid="uid://2qyodxiwjlnb" path="res://example/godomon/assets/monsters/battler/back_normal/Timberry.png" id="4_backn"]
 [ext_resource type="Texture2D" uid="uid://b233y8hd4pb7o" path="res://example/godomon/assets/monsters/battler/back_shiny/Timberry.png" id="5_backs"]
 
-[sub_resource type="Resource" id="Resource_h4ah6"]
-script = ExtResource("3_h4ah6")
-target = &"howliage"
-parameter = 16
-metadata/_custom_type_script = "uid://dh362naomk3hc"
-
 [resource]
 script = ExtResource("1_script")
 name = "Timberry"
-evolutions = Array[ExtResource("3_h4ah6")]([SubResource("Resource_h4ah6")])
+gender_ratio = 2
 color = 4
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")

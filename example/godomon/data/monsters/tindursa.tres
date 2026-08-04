@@ -7,18 +7,13 @@
 [ext_resource type="Texture2D" uid="uid://b3mj4qwrnncpf" path="res://example/godomon/assets/monsters/battler/back_normal/Tindursa.png" id="4_backn"]
 [ext_resource type="Texture2D" uid="uid://yimmtc3eac71" path="res://example/godomon/assets/monsters/battler/back_shiny/Tindursa.png" id="5_backs"]
 
-[sub_resource type="Resource" id="Resource_n7ofq"]
-script = ExtResource("3_n7ofq")
-target = &"sizzly"
-parameter = 36
-metadata/_custom_type_script = "uid://dh362naomk3hc"
-
 [resource]
 script = ExtResource("1_script")
 name = "Tindursa"
 type_2 = &"fire"
-evolutions = Array[ExtResource("3_n7ofq")]([SubResource("Resource_n7ofq")])
+gender_ratio = 2
 color = 7
+shape = 11
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")
 back_normal = ExtResource("4_backn")

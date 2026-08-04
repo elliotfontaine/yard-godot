@@ -10,10 +10,17 @@
 [ext_resource type="Texture2D" uid="uid://bsoaaklcd35gm" path="res://example/godomon/assets/monsters/icon/shiny/BaobyS.png" id="6_7i6hl"]
 [ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/overworld/none.webp" id="8_m8atu"]
 
+[sub_resource type="Resource" id="Resource_knm44"]
+script = ExtResource("1_si43g")
+target_species = &"baobaraffe"
+min_level = 38
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("2_6qstg")
 name = "Baoby"
 type_1 = &"plant"
+evolutions = Array[ExtResource("1_si43g")]([SubResource("Resource_knm44")])
 color = 2
 front_normal = ExtResource("1_jaaas")
 front_shiny = ExtResource("4_m8atu")

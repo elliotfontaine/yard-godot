@@ -12,6 +12,7 @@ script = ExtResource("2_lgtn2")
 name = "Saurky"
 type_1 = &"water"
 color = 1
+shape = 5
 front_normal = ExtResource("2_w0s2h")
 front_shiny = ExtResource("3_es18f")
 menu_normal = ExtResource("4_s56h0")

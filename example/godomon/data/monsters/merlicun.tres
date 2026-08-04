@@ -15,6 +15,7 @@ script = ExtResource("2_xso5v")
 name = "Merlicun"
 type_1 = &"blight"
 color = 4
+shape = 13
 front_normal = ExtResource("4_e3k7t")
 front_shiny = ExtResource("5_dd7xe")
 back_normal = ExtResource("1_d74cx")

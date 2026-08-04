@@ -16,6 +16,7 @@ name = "Firomenis"
 type_1 = &"blight"
 type_2 = &"wind"
 color = 7
+shape = 8
 front_normal = ExtResource("4_4kufk")
 front_shiny = ExtResource("5_d56cq")
 back_normal = ExtResource("1_mrgby")

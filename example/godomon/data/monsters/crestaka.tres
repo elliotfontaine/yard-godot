@@ -12,6 +12,7 @@ script = ExtResource("2_pokdu")
 name = "Crestaka"
 type_1 = &"water"
 color = 1
+shape = 5
 front_normal = ExtResource("2_g2eoy")
 front_shiny = ExtResource("3_4a85s")
 menu_normal = ExtResource("4_2voj7")

@@ -13,6 +13,7 @@ name = "Avipex"
 type_1 = &"water"
 type_2 = &"wind"
 color = 1
+shape = 5
 front_normal = ExtResource("2_kjgkx")
 front_shiny = ExtResource("3_lpyfx")
 menu_normal = ExtResource("4_s7ky5")

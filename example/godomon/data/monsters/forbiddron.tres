@@ -14,6 +14,7 @@ script = ExtResource("2_bfmqa")
 name = "Forbiddron"
 type_1 = &"dread"
 color = 6
+shape = 4
 front_normal = ExtResource("4_6yjr0")
 front_shiny = ExtResource("5_18adi")
 back_normal = ExtResource("1_hlbgq")

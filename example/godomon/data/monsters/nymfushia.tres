@@ -13,6 +13,7 @@ name = "Nymfushia"
 type_1 = &"dread"
 type_2 = &"wind"
 color = 6
+shape = 8
 front_normal = ExtResource("4_pc1aj")
 front_shiny = ExtResource("5_lv2fd")
 back_normal = ExtResource("1_g4256")

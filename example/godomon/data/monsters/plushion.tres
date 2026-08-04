@@ -11,7 +11,9 @@
 script = ExtResource("2_aomiu")
 name = "Plushion"
 type_1 = &"sacred"
+gender_ratio = 5
 color = 5
+shape = 6
 front_normal = ExtResource("4_ifav4")
 front_shiny = ExtResource("5_6s5v3")
 back_normal = ExtResource("1_8xsp6")

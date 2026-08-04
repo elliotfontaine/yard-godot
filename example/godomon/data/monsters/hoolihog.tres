@@ -11,7 +11,9 @@
 script = ExtResource("1_script")
 name = "Hoolihog"
 type_2 = &"dread"
+gender_ratio = 3
 color = 5
+shape = 5
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")
 back_normal = ExtResource("4_backn")

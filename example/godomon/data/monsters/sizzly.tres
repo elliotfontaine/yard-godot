@@ -11,7 +11,9 @@
 script = ExtResource("1_script")
 name = "Sizzly"
 type_2 = &"fire"
+gender_ratio = 2
 color = 7
+shape = 11
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")
 back_normal = ExtResource("4_backn")

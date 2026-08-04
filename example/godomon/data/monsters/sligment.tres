@@ -11,8 +11,8 @@
 script = ExtResource("1_script")
 name = "Sligment"
 type_1 = &"water"
-type_2 = &"blight"
 color = 5
+shape = 1
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")
 back_normal = ExtResource("4_backn")

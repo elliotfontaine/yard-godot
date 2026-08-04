@@ -10,6 +10,7 @@
 [resource]
 script = ExtResource("1_script")
 name = "Droopig"
+gender_ratio = 3
 color = 5
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")

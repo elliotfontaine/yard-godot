@@ -12,6 +12,7 @@ script = ExtResource("1_script")
 name = "Pourka"
 type_1 = &"water"
 color = 1
+shape = 4
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")
 back_normal = ExtResource("4_backn")

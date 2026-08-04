@@ -13,6 +13,7 @@ name = "Umbreeze"
 type_1 = &"dread"
 type_2 = &"wind"
 color = 1
+shape = 11
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")
 back_normal = ExtResource("4_backn")

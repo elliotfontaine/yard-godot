@@ -11,7 +11,9 @@
 script = ExtResource("2_orxl7")
 name = "Rocotton"
 type_1 = &"sacred"
+gender_ratio = 5
 color = 5
+shape = 11
 front_normal = ExtResource("4_h74tv")
 front_shiny = ExtResource("5_nsvce")
 back_normal = ExtResource("1_nyojm")

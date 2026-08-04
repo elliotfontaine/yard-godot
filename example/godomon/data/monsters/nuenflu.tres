@@ -16,6 +16,7 @@ name = "Nuenflu"
 type_1 = &"ice"
 type_2 = &"blight"
 color = 2
+shape = 5
 front_normal = ExtResource("4_a6g68")
 front_shiny = ExtResource("5_r10qs")
 back_normal = ExtResource("1_s3clt")

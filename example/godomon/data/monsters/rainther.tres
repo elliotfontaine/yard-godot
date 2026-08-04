@@ -11,6 +11,7 @@
 script = ExtResource("1_script")
 name = "Rainther"
 type_2 = &"water"
+gender_ratio = 2
 color = 1
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")

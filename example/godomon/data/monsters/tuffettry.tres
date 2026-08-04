@@ -11,7 +11,9 @@
 script = ExtResource("2_kvsmt")
 name = "Tuffettry"
 type_1 = &"sacred"
+gender_ratio = 5
 color = 5
+shape = 11
 front_normal = ExtResource("4_kqjn8")
 front_shiny = ExtResource("5_tultb")
 back_normal = ExtResource("1_mqd5s")

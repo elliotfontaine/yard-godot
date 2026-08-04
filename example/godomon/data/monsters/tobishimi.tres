@@ -14,6 +14,7 @@
 script = ExtResource("2_lmolk")
 name = "Tobishimi"
 type_1 = &"water"
+type_2 = &"primal"
 color = 7
 front_normal = ExtResource("4_xgj05")
 front_shiny = ExtResource("5_o33gj")

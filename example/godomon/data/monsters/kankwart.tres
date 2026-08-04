@@ -9,11 +9,18 @@
 [ext_resource type="Texture2D" uid="uid://c3lxl81o1gaxs" path="res://example/godomon/assets/monsters/battler/front_shiny/Kankwart.png" id="5_ehjfk"]
 [ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/overworld/none.webp" id="5_k4acp"]
 
+[sub_resource type="Resource" id="Resource_eutci"]
+script = ExtResource("1_i7i6q")
+target_species = &"kankryst"
+min_level = 24
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("2_vt2tg")
 name = "Kankwart"
 type_1 = &"earth"
 type_2 = &"blight"
+evolutions = Array[ExtResource("1_i7i6q")]([SubResource("Resource_eutci")])
 color = 2
 front_normal = ExtResource("4_wx7b7")
 front_shiny = ExtResource("5_ehjfk")

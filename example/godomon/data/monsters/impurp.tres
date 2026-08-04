@@ -15,6 +15,7 @@ name = "Impurp"
 type_1 = &"dread"
 type_2 = &"wind"
 color = 6
+shape = 8
 front_normal = ExtResource("4_nu83t")
 front_shiny = ExtResource("5_2vkro")
 back_normal = ExtResource("1_jrb0w")
