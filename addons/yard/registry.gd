@@ -195,6 +195,17 @@ func load_entry(
 	else:
 		return ResourceLoader.load(uid, type_hint, cache_mode)
 
+## Loads an random resource and returns it.
+## Returns [code]null[/code] if the entry does not exist or cannot be loaded.[br][br]
+##
+## [param type_hint] and [param cache_mode] are passed down to
+## [method ResourceLoader.load].
+func load_random_entry(
+		type_hint: String = "",
+		cache_mode: ResourceLoader.CacheMode = ResourceLoader.CACHE_MODE_REUSE,
+) -> Resource:
+	var uid := get_all_uids().pick_random()
+	return load_entry(uid, type_hint, cache_mode)
 
 ## Loads all registered resources in a blocking manner. Returns a dictionary
 ## mapping string IDs to their loaded [Resource] instances.
