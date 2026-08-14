@@ -27,7 +27,7 @@ keycode = 82
 [sub_resource type="Shortcut" id="Shortcut_gl5oh"]
 events = [SubResource("InputEventKey_g1ejb")]
 
-[node name="RegistryEditor" type="MarginContainer"]
+[node name="RegistryEditor" type="MarginContainer" unique_id=1764221467]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -40,13 +40,13 @@ theme_override_constants/margin_right = 6
 theme_override_constants/margin_bottom = 6
 script = ExtResource("1_tv1od")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1167548068]
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=2060162796]
 layout_mode = 2
 
-[node name="FileMenuButton" type="MenuButton" parent="VBoxContainer/HBoxContainer"]
+[node name="FileMenuButton" type="MenuButton" parent="VBoxContainer/HBoxContainer" unique_id=1548608354]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"FlatMenuButton"
@@ -81,7 +81,7 @@ popup/item_11/id = 14
 popup/item_12/text = "Close Tabs Below"
 popup/item_12/id = 15
 
-[node name="EditMenuButton" type="MenuButton" parent="VBoxContainer/HBoxContainer"]
+[node name="EditMenuButton" type="MenuButton" parent="VBoxContainer/HBoxContainer" unique_id=920045621]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"FlatMenuButton"
@@ -117,11 +117,11 @@ popup/item_11/id = 10
 popup/item_12/text = "Unselect"
 popup/item_12/id = 11
 
-[node name="RegistryButtonsVSeparator" type="VSeparator" parent="VBoxContainer/HBoxContainer"]
+[node name="RegistryButtonsVSeparator" type="VSeparator" parent="VBoxContainer/HBoxContainer" unique_id=1751394605]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="RegistrySettingsButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+[node name="RegistrySettingsButton" type="Button" parent="VBoxContainer/HBoxContainer" unique_id=774093562]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Edit Registry Settings"
@@ -132,7 +132,7 @@ text = "Registry Settings"
 script = ExtResource("4_dd5h4")
 icon_name = "GDScript"
 
-[node name="ColumnsMenuButton" type="MenuButton" parent="VBoxContainer/HBoxContainer"]
+[node name="ColumnsMenuButton" type="MenuButton" parent="VBoxContainer/HBoxContainer" unique_id=1215984463]
 unique_name_in_owner = true
 layout_mode = 2
 tooltip_text = "Select shown columns."
@@ -143,7 +143,7 @@ switch_on_hover = true
 script = ExtResource("3_m1qax")
 icon_name = "Panels2Alt"
 
-[node name="RefreshViewButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+[node name="RefreshViewButton" type="Button" parent="VBoxContainer/HBoxContainer" unique_id=1767012778]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -154,7 +154,7 @@ text = "Refresh"
 script = ExtResource("4_dd5h4")
 icon_name = "Loop"
 
-[node name="RescanButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+[node name="RescanButton" type="Button" parent="VBoxContainer/HBoxContainer" unique_id=71855363]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -165,7 +165,7 @@ text = "Rescan"
 script = ExtResource("4_dd5h4")
 icon_name = "FilenameFilter"
 
-[node name="ReindexButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+[node name="ReindexButton" type="Button" parent="VBoxContainer/HBoxContainer" unique_id=75034113]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -177,7 +177,7 @@ text = "Reindex"
 script = ExtResource("4_dd5h4")
 icon_name = "Loop"
 
-[node name="ReportIssueButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+[node name="ReportIssueButton" type="Button" parent="VBoxContainer/HBoxContainer" unique_id=1835086163]
 layout_mode = 2
 size_flags_horizontal = 10
 tooltip_text = "Open project's issues in your browser."
@@ -186,7 +186,7 @@ theme_type_variation = &"FlatButton"
 text = "Report Issue"
 icon = ExtResource("4_6e4lp")
 
-[node name="OpenDocumentationButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+[node name="OpenDocumentationButton" type="Button" parent="VBoxContainer/HBoxContainer" unique_id=1942713270]
 layout_mode = 2
 tooltip_text = "Open the Registry class documentation."
 focus_mode = 3
@@ -195,10 +195,10 @@ text = "Open Docs"
 script = ExtResource("4_dd5h4")
 icon_name = "Help"
 
-[node name="VSeparator2" type="VSeparator" parent="VBoxContainer/HBoxContainer"]
+[node name="VSeparator2" type="VSeparator" parent="VBoxContainer/HBoxContainer" unique_id=254307766]
 layout_mode = 2
 
-[node name="ReadMeButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+[node name="ReadMeButton" type="Button" parent="VBoxContainer/HBoxContainer" unique_id=1900764104]
 layout_mode = 2
 tooltip_text = "Open the README.md popup."
 focus_mode = 3
@@ -206,32 +206,24 @@ theme_type_variation = &"FlatButton"
 script = ExtResource("4_dd5h4")
 icon_name = "Info"
 
-[node name="MakeFloatingButton" type="Button" parent="VBoxContainer/HBoxContainer"]
-visible = false
-layout_mode = 2
-tooltip_text = "Make the registry editor floating."
-focus_mode = 3
-theme_type_variation = &"FlatButton"
-script = ExtResource("4_dd5h4")
-icon_name = "MakeFloating"
-
-[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer"]
+[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer" unique_id=714958729]
 layout_mode = 2
 size_flags_vertical = 3
+split_offsets = PackedInt32Array(230)
 split_offset = 230
 
-[node name="RegistriesContainer" type="VBoxContainer" parent="VBoxContainer/HSplitContainer"]
+[node name="RegistriesContainer" type="VBoxContainer" parent="VBoxContainer/HSplitContainer" unique_id=1111234425]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="RegistriesFilter" type="LineEdit" parent="VBoxContainer/HSplitContainer/RegistriesContainer"]
+[node name="RegistriesFilter" type="LineEdit" parent="VBoxContainer/HSplitContainer/RegistriesContainer" unique_id=1489112521]
 unique_name_in_owner = true
 layout_mode = 2
 placeholder_text = "Filter Registries"
 script = ExtResource("5_g1ejb")
 icon_name = "Search"
 
-[node name="RegistriesItemList" type="ItemList" parent="VBoxContainer/HSplitContainer/RegistriesContainer"]
+[node name="RegistriesItemList" type="ItemList" parent="VBoxContainer/HSplitContainer/RegistriesContainer" unique_id=1759500811]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
@@ -240,11 +232,11 @@ theme_type_variation = &"ItemListSecondary"
 allow_reselect = true
 script = ExtResource("6_gl5oh")
 
-[node name="RegistryTableView" parent="VBoxContainer/HSplitContainer" instance=ExtResource("7_w3c1k")]
+[node name="RegistryTableView" parent="VBoxContainer/HSplitContainer" unique_id=736595126 instance=ExtResource("7_w3c1k")]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="RegistryContextMenu" type="PopupMenu" parent="."]
+[node name="RegistryContextMenu" type="PopupMenu" parent="." unique_id=13591435]
 unique_name_in_owner = true
 item_count = 12
 item_0/text = "Close"
@@ -272,12 +264,12 @@ item_10/id = 31
 item_11/text = "Sort"
 item_11/id = 32
 
-[node name="NewRegistryDialog" parent="." instance=ExtResource("8_drmf8")]
+[node name="NewRegistryDialog" parent="." unique_id=109069874 instance=ExtResource("8_drmf8")]
 unique_name_in_owner = true
 size = Vector2i(674, 754)
 visible = false
 
-[node name="ReadMeWindow" parent="." instance=ExtResource("9_6e4lp")]
+[node name="ReadMeWindow" parent="." unique_id=1562972357 instance=ExtResource("9_6e4lp")]
 
 [connection signal="about_to_popup" from="VBoxContainer/HBoxContainer/FileMenuButton" to="." method="_on_file_menu_button_about_to_popup"]
 [connection signal="about_to_popup" from="VBoxContainer/HBoxContainer/EditMenuButton" to="." method="_on_edit_menu_button_about_to_popup"]
@@ -289,7 +281,6 @@ visible = false
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/ReportIssueButton" to="." method="_on_report_issue_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/OpenDocumentationButton" to="." method="_on_open_documentation_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/HBoxContainer/ReadMeButton" to="." method="_on_read_me_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/HBoxContainer/MakeFloatingButton" to="." method="_on_make_floating_button_pressed"]
 [connection signal="text_changed" from="VBoxContainer/HSplitContainer/RegistriesContainer/RegistriesFilter" to="." method="_on_registries_filter_text_changed"]
 [connection signal="item_clicked" from="VBoxContainer/HSplitContainer/RegistriesContainer/RegistriesItemList" to="." method="_on_registries_list_item_clicked"]
 [connection signal="item_selected" from="VBoxContainer/HSplitContainer/RegistriesContainer/RegistriesItemList" to="." method="_on_registries_list_item_selected"]

@@ -7,6 +7,7 @@
 extends EditorPlugin
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const YardLogger := Namespace.YardLogger
 const RegistryEditor := Namespace.RegistryEditor
 const TRANSLATIONS := Namespace.TRANSLATIONS
 const REGISTRY_EDITOR_SCENE := Namespace.REGISTRY_EDITOR_SCENE
@@ -22,7 +23,7 @@ func _init() -> void:
 	if not Engine.is_editor_hint():
 		return
 
-	print("YARD - Yet Another Resource Database")
+	YardLogger.info("Yet Another Resource Database. Plugin loaded.")
 
 	var editor_domain := TranslationServer.get_or_add_domain(&"godot.editor")
 	for locale: String in TRANSLATIONS.keys():
@@ -88,7 +89,7 @@ func _reimport_icons() -> void:
 	var icon: CompressedTexture2D = load("res://addons/yard/editor_only/assets/github_icon.svg")
 	var scale := EditorInterface.get_editor_scale()
 	if float(icon.get_width()) != scale * 16:
-		print("YARD - Editor scale changed, reimporting icons. This might throw an error. Disregard.")
+		YardLogger.warn("YARD - Editor scale changed, reimporting icons. This might throw an error. Disregard.")
 		EditorInterface.get_resource_filesystem().reimport_files(
 			PackedStringArray(
 				[

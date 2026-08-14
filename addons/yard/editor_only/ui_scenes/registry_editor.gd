@@ -729,7 +729,7 @@ func _on_reindex_button_pressed() -> void:
 	var registry := registry_table_view.current_registry
 	if registry:
 		RegistryIO.rebuild_property_index(registry)
-		print("Registry reindexed for %s." % ", ".join(registry.get_indexed_properties()))
+		YardLogger.info("Registry reindexed for %s." % ", ".join(registry.get_indexed_properties()))
 
 
 func _on_rescan_button_pressed() -> void:
@@ -745,15 +745,6 @@ func _on_report_issue_button_pressed() -> void:
 	var repo: String = cfg.get_value("plugin", "repository", "")
 	if repo:
 		OS.shell_open(repo + "/issues/new?template=bug_report.yml")
-
-
-func _on_make_floating_button_pressed() -> void:
-	print_rich("Coming soon! Thanks, KoBeWi ! <3")
-	print_rich(
-		"[color=SKY_BLUE][url]",
-		"https://github.com/godotengine/godot/pull/113051",
-		"[/url][/color]",
-	)
 
 
 func _on_columns_menu_button_about_to_popup() -> void:
@@ -775,8 +766,8 @@ func _on_toggle_registries_pressed() -> void:
 func _on_new_registry_dialog_settings_saved() -> void:
 	_update_registries_itemlist()
 	if (
-			new_registry_dialog._state == new_registry_dialog.RegistryDialogState.REGISTRY_SETTINGS
-			and new_registry_dialog.edited_registry == registry_table_view.current_registry
+		new_registry_dialog._state == new_registry_dialog.RegistryDialogState.REGISTRY_SETTINGS
+		and new_registry_dialog.edited_registry == registry_table_view.current_registry
 	):
 		select_registry(_current_registry_uid)
 

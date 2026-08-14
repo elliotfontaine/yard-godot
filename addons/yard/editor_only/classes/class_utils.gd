@@ -342,7 +342,6 @@ static func get_class_property_names(class_type: Variant) -> Array[String]:
 		if obj is Script:
 			var script := obj as Script
 			var script_props := script.get_script_property_list()
-			#print(script_props)
 			for p in script_props:
 				if not p.name.is_empty() and not p.type == TYPE_NIL:
 					prop_names.append(p.name)

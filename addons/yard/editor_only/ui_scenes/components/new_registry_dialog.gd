@@ -19,6 +19,7 @@ const SCAN_RULESET_EDITOR := preload("./scan_ruleset_editor/scan_ruleset_editor.
 const ScanRulesetEditor := preload("./scan_ruleset_editor/scan_ruleset_editor.gd")
 const RegistryIO := Namespace.RegistryIO
 const ClassUtils := Namespace.ClassUtils
+const YardLogger := Namespace.YardLogger
 const AnyIcon := Namespace.AnyIcon
 const DEFAULT_COLOR = Color(0.71, 0.722, 0.745, 1.0)
 const SUCCESS_COLOR = Color(0.45, 0.95, 0.5)
@@ -437,11 +438,11 @@ func _edit_settings_and_rebuild_index(already_built_settings: RegistryIO.Registr
 	var built_settings := already_built_settings if already_built_settings != null else _build_settings()
 	var err := RegistryIO.set_registry_settings(edited_registry, built_settings)
 	if err != OK:
-		print_debug(error_string(err))
+		YardLogger.error(error_string(err))
 
 	err = RegistryIO.rebuild_property_index(edited_registry)
 	if err != OK:
-		print_debug(error_string(err))
+		YardLogger.error(error_string(err))
 	settings_saved.emit()
 
 
@@ -464,13 +465,13 @@ func _on_confirmed() -> void:
 			var registry_path := registry_path_line_edit.text.strip_edges()
 			var err := RegistryIO.create_registry_file(registry_path, _build_settings())
 			if err != OK:
-				print_debug(error_string(err))
+				YardLogger.error(error_string(err))
 				return
 			var new_registry: Registry = load(registry_path)
 			EditorInterface.edit_resource(new_registry)
 			err = RegistryIO.rebuild_property_index(new_registry)
 			if err != OK:
-				print_debug(error_string(err))
+				YardLogger.error(error_string(err))
 		RegistryDialogState.REGISTRY_SETTINGS:
 			# Do a check to see whether the updated scan settings may be more restrictive than the
 			# old ones, and if so, warn the user & require a confirmation to continue.

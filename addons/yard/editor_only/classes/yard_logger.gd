@@ -12,7 +12,7 @@ const EditorThemeUtils := Namespace.EditorThemeUtils
 
 static func info(message: String) -> void:
 	print_rich(
-		"[color=%s]%s[/color]" % [
+		"[color=%s]YARD - %s[/color]" % [
 			EditorThemeUtils.color_message.to_html(true),
 			message,
 		],
@@ -20,18 +20,28 @@ static func info(message: String) -> void:
 
 
 static func warn(message: String) -> void:
+	var caller: Dictionary = get_stack()[1]
+	var line: int = caller.get("line", "")
+	var source: String = caller.get("source", "")
+
 	print_rich(
-		"[color=%s]● [b]WARNING:[/b] %s[/color]" % [
+		"[color=%s]● [b]WARNING:[/b] [url]%s[/url] - YARD: %s[/color]" % [
 			EditorThemeUtils.color_warning.to_html(true),
+			"%s:%s" % [source, line],
 			message,
 		],
 	)
 
 
 static func error(message: String) -> void:
+	var caller: Dictionary = get_stack()[1]
+	var line: int = caller.get("line", "")
+	var source: String = caller.get("source", "")
+
 	print_rich(
-		"[color=%s]● [b]ERROR:[/b] %s[/color]" % [
+		"[color=%s]● [b]ERROR:[/b] [url]%s[/url] - YARD: %s[/color]" % [
 			EditorThemeUtils.color_error.to_html(true),
+			"%s:%s" % [source, line],
 			message,
 		],
 	)

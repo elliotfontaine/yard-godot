@@ -32,7 +32,7 @@ static var color_warning: Color:
 
 static var color_message: Color:
 	get:
-		return editor_theme.get_color(&"font_color", &"Editor") * Color(1, 1, 1, 0.6)
+		return editor_theme.get_color(&"font_color", &"Editor")
 
 static var color_success: Color:
 	get:
