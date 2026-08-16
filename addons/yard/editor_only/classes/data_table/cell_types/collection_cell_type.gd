@@ -5,6 +5,21 @@
 extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
 ## Array/Dictionary columns. display-only: no custom editor.
 
+const ARRAY_TYPES := [
+	TYPE_ARRAY,
+	TYPE_PACKED_BYTE_ARRAY,
+	TYPE_PACKED_INT32_ARRAY,
+	TYPE_PACKED_INT64_ARRAY,
+	TYPE_PACKED_FLOAT32_ARRAY,
+	TYPE_PACKED_FLOAT64_ARRAY,
+	TYPE_PACKED_STRING_ARRAY,
+	TYPE_PACKED_VECTOR2_ARRAY,
+	TYPE_PACKED_VECTOR3_ARRAY,
+	TYPE_PACKED_VECTOR4_ARRAY,
+	TYPE_PACKED_COLOR_ARRAY,
+]
+
+
 static func matches(column: ColumnConfig) -> bool:
 	return column.type in [TYPE_ARRAY, TYPE_DICTIONARY]
 
@@ -16,6 +31,10 @@ static func draw_cell(canvas: CanvasItem, rect: Rect2, value: Variant, column: C
 	else:
 		text = _format_collection_text(value, column)
 	draw_text(canvas, rect, text, resolve_font(column, style.font), style.font_size, column.h_alignment, resolve_text_color(column, style))
+
+
+static func get_tooltip(value: Variant) -> String:
+	return _value_to_string_pretty(value, true)
 
 
 static func _format_collection_text(collection: Variant, column: ColumnConfig) -> String:
@@ -61,16 +80,24 @@ static func _format_collection_elem(elem: Variant, enum_map: Dictionary = { }) -
 	return str(elem)
 
 
+static func _is_array(column: ColumnConfig) -> bool:
+	return column.type in ARRAY_TYPES
+
+
+static func _is_dictionary(column: ColumnConfig) -> bool:
+	return column.type == TYPE_DICTIONARY
+
+
 static func _is_array_with_enum_values(column: ColumnConfig) -> bool:
 	return column.type == TYPE_ARRAY and column.hint_string and _is_enum_collection_hint(column.hint_string)
 
 
 static func _is_dict_with_enum_keys(column: ColumnConfig) -> bool:
-	return column.type == TYPE_DICTIONARY and column.hint_string and _is_enum_collection_hint(_get_dict_key_hint_part(column))
+	return _is_dictionary(column) and column.hint_string and _is_enum_collection_hint(_get_dict_key_hint_part(column))
 
 
 static func _is_dict_with_enum_values(column: ColumnConfig) -> bool:
-	return column.type == TYPE_DICTIONARY and column.hint_string and _is_enum_collection_hint(_get_dict_value_hint_part(column))
+	return _is_dictionary(column) and column.hint_string and _is_enum_collection_hint(_get_dict_value_hint_part(column))
 
 
 static func _is_enum_collection_hint(hint: String) -> bool:
@@ -96,10 +123,45 @@ static func _get_keys_map(column: ColumnConfig) -> Dictionary:
 static func _get_enum_value_hint_string(column: ColumnConfig) -> String:
 	if column.type == TYPE_ARRAY:
 		return column.hint_string.split(":", true, 1)[1]
-	if column.type == TYPE_DICTIONARY:
+	if _is_dictionary(column):
 		return _get_dict_value_hint_part(column).split(":", true, 1)[1]
 	return column.hint_string
 
 
 static func _get_enum_key_hint_string(column: ColumnConfig) -> String:
 	return _get_dict_key_hint_part(column).split(":", true, 1)[1]
+
+
+## https://github.com/godotengine/godot-proposals/issues/538#issuecomment-2989009057
+static func _value_to_string_pretty(value: Variant, use_var_to_str: bool = false, indent: String = "    ", indent_level: int = 0) -> String:
+	var formatted: String = ""
+	match typeof(value):
+		TYPE_ARRAY, TYPE_PACKED_BYTE_ARRAY, \
+		TYPE_PACKED_INT32_ARRAY, TYPE_PACKED_INT64_ARRAY, \
+		TYPE_PACKED_FLOAT32_ARRAY, TYPE_PACKED_FLOAT64_ARRAY, \
+		TYPE_PACKED_STRING_ARRAY, \
+		TYPE_PACKED_VECTOR2_ARRAY, TYPE_PACKED_VECTOR3_ARRAY, TYPE_PACKED_VECTOR4_ARRAY, \
+		TYPE_PACKED_COLOR_ARRAY:
+			if value.is_empty():
+				formatted += "[]"
+			else:
+				formatted += "[\n"
+				for i: int in value.size():
+					formatted += (indent.repeat(indent_level + 1) +
+						_value_to_string_pretty(value[i], use_var_to_str, indent, indent_level + 1) +
+						("," if i < value.size() - 1 else "") + "\n" )
+				formatted += indent.repeat(indent_level) + "]"
+		TYPE_DICTIONARY:
+			if value.is_empty():
+				formatted += "{}"
+			else:
+				formatted += "{\n"
+				for i: int in value.size():
+					formatted += (indent.repeat(indent_level + 1) +
+						"\"" + value.keys()[i] + "\": " +
+						_value_to_string_pretty(value.values()[i], use_var_to_str, indent, indent_level + 1) +
+						("," if i < value.size() - 1 else "") + "\n" )
+				formatted += indent.repeat(indent_level) + "}"
+		_:
+			formatted += var_to_str(value) if use_var_to_str else str(value)
+	return formatted

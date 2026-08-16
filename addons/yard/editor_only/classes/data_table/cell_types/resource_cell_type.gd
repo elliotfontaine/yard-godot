@@ -7,7 +7,7 @@ extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.g
 ## EditorResourcePicker. Clicking away does not commit; the picker manages
 ## its own commit/cancel through its popup.
 
-const ClassUtils := preload("res://addons/yard/editor_only/classes/class_utils.gd")
+const ClassUtils := Namespace.ClassUtils
 
 
 static func matches(column: ColumnConfig) -> bool:
@@ -73,3 +73,28 @@ static func create_editor(owner: Control, _rect: Rect2, _value: Variant, column:
 static func read_editor_value(editor: Node, _column: ColumnConfig) -> Variant:
 	var resource_picker: EditorResourcePicker = editor
 	return resource_picker.edited_resource
+
+
+static func get_tooltip(value: Variant) -> String:
+	if not value:
+		return super(value)
+
+	var res := value as Resource
+	var lines: Array[String]
+	if not res.is_built_in():
+		lines.append("%s" % res.resource_path)
+	lines.append("Type: %s" % ClassUtils.get_type_name(res))
+	if res is Texture2D:
+		lines.append("Dimensions: %s × %s" % [res.get_width(), res.get_height()])
+	lines.append("Properties:")
+	for prop: Dictionary in res.get_property_list():
+		if _can_display_property(prop):
+			lines.append('    "%s": %s' % [prop.name, var_to_str(res.get(prop.name))])
+	return "\n".join(lines)
+
+
+static func _can_display_property(property_info: Dictionary) -> bool:
+	return (
+		property_info[&"type"] not in [TYPE_CALLABLE, TYPE_SIGNAL]
+		and property_info[&"usage"] & PROPERTY_USAGE_EDITOR != 0
+	)

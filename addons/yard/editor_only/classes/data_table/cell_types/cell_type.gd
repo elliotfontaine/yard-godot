@@ -140,6 +140,10 @@ static func suppresses_tooltip() -> bool:
 	return false
 
 
+static func get_tooltip(value: Variant) -> String:
+	return var_to_str(value)
+
+
 static func get_sort_key(value: Variant, _column: ColumnConfig) -> Variant:
 	return str(value)
 
