@@ -75,9 +75,9 @@ static func read_editor_value(editor: Node, _column: ColumnConfig) -> Variant:
 	return resource_picker.edited_resource
 
 
-static func get_tooltip(value: Variant) -> String:
+static func get_tooltip(value: Variant, column: ColumnConfig) -> String:
 	if not value:
-		return super(value)
+		return super(value, column)
 
 	var res := value as Resource
 	var lines: Array[String]

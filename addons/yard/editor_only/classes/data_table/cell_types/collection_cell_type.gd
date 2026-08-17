@@ -21,63 +21,16 @@ const ARRAY_TYPES := [
 
 
 static func matches(column: ColumnConfig) -> bool:
-	return column.type in [TYPE_ARRAY, TYPE_DICTIONARY]
+	return _is_dictionary(column) or _is_array(column)
 
 
 static func draw_cell(canvas: CanvasItem, rect: Rect2, value: Variant, column: ColumnConfig, style: CellStyle) -> void:
-	var text: String
-	if value is not Array and value is not Dictionary:
-		text = str(value) if value != null else ""
-	else:
-		text = _format_collection_text(value, column)
+	var text := _format_collection_text(value, column)
 	draw_text(canvas, rect, text, resolve_font(column, style.font), style.font_size, column.h_alignment, resolve_text_color(column, style))
 
 
-static func get_tooltip(value: Variant) -> String:
-	return _value_to_string_pretty(value, true)
-
-
-static func _format_collection_text(collection: Variant, column: ColumnConfig) -> String:
-	var is_dict := collection is Dictionary
-	var items: Array = (collection as Dictionary).keys() if is_dict else (collection as Array)
-	var keys_map: Dictionary = _get_keys_map(column) if _is_dict_with_enum_keys(column) else { }
-	var values_map: Dictionary = (
-		_get_values_map(column)
-		if _is_dict_with_enum_values(column) or _is_array_with_enum_values(column)
-		else { }
-	)
-	var parts: Array[String] = []
-	for i in mini(items.size(), 3):
-		if is_dict:
-			var key: Variant = items[i]
-			var val: Variant = (collection as Dictionary)[key]
-			parts.append(
-				"%s: %s" % [
-					_format_collection_elem(key, keys_map),
-					_format_collection_elem(val, values_map),
-				],
-			)
-		else:
-			parts.append(_format_collection_elem(items[i], values_map))
-
-	var result := ", ".join(parts)
-	var remaining := items.size() - 3
-	if remaining > 0:
-		result += " and {remaining} more".format({ &"remaining": remaining })
-	return "{ %s }" % result if is_dict else "[%s]" % result
-
-
-static func _format_collection_elem(elem: Variant, enum_map: Dictionary = { }) -> String:
-	if elem is Resource:
-		return "<%s>" % (elem as Resource).resource_path.get_file()
-	if elem is Array:
-		return "Array(%d)" % (elem as Array).size()
-	if elem is Dictionary:
-		return "Dict(%d)" % (elem as Dictionary).size()
-	if elem is int and not enum_map.is_empty():
-		var int_elem := elem as int
-		return enum_map[int_elem] if enum_map.has(int_elem) else "?:%d" % int_elem
-	return str(elem)
+static func get_tooltip(value: Variant, _column: ColumnConfig) -> String:
+	return _value_to_string_pretty(value)
 
 
 static func _is_array(column: ColumnConfig) -> bool:
@@ -132,36 +85,79 @@ static func _get_enum_key_hint_string(column: ColumnConfig) -> String:
 	return _get_dict_key_hint_part(column).split(":", true, 1)[1]
 
 
-## https://github.com/godotengine/godot-proposals/issues/538#issuecomment-2989009057
-static func _value_to_string_pretty(value: Variant, use_var_to_str: bool = false, indent: String = "    ", indent_level: int = 0) -> String:
+static func _format_collection_text(collection: Variant, column: ColumnConfig) -> String:
+	var is_dict := _is_dictionary(column)
+	var items: Array = (collection as Dictionary).keys() if is_dict else (collection as Array)
+	var keys_map: Dictionary = _get_keys_map(column) if _is_dict_with_enum_keys(column) else { }
+	var values_map: Dictionary = (
+		_get_values_map(column)
+		if _is_dict_with_enum_values(column) or _is_array_with_enum_values(column)
+		else { }
+	)
+	var parts: Array[String] = []
+	for i in mini(items.size(), 3):
+		if is_dict:
+			var key: Variant = items[i]
+			var val: Variant = (collection as Dictionary)[key]
+			parts.append(
+				"%s: %s" % [
+					_format_element_text(key, keys_map),
+					_format_element_text(val, values_map),
+				],
+			)
+		else:
+			parts.append(_format_element_text(items[i], values_map))
+
+	var result := ", ".join(parts)
+	var remaining := items.size() - 3
+	if remaining > 0:
+		result += " and {remaining} more".format({ &"remaining": remaining })
+	return "{ %s }" % result if is_dict else "[%s]" % result
+
+
+static func _format_element_text(elem: Variant, enum_map: Dictionary = { }) -> String:
+	if elem is Resource:
+		return "<%s>" % (elem as Resource).resource_path.get_file()
+	if elem is Array:
+		return "Array(%d)" % (elem as Array).size()
+	if elem is Dictionary:
+		return "Dict(%d)" % (elem as Dictionary).size()
+	if elem is int and not enum_map.is_empty():
+		var int_elem := elem as int
+		return enum_map[int_elem] if enum_map.has(int_elem) else "?:%d" % int_elem
+	return var_to_str(elem)
+
+
+# SPDX-SnippetBegin
+# SPDX-SnippetCopyrightText: Copyright 2025 Okxa <https://github.com/godotengine/godot-proposals/issues/538#issuecomment-2989009057>
+#
+# SPDX-License-Identifier: MIT
+static func _value_to_string_pretty(value: Variant, indent_level: int = 0) -> String:
+	const INDENT: String = "    "
 	var formatted: String = ""
 	match typeof(value):
-		TYPE_ARRAY, TYPE_PACKED_BYTE_ARRAY, \
-		TYPE_PACKED_INT32_ARRAY, TYPE_PACKED_INT64_ARRAY, \
-		TYPE_PACKED_FLOAT32_ARRAY, TYPE_PACKED_FLOAT64_ARRAY, \
-		TYPE_PACKED_STRING_ARRAY, \
-		TYPE_PACKED_VECTOR2_ARRAY, TYPE_PACKED_VECTOR3_ARRAY, TYPE_PACKED_VECTOR4_ARRAY, \
-		TYPE_PACKED_COLOR_ARRAY:
+		var t when t in ARRAY_TYPES:
 			if value.is_empty():
 				formatted += "[]"
 			else:
 				formatted += "[\n"
 				for i: int in value.size():
-					formatted += (indent.repeat(indent_level + 1) +
-						_value_to_string_pretty(value[i], use_var_to_str, indent, indent_level + 1) +
+					formatted += (INDENT.repeat(indent_level + 1) +
+						_value_to_string_pretty(value[i], indent_level + 1) +
 						("," if i < value.size() - 1 else "") + "\n" )
-				formatted += indent.repeat(indent_level) + "]"
+				formatted += INDENT.repeat(indent_level) + "]"
 		TYPE_DICTIONARY:
 			if value.is_empty():
 				formatted += "{}"
 			else:
 				formatted += "{\n"
 				for i: int in value.size():
-					formatted += (indent.repeat(indent_level + 1) +
+					formatted += (INDENT.repeat(indent_level + 1) +
 						"\"" + value.keys()[i] + "\": " +
-						_value_to_string_pretty(value.values()[i], use_var_to_str, indent, indent_level + 1) +
+						_value_to_string_pretty(value.values()[i], indent_level + 1) +
 						("," if i < value.size() - 1 else "") + "\n" )
-				formatted += indent.repeat(indent_level) + "}"
+				formatted += INDENT.repeat(indent_level) + "}"
 		_:
-			formatted += var_to_str(value) if use_var_to_str else str(value)
+			formatted += var_to_str(value)
 	return formatted
+# SPDX-SnippetEnd

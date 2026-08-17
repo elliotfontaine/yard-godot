@@ -77,10 +77,10 @@ static func read_editor_value(editor: Node, _column: ColumnConfig) -> Variant:
 	return color_popup.color
 
 
-static func get_tooltip(value: Variant) -> String:
+static func get_tooltip(value: Variant, column: ColumnConfig) -> String:
 	if value is Color:
 		return ("R: %.2f\nG: %.2f\nB: %.2f\nA: %.2f\n" % [value.r, value.g, value.b, value.a])
-	return super(value)
+	return super(value, column)
 
 
 class ColorPopup extends PanelContainer:

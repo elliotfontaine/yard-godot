@@ -898,9 +898,10 @@ func _update_tooltip(mouse_pos: Vector2) -> void:
 		if row_idx >= 0:
 			new_row = _order[row_idx]
 			new_col = col
-			var cell_type := get_column(col).get_cell_type()
+			var column := get_column(col)
+			var cell_type := column.get_cell_type()
 			if not cell_type.suppresses_tooltip():
-				new_tooltip = cell_type.get_tooltip(get_cell_value(new_row, col))
+				new_tooltip = cell_type.get_tooltip(get_cell_value(new_row, col), column)
 
 	if new_row != _tooltip_row or new_col != _tooltip_col:
 		_tooltip_row = new_row

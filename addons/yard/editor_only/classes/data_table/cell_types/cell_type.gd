@@ -140,7 +140,7 @@ static func suppresses_tooltip() -> bool:
 	return false
 
 
-static func get_tooltip(value: Variant) -> String:
+static func get_tooltip(value: Variant, _column: ColumnConfig) -> String:
 	return var_to_str(value)
 
 
