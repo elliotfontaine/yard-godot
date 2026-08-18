@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://c1xoos03cpdxg" path="res://example/godomon/assets/monsters/battler/front_shiny/Merlicun.png" id="5_dd7xe"]
 [ext_resource type="Texture2D" uid="uid://bp5v7xdpgbrel" path="res://example/godomon/assets/monsters/icon/normal/Merlicun.png" id="6_6182y"]
 [ext_resource type="Texture2D" uid="uid://dawix3po0rexa" path="res://example/godomon/assets/monsters/icon/shiny/Merlicun.png" id="7_vurle"]
-[ext_resource type="Texture2D" uid="uid://dc4qopmibedx8" path="res://example/godomon/assets/monsters/overworld/normal/MerlicunA.png" id="8_d74cx"]
+[ext_resource type="Texture2D" uid="uid://dc4qopmibedx8" path="res://example/godomon/assets/monsters/overworld/normal/Merlicun.png" id="8_d74cx"]
 
 [resource]
 script = ExtResource("2_xso5v")

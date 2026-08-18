@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c3bsg363xofb2"
-path="res://.godot/imported/DrashimiA.png-acd8aa67fdda3cb067e8e6ed65781702.ctex"
+uid="uid://dc4qopmibedx8"
+path="res://.godot/imported/Merlicun.png-43d64eed8827ffae89e8becb983625b4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://example/godomon/assets/monsters/overworld/normal/DrashimiA.png"
-dest_files=["res://.godot/imported/DrashimiA.png-acd8aa67fdda3cb067e8e6ed65781702.ctex"]
+source_file="res://example/godomon/assets/monsters/overworld/normal/Merlicun.png"
+dest_files=["res://.godot/imported/Merlicun.png-43d64eed8827ffae89e8becb983625b4.ctex"]
 
 [params]
 

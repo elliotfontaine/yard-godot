@@ -8,7 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://35miqu7y35a8" path="res://example/godomon/assets/monsters/battler/front_shiny/Drashimi.png" id="5_o0kge"]
 [ext_resource type="Texture2D" uid="uid://blnloydoxw8c8" path="res://example/godomon/assets/monsters/icon/normal/Drashimi.png" id="6_ve0m7"]
 [ext_resource type="Texture2D" uid="uid://dpllov7e0y8xb" path="res://example/godomon/assets/monsters/icon/shiny/Drashimi.png" id="7_pekpg"]
-[ext_resource type="Texture2D" uid="uid://c3bsg363xofb2" path="res://example/godomon/assets/monsters/overworld/normal/DrashimiA.png" id="8_p2o3h"]
+[ext_resource type="Texture2D" uid="uid://c3bsg363xofb2" path="res://example/godomon/assets/monsters/overworld/normal/Drashimi.png" id="8_p2o3h"]
 
 [resource]
 script = ExtResource("2_ao2h4")
