@@ -1,13 +1,13 @@
 [gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://nxvgr128g208"]
 
-[ext_resource type="Texture2D" uid="uid://di5cxgf4jxsj1" path="res://example/godomon/assets/monsters/battler/back_normal/MerlicunB5.png" id="1_d74cx"]
+[ext_resource type="Texture2D" uid="uid://di5cxgf4jxsj1" path="res://example/godomon/assets/monsters/battler/back_normal/Merlicun.png" id="1_d74cx"]
 [ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_oi0yv"]
-[ext_resource type="Texture2D" uid="uid://c0alwkm28v031" path="res://example/godomon/assets/monsters/battler/back_shiny/MerlicunB5S.png" id="2_duxuu"]
+[ext_resource type="Texture2D" uid="uid://c0alwkm28v031" path="res://example/godomon/assets/monsters/battler/back_shiny/Merlicun.png" id="2_duxuu"]
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_xso5v"]
-[ext_resource type="Texture2D" uid="uid://cwr2uqqmf1vie" path="res://example/godomon/assets/monsters/battler/front_normal/MerlicunF.png" id="4_e3k7t"]
-[ext_resource type="Texture2D" uid="uid://c1xoos03cpdxg" path="res://example/godomon/assets/monsters/battler/front_shiny/MerlicunFS.png" id="5_dd7xe"]
+[ext_resource type="Texture2D" uid="uid://cwr2uqqmf1vie" path="res://example/godomon/assets/monsters/battler/front_normal/Merlicun.png" id="4_e3k7t"]
+[ext_resource type="Texture2D" uid="uid://c1xoos03cpdxg" path="res://example/godomon/assets/monsters/battler/front_shiny/Merlicun.png" id="5_dd7xe"]
 [ext_resource type="Texture2D" uid="uid://bp5v7xdpgbrel" path="res://example/godomon/assets/monsters/icon/normal/Merlicun.png" id="6_6182y"]
-[ext_resource type="Texture2D" uid="uid://dawix3po0rexa" path="res://example/godomon/assets/monsters/icon/shiny/MerlicunS.png" id="7_vurle"]
+[ext_resource type="Texture2D" uid="uid://dawix3po0rexa" path="res://example/godomon/assets/monsters/icon/shiny/Merlicun.png" id="7_vurle"]
 [ext_resource type="Texture2D" uid="uid://dc4qopmibedx8" path="res://example/godomon/assets/monsters/overworld/normal/Merlicun.png" id="8_d74cx"]
 
 [resource]

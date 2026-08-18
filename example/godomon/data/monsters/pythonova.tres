@@ -1,14 +1,13 @@
 [gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://bodjsbva5fv0a"]
 
-[ext_resource type="Texture2D" uid="uid://bvbgkfsbsgwla" path="res://example/godomon/assets/monsters/battler/back_normal/PythonovaB5.png" id="1_6lneh"]
+[ext_resource type="Texture2D" uid="uid://bvbgkfsbsgwla" path="res://example/godomon/assets/monsters/battler/back_normal/Pythonova.png" id="1_6lneh"]
 [ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_dn77u"]
-[ext_resource type="Texture2D" uid="uid://b7021pdxln1l3" path="res://example/godomon/assets/monsters/battler/back_shiny/PythonovaB5S.png" id="2_b6wug"]
+[ext_resource type="Texture2D" uid="uid://b7021pdxln1l3" path="res://example/godomon/assets/monsters/battler/back_shiny/Pythonova.png" id="2_b6wug"]
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_ydvrq"]
 [ext_resource type="Texture2D" uid="uid://clxvef25gqs6l" path="res://example/godomon/assets/monsters/battler/front_normal/Pythonova.png" id="4_oxcbi"]
-[ext_resource type="Texture2D" uid="uid://bgwwly7uefmwo" path="res://example/godomon/assets/monsters/battler/front_shiny/PythonovaS.png" id="5_cc2ot"]
+[ext_resource type="Texture2D" uid="uid://bgwwly7uefmwo" path="res://example/godomon/assets/monsters/battler/front_shiny/Pythonova.png" id="5_cc2ot"]
 [ext_resource type="Texture2D" uid="uid://he8xi5roa1im" path="res://example/godomon/assets/monsters/icon/normal/Pythonova.png" id="6_mj7sw"]
-[ext_resource type="Texture2D" uid="uid://dti0nyuph3d7a" path="res://example/godomon/assets/monsters/icon/shiny/PythonovaS.png" id="7_3ulvk"]
-[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/overworld/none.webp" id="8_6lneh"]
+[ext_resource type="Texture2D" uid="uid://dti0nyuph3d7a" path="res://example/godomon/assets/monsters/icon/shiny/Pythonova.png" id="7_3ulvk"]
 
 [resource]
 script = ExtResource("2_ydvrq")
@@ -22,5 +21,4 @@ back_normal = ExtResource("1_6lneh")
 back_shiny = ExtResource("2_b6wug")
 menu_normal = ExtResource("6_mj7sw")
 menu_shiny = ExtResource("7_3ulvk")
-overworld_normal = ExtResource("8_6lneh")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

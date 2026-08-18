@@ -1,14 +1,13 @@
 [gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://cswlrxj775lc6"]
 
-[ext_resource type="Texture2D" uid="uid://b3frutm5ccauo" path="res://example/godomon/assets/monsters/battler/back_normal/BaobaraffeB5.png" id="1_4f88b"]
+[ext_resource type="Texture2D" uid="uid://b3frutm5ccauo" path="res://example/godomon/assets/monsters/battler/back_normal/Baobaraffe.png" id="1_4f88b"]
 [ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_ochh7"]
-[ext_resource type="Texture2D" uid="uid://ba0btlk0wogi0" path="res://example/godomon/assets/monsters/battler/back_shiny/BaobaraffeB5S.png" id="2_1tgh6"]
+[ext_resource type="Texture2D" uid="uid://ba0btlk0wogi0" path="res://example/godomon/assets/monsters/battler/back_shiny/Baobaraffe.png" id="2_1tgh6"]
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_766jq"]
-[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/overworld/none.webp" id="2_fgetg"]
 [ext_resource type="Texture2D" uid="uid://bixuc17cga6rm" path="res://example/godomon/assets/monsters/battler/front_normal/Baobaraffe.png" id="4_l5wxp"]
-[ext_resource type="Texture2D" uid="uid://j0riu4rx5ck8" path="res://example/godomon/assets/monsters/battler/front_shiny/BaobaraffeS.png" id="5_es7jk"]
+[ext_resource type="Texture2D" uid="uid://j0riu4rx5ck8" path="res://example/godomon/assets/monsters/battler/front_shiny/Baobaraffe.png" id="5_es7jk"]
 [ext_resource type="Texture2D" uid="uid://cs7rc32hd870w" path="res://example/godomon/assets/monsters/icon/normal/Baobaraffe.png" id="6_yfw40"]
-[ext_resource type="Texture2D" uid="uid://c155fnwl006t" path="res://example/godomon/assets/monsters/icon/shiny/BaobaraffeS.png" id="7_1ro8g"]
+[ext_resource type="Texture2D" uid="uid://c155fnwl006t" path="res://example/godomon/assets/monsters/icon/shiny/Baobaraffe.png" id="7_1ro8g"]
 
 [resource]
 script = ExtResource("2_766jq")
@@ -21,5 +20,4 @@ back_normal = ExtResource("1_4f88b")
 back_shiny = ExtResource("2_1tgh6")
 menu_normal = ExtResource("6_yfw40")
 menu_shiny = ExtResource("7_1ro8g")
-overworld_normal = ExtResource("2_fgetg")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

@@ -4,8 +4,6 @@
 [ext_resource type="Texture2D" uid="uid://d4b865dda72rh" path="res://example/godomon/assets/monsters/battler/front_normal/Crestaka.png" id="2_g2eoy"]
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_pokdu"]
 [ext_resource type="Texture2D" uid="uid://dqsvovjm5qjij" path="res://example/godomon/assets/monsters/battler/front_shiny/Crestaka.png" id="3_4a85s"]
-[ext_resource type="Texture2D" uid="uid://3my0jttp3o5u" path="res://example/godomon/assets/monsters/icon/none.webp" id="4_2voj7"]
-[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/overworld/none.webp" id="5_48ay2"]
 
 [resource]
 script = ExtResource("2_pokdu")
@@ -15,6 +13,4 @@ color = 1
 shape = 5
 front_normal = ExtResource("2_g2eoy")
 front_shiny = ExtResource("3_4a85s")
-menu_normal = ExtResource("4_2voj7")
-overworld_normal = ExtResource("5_48ay2")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

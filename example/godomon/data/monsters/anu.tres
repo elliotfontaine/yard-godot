@@ -1,14 +1,13 @@
 [gd_resource type="Resource" script_class="GdmMonster" format=3 uid="uid://s4rapfwpjej4"]
 
 [ext_resource type="Script" uid="uid://dh362naomk3hc" path="res://example/godomon/data/_classes/gdm_evolution.gd" id="1_5i2c8"]
-[ext_resource type="Texture2D" uid="uid://b2yc4gdklbfq2" path="res://example/godomon/assets/monsters/battler/back_normal/AnuB5.png" id="1_m8upe"]
+[ext_resource type="Texture2D" uid="uid://b2yc4gdklbfq2" path="res://example/godomon/assets/monsters/battler/back_normal/Anu.png" id="1_m8upe"]
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_k55ye"]
-[ext_resource type="Texture2D" uid="uid://bieym0y0bpywr" path="res://example/godomon/assets/monsters/battler/back_shiny/AnuB5S.png" id="2_q38wu"]
-[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/overworld/none.webp" id="2_wx0wf"]
-[ext_resource type="Texture2D" uid="uid://ywwymsynbmdk" path="res://example/godomon/assets/monsters/battler/front_normal/AnuF.png" id="4_8bj73"]
-[ext_resource type="Texture2D" uid="uid://qgtedymdbuhy" path="res://example/godomon/assets/monsters/battler/front_shiny/AnuFS.png" id="5_2i38q"]
+[ext_resource type="Texture2D" uid="uid://bieym0y0bpywr" path="res://example/godomon/assets/monsters/battler/back_shiny/Anu.png" id="2_q38wu"]
+[ext_resource type="Texture2D" uid="uid://ywwymsynbmdk" path="res://example/godomon/assets/monsters/battler/front_normal/Anu.png" id="4_8bj73"]
+[ext_resource type="Texture2D" uid="uid://qgtedymdbuhy" path="res://example/godomon/assets/monsters/battler/front_shiny/Anu.png" id="5_2i38q"]
 [ext_resource type="Texture2D" uid="uid://bkgs6r0w75ymg" path="res://example/godomon/assets/monsters/icon/normal/Anu.png" id="6_klcsm"]
-[ext_resource type="Texture2D" uid="uid://b6pb8s5u1q6kp" path="res://example/godomon/assets/monsters/icon/shiny/AnuS.png" id="7_2ebaq"]
+[ext_resource type="Texture2D" uid="uid://b6pb8s5u1q6kp" path="res://example/godomon/assets/monsters/icon/shiny/Anu.png" id="7_2ebaq"]
 
 [resource]
 script = ExtResource("2_k55ye")
@@ -21,5 +20,4 @@ back_normal = ExtResource("1_m8upe")
 back_shiny = ExtResource("2_q38wu")
 menu_normal = ExtResource("6_klcsm")
 menu_shiny = ExtResource("7_2ebaq")
-overworld_normal = ExtResource("2_wx0wf")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

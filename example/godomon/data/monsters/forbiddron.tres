@@ -5,9 +5,7 @@
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_bfmqa"]
 [ext_resource type="Texture2D" uid="uid://b6m3ebcxv1bn0" path="res://example/godomon/assets/monsters/battler/back_shiny/Forbiddron.png" id="2_iy7fy"]
 [ext_resource type="Texture2D" uid="uid://dmleng47842pe" path="res://example/godomon/assets/monsters/battler/front_normal/Forbiddron.png" id="4_6yjr0"]
-[ext_resource type="Texture2D" uid="uid://3my0jttp3o5u" path="res://example/godomon/assets/monsters/icon/none.webp" id="4_hlbgq"]
 [ext_resource type="Texture2D" uid="uid://cbql7uv04wh7" path="res://example/godomon/assets/monsters/battler/front_shiny/Forbiddron.png" id="5_18adi"]
-[ext_resource type="Texture2D" uid="uid://c5olaeky6bpyy" path="res://example/godomon/assets/monsters/overworld/none.webp" id="5_iy7fy"]
 
 [resource]
 script = ExtResource("2_bfmqa")
@@ -19,6 +17,4 @@ front_normal = ExtResource("4_6yjr0")
 front_shiny = ExtResource("5_18adi")
 back_normal = ExtResource("1_hlbgq")
 back_shiny = ExtResource("2_iy7fy")
-menu_normal = ExtResource("4_hlbgq")
-overworld_normal = ExtResource("5_iy7fy")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"
