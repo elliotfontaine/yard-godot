@@ -306,10 +306,6 @@ msgid "UID"
 msgstr "UID"
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
-msgid "Hidden"
-msgstr "Скрыто"
-
-#: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "Frozen"
 msgstr "Закреплено"
 

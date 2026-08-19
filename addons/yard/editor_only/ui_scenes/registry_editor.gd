@@ -109,6 +109,7 @@ func _ready() -> void:
 	file_menu_button.get_popup().id_pressed.connect(_on_file_menu_id_pressed)
 	edit_menu_button.get_popup().id_pressed.connect(_on_edit_menu_id_pressed)
 	columns_menu_button.get_popup().id_pressed.connect(_on_columns_menu_id_pressed)
+	columns_menu_button.get_popup().window_input.connect(_on_columns_menu_window_input)
 	columns_menu_button.get_popup().hide_on_checkable_item_selection = false
 	registries_itemlist.registries_dropped.connect(_on_itemlist_registries_dropped)
 	registry_table_view.toggle_registry_panel_button.pressed.connect(_on_toggle_registries_pressed)
@@ -494,9 +495,11 @@ func _add_check_item(popup: PopupMenu, label: String, tooltip: String, checked: 
 
 
 func _add_column_submenu_item(popup: PopupMenu, identifier: StringName, label: String, prop: Dictionary = { }) -> void:
-	popup.add_submenu_node_item(label, _build_column_submenu(identifier))
+	popup.add_check_item(label)
 	var idx := popup.item_count - 1
-	popup.set_item_tooltip(idx, str(identifier))
+	popup.set_item_submenu_node(idx, _build_column_submenu(identifier))
+	popup.set_item_checked(idx, identifier not in registry_table_view.current_cache_data.disabled_columns)
+	popup.set_item_metadata(idx, identifier)
 	if not prop.is_empty():
 		popup.set_item_auto_translate_mode(idx, AUTO_TRANSLATE_MODE_DISABLED)
 		popup.set_item_icon(idx, AnyIcon.get_property_icon_from_dict(prop))
@@ -505,11 +508,6 @@ func _add_column_submenu_item(popup: PopupMenu, identifier: StringName, label: S
 func _build_column_submenu(identifier: StringName) -> PopupMenu:
 	var submenu := PopupMenu.new()
 	submenu.hide_on_checkable_item_selection = false
-	submenu.add_check_item(tr("Hidden"), ColumnMenuAction.HIDDEN)
-	submenu.set_item_checked(
-		submenu.get_item_index(ColumnMenuAction.HIDDEN),
-		identifier in registry_table_view.current_cache_data.disabled_columns,
-	)
 	submenu.add_check_item(tr("Frozen"), ColumnMenuAction.FROZEN)
 	submenu.set_item_checked(
 		submenu.get_item_index(ColumnMenuAction.FROZEN),
@@ -672,15 +670,37 @@ func _on_registry_context_menu_id_pressed(id: int) -> void:
 	_do_file_menu_action(id)
 
 
+# Required because PopupMenu.id_pressed/index_pressed is not emitted when pressing a submenu item,
+# since the input is already consumed to open the submenu.
+func _on_columns_menu_window_input(event: InputEvent) -> void:
+	var is_left_click: bool = (
+		event is InputEventMouseButton
+		and event.button_mask & MouseButtonMask.MOUSE_BUTTON_MASK_LEFT
+	)
+	if is_left_click or event.is_action_pressed(&"ui_accept"):
+		var popup := columns_menu_button.get_popup()
+		var idx := popup.get_focused_item()
+		if popup.get_item_submenu_node(idx):
+			popup.id_pressed.emit(popup.get_item_id(idx))
+
+
 func _on_columns_menu_id_pressed(id: int) -> void:
 	var popup := columns_menu_button.get_popup()
+	var item_idx := popup.get_item_index(id)
+	popup.toggle_item_checked(item_idx)
+	var checked := popup.is_item_checked(item_idx)
+	var cache := registry_table_view.current_cache_data
 	match id:
 		0: # Parent props first
-			var cache := registry_table_view.current_cache_data
-			popup.toggle_item_checked(0)
-			cache.parent_props_first = popup.is_item_checked(0)
-			cache.save()
-			registry_table_view.update_view()
+			cache.parent_props_first = checked
+		_:
+			var identifier: StringName = popup.get_item_metadata(item_idx)
+			if checked:
+				cache.disabled_columns.erase(identifier)
+			elif identifier not in cache.disabled_columns:
+				cache.disabled_columns.append(identifier)
+	cache.save()
+	registry_table_view.update_view()
 
 
 func _on_column_submenu_id_pressed(action_id: int, identifier: StringName, submenu: PopupMenu) -> void:
@@ -689,12 +709,6 @@ func _on_column_submenu_id_pressed(action_id: int, identifier: StringName, subme
 	var checked := submenu.is_item_checked(item_idx)
 	var cache := registry_table_view.current_cache_data
 	match action_id:
-		ColumnMenuAction.HIDDEN:
-			if checked:
-				if identifier not in cache.disabled_columns:
-					cache.disabled_columns.append(identifier)
-			else:
-				cache.disabled_columns.erase(identifier)
 		ColumnMenuAction.FROZEN:
 			if checked:
 				if identifier not in cache.frozen_columns:

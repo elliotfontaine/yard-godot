@@ -21,7 +21,6 @@ enum EditMenuAction {
 	UNSELECT = 11,
 }
 enum ColumnMenuAction {
-	HIDDEN = 0,
 	FROZEN = 1,
 }
 
