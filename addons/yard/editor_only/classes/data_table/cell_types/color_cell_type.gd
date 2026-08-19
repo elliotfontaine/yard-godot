@@ -65,7 +65,10 @@ static func create_editor(owner: Control, rect: Rect2, value: Variant, _column: 
 	owner.add_child(popup)
 	popup.position = rect.get_center() + owner.global_position
 	popup.color = value
-	popup.color_selected.connect(on_finished.bind(true))
+	popup.color_selected.connect(
+		# Discard color value
+		func(_c: Color) -> void: on_finished.call(true)
+	)
 	popup.canceled.connect(on_finished.bind(false))
 	popup.show()
 	popup.grab_focus()
