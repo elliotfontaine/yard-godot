@@ -625,9 +625,10 @@ func _finish_editing(save_changes: bool = true) -> void:
 		var column := get_column(_edited_col)
 		var old_value: Variant = get_cell_value(_edited_row, _edited_col)
 		var new_value: Variant = _current_editor_handler.read_editor_value(_current_editor_node, column)
-		if typeof(new_value) == column.type:
-			update_cell(_edited_row, _edited_col, new_value)
-			cell_edited.emit(_edited_row, _edited_col, old_value, new_value)
+
+		var converted: Variant = type_convert(new_value, column.type)
+		update_cell(_edited_row, _edited_col, converted)
+		cell_edited.emit(_edited_row, _edited_col, old_value, converted)
 
 	_edited_row = &""
 	_edited_col = &""

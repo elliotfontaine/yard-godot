@@ -12,6 +12,7 @@ extends RefCounted
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const CellType := Namespace.CellType
 const StringCellType := Namespace.StringCellType
+const StringNameCellType := Namespace.StringNameCellType
 const NumericCellType := Namespace.NumericCellType
 const BooleanCellType := Namespace.BooleanCellType
 const RangeCellType := Namespace.RangeCellType
@@ -29,6 +30,7 @@ const CELL_TYPES_PRIORITY_LIST: Array[GDScript] = [
 	PathCellType,
 	EnumCellType,
 	CollectionCellType,
+	StringNameCellType,
 	StringCellType,
 	NumericCellType,
 ]

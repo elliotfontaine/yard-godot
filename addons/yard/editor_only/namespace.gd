@@ -38,6 +38,7 @@ const ColumnConfig := preload("res://addons/yard/editor_only/classes/data_table/
 const CellStyle := preload("res://addons/yard/editor_only/classes/data_table/cell_style.gd")
 const CellType := preload("res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd")
 const StringCellType := preload("res://addons/yard/editor_only/classes/data_table/cell_types/string_cell_type.gd")
+const StringNameCellType := preload("res://addons/yard/editor_only/classes/data_table/cell_types/stringname_cell_type.gd")
 const NumericCellType := preload("res://addons/yard/editor_only/classes/data_table/cell_types/numeric_cell_type.gd")
 const BooleanCellType := preload("res://addons/yard/editor_only/classes/data_table/cell_types/boolean_cell_type.gd")
 const RangeCellType := preload("res://addons/yard/editor_only/classes/data_table/cell_types/range_cell_type.gd")
