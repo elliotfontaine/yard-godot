@@ -24,7 +24,7 @@ static func draw_cell(canvas: CanvasItem, rect: Rect2, value: Variant, column: C
 
 	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_CENTER)
 	var numeric_text := str(snappedf(cell_value, 0.001))
-	var display_text := get_display_text(numeric_text, style.font, style.font_size, rect.size.x - absf(x_margin_val))
+	var display_text := _get_display_text(numeric_text, style.font, style.font_size, rect.size.x - absf(x_margin_val))
 	var text_width := style.font.get_string_size(display_text, HORIZONTAL_ALIGNMENT_LEFT, -1, style.font_size).x
 	var text_pos := Vector2(rect.position.x + (rect.size.x - text_width) / 2.0, get_text_baseline_y(style.font, style.font_size, rect.position.y, rect.size.y))
 	var fill_width: float = maxf(0.001, fill.position.x + fill.size.x - text_pos.x - absf(x_margin_val) + 5 * scale)
@@ -36,6 +36,27 @@ static func draw_cell(canvas: CanvasItem, rect: Rect2, value: Variant, column: C
 	canvas.draw_string_outline(style.font, text_pos, display_text, HORIZONTAL_ALIGNMENT_LEFT, fill_width, style.font_size, style.font_size / 3, progress_color)
 	canvas.draw_string(style.font, text_pos, display_text, HORIZONTAL_ALIGNMENT_LEFT, fill_width, style.font_size, Color.BLACK)
 	canvas.draw_rect(bar, style.progress_border_color, false, 1.0 * scale)
+
+
+static func _get_display_text(text: String, font: Font, font_size: int, max_width: float) -> String:
+	var text_size := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+	if text_size.x <= max_width:
+		return text
+
+	var ellipsis := "..."
+	var ellipsis_width := font.get_string_size(ellipsis, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+	var max_text_width := max_width - ellipsis_width
+	if max_text_width <= 0:
+		return ellipsis
+
+	var truncated_text := ""
+	for i in range(text.length()):
+		var test_text := text.substr(0, i + 1)
+		var test_width := font.get_string_size(test_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		if test_width > max_text_width:
+			break
+		truncated_text = test_text
+	return truncated_text + ellipsis
 
 
 static func _get_interpolated_three_colors(start_color: Color, mid_color: Color, end_color: Color, progress: float) -> Color:

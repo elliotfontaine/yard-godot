@@ -32,45 +32,28 @@ static func draw_cell(canvas: CanvasItem, rect: Rect2, value: Variant, column: C
 
 
 static func draw_text(canvas: CanvasItem, rect: Rect2, text: String, font: Font, font_size: int, h_align: HorizontalAlignment, color: Color) -> void:
+	var line := TextLine.new()
 	var x_margin: int = H_ALIGNMENT_MARGINS.get(h_align)
-	var baseline_y := get_text_baseline_y(font, font_size, rect.position.y, rect.size.y)
-	var display_text := get_display_text(text, font, font_size, rect.size.x - absf(x_margin))
-	canvas.draw_string(
-		font,
-		Vector2(rect.position.x + x_margin, baseline_y),
-		display_text,
-		h_align,
-		maxf(0.001, rect.size.x - absf(x_margin)),
-		font_size,
-		color,
-	)
+	var width := rect.size.x - absf(x_margin)
+	var ellipsis_width := font.get_string_size(line.ellipsis_char, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+
+	if width < ellipsis_width:
+		return
+
+	line.add_string(text, font, font_size)
+	line.width = width
+	line.alignment = h_align
+	line.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS_FORCE
+
+	var line_height := font.get_ascent(font_size) + font.get_descent(font_size)
+	var top_y := rect.position.y + (rect.size.y - line_height) / 2.0
+	line.draw(canvas.get_canvas_item(), Vector2(rect.position.x + x_margin, top_y), color)
 
 
 static func get_text_baseline_y(font: Font, font_size: int, cell_y: float, cell_height: float) -> float:
 	var ascent := font.get_ascent(font_size)
 	var descent := font.get_descent(font_size)
 	return cell_y + (cell_height + ascent - descent) / 2.0
-
-
-static func get_display_text(text: String, font: Font, font_size: int, max_width: float) -> String:
-	var text_size := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
-	if text_size.x <= max_width:
-		return text
-
-	var ellipsis := "..."
-	var ellipsis_width := font.get_string_size(ellipsis, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-	var max_text_width := max_width - ellipsis_width
-	if max_text_width <= 0:
-		return ellipsis
-
-	var truncated_text := ""
-	for i in range(text.length()):
-		var test_text := text.substr(0, i + 1)
-		var test_width := font.get_string_size(test_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-		if test_width > max_text_width:
-			break
-		truncated_text = test_text
-	return truncated_text + ellipsis
 
 
 static func resolve_font(column: ColumnConfig, fallback_font: Font) -> Font:
