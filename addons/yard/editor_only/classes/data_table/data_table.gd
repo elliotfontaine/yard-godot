@@ -53,6 +53,9 @@ const AnyIcon := Namespace.AnyIcon
 @export_group("Invalid cell")
 @export var invalid_cell_color: Color = Color("252b3aff")
 
+# Show a red overlay on cells, with opacity based on their drawing performance impact.
+var _DEBUG_show_cell_draw_profiling: bool = false
+
 # Fonts
 var font := get_theme_default_font()
 var mono_font: Font = EditorInterface.get_editor_theme().get_font(&"font", &"CodeEdit")
@@ -728,7 +731,12 @@ func _draw_cells_column_range(row: StringName, row_y: float, col_from: int, col_
 		if col_x + col.current_width > clip_left and col_x < vis_w:
 			var cell_rect := Rect2(col_x, row_y, col.current_width, row_height)
 			draw_line(Vector2(col_x, row_y), Vector2(col_x, row_y + row_height), grid_color)
+			var profiling_start := Time.get_ticks_msec() if _DEBUG_show_cell_draw_profiling else 0
 			_dispatch_cell_draw(cell_rect, row, col.identifier)
+			var profiling_end := Time.get_ticks_msec() if _DEBUG_show_cell_draw_profiling else 0
+			if _DEBUG_show_cell_draw_profiling:
+				var ms: float = (profiling_end - profiling_start) / 1000.0
+				draw_rect(cell_rect, Color(1.0, 0.0, 0.0, ms * 100), true)
 			if row == focused_row and col.identifier == focused_col:
 				draw_rect(cell_rect.grow_individual(-1, -1, -2, -2), selected_cell_back_color, false, 2.0)
 		col_x += col.current_width
