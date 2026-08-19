@@ -813,7 +813,7 @@ func _rebuild_filtered_order() -> void:
 	_order.clear()
 	var key_lower := _filter_text.to_lower()
 	for row in _base_order:
-		var row_data: Dictionary[StringName, Dictionary] = _rows.get(row, { })
+		var row_data: Dictionary[StringName, Variant] = _rows.get(row, { })
 		if is_cell_valid(row, _filtered_column):
 			if str(row_data[_filtered_column]).to_lower().contains(key_lower):
 				_order.append(row)
