@@ -102,6 +102,7 @@ static func add_entry(registry: Registry, uid: StringName, string_id: String = "
 	if not ResourceUID.has_id(cache_id):
 		return ERR_CANT_ACQUIRE_RESOURCE
 
+	string_id = string_id.strip_edges()
 	if string_id.begins_with(("uid://")):
 		return ERR_INVALID_PARAMETER
 
@@ -115,9 +116,7 @@ static func add_entry(registry: Registry, uid: StringName, string_id: String = "
 	if not string_id:
 		string_id = ResourceUID.get_id_path(cache_id).get_file().get_basename()
 
-	if string_id in registry._string_ids_to_uids:
-		string_id = _make_string_id_unique(registry, string_id)
-
+	string_id = _make_string_id_unique(registry, string_id)
 	registry._uids_to_string_ids[uid] = string_id as StringName
 	registry._string_ids_to_uids[string_id] = uid
 
@@ -179,7 +178,7 @@ static func rename_entry(
 		return ERR_INVALID_PARAMETER
 
 	registry._string_ids_to_uids.erase(id)
-	var unique_new_string_id := _make_string_id_unique(registry, new_string_id)
+	var unique_new_string_id := _make_string_id_unique(registry, new_string_id.strip_edges())
 	registry._string_ids_to_uids[unique_new_string_id] = uid
 	registry._uids_to_string_ids[uid] = unique_new_string_id
 	return ResourceSaver.save(registry)

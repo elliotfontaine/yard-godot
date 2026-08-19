@@ -554,11 +554,12 @@ func _setup_add_entry() -> void:
 	entry_name_line_edit.text = ""
 
 
-func _add_entry_from_picker(res: Resource, string_id: StringName) -> void:
+func _add_entry_from_picker(res: Resource, string_id: String) -> void:
 	var res_is_file := res.resource_path and ResourceLoader.exists(res.resource_path)
+	string_id = string_id.strip_edges()
 	if not res_is_file:
 		var current_dir := EditorInterface.get_current_path().get_base_dir()
-		var save_path := current_dir.path_join(str(string_id) + ".tres")
+		var save_path := current_dir.path_join(string_id + ".tres")
 		if ResourceLoader.exists(save_path):
 			YardLogger.error("A file already exists at '%s'. Choose a different String ID or save the resource manually first." % save_path)
 			return
@@ -751,4 +752,4 @@ func _on_add_entry_button_pressed() -> void:
 	if add_entry_button.disabled:
 		return
 
-	_add_entry_from_picker(_res_picker.edited_resource, StringName(entry_name_line_edit.text))
+	_add_entry_from_picker(_res_picker.edited_resource, entry_name_line_edit.text)
