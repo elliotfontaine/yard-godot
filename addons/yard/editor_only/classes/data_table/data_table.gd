@@ -810,12 +810,15 @@ func _rebuild_filtered_order() -> void:
 	if _filtered_column == &"" or _filter_text.is_empty():
 		_order = _base_order.duplicate()
 		return
+	var column := get_column(_filtered_column)
+	var cell_type := column.get_cell_type()
 	_order.clear()
 	var key_lower := _filter_text.to_lower()
 	for row in _base_order:
 		var row_data: Dictionary[StringName, Variant] = _rows.get(row, { })
 		if is_cell_valid(row, _filtered_column):
-			if str(row_data[_filtered_column]).to_lower().contains(key_lower):
+			var filter_key: String = cell_type.get_filter_key(row_data[_filtered_column], column)
+			if filter_key.to_lower().contains(key_lower):
 				_order.append(row)
 
 

@@ -131,6 +131,10 @@ static func get_sort_key(value: Variant, _column: ColumnConfig) -> Variant:
 	return str(value)
 
 
+static func get_filter_key(value: Variant, _column: ColumnConfig) -> Variant:
+	return str(value)
+
+
 ## Shared enum hint_string parser: "A,B:1,C" -> {0:"A", 1:"B", 2:"C"}. Used by
 ## EnumCellType directly, and by CollectionCellType after it extracts the
 ## relevant sub-hint from a compound array/dictionary hint_string.

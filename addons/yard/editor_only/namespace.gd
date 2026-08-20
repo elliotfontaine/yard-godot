@@ -46,6 +46,7 @@ const ColorCellType := preload("res://addons/yard/editor_only/classes/data_table
 const ResourceCellType := preload("res://addons/yard/editor_only/classes/data_table/cell_types/resource_cell_type.gd")
 const PathCellType := preload("res://addons/yard/editor_only/classes/data_table/cell_types/path_cell_type.gd")
 const EnumCellType := preload("res://addons/yard/editor_only/classes/data_table/cell_types/enum_cell_type.gd")
+const BitFlagsCellType := preload("res://addons/yard/editor_only/classes/data_table/cell_types/bitflags_cell_type.gd")
 const CollectionCellType := preload("res://addons/yard/editor_only/classes/data_table/cell_types/collection_cell_type.gd")
 
 # Misc

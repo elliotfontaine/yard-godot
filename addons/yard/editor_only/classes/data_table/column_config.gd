@@ -2,7 +2,6 @@
 # SPDX-FileCopyrightText: 2026-present, YARD contributors (see AUTHORS.md)
 #
 # SPDX-License-Identifier: MIT
-
 extends RefCounted
 ## Column schema for DataTable, plus per-column dispatch to the CellType script
 ## responsible for it (see get_cell_type() below). This class only stores raw
@@ -20,6 +19,7 @@ const ColorCellType := Namespace.ColorCellType
 const ResourceCellType := Namespace.ResourceCellType
 const PathCellType := Namespace.PathCellType
 const EnumCellType := Namespace.EnumCellType
+const BitFlagsCellType := Namespace.BitFlagsCellType
 const CollectionCellType := Namespace.CollectionCellType
 
 const CELL_TYPES_PRIORITY_LIST: Array[GDScript] = [
@@ -29,6 +29,7 @@ const CELL_TYPES_PRIORITY_LIST: Array[GDScript] = [
 	ResourceCellType,
 	PathCellType,
 	EnumCellType,
+	BitFlagsCellType,
 	CollectionCellType,
 	StringNameCellType,
 	StringCellType,
