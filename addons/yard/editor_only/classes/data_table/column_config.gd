@@ -12,6 +12,7 @@ const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const CellType := Namespace.CellType
 const StringCellType := Namespace.StringCellType
 const StringNameCellType := Namespace.StringNameCellType
+const MultilineCellType := Namespace.MultilineCellType
 const NumericCellType := Namespace.NumericCellType
 const BooleanCellType := Namespace.BooleanCellType
 const RangeCellType := Namespace.RangeCellType
@@ -33,6 +34,7 @@ const CELL_TYPES_PRIORITY_LIST: Array[GDScript] = [
 	EnumCellType,
 	BitFlagsCellType,
 	CollectionCellType,
+	MultilineCellType,
 	StringNameCellType,
 	StringCellType,
 	NumericCellType,
