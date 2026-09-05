@@ -32,22 +32,13 @@ const DataTable := Namespace.DataTable
 const YardLogger := Namespace.YardLogger
 const RegistryCacheData := Namespace.YardEditorCache.RegistryCacheData
 
-const ACCELERATORS_WIN: Dictionary = {
-	EditMenuAction.DELETE_ENTRIES: KEY_MASK_CTRL | KEY_BACKSPACE,
-	EditMenuAction.DUPLICATE_ENTRIES: KEY_MASK_CTRL | KEY_D,
-	EditMenuAction.CUT_CELL_VALUE: KEY_MASK_CTRL | KEY_X,
-	EditMenuAction.COPY_CELL_VALUE: KEY_MASK_CTRL | KEY_C,
-	EditMenuAction.PASTE_TO_CELL: KEY_MASK_CTRL | KEY_V,
-	EditMenuAction.SELECT_ALL: KEY_MASK_CTRL | KEY_A,
-}
-
-const ACCELERATORS_MAC: Dictionary = {
-	EditMenuAction.DELETE_ENTRIES: KEY_MASK_META | KEY_BACKSPACE,
-	EditMenuAction.DUPLICATE_ENTRIES: KEY_MASK_META | KEY_D,
-	EditMenuAction.CUT_CELL_VALUE: KEY_MASK_META | KEY_X,
-	EditMenuAction.COPY_CELL_VALUE: KEY_MASK_META | KEY_C,
-	EditMenuAction.PASTE_TO_CELL: KEY_MASK_META | KEY_V,
-	EditMenuAction.SELECT_ALL: KEY_MASK_META | KEY_A,
+const ACTION_SHORTCUTS: Dictionary[EditMenuAction, String] = {
+	EditMenuAction.DELETE_ENTRIES: "filesystem_dock/delete",
+	EditMenuAction.DUPLICATE_ENTRIES: "filesystem_dock/duplicate",
+	EditMenuAction.CUT_CELL_VALUE: "ui_cut",
+	EditMenuAction.COPY_CELL_VALUE: "ui_copy",
+	EditMenuAction.PASTE_TO_CELL: "ui_paste",
+	EditMenuAction.SELECT_ALL: "ui_text_select_all",
 }
 
 const INVALID_UID := "uid://<invalid>"
@@ -110,10 +101,12 @@ func _ready() -> void:
 	data_table.multiple_rows_selected.connect(_on_multiple_rows_selected)
 	entry_name_line_edit.text_submitted.connect(_on_new_entry_text_submitted)
 
-	var accelerators := ACCELERATORS_MAC if OS.get_name() == "macOS" else ACCELERATORS_WIN
-	for action: EditMenuAction in accelerators:
+	for action: EditMenuAction in ACTION_SHORTCUTS:
 		if edit_context_menu.get_item_index(action) != -1:
-			edit_context_menu.set_item_accelerator(edit_context_menu.get_item_index(action), accelerators.get(action))
+			var setting_path: String = ACTION_SHORTCUTS.get(action, "")
+			var shortcut := EditorInterface.get_editor_settings().get_shortcut(setting_path)
+			if shortcut and shortcut.has_valid_event():
+				edit_context_menu.set_item_shortcut(edit_context_menu.get_item_index(action), shortcut)
 
 	resource_picker_container.add_theme_stylebox_override(
 		&"panel",

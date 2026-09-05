@@ -45,20 +45,12 @@ const BUILTIN_RESOURCE_PROPERTIES: Array[StringName] = RegistryCacheData.BUILTIN
 const STRINGID_COLUMN := RegistryTableView.STRINGID_COLUMN
 const UID_COLUMN := RegistryTableView.UID_COLUMN
 
-const ACCELERATORS_WIN: Dictionary = {
-	FileMenuAction.NEW: KEY_MASK_CTRL | KEY_N,
-	FileMenuAction.REOPEN_CLOSED: KEY_MASK_SHIFT | KEY_MASK_CTRL | KEY_T,
-	FileMenuAction.CLOSE: KEY_MASK_CTRL | KEY_W,
-	FileMenuAction.MOVE_UP: KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP,
-	FileMenuAction.MOVE_DOWN: KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN,
-}
-
-const ACCELERATORS_MAC: Dictionary = {
-	FileMenuAction.NEW: KEY_MASK_META | KEY_N,
-	FileMenuAction.REOPEN_CLOSED: KEY_MASK_SHIFT | KEY_MASK_META | KEY_T,
-	FileMenuAction.CLOSE: KEY_MASK_META | KEY_W,
-	FileMenuAction.MOVE_UP: KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_UP,
-	FileMenuAction.MOVE_DOWN: KEY_MASK_SHIFT | KEY_MASK_ALT | KEY_DOWN,
+const ACTION_SHORTCUTS: Dictionary[FileMenuAction, String] = {
+	FileMenuAction.NEW: "script_editor/new",
+	FileMenuAction.REOPEN_CLOSED: "script_editor/reopen_closed_script",
+	FileMenuAction.CLOSE: "script_editor/close_file",
+	FileMenuAction.MOVE_UP: "script_editor/window_move_up",
+	FileMenuAction.MOVE_DOWN: "script_editor/window_move_down",
 }
 
 var _editor_state_data: EditorStateData
@@ -104,7 +96,7 @@ func _ready() -> void:
 	add_child(_file_dialog)
 
 	_toggle_visibility_topbar_buttons()
-	_setup_accelerators()
+	_setup_shortcuts()
 
 	file_menu_button.get_popup().id_pressed.connect(_on_file_menu_id_pressed)
 	edit_menu_button.get_popup().id_pressed.connect(_on_edit_menu_id_pressed)
@@ -215,24 +207,26 @@ func is_any_registry_selected() -> bool:
 	return not _current_registry_uid.is_empty()
 
 
-func _setup_accelerators() -> void:
-	# TODO: when Godot 4.6 is out, register editor shortcuts
-	# and reuse already registered ones using `EditorSettings.get_shortcut()`
-	# https://github.com/godotengine/godot/pull/102889
+func _setup_shortcuts() -> void:
 	var file_menu := file_menu_button.get_popup()
-	var is_mac := OS.get_name() == "macOS"
-	var accelerators := ACCELERATORS_MAC if is_mac else ACCELERATORS_WIN
-	var edit_accelerators := RegistryTableView.ACCELERATORS_MAC if is_mac else RegistryTableView.ACCELERATORS_WIN
-	for action: FileMenuAction in accelerators:
-		if file_menu.get_item_index(action) != -1:
-			file_menu.set_item_accelerator(file_menu.get_item_index(action), accelerators.get(action))
-		if registry_context_menu.get_item_index(action) != -1:
-			registry_context_menu.set_item_accelerator(registry_context_menu.get_item_index(action), accelerators.get(action))
+	var action_shortcuts := ACTION_SHORTCUTS
+	var edit_action_shortcuts := RegistryTableView.ACTION_SHORTCUTS
+	for action: FileMenuAction in action_shortcuts:
+		var setting_path: String = action_shortcuts.get(action, "")
+		var shortcut := EditorInterface.get_editor_settings().get_shortcut(setting_path)
+		if shortcut and shortcut.has_valid_event():
+			if file_menu.get_item_index(action) != -1:
+				file_menu.set_item_shortcut(file_menu.get_item_index(action), shortcut)
+			if registry_context_menu.get_item_index(action) != -1:
+				registry_context_menu.set_item_shortcut(registry_context_menu.get_item_index(action), shortcut)
 
 	var edit_menu := edit_menu_button.get_popup()
-	for action: EditMenuAction in edit_accelerators:
+	for action: EditMenuAction in edit_action_shortcuts:
 		if edit_menu.get_item_index(action) != -1:
-			edit_menu.set_item_accelerator(edit_menu.get_item_index(action), edit_accelerators.get(action))
+			var setting_path: String = edit_action_shortcuts.get(action, "")
+			var shortcut := EditorInterface.get_editor_settings().get_shortcut(setting_path)
+			if shortcut and shortcut.has_valid_event():
+				edit_menu.set_item_shortcut(edit_menu.get_item_index(action), shortcut)
 
 
 ## Returns the index in the ItemList of the specified registry (by uid)
