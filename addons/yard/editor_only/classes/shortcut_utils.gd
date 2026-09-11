@@ -39,5 +39,5 @@ static func register_shortcuts() -> void:
 		for action: String in _SHORTCUT_DEFAULTS:
 			var path := "%s/%s" % [_SECTION, action]
 			if not EditorInterface.get_editor_settings().has_shortcut(path):
-				var shortcut: Shortcut = load(_SHORTCUT_DEFAULTS[action])
+				var shortcut: Shortcut = load(_SHORTCUT_DEFAULTS[action]).duplicate()
 				EditorInterface.get_editor_settings().add_shortcut(path, shortcut)
