@@ -1,4 +1,6 @@
 name: Load YARD plugin
+description: |
+  "Run Godot in headless mode and load YARD. GDScript warning are treated as errors."
 
 on:
   push:
