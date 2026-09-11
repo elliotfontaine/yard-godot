@@ -1207,42 +1207,42 @@ func _handle_key_input(event: InputEventKey) -> void:
 		_navigate_to(new_row_idx, new_col_idx, event)
 
 	# NAVIGATE UP
-	elif event.is_action_pressed(&"ui_up"):
+	elif event.is_action_pressed(&"ui_up", true):
 		if not is_any_cell_focused:
 			return
 		var new_row_idx := maxi(0, focused_row_idx - 1)
 		_navigate_to(new_row_idx, focused_col_idx, event)
 
 	# NAVIGATE DOWN
-	elif event.is_action_pressed(&"ui_down"):
+	elif event.is_action_pressed(&"ui_down", true):
 		if not is_any_cell_focused:
 			return
 		var new_row_idx := mini(_order.size() - 1, focused_row_idx + 1)
 		_navigate_to(new_row_idx, focused_col_idx, event)
 
 	# NAVIGATE LEFT
-	elif event.is_action_pressed(&"ui_left"):
+	elif event.is_action_pressed(&"ui_left", true):
 		if not is_any_cell_focused:
 			return
 		var new_col_idx: = maxi(0, focused_col_idx - 1)
 		_navigate_to(focused_row_idx, new_col_idx, event)
 
 	# NAVIGATE RIGHT
-	elif event.is_action_pressed(&"ui_right"):
+	elif event.is_action_pressed(&"ui_right", true):
 		if not is_any_cell_focused:
 			return
 		var new_col_idx := mini(_columns.size() - 1, focused_col_idx + 1)
 		_navigate_to(focused_row_idx, new_col_idx, event)
 
 	# NAVIGATE 1 PAGE UP
-	elif event.is_action_pressed(&"ui_page_up"):
+	elif event.is_action_pressed(&"ui_page_up", true):
 		if not is_any_cell_focused:
 			return
 		var new_row_idx := maxi(0, focused_row_idx - _get_page_row_count())
 		_navigate_to(new_row_idx, focused_col_idx, event)
 
 	# NAVIGATE 1 PAGE DOWN
-	elif event.is_action_pressed(&"ui_page_down"):
+	elif event.is_action_pressed(&"ui_page_down", true):
 		if not is_any_cell_focused:
 			return
 		var new_row_idx := mini(_order.size() - 1, focused_row_idx + _get_page_row_count())
