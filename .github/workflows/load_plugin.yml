@@ -66,6 +66,19 @@ jobs:
           test -f ci/test_project/addons/yard/plugin.cfg \
             || { echo "::error::YARD plugin.cfg was not copied"; exit 1; }
 
+      - name: Check test project
+        shell: bash
+        run: |
+          echo "Working directory:"
+          pwd
+
+          echo "Test project:"
+          find ci/test_project -maxdepth 4 -type f -print
+
+          echo "Plugin:"
+          ls -la ci/test_project/addons/yard
+          cat ci/test_project/addons/yard/plugin.cfg
+
       - name: Test plugin
         shell: bash
         run: |
