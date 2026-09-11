@@ -6,16 +6,12 @@
 class_name GdmStatus
 extends Resource
 
-## Whether the status persists (major) or fades on switch-out (volatile).
-## A monster can have only one MAJOR status at a time.
-enum Kind {
-	MAJOR,
-	VOLATILE,
-}
-
 @export var name: String
 @export_multiline var description: String
-@export var kind: Kind = Kind.MAJOR
+
+## Whether the status persists (major) or fades on switch-out (volatile).
+## A monster can have only one major status at a time.
+@export var is_major: bool = true
 
 ## All mechanical effects (including duration) live in the battle
 ## engine under this id.
