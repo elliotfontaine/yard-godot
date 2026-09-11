@@ -113,29 +113,21 @@ Properties support dot notation for nested resources: `&"weapon.rarity"` resolve
 
 > The full `Registry` API is documented in the in-editor class reference: **Help > Search Help > Registry**.
 
-## How the property index works its magic
-
-The index is simply a nested dictionary stored inside the registry `.tres` file:
-
-```gdscript
-_property_index = {
-	&"rarity": {
-		Rarity.LEGENDARY: { &"excalibur": true, &"mjolnir": true },
-		Rarity.COMMON: { &"stick": true },
-	},
-	&"level": {
-		1: { &"stick": true },
-		10: { &"excalibur": true },
-		12: { &"mjolnir": true },
-	}
-}
-```
-
 ## Contributing
 
 Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
 
 For major changes, [open an issue](https://github.com/elliotfontaine/yard-godot/issues/new?template=feature_request.yml) first to discuss what you have in mind.
+
+## AI Policy
+
+The YARD codebase may contain code generated with the help of LLMs, as contributors aren't required to disclose their use of AI tools. Every change is reviewed on its own merits regardless of how it was produced.
+
+However, AI-generated text is not allowed in PR descriptions or issue bodies. Contributors must write these themselves, as reviewers should not be expected to spend time reviewing text that the contributor did not write.
+
+If, for legal or ethical reasons, you can't use software that may contain AI-generated content, please refrain from using YARD or integrating it into your team's workflow.
+
+This policy may be revised as the volume of PRs requiring review increases.
 
 ## License
 
