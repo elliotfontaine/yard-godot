@@ -104,6 +104,11 @@ in `DataTable`; plugin-level operations (top-level menus, file I/O) in `Registry
 - Keep `RegistryIO` methods `static`; they receive a `Registry` as their first argument.
 - Connect signals in `_ready`, not from the Scene view.
 
+## Opening issues or PRs
+
+- Please use the templates provided on GitHub, as they help ensure you provide all the necessary information.
+- Please write them yourself, even if English isn't your first language. Nobody wants to talk to a LLM while thinking they're talking to a person.
+
 ## Submitting changes
 
 - Keep commits focused on a single concern.
