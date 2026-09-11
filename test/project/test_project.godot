@@ -14,8 +14,40 @@ gdscript/warnings/directory_rules={
 "res://addons": 0,
 "res://addons/yard": 1
 }
-gdscript/warnings/untyped_declaration=1
-gdscript/warnings/inference_on_variant=1
+gdscript/warnings/unassigned_variable=2
+gdscript/warnings/unassigned_variable_op_assign=2
+gdscript/warnings/unused_variable=2
+gdscript/warnings/unused_local_constant=2
+gdscript/warnings/unused_private_class_variable=2
+gdscript/warnings/unused_parameter=2
+gdscript/warnings/unused_signal=2
+gdscript/warnings/shadowed_variable=2
+gdscript/warnings/shadowed_variable_base_class=2
+gdscript/warnings/shadowed_global_identifier=2
+gdscript/warnings/unreachable_code=2
+gdscript/warnings/unreachable_pattern=2
+gdscript/warnings/standalone_expression=2
+gdscript/warnings/standalone_ternary=2
+gdscript/warnings/incompatible_ternary=2
+gdscript/warnings/untyped_declaration=2
+gdscript/warnings/unsafe_void_return=2
+gdscript/warnings/static_called_on_instance=2
+gdscript/warnings/missing_tool=2
+gdscript/warnings/redundant_static_unload=2
+gdscript/warnings/redundant_await=2
+gdscript/warnings/assert_always_true=2
+gdscript/warnings/assert_always_false=2
+gdscript/warnings/integer_division=2
+gdscript/warnings/narrowing_conversion=2
+gdscript/warnings/int_as_enum_without_cast=2
+gdscript/warnings/int_as_enum_without_match=2
+gdscript/warnings/enum_variable_without_default=2
+gdscript/warnings/empty_file=2
+gdscript/warnings/deprecated_keyword=2
+gdscript/warnings/confusable_identifier=2
+gdscript/warnings/confusable_local_declaration=2
+gdscript/warnings/confusable_local_usage=2
+gdscript/warnings/confusable_capture_reassignment=2
 
 [editor_plugins]
 
