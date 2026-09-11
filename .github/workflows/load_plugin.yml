@@ -60,6 +60,12 @@ jobs:
           mkdir -p ci/test_project/addons
           cp -R addons/yard ci/test_project/addons/yard
 
+          test -d ci/test_project/addons/yard \
+            || { echo "::error::YARD plugin directory was not copied"; exit 1; }
+
+          test -f ci/test_project/addons/yard/plugin.cfg \
+            || { echo "::error::YARD plugin.cfg was not copied"; exit 1; }
+
       - name: Test plugin
         shell: bash
         run: |
