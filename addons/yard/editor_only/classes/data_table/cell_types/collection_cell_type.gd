@@ -95,9 +95,9 @@ static func _format_collection_text(collection: Variant, column: ColumnConfig) -
 		else { }
 	)
 	var parts: Array[String] = []
-	for i in mini(items.size(), 3):
+	for idx in items.size():
 		if is_dict:
-			var key: Variant = items[i]
+			var key: Variant = items[idx]
 			var val: Variant = (collection as Dictionary)[key]
 			parts.append(
 				"%s: %s" % [
@@ -106,12 +106,9 @@ static func _format_collection_text(collection: Variant, column: ColumnConfig) -
 				],
 			)
 		else:
-			parts.append(_format_element_text(items[i], values_map))
+			parts.append(_format_element_text(items[idx], values_map))
 
 	var result := ", ".join(parts)
-	var remaining := items.size() - 3
-	if remaining > 0:
-		result += " and {remaining} more".format({ &"remaining": remaining })
 	return "{ %s }" % result if is_dict else "[%s]" % result
 
 
@@ -136,7 +133,7 @@ static func _value_to_string_pretty(value: Variant, indent_level: int = 0) -> St
 	const INDENT: String = "    "
 	var formatted: String = ""
 	match typeof(value):
-		var t when t in ARRAY_TYPES:
+		var type when type in ARRAY_TYPES:
 			if value.is_empty():
 				formatted += "[]"
 			else:
