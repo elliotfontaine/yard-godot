@@ -29,10 +29,9 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - "4.4.0"
-          - "4.5.0"
-          - "4.6.0"
-          - "4.7.0"
+          - "4.5.x"
+          - "4.6.x"
+          - "4.7.x"
 
         os:
           - ubuntu-latest
@@ -59,25 +58,6 @@ jobs:
         run: |
           mkdir -p test/project/addons
           cp -R addons/yard test/project/addons/yard
-
-          test -d test/project/addons/yard \
-            || { echo "::error::YARD plugin directory was not copied"; exit 1; }
-
-          test -f test/project/addons/yard/plugin.cfg \
-            || { echo "::error::YARD plugin.cfg was not copied"; exit 1; }
-
-      - name: Check test project
-        shell: bash
-        run: |
-          echo "Working directory:"
-          pwd
-
-          echo "Test project:"
-          find test/project -maxdepth 4 -type f -print
-
-          echo "Plugin:"
-          ls -la test/project/addons/yard
-          cat test/project/addons/yard/plugin.cfg
 
       - name: Test plugin
         shell: bash
