@@ -53,9 +53,14 @@ static func get_registry_settings(registry: Registry) -> RegistrySettings:
 
 		var scan_rulesets_count := registry._scan_rulesets.size()
 		if scan_rulesets_count > 0:
-			settings.default_scan_ruleset = RegistryScanRuleset.get_ruleset_from_dict(registry._scan_rulesets[0], false)
+			settings.default_scan_ruleset = RegistryScanRuleset.get_ruleset_from_dict(
+				registry._scan_rulesets[0],
+				false,
+			)
 			for i in scan_rulesets_count - 1:
-				settings.additional_scan_rulesets.append(RegistryScanRuleset.get_ruleset_from_dict(registry._scan_rulesets[i + 1], true))
+				settings.additional_scan_rulesets.append(
+					RegistryScanRuleset.get_ruleset_from_dict(registry._scan_rulesets[i + 1], true)
+				)
 
 		return settings
 
@@ -110,7 +115,13 @@ static func add_entry(registry: Registry, uid: StringName, string_id: String = "
 		return ERR_ALREADY_EXISTS
 
 	var settings := get_registry_settings(registry)
-	if settings.has_any_class_restrictions() and not does_resource_match_class_restrictions(load(uid), settings.get_all_class_restrictions()):
+	if (
+		settings.has_any_class_restrictions()
+		and not does_resource_match_class_restrictions(
+			load(uid),
+			settings.get_all_class_restrictions(),
+		)
+	):
 		return ERR_DATABASE_CANT_WRITE
 
 	if not string_id:
@@ -168,11 +179,7 @@ static func duplicate_entry(registry: Registry, uid: StringName) -> Error:
 	return add_entry(registry, ResourceUID.path_to_uid(new_path), new_string_id)
 
 
-static func rename_entry(
-		registry: Registry,
-		id: StringName,
-		new_string_id: StringName,
-) -> Error:
+static func rename_entry(registry: Registry, id: StringName, new_string_id: StringName) -> Error:
 	var uid := registry.get_uid(id)
 	if not uid:
 		return ERR_INVALID_PARAMETER
@@ -193,11 +200,8 @@ static func change_entry_uid(registry: Registry, id: StringName, new_uid: String
 	if registry.has_uid(new_uid):
 		var already_there_string_id := registry.get_string_id(new_uid)
 		YardLogger.error(
-			"UID Change Error: You can't use %s for '%s', as it's already in the registry as '%s'" % [
-				new_uid,
-				string_id,
-				already_there_string_id,
-			],
+			"UID Change Error: You can't use %s for '%s', as it's already in the registry as '%s'"
+			% [new_uid, string_id, already_there_string_id],
 		)
 		return ERR_INVALID_PARAMETER
 
@@ -208,10 +212,8 @@ static func change_entry_uid(registry: Registry, id: StringName, new_uid: String
 		var all_class_restrictions := settings.get_all_class_restrictions()
 		if not does_resource_match_class_restrictions(res, all_class_restrictions):
 			YardLogger.error(
-				"UID Change Error: The associated resource '%s' doesn't match the registry class restriction (%s)." % [
-					res.resource_path.get_file(),
-					",".join(all_class_restrictions),
-				],
+				"UID Change Error: The associated resource '%s' doesn't match the registry class restriction (%s)."
+				% [res.resource_path.get_file(), ",".join(all_class_restrictions)],
 			)
 			return ERR_INVALID_PARAMETER
 
@@ -237,19 +239,16 @@ static func sync_from_scan_directories(registry: Registry) -> void:
 	var first_removed := ""
 	var scanned_uids := { }
 
-	var _log := fun c(action: String, prep: String, n: int, first: String) -> void:
+	var _log := func(action: String, prep: String, n: int, first: String) -> void:
 		if n == 1:
 			YardLogger.info(
-				"%s %s %s %s." % [
-					action.capitalize(),
-					first,
-					prep,
-					registry.resource_path.get_file(),
-				],
+				"%s %s %s %s."
+				% [action.capitalize(), first, prep, registry.resource_path.get_file()],
 			)
 		elif n > 1:
 			YardLogger.info(
-				"%s %s and %d more entr%s %s %s." % [
+				"%s %s and %d more entr%s %s %s."
+				% [
 					action.capitalize(),
 					first,
 					n - 1,
@@ -285,7 +284,9 @@ static func sync_from_scan_directories(registry: Registry) -> void:
 			if n_removed == 1:
 				first_removed = string_id
 		else:
-			YardLogger.warn("Failed to remove %s from %s." % [string_id, registry.resource_path.get_file()])
+			YardLogger.warn(
+				"Failed to remove %s from %s." % [string_id, registry.resource_path.get_file()]
+			)
 
 	_log.call("removed", "from", n_removed, first_removed)
 
@@ -321,10 +322,21 @@ static func rebuild_property_index(registry: Registry) -> Error:
 
 ## NOTE: Only one of the ruleset's scan directories can be checked at a time! When multiple are
 ## defined, they should be iterated through in a parent scope.
-static func dir_has_matching_resource(path: String, scan_ruleset: RegistryScanRuleset, base_scan_dir: String, ignore_scan_filters: bool = false, compiled_re_in: RegEx = null, compiled_re_ex: RegEx = null) -> bool:
+static func dir_has_matching_resource(
+	path: String,
+	scan_ruleset: RegistryScanRuleset,
+	base_scan_dir: String,
+	ignore_scan_filters: bool = false,
+	compiled_re_in: RegEx = null,
+	compiled_re_ex: RegEx = null,
+) -> bool:
 	var recursive := scan_ruleset.recursive_scan
-	var re_include := compiled_re_in if compiled_re_in else _compile_regex(scan_ruleset.scan_regex_include)
-	var re_exclude := compiled_re_ex if compiled_re_ex else _compile_regex(scan_ruleset.scan_regex_exclude)
+	var re_include := compiled_re_in if compiled_re_in else _compile_regex(
+		scan_ruleset.scan_regex_include
+	)
+	var re_exclude := compiled_re_ex if compiled_re_ex else _compile_regex(
+		scan_ruleset.scan_regex_exclude
+	)
 	var dir := DirAccess.open(path)
 	if dir == null:
 		return false
@@ -336,11 +348,30 @@ static func dir_has_matching_resource(path: String, scan_ruleset: RegistryScanRu
 		var abs_next_path: String = dir.get_current_dir().path_join(next)
 		var rel_next_path := abs_next_path.replace(base_scan_dir + "/", "")
 
-		if recursive and dir.current_is_dir() and (ignore_scan_filters or _path_passes_scan_filters(rel_next_path, null, re_exclude)):
-			if dir_has_matching_resource(abs_next_path, scan_ruleset, base_scan_dir, ignore_scan_filters, re_include, re_exclude):
+		if (
+			recursive and dir.current_is_dir()
+			and (ignore_scan_filters or _path_passes_scan_filters(rel_next_path, null, re_exclude))
+		):
+			if dir_has_matching_resource(
+				abs_next_path,
+				scan_ruleset,
+				base_scan_dir,
+				ignore_scan_filters,
+				re_include,
+				re_exclude,
+			):
 				dir.list_dir_end()
 				return true
-		elif ResourceLoader.exists(abs_next_path) and (ignore_scan_filters or _path_passes_scan_filters(rel_next_path, re_include, re_exclude, scan_ruleset.allowed_file_extensions)):
+		elif (
+			ResourceLoader.exists(abs_next_path)
+			and (ignore_scan_filters
+			or _path_passes_scan_filters(
+				rel_next_path,
+				re_include,
+				re_exclude,
+				scan_ruleset.allowed_file_extensions,
+			))
+		):
 			var res := load(abs_next_path)
 			if does_resource_match_class_restrictions(res, scan_ruleset.class_restrictions):
 				dir.list_dir_end()
@@ -352,7 +383,14 @@ static func dir_has_matching_resource(path: String, scan_ruleset: RegistryScanRu
 
 ## NOTE: Only one of the ruleset's scan directories can be checked at a time! When multiple are
 ## defined, they should be iterated through in a parent scope.
-static func dir_get_matching_resources(path: String, scan_ruleset: RegistryScanRuleset, base_scan_dir: String, ignore_scan_filters: bool = false, compiled_re_in: RegEx = null, compiled_re_ex: RegEx = null) -> Array[Resource]:
+static func dir_get_matching_resources(
+	path: String,
+	scan_ruleset: RegistryScanRuleset,
+	base_scan_dir: String,
+	ignore_scan_filters: bool = false,
+	compiled_re_in: RegEx = null,
+	compiled_re_ex: RegEx = null,
+) -> Array[Resource]:
 	var recursive := scan_ruleset.recursive_scan
 	var re_include := _compile_regex(scan_ruleset.scan_regex_include) if not compiled_re_in else compiled_re_in
 	var re_exclude := _compile_regex(scan_ruleset.scan_regex_exclude) if not compiled_re_ex else compiled_re_ex
@@ -371,9 +409,28 @@ static func dir_get_matching_resources(path: String, scan_ruleset: RegistryScanR
 			rel_next_path = rel_next_path.substr(1)
 
 		# Do not match the include pattern against directories, as it's a partial path. Only match on leaf (file) paths.
-		if recursive and dir.current_is_dir() and (ignore_scan_filters or _path_passes_scan_filters(rel_next_path, null, re_exclude)):
-			matching_resources += dir_get_matching_resources(abs_next_path, scan_ruleset, base_scan_dir, ignore_scan_filters, re_include, re_exclude)
-		elif ResourceLoader.exists(abs_next_path) and (ignore_scan_filters or _path_passes_scan_filters(rel_next_path, re_include, re_exclude, scan_ruleset.allowed_file_extensions)):
+		if (
+			recursive and dir.current_is_dir()
+			and (ignore_scan_filters or _path_passes_scan_filters(rel_next_path, null, re_exclude))
+		):
+			matching_resources += dir_get_matching_resources(
+				abs_next_path,
+				scan_ruleset,
+				base_scan_dir,
+				ignore_scan_filters,
+				re_include,
+				re_exclude,
+			)
+		elif (
+			ResourceLoader.exists(abs_next_path)
+			and (ignore_scan_filters
+			or _path_passes_scan_filters(
+				rel_next_path,
+				re_include,
+				re_exclude,
+				scan_ruleset.allowed_file_extensions,
+			))
+		):
 			var res := load(abs_next_path)
 			if does_resource_match_class_restrictions(res, scan_ruleset.class_restrictions):
 				matching_resources.append(res)
@@ -406,8 +463,8 @@ static func is_valid_registry_output_path(path: String) -> bool:
 ## Handles native classes, named scripts (class_name), and unnamed scripts (quoted path).
 ## Subclasses of the class restrictions are accepted.
 static func does_resource_match_class_restrictions(
-		res: Resource,
-		class_restrictions: Array[StringName],
+	res: Resource,
+	class_restrictions: Array[StringName],
 ) -> bool:
 	if res == null:
 		return false
@@ -498,7 +555,12 @@ static func _compile_regex(pattern: String) -> RegEx:
 	return RegEx.create_from_string(pattern)
 
 
-static func _path_passes_scan_filters(path: String, re_include: RegEx, re_exclude: RegEx, file_extensions_filter: Array[String] = []) -> bool:
+static func _path_passes_scan_filters(
+	path: String,
+	re_include: RegEx,
+	re_exclude: RegEx,
+	file_extensions_filter: Array[String] = [],
+) -> bool:
 	if re_include and not re_include.search(path):
 		return false
 	if re_exclude and re_exclude.search(path):
@@ -564,7 +626,10 @@ static func _strip_index_suffix(s: String) -> String:
 ## Properties currently indexed but absent from [param properties] are removed.
 ## Existing index data for kept properties is preserved. Call
 ## [method rebuild_property_index] afterwards to refresh values.
-static func _replace_indexed_properties_list(registry: Registry, properties: Array[StringName]) -> void:
+static func _replace_indexed_properties_list(
+	registry: Registry,
+	properties: Array[StringName],
+) -> void:
 	var target := { }
 	for p in properties:
 		target[p] = true
@@ -615,7 +680,9 @@ class RegistrySettings:
 	func get_compiled_rulesets() -> Array[RegistryScanRuleset]:
 		var compiled_rulesets: Array[RegistryScanRuleset] = [default_scan_ruleset]
 		for additional_scan_ruleset in additional_scan_rulesets:
-			compiled_rulesets.append(additional_scan_ruleset.compile_with_overridden_properties(default_scan_ruleset))
+			compiled_rulesets.append(
+				additional_scan_ruleset.compile_with_overridden_properties(default_scan_ruleset)
+			)
 		return compiled_rulesets
 
 
@@ -629,7 +696,9 @@ class RegistrySettings:
 
 
 	func get_all_class_restrictions() -> Array[StringName]:
-		var all_class_restrictions: Array[StringName] = default_scan_ruleset.class_restrictions.duplicate()
+		var all_class_restrictions: Array[StringName] = default_scan_ruleset \
+				.class_restrictions \
+				.duplicate()
 		for additional_scan_ruleset in additional_scan_rulesets:
 			if additional_scan_ruleset.override_properties.has(&"class_restrictions"):
 				for additional_class_restriction in additional_scan_ruleset.class_restrictions:
@@ -675,17 +744,21 @@ class RegistryScanRuleset:
 	## optionally specified, implying that this is an additional ruleset that should only compare
 	## its overridden properties rather than all properties.
 	func matches_other_ruleset(
-			other_ruleset: RegistryScanRuleset,
-			default_ruleset: RegistryScanRuleset = null,
-			other_default_ruleset: RegistryScanRuleset = null,
+		other_ruleset: RegistryScanRuleset,
+		default_ruleset: RegistryScanRuleset = null,
+		other_default_ruleset: RegistryScanRuleset = null,
 	) -> bool:
 		for property_key in RULESET_PROPERTY_KEYS:
 			var our_value: Variant = (
-				self[property_key] if default_ruleset == null or self.override_properties.has(property_key)
+				self[property_key]
+				if default_ruleset == null or self.override_properties.has(property_key)
 				else default_ruleset[property_key]
 			)
 			var their_value: Variant = (
-				other_ruleset[property_key] if other_default_ruleset == null or other_ruleset.override_properties.has(property_key)
+				other_ruleset[property_key]
+				if other_default_ruleset == null or other_ruleset.override_properties.has(
+					property_key
+				)
 				else other_default_ruleset[property_key]
 			)
 			if our_value != their_value:
@@ -696,10 +769,14 @@ class RegistryScanRuleset:
 
 	## Make a copy of this ruleset with compiled rules taken overridden fields + non-overridden ones from the default ruleset.
 	## Only applicable for non-default rulesets.
-	func compile_with_overridden_properties(default_ruleset: RegistryScanRuleset) -> RegistryScanRuleset:
+	func compile_with_overridden_properties(
+		default_ruleset: RegistryScanRuleset
+	) -> RegistryScanRuleset:
 		var compiled_ruleset := RegistryScanRuleset.new()
 		for property_key in RULESET_PROPERTY_KEYS:
-			compiled_ruleset[property_key] = self[property_key] if override_properties.has(property_key) else default_ruleset[property_key]
+			compiled_ruleset[property_key] = self[property_key] if override_properties.has(
+				property_key
+			) else default_ruleset[property_key]
 		return compiled_ruleset
 
 
@@ -713,7 +790,10 @@ class RegistryScanRuleset:
 
 
 	## Generate a ruleset from a dictionary (usually stored to a resource file).
-	static func get_ruleset_from_dict(dict: Dictionary, is_additional_ruleset: bool) -> RegistryScanRuleset:
+	static func get_ruleset_from_dict(
+		dict: Dictionary,
+		is_additional_ruleset: bool,
+	) -> RegistryScanRuleset:
 		var new_ruleset := RegistryScanRuleset.new()
 		for property_key in RULESET_PROPERTY_KEYS:
 			if dict.has(property_key):

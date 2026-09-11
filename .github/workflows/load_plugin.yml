@@ -53,20 +53,18 @@ jobs:
         run: |
           godot --version
 
-      - name: Copy YARD to test project directory
+      - name: Replace project.godot with test version
         shell: bash
         run: |
-          mkdir -p test/project/addons
-          cp -R addons/yard test/project/addons/yard
+          cp test/project/test_project.godot project.godot
 
-      - name: Test plugin
+      - name: Run Godot with plugin
         shell: bash
         run: |
           set -o pipefail
 
           godot \
             --headless \
-            --path test/project \
             --editor \
             --quit \
             2>&1 | tee godot.log
