@@ -76,13 +76,10 @@ jobs:
             "YARD - Yet Another Resource Database. Plugin loaded." \
             godot.log
 
-      - name: Check for Godot errors
+      - name: Check for Godot errors or warnings
         shell: bash
         run: |
-          if grep -E \
-            '(^| )ERROR( |:)|SCRIPT ERROR|Parse Error' \
-            godot.log
-          then
-            echo "Godot reported an error."
+          if grep -E '(^| )(ERROR|WARNING)( |:)|SCRIPT ERROR|Parse Error' godot.log; then
+            echo "::error::Godot reported an error or warning."
             exit 1
           fi

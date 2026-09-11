@@ -8,6 +8,15 @@
 
 config_version=5
 
+[debug]
+
+gdscript/warnings/directory_rules={
+"res://addons": 0,
+"res://addons/yard": 1
+}
+gdscript/warnings/untyped_declaration=1
+gdscript/warnings/inference_on_variant=1
+
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/yard/plugin.cfg")
