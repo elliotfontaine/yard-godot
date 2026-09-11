@@ -29,9 +29,9 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - "4.5.x"
-          - "4.6.x"
-          - "4.7.x"
+          - "4.5.2"
+          - "4.6.3"
+          - "4.7.2"
 
         os:
           - ubuntu-latest
