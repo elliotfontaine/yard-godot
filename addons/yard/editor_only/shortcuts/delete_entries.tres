@@ -1,0 +1,10 @@
+[gd_resource type="Shortcut" format=3 uid="uid://dnr24igtyvnab"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_fmyxs"]
+command_or_control_autoremap = true
+keycode = 4194308
+
+[resource]
+resource_name = "Delete"
+events = [SubResource("InputEventKey_fmyxs")]
+metadata/original = [SubResource("InputEventKey_fmyxs")]

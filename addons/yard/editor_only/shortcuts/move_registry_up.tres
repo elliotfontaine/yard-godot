@@ -1,0 +1,11 @@
+[gd_resource type="Shortcut" format=3 uid="uid://un1ghaswoey"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_sue08"]
+command_or_control_autoremap = true
+alt_pressed = true
+keycode = 4194320
+
+[resource]
+resource_name = "Move Up"
+events = [SubResource("InputEventKey_sue08")]
+metadata/original = [SubResource("InputEventKey_sue08")]

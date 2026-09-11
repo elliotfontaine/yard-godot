@@ -1,0 +1,10 @@
+[gd_resource type="Shortcut" format=3 uid="uid://3qanf3bkjhj5"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_vlpia"]
+command_or_control_autoremap = true
+keycode = 92
+
+[resource]
+resource_name = "Toggle Registries Panel"
+events = [SubResource("InputEventKey_vlpia")]
+metadata/original = [SubResource("InputEventKey_vlpia")]

@@ -1,0 +1,11 @@
+[gd_resource type="Shortcut" format=3 uid="uid://c5uo8b5h177i5"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_dht7v"]
+device = -1
+command_or_control_autoremap = true
+keycode = 67
+
+[resource]
+resource_name = "Copy Cell Value"
+events = [SubResource("InputEventKey_dht7v")]
+metadata/original = [SubResource("InputEventKey_dht7v")]

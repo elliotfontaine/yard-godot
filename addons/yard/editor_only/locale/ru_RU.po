@@ -77,7 +77,7 @@ msgid "Drop resource files here to add them to the registry."
 msgstr "Перетащите файлы ресурсов сюда, чтобы добавить их в реестр."
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
-msgid "Toggle Files Panel"
+msgid "Toggle Registries Panel"
 msgstr "Показать/скрыть панель файлов"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn

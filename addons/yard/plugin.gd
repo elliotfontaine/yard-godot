@@ -8,6 +8,7 @@ extends EditorPlugin
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const YardLogger := Namespace.YardLogger
+const ShortcutUtils := Namespace.ShortcutUtils
 const RegistryEditor := Namespace.RegistryEditor
 const TRANSLATIONS := Namespace.TRANSLATIONS
 const REGISTRY_EDITOR_SCENE := Namespace.REGISTRY_EDITOR_SCENE
@@ -28,6 +29,8 @@ func _init() -> void:
 	var editor_domain := TranslationServer.get_or_add_domain(&"godot.editor")
 	for locale: String in TRANSLATIONS.keys():
 		editor_domain.add_translation(load(TRANSLATIONS[locale]))
+
+	ShortcutUtils.register_shortcuts()
 
 
 func _enter_tree() -> void:

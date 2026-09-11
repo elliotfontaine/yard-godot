@@ -1,0 +1,10 @@
+[gd_resource type="Shortcut" format=3 uid="uid://55a0e3fu23jf"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_1mjqu"]
+command_or_control_autoremap = true
+keycode = 87
+
+[resource]
+resource_name = "Close"
+events = [SubResource("InputEventKey_1mjqu")]
+metadata/original = [SubResource("InputEventKey_1mjqu")]

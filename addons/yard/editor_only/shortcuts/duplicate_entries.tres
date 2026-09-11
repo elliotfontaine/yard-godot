@@ -1,0 +1,10 @@
+[gd_resource type="Shortcut" format=3 uid="uid://dxsesfbpliwqt"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_v1glf"]
+command_or_control_autoremap = true
+keycode = 68
+
+[resource]
+resource_name = "Duplicate"
+events = [SubResource("InputEventKey_v1glf")]
+metadata/original = [SubResource("InputEventKey_v1glf")]

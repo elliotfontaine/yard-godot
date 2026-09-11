@@ -1,0 +1,11 @@
+[gd_resource type="Shortcut" format=3 uid="uid://dbeisfxqabm77"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_olga7"]
+device = -1
+command_or_control_autoremap = true
+keycode = 88
+
+[resource]
+resource_name = "Cut Cell Value"
+events = [SubResource("InputEventKey_olga7")]
+metadata/original = [SubResource("InputEventKey_olga7")]

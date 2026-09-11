@@ -1,0 +1,10 @@
+[gd_resource type="Shortcut" format=3 uid="uid://cugol5w7idxgh"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_u3nay"]
+command_or_control_autoremap = true
+keycode = 86
+
+[resource]
+resource_name = "Paste to Cell"
+events = [SubResource("InputEventKey_u3nay")]
+metadata/original = [SubResource("InputEventKey_u3nay")]

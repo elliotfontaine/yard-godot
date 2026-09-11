@@ -1,0 +1,10 @@
+[gd_resource type="Shortcut" format=3 uid="uid://qj2pcjl7mubq"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_kytjs"]
+command_or_control_autoremap = true
+keycode = 65
+
+[resource]
+resource_name = "Select All"
+events = [SubResource("InputEventKey_kytjs")]
+metadata/original = [SubResource("InputEventKey_kytjs")]

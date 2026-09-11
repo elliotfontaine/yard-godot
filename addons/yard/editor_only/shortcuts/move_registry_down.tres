@@ -1,0 +1,11 @@
+[gd_resource type="Shortcut" format=3 uid="uid://bb21di16bkapf"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_2yxvf"]
+command_or_control_autoremap = true
+alt_pressed = true
+keycode = 4194322
+
+[resource]
+resource_name = "Move Down"
+events = [SubResource("InputEventKey_2yxvf")]
+metadata/original = [SubResource("InputEventKey_2yxvf")]

@@ -24,6 +24,7 @@ const CellType := Namespace.CellType
 const EditorThemeUtils := Namespace.EditorThemeUtils
 const ClassUtils := Namespace.ClassUtils
 const YardLogger := Namespace.YardLogger
+const Compat := Namespace.Compat
 const AnyIcon := Namespace.AnyIcon
 
 # Theming properties
@@ -245,7 +246,7 @@ func set_native_theming(delay: int = 0) -> void:
 	default_font_color = root.get_theme_color(&"font_color", &"Editor")
 	font_size = root.get_theme_font_size(&"main_size", &"EditorFonts")
 	row_color = root.get_theme_color(&"base_color", &"Editor")
-	if ClassUtils.is_engine_version_equal_or_newer(4, 6) and editor_settings.get_setting("interface/theme/style") == "Modern":
+	if Compat.is_engine_version_equal_or_newer(4, 6) and editor_settings.get_setting("interface/theme/style") == "Modern":
 		alternate_row_color = root.get_theme_color(&"dark_color_3", &"Editor")
 		header_color = root.get_theme_color(&"dark_color_1", &"Editor")
 	else:

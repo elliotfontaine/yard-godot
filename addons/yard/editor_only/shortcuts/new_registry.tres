@@ -1,0 +1,10 @@
+[gd_resource type="Shortcut" format=3 uid="uid://gg4qa183vtf7"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_yhx6y"]
+command_or_control_autoremap = true
+keycode = 78
+
+[resource]
+resource_name = "New Registry..."
+events = [SubResource("InputEventKey_yhx6y")]
+metadata/original = [SubResource("InputEventKey_yhx6y")]

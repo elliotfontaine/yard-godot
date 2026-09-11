@@ -1,0 +1,11 @@
+[gd_resource type="Shortcut" format=3 uid="uid://cfnykahmk30l4"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_rco3w"]
+command_or_control_autoremap = true
+shift_pressed = true
+keycode = 84
+
+[resource]
+resource_name = "Reopen Closed Registry"
+events = [SubResource("InputEventKey_rco3w")]
+metadata/original = [SubResource("InputEventKey_rco3w")]

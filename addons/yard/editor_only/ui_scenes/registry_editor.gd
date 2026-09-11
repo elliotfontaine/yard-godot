@@ -32,6 +32,7 @@ const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const PluginCFG := Namespace.PluginCFG
 const RegistryIO := Namespace.RegistryIO
 const ClassUtils := Namespace.ClassUtils
+const ShortcutUtils := Namespace.ShortcutUtils
 const EditorStateData := Namespace.YardEditorCache.EditorStateData
 const RegistryCacheData := Namespace.YardEditorCache.RegistryCacheData
 const RegistriesItemList := Namespace.RegistriesItemList
@@ -46,11 +47,11 @@ const STRINGID_COLUMN := RegistryTableView.STRINGID_COLUMN
 const UID_COLUMN := RegistryTableView.UID_COLUMN
 
 const ACTION_SHORTCUTS: Dictionary[FileMenuAction, String] = {
-	FileMenuAction.NEW: "script_editor/new",
-	FileMenuAction.REOPEN_CLOSED: "script_editor/reopen_closed_script",
-	FileMenuAction.CLOSE: "script_editor/close_file",
-	FileMenuAction.MOVE_UP: "script_editor/window_move_up",
-	FileMenuAction.MOVE_DOWN: "script_editor/window_move_down",
+	FileMenuAction.NEW: "new_registry",
+	FileMenuAction.REOPEN_CLOSED: "reopen_closed_registry",
+	FileMenuAction.CLOSE: "close_registry",
+	FileMenuAction.MOVE_UP: "move_registry_up",
+	FileMenuAction.MOVE_DOWN: "move_registry_down",
 }
 
 var _editor_state_data: EditorStateData
@@ -212,8 +213,8 @@ func _setup_shortcuts() -> void:
 	var action_shortcuts := ACTION_SHORTCUTS
 	var edit_action_shortcuts := RegistryTableView.ACTION_SHORTCUTS
 	for action: FileMenuAction in action_shortcuts:
-		var setting_path: String = action_shortcuts.get(action, "")
-		var shortcut := EditorInterface.get_editor_settings().get_shortcut(setting_path)
+		var action_string: String = action_shortcuts.get(action, "")
+		var shortcut := ShortcutUtils.get_action_shortcut(action_string)
 		if shortcut and shortcut.has_valid_event():
 			if file_menu.get_item_index(action) != -1:
 				file_menu.set_item_shortcut(file_menu.get_item_index(action), shortcut)
@@ -223,8 +224,8 @@ func _setup_shortcuts() -> void:
 	var edit_menu := edit_menu_button.get_popup()
 	for action: EditMenuAction in edit_action_shortcuts:
 		if edit_menu.get_item_index(action) != -1:
-			var setting_path: String = edit_action_shortcuts.get(action, "")
-			var shortcut := EditorInterface.get_editor_settings().get_shortcut(setting_path)
+			var action_string: String = edit_action_shortcuts.get(action, "")
+			var shortcut := ShortcutUtils.get_action_shortcut(action_string)
 			if shortcut and shortcut.has_valid_event():
 				edit_menu.set_item_shortcut(edit_menu.get_item_index(action), shortcut)
 
