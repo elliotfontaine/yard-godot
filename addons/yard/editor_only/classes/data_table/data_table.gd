@@ -1194,7 +1194,7 @@ func _handle_key_input(event: InputEventKey) -> void:
 	elif event.is_action_pressed(&"ui_home"):
 		if _order.is_empty():
 			return
-		var new_row_idx = 0 if not _order.is_empty() else -1
+		var new_row_idx := 0 if not _order.is_empty() else -1
 		var new_col_idx := 0 if not _columns.is_empty() else -1
 		_navigate_to(new_row_idx, new_col_idx, event)
 

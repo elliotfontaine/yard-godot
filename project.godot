@@ -16,9 +16,11 @@ config/icon="res://icon.svg"
 
 [debug]
 
-gdscript/warnings/exclude_addons=false
+gdscript/warnings/directory_rules={
+"res://addons": 0,
+"res://addons/yard": 1
+}
 gdscript/warnings/untyped_declaration=1
-gdscript/warnings/inference_on_variant=1
 
 [display]
 
