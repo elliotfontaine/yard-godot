@@ -237,7 +237,7 @@ static func sync_from_scan_directories(registry: Registry) -> void:
 	var first_removed := ""
 	var scanned_uids := { }
 
-	var _log := func(action: String, prep: String, n: int, first: String) -> void:
+	var _log := fun c(action: String, prep: String, n: int, first: String) -> void:
 		if n == 1:
 			YardLogger.info(
 				"%s %s %s %s." % [
