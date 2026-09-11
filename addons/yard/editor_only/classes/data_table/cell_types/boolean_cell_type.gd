@@ -34,8 +34,8 @@ static func get_sort_key(value: Variant, _column: ColumnConfig) -> Variant:
 
 static func handle_input(event: InputEvent, rect: Rect2, value: Variant, _column: ColumnConfig, style: CellStyle) -> Dictionary:
 	var is_click: bool = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
-	var is_enter: bool = event is InputEventKey and event.pressed and event.keycode in [KEY_ENTER, KEY_KP_ENTER]
-	if not (is_click or is_enter):
+	var is_ui_accept := event.is_action_pressed(&"ui_accept")
+	if not (is_click or is_ui_accept):
 		return { }
 	if is_click:
 		var icon := style.checkbox_checked_icon
