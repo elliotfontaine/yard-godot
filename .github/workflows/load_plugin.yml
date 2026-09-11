@@ -57,13 +57,13 @@ jobs:
       - name: Copy YARD to test project directory
         shell: bash
         run: |
-          mkdir -p ci/project/addons
-          cp -R addons/yard ci/project/addons/yard
+          mkdir -p test/project/addons
+          cp -R addons/yard test/project/addons/yard
 
-          test -d ci/project/addons/yard \
+          test -d test/project/addons/yard \
             || { echo "::error::YARD plugin directory was not copied"; exit 1; }
 
-          test -f ci/project/addons/yard/plugin.cfg \
+          test -f test/project/addons/yard/plugin.cfg \
             || { echo "::error::YARD plugin.cfg was not copied"; exit 1; }
 
       - name: Check test project
@@ -73,11 +73,11 @@ jobs:
           pwd
 
           echo "Test project:"
-          find ci/project -maxdepth 4 -type f -print
+          find test/project -maxdepth 4 -type f -print
 
           echo "Plugin:"
-          ls -la ci/project/addons/yard
-          cat ci/project/addons/yard/plugin.cfg
+          ls -la test/project/addons/yard
+          cat test/project/addons/yard/plugin.cfg
 
       - name: Test plugin
         shell: bash
