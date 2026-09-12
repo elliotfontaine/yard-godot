@@ -15,13 +15,17 @@ const README_PATH := "res://README.md"
 
 
 func _ready() -> void:
-	if Engine.is_editor_hint():
+	if Engine.is_editor_hint() and not EditorInterface.get_edited_scene_root() == self:
 		var mono: Font = get_theme_font(&"font", &"CodeEdit")
 		markdown_label.add_theme_font_override(&"mono_font", mono)
 		markdown_label.add_theme_color_override(&"table_even_row_bg", get_theme_color(&"prop_section", &"Editor"))
 		markdown_label.add_theme_color_override(&"table_odd_row_bg", get_theme_color(&"separator_color", &"Editor"))
+
 		markdown_label.h2.font_color = get_theme_color(&"accent_color", &"Editor")
 		markdown_label.h3.font_color = get_theme_color(&"font_focus_color", &"Editor")
+
+		markdown_label.code_color = get_theme_color(&"warning_color", &"Editor")
+		markdown_label.code_background_color = get_theme_color(&"background", &"Editor")
 
 		markdown_label.skip_lines = 28 # Ignore up to "# Overview" title
 		markdown_label.display_file(README_PATH)

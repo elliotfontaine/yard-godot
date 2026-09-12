@@ -113,6 +113,28 @@ signal task_checkbox_clicked(id: int, line: int, checked: bool, task_string: Str
 		hr_color = new_value
 		queue_update()
 
+@export_group("Code", "code_")
+## Enables a custom text color for inline code and code blocks.
+@export var code_override_color := false:
+	set(new_value):
+		code_override_color = new_value
+		queue_update()
+## Text color applied to inline code and code blocks, if enabled.
+@export var code_color: Color = Color.WHITE:
+	set(new_value):
+		code_color = new_value
+		queue_update()
+## Enables a custom background color for inline code and code blocks.
+@export var code_override_background_color := false:
+	set(new_value):
+		code_override_background_color = new_value
+		queue_update()
+## Background color applied to inline code and code blocks, if enabled.
+@export var code_background_color: Color = Color.BLACK:
+	set(new_value):
+		code_background_color = new_value
+		queue_update()
+
 #endregion
 
 #region Private:
@@ -344,12 +366,12 @@ func _convert_markdown(source_text: String = "") -> String:
 				if line.strip_edges().length() >= current_code_block_char_count:
 					_converted_text = _converted_text.trim_suffix("\n")
 					_current_paragraph -= 1
-					_converted_text += "[/code]"
+					_converted_text += _get_code_close_tags()
 					within_backtick_block = false
 					_debug("... closing backtick block")
 					continue
 			else:
-				_converted_text += "[code]"
+				_converted_text += _get_code_open_tags()
 				within_backtick_block = true
 				current_code_block_char_count = 3 #line.strip_edges().length()
 				_debug("... opening backtick block")
@@ -359,12 +381,12 @@ func _convert_markdown(source_text: String = "") -> String:
 				if line.strip_edges().length() >= current_code_block_char_count:
 					_converted_text = _converted_text.trim_suffix("\n")
 					_current_paragraph -= 1
-					_converted_text += "[/code]"
+					_converted_text += _get_code_close_tags()
 					within_tilde_block = false
 					_debug("... closing tilde block")
 					continue
 			else:
-				_converted_text += "[code]"
+				_converted_text += _get_code_open_tags()
 				within_tilde_block = true
 				current_code_block_char_count = 3 #line.strip_edges().length()
 				_debug("... opening tilde block")
@@ -561,7 +583,10 @@ func _process_inline_code_syntax(line: String) -> String:
 		var unescaped_content := _reset_escaped_chars(result.get_string(2), true)
 		unescaped_content = _escape_bbcode(unescaped_content)
 		unescaped_content = _escape_chars(unescaped_content)
-		processed_line = processed_line.erase(_start, _end - _start).insert(_start, "[code]%s[/code]" % unescaped_content)
+		processed_line = processed_line.erase(_start, _end - _start).insert(
+			_start,
+			_get_code_open_tags() + unescaped_content + _get_code_close_tags(),
+		)
 		_debug("... in-line code: " + unescaped_content)
 	return processed_line
 
@@ -923,6 +948,24 @@ func _get_header_reference(header_string: String) -> String:
 	else:
 		_header_anchor_count[anchor] = 1
 	return anchor
+
+
+func _get_code_open_tags() -> String:
+	var tags := ""
+	if code_override_background_color:
+		tags += "[bgcolor=#%s]" % code_background_color.to_html(true)
+	if code_override_color:
+		tags += "[color=#%s]" % code_color.to_html(false)
+	return tags + "[code]"
+
+
+func _get_code_close_tags() -> String:
+	var tags := "[/code]"
+	if code_override_color:
+		tags += "[/color]"
+	if code_override_background_color:
+		tags += "[/bgcolor]"
+	return tags
 
 
 func _on_checkbox_clicked(id: int, was_checked: bool) -> void:

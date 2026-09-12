@@ -71,3 +71,5 @@ h3 = SubResource("Resource_u72bi")
 h4 = SubResource("Resource_hmvhy")
 h5 = SubResource("Resource_db5ns")
 h6 = SubResource("Resource_ouans")
+code_override_color = true
+code_override_background_color = true
