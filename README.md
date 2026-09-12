@@ -101,8 +101,8 @@ var high_level  := WEAPONS.filter(&"level", func(v): return v >= 10)
 
 # AND query across multiple properties (exact values or predicates)
 var forest_without_boss := ROOMS.where({
-	&"biome": Biome.FOREST,
-	&"tier": func(t): return t != RoomData.Tier.Boss,
+  &"biome": Biome.FOREST,
+  &"tier": func(t): return t != RoomData.Tier.Boss,
 })
 ```
 
