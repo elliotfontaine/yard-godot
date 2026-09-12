@@ -46,6 +46,8 @@ YARD builds on Godot's [resource system](https://docs.godotengine.org/en/4.5/tut
 
 ## Usage
 
+> The full `Registry` API is documented in the in-editor class reference: **Help > Search Help > Registry**.
+
 ### Creating a registry
 
 Open the **Registry** tab in the editor, click **File > New Registry**, and configure:
@@ -107,8 +109,6 @@ var forest_without_boss := ROOMS.where({
 ```
 
 Properties support dot notation for nested resources: `&"weapon.rarity"` resolves the `rarity` property of the subresource stored in `weapon`.
-
-> The full `Registry` API is documented in the in-editor class reference: **Help > Search Help > Registry**.
 
 ## Contributing
 
