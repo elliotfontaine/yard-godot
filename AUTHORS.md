@@ -27,6 +27,7 @@ GitHub usernames appear in parentheses, or on their own when no other name is av
 ## Developers
 
     Cer0reZ
+    Guihurt
     Marion Allard (Mar0Lard)
     skison
     Verfeon
