@@ -794,4 +794,4 @@ func _on_open_documentation_button_pressed() -> void:
 
 
 func _on_read_me_button_pressed() -> void:
-	read_me_window.popup_centered_ratio(0.8)
+	read_me_window.popup_centered_ratio(0.5)
