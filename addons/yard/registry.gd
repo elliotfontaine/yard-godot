@@ -418,18 +418,26 @@ class RegistryLoadTracker extends RefCounted:
 
 
 	func _poll() -> void:
-		var n_res_requested := 0
-		var n_res_loaded := 0.0 # allow fractional loading progress
-		for uid: String in __uids.values():
-			var res_progress := []
-			if not __requested[uid]:
-				continue
-			n_res_requested += 1
-			__status[uid] = ResourceLoader.load_threaded_get_status(uid, res_progress)
-			n_res_loaded += res_progress[0]
-			if (
-				__status[uid] == ResourceLoader.THREAD_LOAD_LOADED
-				and __resources[uid] == null
-			):
-				__resources[uid] = ResourceLoader.load_threaded_get(uid)
-		__progress = n_res_loaded / n_res_requested
+		if __requested.is_empty():
+			return
+
+		var n_res_loaded := 0.0
+
+		for string_id: String in __requested:
+			match __status[string_id]:
+				ResourceLoader.THREAD_LOAD_LOADED:
+					# Needed branch because after calling `ResourceLoader.load_threaded_get(uid)`,
+					# The status for the resource is automatically reset to THREAD_LOAD_INVALID_RESOURCE
+					n_res_loaded += 1.0
+				ResourceLoader.THREAD_LOAD_INVALID_RESOURCE, ResourceLoader.THREAD_LOAD_FAILED:
+					pass
+				ResourceLoader.THREAD_LOAD_IN_PROGRESS:
+					var uid: String = __uids[string_id]
+					var res_progress := [] # used as an output parameter
+					var new_status := ResourceLoader.load_threaded_get_status(uid, res_progress)
+					n_res_loaded += res_progress.front()
+					__status[string_id] = new_status
+					if new_status == ResourceLoader.THREAD_LOAD_LOADED and __resources[string_id] == null:
+						__resources[string_id] = ResourceLoader.load_threaded_get(uid)
+
+		__progress = n_res_loaded / __requested.size()

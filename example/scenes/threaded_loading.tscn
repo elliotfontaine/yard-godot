@@ -1,0 +1,119 @@
+[gd_scene format=3 uid="uid://uy7ef4f0xima"]
+
+[ext_resource type="Script" uid="uid://buuok2jqa1q7p" path="res://example/scenes/threaded_loading.gd" id="1_v2jr6"]
+
+[node name="TestLoadThreaded" type="VBoxContainer" unique_id=1246475919]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+script = ExtResource("1_v2jr6")
+
+[node name="VBoxContainer" type="HBoxContainer" parent="." unique_id=295079322]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer" unique_id=1881944344]
+layout_mode = 2
+text = "Progress:"
+
+[node name="Progress" type="Label" parent="VBoxContainer" unique_id=203721739]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0.00"
+
+[node name="PollButton" type="Button" parent="VBoxContainer" unique_id=1971777109]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_vertical = 0
+text = "> Poll <"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1465034602]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Requested" type="VBoxContainer" parent="HBoxContainer" unique_id=1561322631]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="HBoxContainer/Requested" unique_id=1754062174]
+layout_mode = 2
+text = "Requested"
+
+[node name="HSeparator" type="HSeparator" parent="HBoxContainer/Requested" unique_id=1390396705]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="HBoxContainer/Requested" unique_id=1958550832]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="RequestedEntries" type="VBoxContainer" parent="HBoxContainer/Requested/ScrollContainer" unique_id=1890979548]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="UID" type="VBoxContainer" parent="HBoxContainer" unique_id=1005993223]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="HBoxContainer/UID" unique_id=1411613451]
+layout_mode = 2
+text = "UID"
+
+[node name="HSeparator" type="HSeparator" parent="HBoxContainer/UID" unique_id=1325557798]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="HBoxContainer/UID" unique_id=70992570]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="UIDEntries" type="VBoxContainer" parent="HBoxContainer/UID/ScrollContainer" unique_id=108629885]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Status" type="VBoxContainer" parent="HBoxContainer" unique_id=427600242]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="HBoxContainer/Status" unique_id=746285890]
+layout_mode = 2
+text = "Status"
+
+[node name="HSeparator" type="HSeparator" parent="HBoxContainer/Status" unique_id=1639099022]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="HBoxContainer/Status" unique_id=162462677]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="StatusEntries" type="VBoxContainer" parent="HBoxContainer/Status/ScrollContainer" unique_id=1004304500]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Resources" type="VBoxContainer" parent="HBoxContainer" unique_id=1486847841]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="HBoxContainer/Resources" unique_id=1649698502]
+layout_mode = 2
+text = "Resources"
+
+[node name="HSeparator" type="HSeparator" parent="HBoxContainer/Resources" unique_id=457704201]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="HBoxContainer/Resources" unique_id=604209950]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ResourcesEntries" type="VBoxContainer" parent="HBoxContainer/Resources/ScrollContainer" unique_id=718218418]
+unique_name_in_owner = true
+layout_mode = 2
+
+[connection signal="pressed" from="VBoxContainer/PollButton" to="." method="_on_poll_button_pressed"]
