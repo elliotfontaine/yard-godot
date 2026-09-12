@@ -51,6 +51,8 @@ signal task_checkbox_clicked(id: int, line: int, checked: bool, task_string: Str
 @export var automatic_links := true
 ## If enabled, unrecognized links will be opened as HTTPS URLs (e.g. "example.com" will be opened as "https://example.com"). If disabled, unrecognized links will be left unhandled (emitting the [signal unhandled_link_clicked] signal). Ignored if [member automatic_links] is disabled.
 @export var assume_https_links := true
+## Number of lines to skip at the start of the text before parsing, e.g. to hide raw HTML badges/headers at the top of a GitHub README.
+@export var skip_lines: int = 0
 
 @export_group("Header formats")
 ## Formatting options for level-1 headers
@@ -307,6 +309,8 @@ func _convert_markdown(source_text: String = "") -> String:
 	if not bbcode_enabled:
 		push_warning("WARNING: MarkdownLabel node will not format Markdown syntax if it doesn't have 'bbcode_enabled=true'")
 		return source_text
+	if skip_lines > 0:
+		source_text = "\n".join(source_text.split("\n").slice(skip_lines))
 	_converted_text = ""
 	var lines := source_text.split("\n")
 	_current_line = 0

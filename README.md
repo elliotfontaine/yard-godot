@@ -112,7 +112,7 @@ Properties support dot notation for nested resources: `&"weapon.rarity"` resolve
 
 ## Contributing
 
-Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+Contributions are welcome. See [CONTRIBUTING.md](https://github.com/elliotfontaine/yard-godot/blob/main/CONTRIBUTING.md) before opening a pull request.
 
 For major changes, [open an issue](https://github.com/elliotfontaine/yard-godot/issues/new?template=feature_request.yml) first to discuss what you have in mind.
 
@@ -128,4 +128,4 @@ This policy may be revised as the volume of PRs requiring review increases.
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/elliotfontaine/yard-godot/blob/main/LICENSE)

@@ -9,6 +9,8 @@ extends AcceptDialog
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const MarkdownLabel := Namespace.MarkdownLabel
 
+const README_PATH := "res://README.md"
+
 @onready var markdown_label: MarkdownLabel = %MarkdownLabel
 
 
@@ -21,4 +23,5 @@ func _ready() -> void:
 		markdown_label.h2.font_color = get_theme_color(&"accent_color", &"Editor")
 		markdown_label.h3.font_color = get_theme_color(&"font_focus_color", &"Editor")
 
-		#markdown_label.display_file()
+		markdown_label.skip_lines = 28 # Ignore up to "# Overview" title
+		markdown_label.display_file(README_PATH)
