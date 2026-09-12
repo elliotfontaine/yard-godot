@@ -5,8 +5,8 @@ version = 1
 path = [
     "addons/yard/**.tscn",
     "addons/yard/**.tres",
-    "example/godomon/**.tscn",
-    "example/godomon/**.tres",
+    "example/**.tscn",
+    "example/**.tres",
 ]
 SPDX-FileCopyrightText = [
     "2025-2026, Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>",
