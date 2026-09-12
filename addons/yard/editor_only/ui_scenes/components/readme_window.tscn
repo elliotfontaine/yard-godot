@@ -45,7 +45,7 @@ script = ExtResource("7_a16y5")
 
 [node name="ReadMeWindow" type="AcceptDialog"]
 oversampling_override = 1.0
-title = "README.md"
+title = "Yet Another Resource Database — README.md"
 size = Vector2i(500, 500)
 ok_button_text = "Close"
 script = ExtResource("1_jbsvw")
