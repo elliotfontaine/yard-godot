@@ -11,15 +11,16 @@ signal request_class_restriction_class_list_dialog(class_restriction: String)
 signal request_class_restriction_file_dialog(class_restriction: String)
 signal request_scan_directory_file_dialog(scan_dir: String)
 
-const Namespace := preload("../../../namespace.gd")
-const OVERRIDE_DEFAULT_SETTING_TOGGLE_BUTTON := preload("./override_default_setting_toggle_button.tscn")
-const NewRegistryDialog := preload("../new_registry_dialog.gd")
+const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const RegistryIO := Namespace.RegistryIO
+const AnyIcon := Namespace.AnyIcon
+const NewRegistryDialog := Namespace.NewRegistryDialog
 const ScanRulesetEditor := preload("./scan_ruleset_editor.gd")
 const ScanInputsTabContainer := preload("./scan_tab_inputs/scan_inputs_tab_container.gd")
 const ClassRestrictionInput := preload("./scan_tab_inputs/class_restriction_input.gd")
 const ScanDirectoryInput := preload("./scan_tab_inputs/scan_directory_input.gd")
-const RegistryIO := Namespace.RegistryIO
-const AnyIcon := Namespace.AnyIcon
+
+const OVERRIDE_DEFAULT_SETTING_TOGGLE_BUTTON := preload("./override_default_setting_toggle_button.tscn")
 
 const ADVANCED_RULESET_PROPERTIES: Array[StringName] = [
 	&"scan_regex_include",
