@@ -429,7 +429,13 @@ func _on_class_list_dialog_confirmed(type_name: String, ruleset_editor: ScanRule
 		return
 
 	if type_name.begins_with("res://") or type_name.begins_with("uid://"):
-		type_name = '"%s"' % type_name
+		if not ResourceLoader.exists(type_name):
+			return
+		var script: Script = load(type_name)
+		if script.get_global_name():
+			type_name = script.get_global_name()
+		else:
+			type_name = '"%s"' % type_name
 
 	ruleset_editor.update_selected_class_restriction(type_name)
 
