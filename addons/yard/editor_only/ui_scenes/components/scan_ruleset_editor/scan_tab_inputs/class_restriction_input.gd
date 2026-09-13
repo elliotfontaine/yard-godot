@@ -4,9 +4,9 @@
 # SPDX-License-Identifier: MIT
 
 @tool
-extends ScanTabInput
+extends "./scan_tab_input.gd"
 
-const ScanTabInput := preload("./scan_tab_input.gd")
+#const ScanTabInput := preload("./scan_tab_input.gd")
 const ClassRestrictionInput := preload("./class_restriction_input.gd")
 const REQUEST_CLASS_RESTRICTION_CLASS_LIST_DIALOG_ACTION := &"request_class_restriction_class_list_dialog"
 const REQUEST_CLASS_RESTRICTION_FILE_DIALOG_ACTION := &"request_class_restriction_file_dialog"
