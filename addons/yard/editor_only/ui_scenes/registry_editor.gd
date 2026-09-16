@@ -81,8 +81,6 @@ func _ready() -> void:
 	if not Engine.is_editor_hint() or EditorInterface.get_edited_scene_root() == self:
 		return
 
-	EditorInterface.get_resource_filesystem().filesystem_changed.connect(_on_filesystem_changed)
-
 	_file_dialog = EditorFileDialog.new()
 	_file_dialog.access = EditorFileDialog.ACCESS_RESOURCES
 	_file_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
@@ -140,7 +138,7 @@ func open_registry(registry: Registry) -> void:
 	_update_registries_itemlist()
 	_editor_state_data.add_recent(registry)
 
-	if RegistryIO.get_registry_settings(registry).auto_rescan:
+	if RegistryIO.get_registry_settings(registry).has_any_scan_directory():
 		RegistryIO.sync_from_scan_directories(registry)
 
 	select_registry(uid)
@@ -191,6 +189,9 @@ func select_registry(uid: String) -> void:
 	if EditorInterface.get_inspector().get_edited_object() != registry:
 		EditorInterface.inspect_object(registry, "", true)
 
+	if RegistryIO.get_registry_settings(registry).has_any_scan_directory():
+		RegistryIO.sync_from_scan_directories(registry)
+
 	registry_table_view.current_registry = registry
 	_toggle_visibility_topbar_buttons()
 	_toggle_file_menu_items()
@@ -208,19 +209,31 @@ func is_any_registry_selected() -> bool:
 	return not _current_registry_uid.is_empty()
 
 
-## If `force` is true, even registries with auto-rescan off will perform it.
-func rescan_opened_registries(force: bool = false) -> void:
-	for registry: Registry in _editor_state_data.opened_registries.values():
-		if force or RegistryIO.get_registry_settings(registry).auto_rescan:
-			RegistryIO.sync_from_scan_directories(registry)
-	_update_registries_itemlist()
-	registry_table_view.update_view()
+func get_known_registries_uids() -> PackedStringArray:
+	var uids := _editor_state_data.opened_registries.keys()
+	uids.append_array(_editor_state_data.recent_registry_uids)
+
+	var unique_uids: Dictionary[String, bool] = { }
+	for uid: String in uids:
+		unique_uids[uid] = true # deduplicate
+
+	return PackedStringArray(unique_uids.keys())
 
 
-func reindex_opened_registries() -> void:
-	for registry: Registry in _editor_state_data.opened_registries.values():
-		if RegistryIO.get_registry_settings(registry).indexed_props:
-			RegistryIO.rebuild_property_index(registry)
+func rescan_known_registries() -> void:
+	for uid: String in get_known_registries_uids():
+		if RegistryIO.is_uid_valid(uid):
+			var registry: Registry = load(uid)
+			if RegistryIO.get_registry_settings(registry).has_any_scan_directory():
+				RegistryIO.sync_from_scan_directories(registry)
+
+
+func reindex_known_registries() -> void:
+	for uid: String in get_known_registries_uids():
+		if RegistryIO.is_uid_valid(uid):
+			var registry: Registry = load(uid)
+			if RegistryIO.get_registry_settings(registry).indexed_props:
+				RegistryIO.rebuild_property_index(registry)
 
 
 func _setup_shortcuts() -> void:
@@ -802,10 +815,6 @@ func _on_new_registry_dialog_settings_saved() -> void:
 		and new_registry_dialog.edited_registry == registry_table_view.current_registry
 	):
 		select_registry(_current_registry_uid)
-
-
-func _on_filesystem_changed() -> void:
-	rescan_opened_registries()
 
 
 func _on_open_documentation_button_pressed() -> void:

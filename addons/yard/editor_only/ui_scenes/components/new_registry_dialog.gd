@@ -27,7 +27,6 @@ const WARNING_COLOR = Color(0.83, 0.78, 0.62)
 const ERROR_COLOR = Color(1, 0.47, 0.42)
 
 const ADVANCED_REGISTRY_PROPERTIES: Array[StringName] = [
-	&"auto_rescan",
 	&"remove_unmatched",
 ]
 
@@ -83,8 +82,6 @@ var _add_ruleset_tab: ReferenceRect
 @onready var global_settings_container: PanelContainer = %GlobalSettingsContainer
 @onready var new_restriction_confirmation_dialog: ConfirmationDialog = %NewRestrictionConfirmationDialog
 @onready var indexed_properties_line_edit: LineEdit = %IndexedPropertiesLineEdit
-@onready var auto_rescan_label: Label = %AutoRescanLabel
-@onready var auto_rescan_check_box: CheckBox = %AutoRescanCheckBox
 @onready var scan_remove_unlisted_label: Label = %ScanRemoveUnlistedLabel
 @onready var scan_remove_unlisted_check_box: CheckBox = %ScanRemoveUnlistedCheckBox
 @onready var default_ruleset_editor: ScanRulesetEditor = %DefaultRulesetEditor
@@ -95,7 +92,6 @@ var _add_ruleset_tab: ReferenceRect
 @onready var info_label: RichTextLabel = %InfoLabel
 
 @onready var advanced_registry_properties_to_controls: Dictionary[StringName, Array] = {
-	&"auto_rescan": [auto_rescan_label, auto_rescan_check_box],
 	&"remove_unmatched": [scan_remove_unlisted_label, scan_remove_unlisted_check_box],
 }
 
@@ -115,7 +111,7 @@ func _ready() -> void:
 
 	add_theme_stylebox_override(&"panel", get_theme_stylebox(&"panel", &"EditorSettingsDialog"))
 	global_settings_container.add_theme_stylebox_override(&"panel", get_theme_stylebox(&"BottomPanel", &"EditorStyles"))
-	for check_box: CheckBox in [auto_rescan_check_box, scan_remove_unlisted_check_box]:
+	for check_box: CheckBox in [scan_remove_unlisted_check_box]:
 		check_box.add_theme_stylebox_override(&"focus", get_theme_stylebox(&"focus", &"LineEdit"))
 		for override: StringName in [&"normal", &"hover", &"pressed", &"hover_pressed"]:
 			check_box.add_theme_stylebox_override(override, get_theme_stylebox(&"normal", &"LineEdit"))
@@ -150,7 +146,6 @@ func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 	_state = state
 	if state == RegistryDialogState.NEW_REGISTRY:
 		var default_settings := RegistryIO.RegistrySettings.new() # to use default values
-		auto_rescan_check_box.button_pressed = default_settings.auto_rescan
 		scan_remove_unlisted_check_box.button_pressed = default_settings.remove_unmatched
 		indexed_properties_line_edit.text = default_settings.indexed_props
 		title = "Create Registry"
@@ -166,7 +161,6 @@ func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 	elif edited_registry and state == RegistryDialogState.REGISTRY_SETTINGS:
 		var settings := RegistryIO.get_registry_settings(edited_registry)
 		indexed_properties_line_edit.text = settings.indexed_props
-		auto_rescan_check_box.button_pressed = settings.auto_rescan
 		scan_remove_unlisted_check_box.button_pressed = settings.remove_unmatched
 		default_ruleset_editor.reset_properties(settings.default_scan_ruleset)
 		for additional_ruleset in settings.additional_scan_rulesets:
@@ -208,7 +202,6 @@ func popup_with_state(state: RegistryDialogState, dir: String = "") -> void:
 func _build_settings() -> RegistryIO.RegistrySettings:
 	var settings := RegistryIO.RegistrySettings.new()
 	settings.indexed_props = indexed_properties_line_edit.text.strip_edges()
-	settings.auto_rescan = auto_rescan_check_box.button_pressed
 	settings.remove_unmatched = scan_remove_unlisted_check_box.button_pressed
 	settings.default_scan_ruleset = default_ruleset_editor._build_ruleset()
 	for additional_ruleset_editor in _additional_scan_ruleset_editors_list:

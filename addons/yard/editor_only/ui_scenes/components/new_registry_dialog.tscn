@@ -107,23 +107,6 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="AutoRescanLabel" type="Label" parent="VBoxContainer/GlobalSettingsContainer/VBoxContainer/GridContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-tooltip_text = "Automatically sync the registry entries when the filesystem changes."
-mouse_filter = 1
-text = "Auto Rescan:"
-
-[node name="AutoRescanCheckBox" type="CheckBox" parent="VBoxContainer/GlobalSettingsContainer/VBoxContainer/GridContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_khhqm")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_khhqm")
-theme_override_styles/hover = SubResource("StyleBoxFlat_khhqm")
-theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_khhqm")
-theme_override_styles/focus = SubResource("StyleBoxFlat_srqmm")
-text = "On"
-
 [node name="ScanRemoveUnlistedLabel" type="Label" parent="VBoxContainer/GlobalSettingsContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2

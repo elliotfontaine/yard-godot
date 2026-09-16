@@ -91,8 +91,8 @@ func _edit(object: Object) -> void:
 
 
 func _build() -> bool:
-	_registry_editor.rescan_opened_registries(true)
-	_registry_editor.reindex_opened_registries()
+	_registry_editor.rescan_known_registries()
+	_registry_editor.reindex_known_registries()
 	return true
 
 
