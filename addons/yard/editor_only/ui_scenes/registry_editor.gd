@@ -208,6 +208,21 @@ func is_any_registry_selected() -> bool:
 	return not _current_registry_uid.is_empty()
 
 
+## If `force` is true, even registries with auto-rescan off will perform it.
+func rescan_opened_registries(force: bool = false) -> void:
+	for registry: Registry in _editor_state_data.opened_registries.values():
+		if force or RegistryIO.get_registry_settings(registry).auto_rescan:
+			RegistryIO.sync_from_scan_directories(registry)
+	_update_registries_itemlist()
+	registry_table_view.update_view()
+
+
+func reindex_opened_registries() -> void:
+	for registry: Registry in _editor_state_data.opened_registries.values():
+		if RegistryIO.get_registry_settings(registry).indexed_props:
+			RegistryIO.rebuild_property_index(registry)
+
+
 func _setup_shortcuts() -> void:
 	var file_menu := file_menu_button.get_popup()
 	var action_shortcuts := ACTION_SHORTCUTS
@@ -289,7 +304,7 @@ func _add_registry_to_itemlist(uid: String, display_name: String) -> int:
 func _resolve_registry_itemlist_icon(registry: Registry) -> Texture2D:
 	var settings := RegistryIO.get_registry_settings(registry)
 
-	if settings.has_any_class_restrictions():
+	if settings.has_any_class_restriction():
 		var all_class_restrictions := settings.get_all_class_restrictions()
 		var only_class_restriction := all_class_restrictions[0] if all_class_restrictions.size() == 1 else &""
 
@@ -319,13 +334,21 @@ func _restore_selection(uid: String) -> void:
 
 func _toggle_visibility_topbar_buttons() -> void:
 	var has_registry := registry_table_view.current_registry != null
-	registry_buttons_v_separator.visible = has_registry
-	registry_settings_button.visible = has_registry
-	columns_menu_button.visible = has_registry
-	refresh_view_button.visible = false #has_registry # TODO: add project setting for showing it based on user preference
-	reindex_button.visible = has_registry
-	reindex_button.disabled = not has_registry or registry_table_view.current_registry.get_indexed_properties().is_empty()
-	rescan_button.visible = has_registry and not RegistryIO.get_registry_settings(registry_table_view.current_registry).auto_rescan
+	var registry_settings := (
+		RegistryIO.get_registry_settings(registry_table_view.current_registry)
+		if has_registry
+		else null
+	)
+
+	for control: Control in [registry_buttons_v_separator, registry_settings_button, columns_menu_button]:
+		control.visible = has_registry
+
+	rescan_button.visible = has_registry and registry_settings.has_any_scan_directory()
+
+	# DISABLED FOR GOOD. TODO: remove and clean up.
+	refresh_view_button.visible = false #has_registry
+	reindex_button.visible = false #has_registry # Reindexing is now done on project run / export.
+	reindex_button.disabled = true #not has_registry or registry_table_view.current_registry.get_indexed_properties().is_empty()
 
 
 ## Returns uid -> display name, showing basename and prepending parent folders to disambiguate duplicates.
@@ -782,11 +805,7 @@ func _on_new_registry_dialog_settings_saved() -> void:
 
 
 func _on_filesystem_changed() -> void:
-	for registry: Registry in _editor_state_data.opened_registries.values():
-		if RegistryIO.get_registry_settings(registry).auto_rescan:
-			RegistryIO.sync_from_scan_directories(registry)
-	_update_registries_itemlist()
-	registry_table_view.update_view()
+	rescan_opened_registries()
 
 
 func _on_open_documentation_button_pressed() -> void:

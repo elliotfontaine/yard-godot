@@ -528,7 +528,7 @@ func _setup_add_entry() -> void:
 	_res_picker.base_type = "Resource"
 
 	var settings := RegistryIO.get_registry_settings(current_registry)
-	if settings.has_any_class_restrictions():
+	if settings.has_any_class_restriction():
 		var all_class_restrictions_usable_strings: PackedStringArray
 		for restriction in settings.get_all_class_restrictions():
 			if not RegistryIO.is_quoted_string(restriction):

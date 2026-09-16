@@ -163,7 +163,7 @@ focus_mode = 3
 theme_type_variation = &"FlatButton"
 text = "Rescan"
 script = ExtResource("4_dd5h4")
-icon_name = "FilenameFilter"
+icon_name = "Loop"
 
 [node name="ReindexButton" type="Button" parent="VBoxContainer/HBoxContainer" unique_id=75034113]
 unique_name_in_owner = true

@@ -53,9 +53,12 @@ const BitFlagsCellType := preload("res://addons/yard/editor_only/classes/data_ta
 const RegistryEntryCellType := preload("res://addons/yard/editor_only/classes/data_table/cell_types/registry_entry_cell_type.gd")
 const CollectionCellType := preload("res://addons/yard/editor_only/classes/data_table/cell_types/collection_cell_type.gd")
 
-# Misc
-const FILESYSTEM_CREATE_CONTEXT_MENU_PLUGIN = preload("res://addons/yard/editor_only/editor_context_menu_plugin.gd")
-const EDITOR_INSPECTOR_PLUGIN = preload("res://addons/yard/editor_only/editor_inspector_plugin.gd")
+# Plugins
+const FILESYSTEM_CREATE_CONTEXT_MENU_PLUGIN := preload("res://addons/yard/editor_only/editor_context_menu_plugin.gd")
+const EDITOR_INSPECTOR_PLUGIN := preload("res://addons/yard/editor_only/editor_inspector_plugin.gd")
+const EDITOR_EXPORT_PLUGIN := preload("res://addons/yard/editor_only/editor_export_plugin.gd")
+
+# Locales
 const TRANSLATIONS := {
 	"de_DE": "res://addons/yard/editor_only/locale/de_DE.po",
 	"en_US": "res://addons/yard/editor_only/locale/en_US.po",

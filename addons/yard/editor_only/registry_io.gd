@@ -116,7 +116,7 @@ static func add_entry(registry: Registry, uid: StringName, string_id: String = "
 
 	var settings := get_registry_settings(registry)
 	if (
-		settings.has_any_class_restrictions()
+		settings.has_any_class_restriction()
 		and not does_resource_match_class_restrictions(
 			load(uid),
 			settings.get_all_class_restrictions(),
@@ -207,7 +207,7 @@ static func change_entry_uid(registry: Registry, id: StringName, new_uid: String
 
 	var settings := get_registry_settings(registry)
 
-	if settings.has_any_class_restrictions():
+	if settings.has_any_class_restriction():
 		var res := load(new_uid)
 		var all_class_restrictions := settings.get_all_class_restrictions()
 		if not does_resource_match_class_restrictions(res, all_class_restrictions):
@@ -686,7 +686,7 @@ class RegistrySettings:
 		return compiled_rulesets
 
 
-	func has_any_class_restrictions() -> bool:
+	func has_any_class_restriction() -> bool:
 		if not default_scan_ruleset.class_restrictions.is_empty():
 			return true
 		for additional_scan_ruleset in additional_scan_rulesets:
@@ -705,6 +705,15 @@ class RegistrySettings:
 					if not all_class_restrictions.has(additional_class_restriction):
 						all_class_restrictions.append(additional_class_restriction)
 		return all_class_restrictions
+
+
+	func has_any_scan_directory() -> bool:
+		if not default_scan_ruleset.scan_directories.is_empty():
+			return true
+		for additional_scan_ruleset in additional_scan_rulesets:
+			if not additional_scan_ruleset.scan_directories.is_empty():
+				return true
+		return false
 
 
 	func get_all_scan_directories() -> Array[String]:
