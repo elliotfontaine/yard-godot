@@ -6,6 +6,8 @@
 @tool
 extends PanelContainer
 
+signal registry_changed
+
 enum EditMenuAction {
 	NONE = -1,
 	DELETE_ENTRIES = 0,
@@ -214,6 +216,7 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 
 	YardLogger.info("Added %s new Resources to the registry." % n_added)
 	update_view()
+	registry_changed.emit()
 
 
 func update_view() -> void:
@@ -573,6 +576,7 @@ func _add_entry_from_picker(res: Resource, string_id: String) -> void:
 			entry_name_line_edit.text = ""
 			_toggle_add_entry_button()
 			update_view()
+			registry_changed.emit()
 		ERR_ALREADY_EXISTS:
 			YardLogger.error("An entry with the same UID already exists in the registry.")
 		ERR_CANT_ACQUIRE_RESOURCE:
@@ -605,6 +609,7 @@ func _delete_selected_entries() -> void:
 
 	data_table.set_selected_cell(&"", &"")
 	update_view()
+	registry_changed.emit()
 
 
 func _duplicate_selected_entries() -> void:
@@ -615,6 +620,7 @@ func _duplicate_selected_entries() -> void:
 				"Failed to duplicate %s in %s." % [uid, current_registry.resource_path.get_file()],
 			)
 	update_view()
+	registry_changed.emit()
 
 
 func _select_all() -> void:

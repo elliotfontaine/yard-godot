@@ -16,9 +16,8 @@ func _begin_customize_resources(_platform: EditorExportPlatform, _features: Pack
 	return true
 
 
-# No idea what to do with that one. Docs are unclear and not many examples out there on GitHub.
 func _get_customization_configuration_hash() -> int:
-	return randi()
+	return 0
 
 
 func _customize_resource(resource: Resource, _path: String) -> Resource:
@@ -29,7 +28,7 @@ func _customize_resource(resource: Resource, _path: String) -> Resource:
 	RegistryIO.sync_from_scan_directories(registry)
 	RegistryIO.rebuild_property_index(registry)
 
-	# Required to keep the editor cached resource up-to-date
+	# Required to sync the in-memory registry in the editor from its file
 	ResourceLoader.load(registry.resource_path, "", ResourceLoader.CACHE_MODE_REPLACE)
 
 	return registry

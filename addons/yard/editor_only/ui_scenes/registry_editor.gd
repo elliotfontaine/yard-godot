@@ -104,6 +104,7 @@ func _ready() -> void:
 	columns_menu_button.get_popup().hide_on_checkable_item_selection = false
 	registries_itemlist.registries_dropped.connect(_on_itemlist_registries_dropped)
 	registry_table_view.toggle_registry_panel_button.pressed.connect(_on_toggle_registries_pressed)
+	registry_table_view.registry_changed.connect(_on_registry_table_view_registry_changed)
 	new_registry_dialog.settings_saved.connect(_on_new_registry_dialog_settings_saved)
 
 	# Fuzzy Search settings
@@ -196,6 +197,7 @@ func select_registry(uid: String) -> void:
 	_toggle_visibility_topbar_buttons()
 	_toggle_file_menu_items()
 	_toggle_registry_context_menu_items()
+	_update_registries_itemlist()
 
 
 func unselect_registry() -> void:
@@ -782,6 +784,7 @@ func _on_rescan_button_pressed() -> void:
 	if registry:
 		RegistryIO.sync_from_scan_directories(registry)
 	registry_table_view.update_view()
+	_update_registries_itemlist()
 
 
 func _on_report_issue_button_pressed() -> void:
@@ -806,6 +809,10 @@ func _on_registry_settings_button_pressed() -> void:
 func _on_toggle_registries_pressed() -> void:
 	registries_container.visible = !registries_container.visible
 	registry_table_view.toggle_button_forward = !registries_container.visible
+
+
+func _on_registry_table_view_registry_changed() -> void:
+	_update_registries_itemlist()
 
 
 func _on_new_registry_dialog_settings_saved() -> void:

@@ -77,6 +77,8 @@ func _has_main_screen() -> bool:
 func _make_visible(visible: bool) -> void:
 	if is_instance_valid(_registry_editor):
 		_registry_editor.visible = visible
+		_registry_editor._update_registries_itemlist()
+		_registry_editor.registry_table_view.update_view()
 
 
 func _handles(object: Object) -> bool:
