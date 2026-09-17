@@ -7,6 +7,7 @@
 extends EditorPlugin
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const Compat := Namespace.Compat
 const YardLogger := Namespace.YardLogger
 const ShortcutUtils := Namespace.ShortcutUtils
 const RegistryEditor := Namespace.RegistryEditor
@@ -18,6 +19,7 @@ const EDITOR_INSPECTOR_PLUGIN := Namespace.EDITOR_INSPECTOR_PLUGIN
 var _registry_editor: RegistryEditor
 var _filesystem_create_context_menu_plugin: EditorContextMenuPlugin
 var _cached_plugin_name: String
+var _dock: Variant #EditorDock
 
 
 func _init() -> void:
@@ -43,7 +45,16 @@ func _enter_tree() -> void:
 	add_inspector_plugin(EDITOR_INSPECTOR_PLUGIN.new())
 
 	_registry_editor = REGISTRY_EDITOR_SCENE.instantiate()
-	EditorInterface.get_editor_main_screen().add_child(_registry_editor)
+
+	if Compat.is_engine_version_equal_or_newer(4, 8):
+		_dock = EditorDock.new()
+		_dock.title = "My Dock"
+		_dock.dock_icon = preload("res://addons/yard/editor_only/assets/yard.svg")
+		_dock.default_slot = EditorDock.DOCK_SLOT_MAIN_SCREEN
+		_dock.add_child(_registry_editor)
+		add_dock(_dock)
+	else:
+		EditorInterface.get_editor_main_screen().add_child(_registry_editor)
 
 	_reimport_icons()
 	_make_visible(false)
@@ -58,7 +69,10 @@ func _exit_tree() -> void:
 
 
 func _has_main_screen() -> bool:
-	return true
+	if Compat.is_engine_version_equal_or_newer(4, 8):
+		return false
+	else:
+		return true
 
 
 func _make_visible(visible: bool) -> void:
