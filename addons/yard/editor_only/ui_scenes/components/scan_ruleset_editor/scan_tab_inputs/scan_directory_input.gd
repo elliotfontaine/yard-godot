@@ -4,9 +4,8 @@
 # SPDX-License-Identifier: MIT
 
 @tool
-extends ScanTabInput
+extends "./scan_tab_input.gd"
 
-const ScanTabInput := preload("./scan_tab_input.gd")
 const ScanDirectoryInput := preload("./scan_directory_input.gd")
 const REQUEST_SCAN_DIRECTORY_FILE_DIALOG_ACTION := &"request_scan_directory_file_dialog"
 

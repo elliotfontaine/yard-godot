@@ -8,8 +8,6 @@
 extends Control
 ## Represents some scan-related property input that belongs in a tab container.
 
-const ScanTabInput := preload("./scan_tab_input.gd")
-
 @warning_ignore_start("unused_signal")
 signal input_changed
 signal request_action(action: StringName, args: Variant)

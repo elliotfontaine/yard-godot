@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 @tool
-extends ScanTabInput
+extends "./scan_tab_input.gd"
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const RegistryIO := Namespace.RegistryIO

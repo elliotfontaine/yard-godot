@@ -31,3 +31,4 @@ GitHub usernames appear in parentheses, or on their own when no other name is av
     Marion Allard (Mar0Lard)
     skison
     Verfeon
+    François de la Taste (francoisdlt)

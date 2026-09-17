@@ -39,9 +39,9 @@ const RegistriesItemList := Namespace.RegistriesItemList
 const RegistryTableView := Namespace.RegistryTableView
 const NewRegistryDialog := Namespace.NewRegistryDialog
 const AnyIcon := Namespace.AnyIcon
-const FuzzySearch := Namespace.FuzzySearch
+const YardFuzzySearch := Namespace.YardFuzzySearch
 const YardLogger := Namespace.YardLogger
-const FuzzySearchResult := FuzzySearch.FuzzySearchResult
+const FuzzySearchResult := YardFuzzySearch.FuzzySearchResult
 const BUILTIN_RESOURCE_PROPERTIES: Array[StringName] = RegistryCacheData.BUILTIN_RESOURCE_PROPERTIES
 const STRINGID_COLUMN := RegistryTableView.STRINGID_COLUMN
 const UID_COLUMN := RegistryTableView.UID_COLUMN
@@ -58,7 +58,7 @@ var _editor_state_data: EditorStateData
 var _session_closed_uids: Array[String] = [] # Array[uid]
 var _file_dialog: EditorFileDialog
 var _current_registry_uid: String = ""
-var _fuz := FuzzySearch.new()
+var _fuz := YardFuzzySearch.new()
 
 @onready var file_menu_button: MenuButton = %FileMenuButton
 @onready var edit_menu_button: MenuButton = %EditMenuButton

@@ -39,6 +39,7 @@ jobs:
           - "4.5.2"
           - "4.6.3"
           - "4.7.2"
+          - "4.8.0-dev6"
 
         os:
           - ubuntu-latest
@@ -73,6 +74,7 @@ jobs:
           godot \
             --headless \
             --editor \
+            --verbose \
             --quit \
             2>&1 | tee godot.log
 

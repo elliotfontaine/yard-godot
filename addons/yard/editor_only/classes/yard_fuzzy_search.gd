@@ -7,11 +7,11 @@
 # Original C++ class by Adam Johnston (https://github.com/a-johnston).
 
 extends RefCounted
-## Reproduced API:  FuzzySearch, FuzzySearchToken, FuzzyTokenMatch, FuzzySearchResult.
-## Note: If `class_name FuzzySearch` is enabled, inner classes can access static
+## Reproduced API:  YardFuzzySearch, FuzzySearchToken, FuzzyTokenMatch, FuzzySearchResult.
+## Note: If `class_name YardFuzzySearch` is enabled, inner classes can access static
 ## helpers directly and the external namespace indirections can be removed.
 
-#class_name FuzzySearch
+#class_name YardFuzzySearch
 
 const CULL_FACTOR: float = 0.1
 const CULL_CUTOFF: float = 30.0
@@ -187,7 +187,7 @@ func _is_lowercase(s: String) -> bool:
 
 class FuzzySearchToken:
 	const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
-	const FuzzySearch := Namespace.FuzzySearch
+	const YardFuzzySearch := Namespace.YardFuzzySearch
 
 	var idx: int = -1
 	var string: String = ""
@@ -215,7 +215,7 @@ class FuzzySearchToken:
 
 		for i in range(string.length()):
 			var cp := string.unicode_at(i)
-			var new_offset := FuzzySearch._find_codepoint(p_target, cp, offset)
+			var new_offset := YardFuzzySearch._find_codepoint(p_target, cp, offset)
 
 			if new_offset < 0:
 				miss_budget -= 1
@@ -239,7 +239,7 @@ class FuzzySearchToken:
 
 class FuzzyTokenMatch:
 	const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
-	const FuzzySearch := Namespace.FuzzySearch
+	const YardFuzzySearch := Namespace.YardFuzzySearch
 
 	var score: int = 0
 	var substrings: Array[Vector2i] = [] # x: start index, y: length
@@ -263,7 +263,7 @@ class FuzzyTokenMatch:
 		substrings.append(Vector2i(p_substring_start, p_substring_length))
 		matched_length += p_substring_length
 		var substring_interval := Vector2i(p_substring_start, p_substring_start + p_substring_length - 1)
-		interval = FuzzySearch._extend_interval(interval, substring_interval)
+		interval = YardFuzzySearch._extend_interval(interval, substring_interval)
 
 
 	func get_miss_count() -> int:
@@ -271,7 +271,7 @@ class FuzzyTokenMatch:
 
 
 	func intersects(p_other_interval: Vector2i) -> bool:
-		if not FuzzySearch._is_valid_interval(interval) or not FuzzySearch._is_valid_interval(p_other_interval):
+		if not YardFuzzySearch._is_valid_interval(interval) or not YardFuzzySearch._is_valid_interval(p_other_interval):
 			return false
 		return interval.y >= p_other_interval.x and interval.x <= p_other_interval.y
 
@@ -287,7 +287,7 @@ class FuzzyTokenMatch:
 
 class FuzzySearchResult:
 	const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
-	const FuzzySearch := Namespace.FuzzySearch
+	const YardFuzzySearch := Namespace.YardFuzzySearch
 
 	var target: String = ""
 	var score: int = 0
@@ -335,8 +335,8 @@ class FuzzySearchResult:
 				substring_score *= 2
 
 			# Score matches on a word boundary higher than matches within a word.
-			if FuzzySearch._is_word_boundary(target, substring.x - 1) \
-			or FuzzySearch._is_word_boundary(target, substring.x + substring.y):
+			if YardFuzzySearch._is_word_boundary(target, substring.x - 1) \
+			or YardFuzzySearch._is_word_boundary(target, substring.x + substring.y):
 				substring_score += 4
 
 			# Score exact query matches higher than non-compact subsequence matches.
@@ -348,7 +348,7 @@ class FuzzySearchResult:
 
 	func add_token_match(p_match: FuzzyTokenMatch) -> void:
 		score += p_match.score
-		match_interval = FuzzySearch._extend_interval(match_interval, p_match.interval)
+		match_interval = YardFuzzySearch._extend_interval(match_interval, p_match.interval)
 		miss_budget -= p_match.get_miss_count()
 		token_matches.append(p_match)
 
