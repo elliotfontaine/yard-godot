@@ -12,6 +12,7 @@ extends RefCounted
 ## applies to a given column; DataTable never names a concrete subclass.
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const Compat := Namespace.Compat
 const ColumnConfig := Namespace.ColumnConfig
 const CellStyle := Namespace.CellStyle
 
@@ -67,7 +68,15 @@ static func draw_text(
 	line.add_string(text, font, font_size)
 	line.width = width
 	line.alignment = h_align
-	line.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS_FORCE
+
+	if Compat.is_engine_version_equal_or_newer(4, 5):
+		var ELLIPSIS_FORCE := ClassDB.class_get_integer_constant(
+			&"TextServer",
+			&"OVERRUN_TRIM_ELLIPSIS_FORCE",
+		)
+		line.text_overrun_behavior = ELLIPSIS_FORCE as TextServer.OverrunBehavior 
+	else:
+		line.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 
 	var line_height := font.get_ascent(font_size) + font.get_descent(font_size)
 	var top_y := rect.position.y + (rect.size.y - line_height) / 2.0

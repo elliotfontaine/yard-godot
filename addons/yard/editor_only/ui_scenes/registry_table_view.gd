@@ -27,6 +27,7 @@ enum ColumnMenuAction {
 }
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const Compat := Namespace.Compat
 const RegistryIO := Namespace.RegistryIO
 const ClassUtils := Namespace.ClassUtils
 const ShortcutUtils := Namespace.ShortcutUtils
@@ -45,8 +46,6 @@ const ACTION_SHORTCUTS: Dictionary[EditMenuAction, String] = {
 }
 
 const INVALID_UID := "uid://<invalid>"
-const UID_COLUMN_CONFIG := ["uid", "UID", TYPE_STRING]
-const STRINGID_COLUMN_CONFIG := ["string_id", "String ID", TYPE_STRING]
 const STRINGID_COLUMN: StringName = &"string_id"
 const UID_COLUMN: StringName = &"uid"
 
@@ -207,7 +206,7 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 	for path: String in data.files:
 		if ResourceLoader.exists(path):
 			if RegistryIO.does_resource_match_class_restrictions(load(path), all_class_restrictions):
-				var status := RegistryIO.add_entry(current_registry, ResourceUID.path_to_uid(path))
+				var status := RegistryIO.add_entry(current_registry, Compat.path_to_uid(path))
 				n_added += int(status == OK)
 
 		elif path.ends_with("/"):
@@ -221,7 +220,7 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 				for res in matching_resources:
 					var status := RegistryIO.add_entry(
 						current_registry,
-						ResourceUID.path_to_uid(res.resource_path),
+						Compat.path_to_uid(res.resource_path),
 					)
 					n_added += int(status == OK)
 
@@ -301,7 +300,7 @@ func do_edit_menu_action(action_id: int) -> void:
 			DisplayServer.clipboard_set(current_registry.get_uid(focused_row))
 		EditMenuAction.SHOW_IN_FILESYSTEM:
 			var uid := current_registry.get_uid(focused_row)
-			var path := ResourceUID.uid_to_path(uid)
+			var path := Compat.uid_to_path(uid)
 			EditorInterface.get_file_system_dock().navigate_to_path(path)
 		EditMenuAction.DUPLICATE_ENTRIES:
 			_duplicate_selected_entries()
@@ -431,8 +430,10 @@ func _build_columns() -> Array[DataTable.ColumnConfig]:
 	var columns: Array[DataTable.ColumnConfig] = []
 
 	if not is_column_disabled(STRINGID_COLUMN):
-		var string_id_column: DataTable.ColumnConfig = DataTable.ColumnConfig.new.callv(
-			STRINGID_COLUMN_CONFIG
+		var string_id_column: DataTable.ColumnConfig = DataTable.ColumnConfig.new(
+			STRINGID_COLUMN,
+			"String ID",
+			TYPE_STRING,
 		)
 		string_id_column.custom_font_color = get_theme_color(&"accent_color", &"Editor")
 		string_id_column.h_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -440,7 +441,11 @@ func _build_columns() -> Array[DataTable.ColumnConfig]:
 		columns.append(string_id_column)
 
 	if not is_column_disabled(UID_COLUMN):
-		var uid_column: DataTable.ColumnConfig = DataTable.ColumnConfig.new.callv(UID_COLUMN_CONFIG)
+		var uid_column: DataTable.ColumnConfig = DataTable.ColumnConfig.new(
+			UID_COLUMN,
+			"UID",
+			TYPE_STRING,
+		)
 		uid_column.custom_font_color = get_theme_color(&"disabled_font_color", &"Editor")
 		uid_column.property_hint = PROPERTY_HINT_FILE
 		uid_column.frozen = UID_COLUMN in current_cache_data.frozen_columns
@@ -456,7 +461,7 @@ func _build_columns() -> Array[DataTable.ColumnConfig]:
 		var hint: PropertyHint = prop[&"hint"]
 		var hint_string: String = prop[&"hint_string"]
 		var class_string: String = prop[&"class_name"]
-		var column := DataTable.ColumnConfig.new(prop[&"name"], prop_header, prop_type)
+		var column := DataTable.ColumnConfig.new(prop_name, prop_header, prop_type)
 		column.frozen = column.identifier in current_cache_data.frozen_columns
 
 		if hint:
@@ -626,7 +631,7 @@ func _add_entry_from_picker(res: Resource, string_id: String) -> void:
 		EditorInterface.get_editor_toaster().push_toast("Resource saved to %s" % save_path)
 		res = load(save_path) # Required because of race condition shinenigans I guess
 
-	var uid := ResourceUID.path_to_uid(res.resource_path)
+	var uid := Compat.path_to_uid(res.resource_path)
 
 	var adding_status := RegistryIO.add_entry(current_registry, uid, string_id)
 	match adding_status:
@@ -779,7 +784,7 @@ func _on_inspector_property_edited(_property: StringName) -> void:
 		return
 
 	var res: Resource = object
-	var uid := ResourceUID.path_to_uid(res.resource_path)
+	var uid := Compat.path_to_uid(res.resource_path)
 	if uid.begins_with("uid://") and current_registry.has_uid(uid):
 		update_view()
 
