@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 @tool
-@abstract
+#@abstract
 extends Control
 ## Represents some scan-related property input that belongs in a tab container.
 
@@ -19,14 +19,12 @@ var disabled: bool = false:
 func _set_disabled(value: bool) -> void:
 	disabled = value
 
+# NOTE: @abstract annotation not available on Godot 4.4
 
-@abstract func get_value() -> Variant
+#@abstract func get_value() -> Variant
 
+#@abstract func set_value(value: Variant) -> void
 
-@abstract func set_value(value: Variant) -> void
+#@abstract func reset_value() -> void
 
-
-@abstract func reset_value() -> void
-
-
-@abstract func render_validation_results(args: Variant) -> void
+#@abstract func render_validation_results(args: Variant) -> void

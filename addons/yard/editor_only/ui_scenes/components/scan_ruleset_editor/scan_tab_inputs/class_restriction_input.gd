@@ -7,6 +7,7 @@
 extends "./scan_tab_input.gd"
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const Compat := Namespace.Compat
 const RegistryIO := Namespace.RegistryIO
 const ScanTabInput := preload("./scan_tab_input.gd")
 const ClassRestrictionInput := preload("./class_restriction_input.gd")
@@ -42,7 +43,7 @@ func get_value() -> Variant:
 	var stripped := class_restriction_line_edit.text.strip_edges()
 	if RegistryIO.is_quoted_string(stripped) and RegistryIO.is_resource_class_string(stripped):
 		var unquoted := RegistryIO.unquote(stripped) # should be a path
-		var as_uid := ResourceUID.path_to_uid(unquoted)
+		var as_uid := Compat.path_to_uid(unquoted)
 		return '"%s"' % as_uid
 	else:
 		return stripped
@@ -52,7 +53,7 @@ func set_value(value: Variant) -> void:
 	if typeof(value) == TYPE_STRING or typeof(value) == TYPE_STRING_NAME:
 		if RegistryIO.is_quoted_string(value) and RegistryIO.is_resource_class_string(value):
 			var unquoted := RegistryIO.unquote(value) # must be a valid uid
-			var as_path := ResourceUID.ensure_path(unquoted)
+			var as_path := Compat.ensure_path(unquoted)
 			class_restriction_line_edit.text = '"%s"' % as_path
 		else:
 			class_restriction_line_edit.text = value

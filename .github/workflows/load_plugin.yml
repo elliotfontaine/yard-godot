@@ -36,6 +36,7 @@ jobs:
       fail-fast: false
       matrix:
         version:
+          - "4.4.1"
           - "4.5.2"
           - "4.6.3"
           - "4.7.2"
