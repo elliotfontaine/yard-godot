@@ -74,7 +74,7 @@ static func draw_text(
 			&"TextServer",
 			&"OVERRUN_TRIM_ELLIPSIS_FORCE",
 		)
-		line.text_overrun_behavior = ELLIPSIS_FORCE
+		line.text_overrun_behavior = ELLIPSIS_FORCE as TextServer.OverrunBehavior 
 	else:
 		line.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 
