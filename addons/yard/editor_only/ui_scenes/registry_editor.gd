@@ -515,7 +515,6 @@ func _populate_columns_popup_menu() -> void:
 	)
 
 	popup.add_separator(tr("ID Columns"))
-	popup.set_item_auto_translate_mode(popup.item_count - 1, AUTO_TRANSLATE_MODE_DISABLED)
 	_add_column_submenu_item(popup, STRINGID_COLUMN, tr("String ID"), { })
 	_add_column_submenu_item(popup, UID_COLUMN, tr("UID"), { })
 
@@ -529,15 +528,15 @@ func _populate_columns_popup_menu() -> void:
 				var class_str: String = ClassUtils.get_class_name_or_path_from_prop(prop)
 				var separator_label := class_str.get_file() if class_str.begins_with("res://") else class_str
 				popup.add_separator(separator_label)
-				popup.set_item_auto_translate_mode(
-					popup.item_count - 1,
-					AUTO_TRANSLATE_MODE_DISABLED,
-				)
+				if Compat.is_engine_version_equal_or_newer(4, 5):
+					popup.set_item_auto_translate_mode(
+						popup.item_count - 1,
+						AUTO_TRANSLATE_MODE_DISABLED,
+					)
 		elif prop_name not in BUILTIN_RESOURCE_PROPERTIES:
 			_add_column_submenu_item(popup, prop_name, prop_name.capitalize(), prop)
 
 	popup.add_separator("Resource/RefCounted")
-	popup.set_item_auto_translate_mode(popup.item_count - 1, AUTO_TRANSLATE_MODE_DISABLED)
 	for prop: Dictionary in registry_table_view.properties_column_info:
 		if prop[&"name"] in BUILTIN_RESOURCE_PROPERTIES:
 			_add_column_submenu_item(popup, prop[&"name"], String(prop[&"name"]).capitalize(), prop)
@@ -565,7 +564,8 @@ func _add_column_submenu_item(
 	)
 	popup.set_item_metadata(idx, identifier)
 	if not prop.is_empty():
-		popup.set_item_auto_translate_mode(idx, AUTO_TRANSLATE_MODE_DISABLED)
+		if Compat.is_engine_version_equal_or_newer(4, 5):
+			popup.set_item_auto_translate_mode(idx, AUTO_TRANSLATE_MODE_DISABLED)
 		popup.set_item_icon(idx, AnyIcon.get_property_icon_from_dict(prop))
 
 
