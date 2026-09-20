@@ -76,7 +76,7 @@ jobs:
             --headless \
             --editor \
             --verbose \
-            --quit-after 5 \
+            --quit \
             2>&1 | tee godot.log
 
       - name: Check plugin loaded
