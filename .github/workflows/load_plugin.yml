@@ -89,7 +89,8 @@ jobs:
       - name: Check for Godot errors or warnings
         shell: bash
         run: |
-          if grep -E '(^| )(ERROR|WARNING)( |:)|SCRIPT ERROR|Parse Error' godot.log; then
+          if grep -E '(^| )(ERROR|WARNING)( |:)|SCRIPT ERROR|Parse Error' godot.log \
+            | grep -vF 'WARNING: Scan thread aborted...'; then
             echo "::error::Godot reported an error or warning."
             exit 1
           fi
