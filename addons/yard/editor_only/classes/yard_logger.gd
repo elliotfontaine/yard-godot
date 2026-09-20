@@ -7,6 +7,7 @@
 extends Object
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const Compat := Namespace.Compat
 const EditorThemeUtils := Namespace.EditorThemeUtils
 
 
@@ -28,9 +29,17 @@ static func warn(message: String) -> void:
 
 
 static func error(message: String) -> void:
-	var caller: Dictionary = get_stack()[1]
-	var line: int = caller.get("line", "")
-	var source: String = caller.get("source", "")
+	var line: String
+	var source: String
+
+	if Compat.is_engine_version_equal_or_newer(4, 5):
+		var caller: Dictionary = get_stack()[1]
+		line = caller.get("line", "")
+		source = caller.get("source", "")
+	else:
+		# For some reason, on 4.4, get_stack() returns an empty array.
+		line = "{line}"
+		source = "{source}"
 
 	print_rich(
 		"[color=%s]● [b]ERROR:[/b] [url]%s[/url] - YARD: %s[/color]"
