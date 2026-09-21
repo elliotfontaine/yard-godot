@@ -625,7 +625,7 @@ func _setup_add_entry() -> void:
 
 
 func _cache_add_entry_value(registry: Registry) -> void:
-	var uid := ResourceUID.path_to_uid(registry.resource_path)
+	var uid := Compat.path_to_uid(registry.resource_path)
 	_add_entry_cache[uid] = {
 		&"string_id": entry_name_line_edit.text,
 		&"resource": _res_picker.edited_resource if _res_picker else null,
