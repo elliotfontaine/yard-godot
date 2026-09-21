@@ -660,9 +660,12 @@ func _rebuild_add_entry_directory_options() -> void:
 		add_entry_directory_button.add_item(_add_entry_custom_dir)
 
 	add_entry_directory_button.add_separator()
+
+	var popup := add_entry_directory_button.get_popup()
 	var browse_idx := add_entry_directory_button.item_count
 	add_entry_directory_button.add_icon_item(AnyIcon.get_icon(&"FolderBrowse"), tr("Browse"))
 	add_entry_directory_button.set_item_id(browse_idx, BROWSE_DIR_ID)
+	popup.set_item_as_radio_checkable(browse_idx, false)
 
 	var target_idx := 0
 	for i in add_entry_directory_button.item_count:
