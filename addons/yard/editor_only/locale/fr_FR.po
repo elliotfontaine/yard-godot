@@ -81,6 +81,10 @@ msgid "Toggle Registries Panel"
 msgstr "Afficher/masquer le panneau de registres"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
+msgid "Auto (registry file location)"
+msgstr "Automatique (emplacement du registre)"
+
+#: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "String ID"
 msgstr "ID textuel"
