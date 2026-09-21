@@ -56,6 +56,8 @@ var clipboard: Variant
 var current_registry: Registry:
 	set(new):
 		var is_another := new != current_registry
+		if is_another and current_registry:
+			_cache_add_entry_value(current_registry)
 		current_registry = new
 		current_cache_data = RegistryCacheData.load_or_default(new) if new else null
 		if current_cache_data:
@@ -75,6 +77,7 @@ var _texture_rect_parent: Button
 var _res_picker: EditorResourcePicker
 var _uid_resource_to_inspect: String
 var _subresource_to_inspect: Resource
+var _add_entry_cache: Dictionary[String, Dictionary] = { }
 
 @onready var data_table: DataTable = %DataTable
 @onready var toggle_registry_panel_button: Button = %ToggleRegistryPanelButton
@@ -426,6 +429,11 @@ func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 		)
 
 
+## Discards the cached Add Entry value for a closed registry.
+func clear_add_entry_cache(uid: String) -> void:
+	_add_entry_cache.erase(uid)
+
+
 func _build_columns() -> Array[DataTable.ColumnConfig]:
 	var columns: Array[DataTable.ColumnConfig] = []
 
@@ -608,8 +616,20 @@ func _setup_add_entry() -> void:
 	_texture_rect_parent = _res_picker.get_child(0)
 	_res_picker.resource_changed.connect(_on_res_picker_resource_changed)
 	_res_picker.resource_selected.connect(_on_res_picker_resource_selected)
+
+	var uid := ResourceUID.path_to_uid(current_registry.resource_path)
+	var cached: Dictionary = _add_entry_cache.get(uid, { })
+	entry_name_line_edit.text = cached.get(&"string_id", "")
+	_res_picker.edited_resource = cached.get(&"resource", null)
 	_toggle_add_entry_button()
-	entry_name_line_edit.text = ""
+
+
+func _cache_add_entry_value(registry: Registry) -> void:
+	var uid := ResourceUID.path_to_uid(registry.resource_path)
+	_add_entry_cache[uid] = {
+		&"string_id": entry_name_line_edit.text,
+		&"resource": _res_picker.edited_resource if _res_picker else null,
+	}
 
 
 func _add_entry_from_picker(res: Resource, string_id: String) -> void:

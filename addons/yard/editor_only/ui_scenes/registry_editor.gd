@@ -159,6 +159,7 @@ func close_registry(uid: String) -> void:
 	elif _current_registry_uid == uid:
 		select_registry(_editor_state_data.opened_registries.keys()[0])
 
+	registry_table_view.clear_add_entry_cache(uid)
 	_session_closed_uids.append(uid)
 	_update_registries_itemlist()
 
