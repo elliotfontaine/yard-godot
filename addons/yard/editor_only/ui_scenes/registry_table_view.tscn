@@ -183,6 +183,18 @@ size_flags_horizontal = 3
 theme_override_constants/separation = 8
 alignment = 2
 
+[node name="AddEntryDirectoryContainer" type="PanelContainer" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer" unique_id=254528879]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="AddEntryDirectoryButton" type="OptionButton" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer/AddEntryDirectoryContainer" unique_id=1367429751]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Directory where new unsaved resources will be created."
+flat = true
+alignment = 2
+fit_to_longest_item = false
+
 [node name="ResourcePickerContainer" type="PanelContainer" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer" unique_id=717520273]
 unique_name_in_owner = true
 layout_mode = 2
