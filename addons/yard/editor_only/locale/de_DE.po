@@ -80,9 +80,9 @@ msgstr "Ressourcendateien hier ablegen, um sie zur Registrierung hinzuzufügen."
 msgid "Toggle Registries Panel"
 msgstr "Dateibereich ein-/ausblenden"
 
-#: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
+#: addons/yard/editor_only/ui_scenes/registry_table_view.gd
 msgid "Auto (registry file location)"
-msgstr "Auto (Speicherort der Registrierungsdatei)"
+msgstr "Automatisch (Registrierungsort)"
 
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd

@@ -80,6 +80,10 @@ msgstr "Upuść pliki zasobów tutaj, aby dodać je do rejestru."
 msgid "Toggle Registries Panel"
 msgstr "Pokaż/ukryj panel plików"
 
+#: addons/yard/editor_only/ui_scenes/registry_table_view.gd
+msgid "Auto (registry file location)"
+msgstr "Auto (lokalizacja rejestru)"
+
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "String ID"

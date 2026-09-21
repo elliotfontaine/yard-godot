@@ -80,6 +80,10 @@ msgstr "将资源文件拖放到此处以添加至注册表。"
 msgid "Toggle Registries Panel"
 msgstr "显示/隐藏文件面板"
 
+#: addons/yard/editor_only/ui_scenes/registry_table_view.gd
+msgid "Auto (registry file location)"
+msgstr "自动（注册表位置）"
+
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "String ID"

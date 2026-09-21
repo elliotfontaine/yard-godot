@@ -80,6 +80,10 @@ msgstr "Перетащите файлы ресурсов сюда, чтобы д
 msgid "Toggle Registries Panel"
 msgstr "Показать/скрыть панель файлов"
 
+#: addons/yard/editor_only/ui_scenes/registry_table_view.gd
+msgid "Auto (registry file location)"
+msgstr "Авто (путь реестра)"
+
 #: addons/yard/editor_only/ui_scenes/registry_table_view.tscn
 #: addons/yard/editor_only/ui_scenes/registry_editor.gd
 msgid "String ID"
