@@ -650,7 +650,7 @@ func _setup_add_entry() -> void:
 
 func _rebuild_add_entry_directory_options() -> void:
 	add_entry_directory_button.clear()
-	add_entry_directory_button.add_item(tr("Auto (FileSystem Dock selection)"))
+	add_entry_directory_button.add_item(tr("Auto (registry file location)"))
 	add_entry_directory_button.set_item_id(0, AUTO_DIR_ID)
 
 	var scan_dirs := RegistryIO.get_registry_settings(current_registry).get_all_scan_directories()
@@ -661,7 +661,7 @@ func _rebuild_add_entry_directory_options() -> void:
 
 	add_entry_directory_button.add_separator()
 	var browse_idx := add_entry_directory_button.item_count
-	add_entry_directory_button.add_icon_item(AnyIcon.get_icon(&"Folder"), tr("Browse..."))
+	add_entry_directory_button.add_icon_item(AnyIcon.get_icon(&"FolderBrowse"), tr("Browse"))
 	add_entry_directory_button.set_item_id(browse_idx, BROWSE_DIR_ID)
 
 	var target_idx := 0
@@ -692,7 +692,7 @@ func _add_entry_from_picker(res: Resource, string_id: String) -> void:
 		var target_dir := (
 			_add_entry_target_dir
 			if _add_entry_target_dir
-			else EditorInterface.get_current_path().get_base_dir()
+			else current_registry.resource_path.get_base_dir()
 		)
 		var save_path := target_dir.path_join(string_id + ".tres")
 		if ResourceLoader.exists(save_path):
