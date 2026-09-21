@@ -34,7 +34,7 @@ static func create_registry_file(path: String, settings: RegistrySettings = null
 
 	if Compat.is_engine_version_equal_or_newer(4, 5):
 		var uid_int := ResourceUID.create_id()
-		ResourceSaver.call(&"set_uid", [path, uid_int])
+		ResourceSaver.call(&"set_uid", path, uid_int)
 		if not ResourceUID.has_id(uid_int):
 			# Ensures the UID is in the in-memory cache, not just on disk
 			ResourceUID.add_id(uid_int, path)
