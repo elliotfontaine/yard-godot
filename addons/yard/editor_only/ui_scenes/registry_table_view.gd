@@ -617,7 +617,7 @@ func _setup_add_entry() -> void:
 	_res_picker.resource_changed.connect(_on_res_picker_resource_changed)
 	_res_picker.resource_selected.connect(_on_res_picker_resource_selected)
 
-	var uid := ResourceUID.path_to_uid(current_registry.resource_path)
+	var uid := Compat.path_to_uid(current_registry.resource_path)
 	var cached: Dictionary = _add_entry_cache.get(uid, { })
 	entry_name_line_edit.text = cached.get(&"string_id", "")
 	_res_picker.edited_resource = cached.get(&"resource", null)
