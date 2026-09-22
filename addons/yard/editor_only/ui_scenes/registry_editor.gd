@@ -76,6 +76,7 @@ var _fuz := YardFuzzySearch.new()
 @onready var registry_context_menu: PopupMenu = %RegistryContextMenu
 @onready var new_registry_dialog: NewRegistryDialog = %NewRegistryDialog
 @onready var read_me_window: AcceptDialog = $ReadMeWindow
+@onready var version_button: Button = %VersionButton
 
 
 func _ready() -> void:
@@ -108,6 +109,7 @@ func _ready() -> void:
 	registry_table_view.footer.registry_panel_toggled.connect(_on_footer_registry_panel_toggled)
 	registry_table_view.registry_changed.connect(_on_registry_table_view_registry_changed)
 	new_registry_dialog.settings_saved.connect(_on_new_registry_dialog_settings_saved)
+	version_button.pressed.connect(_on_version_button_pressed)
 
 	# Fuzzy Search settings
 	_fuz.max_results = 20
@@ -872,3 +874,7 @@ func _on_open_documentation_button_pressed() -> void:
 
 func _on_read_me_button_pressed() -> void:
 	read_me_window.popup_centered_ratio(0.5)
+
+
+func _on_version_button_pressed() -> void:
+	print("_on_version_button_pressed")
