@@ -21,6 +21,7 @@ enum EditMenuAction {
 	SELECT_ALL = 9,
 	INVERT_SELECTION = 10,
 	UNSELECT = 11,
+	OPEN_SUBRESOURCES = 12,
 }
 enum ColumnMenuAction {
 	FROZEN = 1,
@@ -50,9 +51,8 @@ const STRINGID_COLUMN: StringName = &"string_id"
 const UID_COLUMN: StringName = &"uid"
 
 var current_cache_data: RegistryCacheData
-var properties_column_info: Array[Dictionary]
 var clipboard: Variant
-
+var root_properties_column_info: Array[Dictionary]
 var current_registry: Registry:
 	set(new):
 		var is_another := new != current_registry
@@ -60,11 +60,16 @@ var current_registry: Registry:
 		current_cache_data = RegistryCacheData.load_or_default(new) if new else null
 		footer.set_current_registry(current_registry)
 		if is_another:
+			_subresource_stack.clear()
 			data_table.clear_filter()
 			data_table.sort_column = STRINGID_COLUMN
 			data_table.sort_ascending = true
 		update_view()
 
+## Path of expanded subresource properties. Empty means we're viewing the root registry.
+var _subresource_stack: Array[SubresourceFrame] = []
+## Rows currently shown by the deepest subresource frame: row_id -> {resource, display_id}.
+var _subresource_rows: Dictionary[StringName, Dictionary] = { }
 var _uid_resource_to_inspect: String
 var _subresource_to_inspect: Resource
 
@@ -74,6 +79,9 @@ var _subresource_to_inspect: Resource
 @onready var drag_and_drop_info_panel: PanelContainer = %DragAndDropInfoPanel
 @onready var focus_panel: PanelContainer = %FocusPanel
 @onready var footer: HBoxContainer = %Footer
+@onready var subresource_bar: PanelContainer = %SubresourceBar
+@onready var subresource_bar_label: Label = %SubresourceBarLabel
+@onready var subresource_bar_back_button: Button = %SubresourceBarBackButton
 
 
 func _ready() -> void:
@@ -99,10 +107,19 @@ func _ready() -> void:
 					shortcut,
 				)
 
+	edit_context_menu.add_separator()
+	edit_context_menu.add_item(tr("Open Sub-resources"), EditMenuAction.OPEN_SUBRESOURCES)
+	edit_context_menu.set_item_icon(
+		edit_context_menu.item_count - 1,
+		get_theme_icon(&"ResourcePreloader", &"EditorIcons"),
+	)
+
 	var lighter_base_color := EditorThemeUtils.get_base_color(0.6)
 	drag_and_drop_info_panel.get_theme_stylebox(&"panel").bg_color = lighter_base_color
 	drag_and_drop_info_panel.get_theme_stylebox(&"panel").bg_color.a = 0.8
 	focus_panel.add_theme_stylebox_override(&"panel", get_theme_stylebox(&"Focus", &"EditorStyles"))
+
+	subresource_bar_back_button.pressed.connect(_on_subresource_back_button_pressed)
 
 	grow_horizontal = Control.GROW_DIRECTION_END
 	grow_vertical = Control.GROW_DIRECTION_END
@@ -122,7 +139,9 @@ func _process(_delta: float) -> void:
 			_uid_resource_to_inspect = ""
 
 	if not get_viewport().gui_is_dragging():
-		drag_and_drop_info_panel.visible = current_registry and current_registry.is_empty()
+		drag_and_drop_info_panel.visible = (
+			current_registry and current_registry.is_empty() and not is_in_subresource_view()
+		)
 
 
 func _notification(what: int) -> void:
@@ -145,7 +164,7 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 	if typeof(data) != TYPE_DICTIONARY or not data.has("files"):
 		return false
 
-	if not current_registry:
+	if not current_registry or is_in_subresource_view():
 		return false
 
 	var settings := RegistryIO.get_registry_settings(current_registry)
@@ -166,6 +185,9 @@ func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 
 
 func _drop_data(_at_position: Vector2, data: Variant) -> void:
+	if is_in_subresource_view():
+		return
+
 	var n_added := 0
 
 	var settings := RegistryIO.get_registry_settings(current_registry)
@@ -201,58 +223,19 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 func update_view() -> void:
 	if not current_registry:
 		footer.toggle_add_entry_fields(false)
+		subresource_bar.visible = false
 		data_table.set_columns([])
 		data_table.set_data([], [])
 		return
 
-	var saved_sort_col := data_table.sort_column
-	var saved_sort_asc := data_table.sort_ascending
-	var focus_owner := get_viewport().gui_get_focus_owner() if get_viewport() else null
-	var table_had_focus := (
-		focus_owner and (data_table == focus_owner or data_table.is_ancestor_of(focus_owner))
-	)
+	if is_in_subresource_view():
+		_update_subresource_view()
+	else:
+		_update_root_view()
 
-	footer.toggle_add_entry_fields(true)
 
-	var resources: Dictionary[StringName, Resource] = current_registry.load_all_blocking()
-	set_columns_data(resources.values())
-
-	var rows: Array[Dictionary] = []
-	var row_ids: Array[StringName] = []
-	for uid in current_registry.get_all_uids():
-		var string_id: StringName = current_registry.get_string_id(uid)
-		var entry_data: Dictionary[StringName, Variant] = { }
-		entry_data.set(STRINGID_COLUMN, string_id)
-		if RegistryIO.is_uid_valid(uid):
-			entry_data.set(UID_COLUMN, uid)
-			entry_data.merge(get_resource_row_data(current_registry.load_entry(uid)))
-		else:
-			entry_data.set(UID_COLUMN, INVALID_UID)
-			entry_data.merge(get_resource_row_data(null))
-		rows.append(entry_data)
-		row_ids.append(string_id)
-
-	data_table.set_columns(_build_columns())
-
-	for column: DataTable.ColumnConfig in data_table.get_all_columns():
-		match column.identifier:
-			UID_COLUMN:
-				column.current_width = current_cache_data.uid_column_width
-			STRINGID_COLUMN:
-				column.current_width = current_cache_data.string_id_column_width
-			_:
-				var prop_name := column.identifier
-				if current_cache_data.property_columns_widths.has(prop_name):
-					column.current_width = current_cache_data.property_columns_widths[prop_name]
-
-	# set_data preserves focused_row and selected_rows for keys that still exist
-	data_table.set_data(rows, row_ids)
-
-	if saved_sort_col != &"":
-		data_table.ordering_data(saved_sort_col, saved_sort_asc)
-
-	if table_had_focus:
-		data_table.grab_focus()
+func is_in_subresource_view() -> bool:
+	return not _subresource_stack.is_empty()
 
 
 func do_edit_menu_action(action_id: int) -> void:
@@ -264,7 +247,9 @@ func do_edit_menu_action(action_id: int) -> void:
 		EditMenuAction.DELETE_ENTRIES:
 			_ask_confirm_delete_entries()
 		EditMenuAction.COPY_STRING_ID:
-			DisplayServer.clipboard_set(focused_row)
+			DisplayServer.clipboard_set(
+				str(data_table.get_cell_value(focused_row, STRINGID_COLUMN))
+			)
 		EditMenuAction.COPY_UID:
 			DisplayServer.clipboard_set(current_registry.get_uid(focused_row))
 		EditMenuAction.SHOW_IN_FILESYSTEM:
@@ -273,6 +258,8 @@ func do_edit_menu_action(action_id: int) -> void:
 			EditorInterface.get_file_system_dock().navigate_to_path(path)
 		EditMenuAction.DUPLICATE_ENTRIES:
 			_duplicate_selected_entries()
+		EditMenuAction.OPEN_SUBRESOURCES:
+			_enter_subresource_view(focused_col)
 		EditMenuAction.CUT_CELL_VALUE:
 			var value: Variant = data_table.get_cell_value(focused_row, focused_col)
 			if data_table.is_cell_valid(focused_row, focused_col):
@@ -295,31 +282,24 @@ func do_edit_menu_action(action_id: int) -> void:
 
 
 func is_column_disabled(column_id: StringName) -> bool:
-	return column_id in current_cache_data.disabled_columns
+	if column_id in [UID_COLUMN, STRINGID_COLUMN]:
+		return column_id in current_cache_data.disabled_columns
+	return _cache_key(column_id) in current_cache_data.disabled_columns
 
 
 func set_columns_data(resources: Array[Resource]) -> void:
-	properties_column_info.clear()
-	var found_props := _collect_props(resources)
-	var grouped := _group_props_by_class(found_props)
-
-	var ordered_groups: Array[String] = ClassUtils.sort_by_inheritance(grouped.keys())
-	if not current_cache_data.parent_props_first:
-		ordered_groups.reverse()
-
-	for class_str: String in ordered_groups:
-		for prop_name: StringName in grouped[class_str]:
-			var prop := found_props[prop_name]
-			if _can_display_property(prop) or ClassUtils.is_class_property(prop):
-				properties_column_info.append(prop)
+	root_properties_column_info = _compute_columns_info(resources)
 
 
-func get_resource_row_data(res: Resource) -> Dictionary[StringName, Variant]:
-	if properties_column_info.is_empty() or not res:
+func get_resource_row_data(
+	res: Resource,
+	columns_info: Array[Dictionary],
+) -> Dictionary[StringName, Variant]:
+	if columns_info.is_empty() or not res:
 		return { }
 
 	var row: Dictionary[StringName, Variant] = { }
-	for prop: Dictionary in properties_column_info:
+	for prop: Dictionary in columns_info:
 		var prop_name: StringName = prop[&"name"]
 		if is_column_disabled(prop_name) or ClassUtils.is_class_property(prop):
 			continue
@@ -333,15 +313,20 @@ func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 	var col := data_table.focused_col
 	var has_selected_cell := row != &"" and col != &""
 	var has_selected_row := row != &""
+	var in_subresource := is_in_subresource_view()
 	var cant_be_cut := col in [UID_COLUMN, STRINGID_COLUMN]
 	var is_cell_invalid: bool = not data_table.is_cell_valid(row, col)
+	var focused_column := data_table.get_column(col) if has_selected_cell else null
+	var can_open_subresources := (
+		focused_column != null and _column_holds_subresources(focused_column)
+	)
 	edit_menu.set_item_disabled(
 		edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES),
-		!has_selected_row,
+		!has_selected_row or in_subresource,
 	)
 	edit_menu.set_item_disabled(
 		edit_menu.get_item_index(EditMenuAction.DUPLICATE_ENTRIES),
-		!has_selected_row,
+		!has_selected_row or in_subresource,
 	)
 	edit_menu.set_item_disabled(
 		edit_menu.get_item_index(EditMenuAction.COPY_STRING_ID),
@@ -349,11 +334,11 @@ func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 	)
 	edit_menu.set_item_disabled(
 		edit_menu.get_item_index(EditMenuAction.COPY_UID),
-		!has_selected_row,
+		!has_selected_row or in_subresource,
 	)
 	edit_menu.set_item_disabled(
 		edit_menu.get_item_index(EditMenuAction.SHOW_IN_FILESYSTEM),
-		!has_selected_row,
+		!has_selected_row or in_subresource,
 	)
 	edit_menu.set_item_disabled(
 		edit_menu.get_item_index(EditMenuAction.CUT_CELL_VALUE),
@@ -366,6 +351,10 @@ func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 	edit_menu.set_item_disabled(
 		edit_menu.get_item_index(EditMenuAction.PASTE_TO_CELL),
 		!has_selected_cell or is_cell_invalid,
+	)
+	edit_menu.set_item_disabled(
+		edit_menu.get_item_index(EditMenuAction.OPEN_SUBRESOURCES),
+		!can_open_subresources,
 	)
 
 	for select_action: int in [
@@ -395,7 +384,27 @@ func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 		)
 
 
-func _build_columns() -> Array[DataTable.ColumnConfig]:
+func _compute_columns_info(resources: Array[Resource]) -> Array[Dictionary]:
+	var found_props := _collect_props(resources)
+	var grouped := _group_props_by_class(found_props)
+
+	var ordered_groups: Array[String] = ClassUtils.sort_by_inheritance(grouped.keys())
+	if not current_cache_data.parent_props_first:
+		ordered_groups.reverse()
+
+	var result: Array[Dictionary] = []
+	for class_str: String in ordered_groups:
+		for prop_name: StringName in grouped[class_str]:
+			var prop := found_props[prop_name]
+			if _can_display_property(prop) or ClassUtils.is_class_property(prop):
+				result.append(prop)
+	return result
+
+
+func _build_columns(
+	columns_info: Array[Dictionary],
+	include_uid: bool,
+) -> Array[DataTable.ColumnConfig]:
 	var columns: Array[DataTable.ColumnConfig] = []
 
 	if not is_column_disabled(STRINGID_COLUMN):
@@ -406,10 +415,10 @@ func _build_columns() -> Array[DataTable.ColumnConfig]:
 		)
 		string_id_column.custom_font_color = get_theme_color(&"accent_color", &"Editor")
 		string_id_column.h_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		string_id_column.frozen = STRINGID_COLUMN in current_cache_data.frozen_columns
+		string_id_column.frozen = _is_column_frozen(STRINGID_COLUMN)
 		columns.append(string_id_column)
 
-	if not is_column_disabled(UID_COLUMN):
+	if include_uid and not is_column_disabled(UID_COLUMN):
 		var uid_column: DataTable.ColumnConfig = DataTable.ColumnConfig.new(
 			UID_COLUMN,
 			"UID",
@@ -417,10 +426,10 @@ func _build_columns() -> Array[DataTable.ColumnConfig]:
 		)
 		uid_column.custom_font_color = get_theme_color(&"disabled_font_color", &"Editor")
 		uid_column.property_hint = PROPERTY_HINT_FILE
-		uid_column.frozen = UID_COLUMN in current_cache_data.frozen_columns
+		uid_column.frozen = _is_column_frozen(UID_COLUMN)
 		columns.append(uid_column)
 
-	for prop in properties_column_info:
+	for prop in columns_info:
 		var prop_name: String = prop[&"name"]
 		if not _can_display_property(prop) or is_column_disabled(prop_name):
 			continue
@@ -431,7 +440,7 @@ func _build_columns() -> Array[DataTable.ColumnConfig]:
 		var hint_string: String = prop[&"hint_string"]
 		var class_string: String = prop[&"class_name"]
 		var column := DataTable.ColumnConfig.new(prop_name, prop_header, prop_type)
-		column.frozen = column.identifier in current_cache_data.frozen_columns
+		column.frozen = _is_column_frozen(column.identifier)
 
 		if hint:
 			column.property_hint = hint
@@ -482,6 +491,228 @@ func _can_display_property(property_info: Dictionary) -> bool:
 	)
 
 
+func _enter_subresource_view(property: StringName) -> void:
+	if property == &"":
+		return
+	var frame := SubresourceFrame.new()
+	frame.property = property
+	_subresource_stack.append(frame)
+	_reset_table_navigation()
+	update_view()
+
+
+func _exit_subresource_view() -> void:
+	if _subresource_stack.is_empty():
+		return
+	_subresource_stack.pop_back()
+	_reset_table_navigation()
+	update_view()
+
+
+func _reset_table_navigation() -> void:
+	data_table.clear_filter()
+	data_table.set_selected_cell(&"", &"")
+	data_table.sort_column = STRINGID_COLUMN
+	data_table.sort_ascending = true
+
+
+func _update_root_view() -> void:
+	subresource_bar.visible = false
+	footer.visible = true
+	footer.toggle_add_entry_fields(true)
+
+	var saved_sort_col := data_table.sort_column
+	var saved_sort_asc := data_table.sort_ascending
+	var focus_owner := get_viewport().gui_get_focus_owner() if get_viewport() else null
+	var table_had_focus := (
+		focus_owner and (data_table == focus_owner or data_table.is_ancestor_of(focus_owner))
+	)
+
+	var resources: Dictionary[StringName, Resource] = current_registry.load_all_blocking()
+	set_columns_data(resources.values())
+
+	var rows: Array[Dictionary] = []
+	var row_ids: Array[StringName] = []
+	for uid in current_registry.get_all_uids():
+		var string_id: StringName = current_registry.get_string_id(uid)
+		var entry_data: Dictionary[StringName, Variant] = { }
+		entry_data.set(STRINGID_COLUMN, string_id)
+		if RegistryIO.is_uid_valid(uid):
+			entry_data.set(UID_COLUMN, uid)
+			entry_data.merge(
+				get_resource_row_data(current_registry.load_entry(uid), root_properties_column_info)
+			)
+		else:
+			entry_data.set(UID_COLUMN, INVALID_UID)
+			entry_data.merge(get_resource_row_data(null, root_properties_column_info))
+		rows.append(entry_data)
+		row_ids.append(string_id)
+
+	data_table.set_columns(_build_columns(root_properties_column_info, true))
+
+	for column: DataTable.ColumnConfig in data_table.get_all_columns():
+		match column.identifier:
+			UID_COLUMN:
+				column.current_width = current_cache_data.uid_column_width
+			STRINGID_COLUMN:
+				column.current_width = current_cache_data.string_id_column_width
+			_:
+				var width_key := _cache_key(column.identifier)
+				if current_cache_data.property_columns_widths.has(width_key):
+					column.current_width = current_cache_data.property_columns_widths[width_key]
+
+	# set_data preserves focused_row and selected_rows for keys that still exist
+	data_table.set_data(rows, row_ids)
+
+	if saved_sort_col != &"":
+		data_table.ordering_data(saved_sort_col, saved_sort_asc)
+
+	if table_had_focus:
+		data_table.grab_focus()
+
+
+func _update_subresource_view() -> void:
+	footer.visible = false
+	subresource_bar.visible = true
+	_update_subresource_bar_label()
+
+	var saved_sort_col := data_table.sort_column
+	var saved_sort_asc := data_table.sort_ascending
+	var focus_owner := get_viewport().gui_get_focus_owner() if get_viewport() else null
+	var table_had_focus := (
+		focus_owner and (data_table == focus_owner or data_table.is_ancestor_of(focus_owner))
+	)
+
+	_subresource_rows = _resolve_subresource_leaves()
+
+	var frame: SubresourceFrame = _subresource_stack.back()
+	var leaf_resources: Array[Resource] = []
+	for row_id: StringName in _subresource_rows:
+		leaf_resources.append(_subresource_rows[row_id][&"resource"])
+	frame.columns_info = _compute_columns_info(leaf_resources)
+
+	var rows: Array[Dictionary] = []
+	var row_ids: Array[StringName] = []
+	for row_id: StringName in _subresource_rows:
+		var row_data: Dictionary = _subresource_rows[row_id]
+		var entry_data: Dictionary[StringName, Variant] = { }
+		entry_data.set(STRINGID_COLUMN, row_data[&"display_id"])
+		entry_data.merge(get_resource_row_data(row_data[&"resource"], frame.columns_info))
+		rows.append(entry_data)
+		row_ids.append(row_id)
+
+	data_table.set_columns(_build_columns(frame.columns_info, false))
+
+	for column: DataTable.ColumnConfig in data_table.get_all_columns():
+		if column.identifier == STRINGID_COLUMN:
+			column.current_width = current_cache_data.string_id_column_width
+		else:
+			var width_key := _cache_key(column.identifier)
+			if current_cache_data.property_columns_widths.has(width_key):
+				column.current_width = current_cache_data.property_columns_widths[width_key]
+
+	data_table.set_data(rows, row_ids)
+
+	if saved_sort_col != &"":
+		data_table.ordering_data(saved_sort_col, saved_sort_asc)
+
+	if table_had_focus:
+		data_table.grab_focus()
+
+
+## Walks the whole subresource stack from the root registry entries down to the deepest
+## level, expanding Array[Resource] properties into one row per element along the way.
+## Returns row_id -> {resource, display_id}. A Resource property keeps its parent's row_id;
+## an Array element appends ":n" to it. row_id must be used as an opaque key, never
+## parsed back — the resource reference and display string are resolved once, here.
+func _resolve_subresource_leaves() -> Dictionary[StringName, Dictionary]:
+	var current: Array[Dictionary] = []
+	for uid in current_registry.get_all_uids():
+		if not RegistryIO.is_uid_valid(uid):
+			continue
+		var string_id := current_registry.get_string_id(uid)
+		current.append(
+			{
+				&"row_id": string_id,
+				&"resource": current_registry.load_entry(uid),
+				&"display_id": String(string_id),
+			}
+		)
+
+	for frame: SubresourceFrame in _subresource_stack:
+		var next: Array[Dictionary] = []
+		for item: Dictionary in current:
+			var parent_res: Resource = item[&"resource"]
+			if not parent_res or frame.property not in parent_res:
+				continue
+			var value: Variant = parent_res.get(frame.property)
+			if value is Array:
+				var arr: Array = value
+				for i in arr.size():
+					if arr[i] is not Resource:
+						continue
+					next.append(
+						{
+							&"row_id": StringName("%s:%d" % [item[&"row_id"], i]),
+							&"resource": arr[i],
+							&"display_id": "%s:%d" % [item[&"display_id"], i],
+						}
+					)
+			elif value is Resource:
+				next.append(
+					{
+						&"row_id": item[&"row_id"],
+						&"resource": value,
+						&"display_id": item[&"display_id"],
+					}
+				)
+		current = next
+
+	var result: Dictionary[StringName, Dictionary] = { }
+	for item: Dictionary in current:
+		result[item[&"row_id"]] = item
+	return result
+
+
+## True if this column's property is a Resource, or an Array[Resource]-like typed array,
+## and so can be expanded into a subresource table.
+static func _column_holds_subresources(column: DataTable.ColumnConfig) -> bool:
+	if column.type == TYPE_OBJECT and column.property_hint == PROPERTY_HINT_RESOURCE_TYPE:
+		return not column.hint_string.is_empty()
+	if column.type == TYPE_ARRAY and column.property_hint == PROPERTY_HINT_TYPE_STRING:
+		var element_class := column.hint_string.get_slice(":", 1) if ":" in column.hint_string else ""
+		return not element_class.is_empty() and ClassUtils.is_class_of(element_class, "Resource")
+	return false
+
+
+## Cache keys for property columns are namespaced by the current subresource path
+## ("weapon:attachments:damage") so a subresource property never collides with a root
+## property of the same name. UID and String ID stay unprefixed and shared across views.
+func _cache_key(column_id: StringName) -> StringName:
+	var path := _subresource_path()
+	return StringName("%s:%s" % [path, column_id]) if path else column_id
+
+
+func _subresource_path() -> String:
+	var parts: PackedStringArray = []
+	for frame: SubresourceFrame in _subresource_stack:
+		parts.append(frame.property)
+	return ":".join(parts)
+
+
+func _is_column_frozen(column_id: StringName) -> bool:
+	if column_id in [UID_COLUMN, STRINGID_COLUMN]:
+		return column_id in current_cache_data.frozen_columns
+	return _cache_key(column_id) in current_cache_data.frozen_columns
+
+
+func _update_subresource_bar_label() -> void:
+	var parts: PackedStringArray = []
+	for frame: SubresourceFrame in _subresource_stack:
+		parts.append(String(frame.property).capitalize())
+	subresource_bar_label.text = " > ".join(parts)
+
+
 func _edit_entry_property(
 	uid: StringName,
 	property: StringName,
@@ -492,6 +723,33 @@ func _edit_entry_property(
 		return
 
 	var res := load(uid)
+	var string_id := current_registry.get_string_id(uid)
+	_apply_property_edit(res, property, old_value, new_value, "%s—>%s" % [string_id, property])
+
+
+func _edit_subresource_property(
+	row_id: StringName,
+	column: StringName,
+	old_value: Variant,
+	new_value: Variant,
+) -> void:
+	var row_data: Dictionary = _subresource_rows.get(row_id, { })
+	if row_data.is_empty():
+		return
+	var res: Resource = row_data.get(&"resource")
+	if not res:
+		return
+	var display_id: String = row_data.get(&"display_id", "")
+	_apply_property_edit(res, column, old_value, new_value, "%s—>%s" % [display_id, column])
+
+
+func _apply_property_edit(
+	res: Resource,
+	property: StringName,
+	old_value: Variant,
+	new_value: Variant,
+	label: String,
+) -> void:
 	if not property in res:
 		YardLogger.error("Property %s not in resource" % property)
 		return
@@ -534,9 +792,8 @@ func _edit_entry_property(
 		)
 		return
 
-	var string_id := current_registry.get_string_id(uid)
 	var undo_redo := EditorInterface.get_editor_undo_redo()
-	undo_redo.create_action("Set %s—>%s" % [string_id, property])
+	undo_redo.create_action("Set %s" % label)
 	undo_redo.add_do_property(res, property, new_value)
 	undo_redo.add_undo_property(res, property, old_value)
 	undo_redo.add_undo_method(self, &"update_view")
@@ -650,7 +907,7 @@ func _unselect() -> void:
 
 
 func _on_drag_begin() -> void:
-	if not current_registry:
+	if not current_registry or is_in_subresource_view():
 		drag_and_drop_info_panel.visible = false
 		return
 	var drag_data: Variant = get_viewport().gui_get_drag_data()
@@ -664,17 +921,28 @@ func _on_drag_end() -> void:
 	focus_panel.hide()
 
 
-func _on_cell_selected(string_id: StringName, col: StringName) -> void:
-	if string_id != &"" and col != &"":
-		var cell_value: Variant = data_table.get_cell_value(string_id, col)
-		if cell_value is Resource:
-			_subresource_to_inspect = cell_value
-			_uid_resource_to_inspect = ""
-		else:
-			_subresource_to_inspect = null
-			var uid: StringName = current_registry.get_uid(string_id)
-			if RegistryIO.is_uid_valid(uid):
-				_uid_resource_to_inspect = uid
+func _on_cell_selected(row_id: StringName, col: StringName) -> void:
+	if row_id == &"" or col == &"":
+		return
+
+	var cell_value: Variant = data_table.get_cell_value(row_id, col)
+	if cell_value is Resource:
+		_subresource_to_inspect = cell_value
+		_uid_resource_to_inspect = ""
+		return
+
+	_subresource_to_inspect = null
+	if is_in_subresource_view():
+		var row_data: Dictionary = _subresource_rows.get(row_id, { })
+		var res: Resource = row_data.get(&"resource")
+		if res and not res.resource_path.is_empty():
+			_uid_resource_to_inspect = Compat.path_to_uid(res.resource_path)
+		elif res:
+			_subresource_to_inspect = res
+	else:
+		var uid: StringName = current_registry.get_uid(row_id)
+		if RegistryIO.is_uid_valid(uid):
+			_uid_resource_to_inspect = uid
 
 
 func _on_cell_right_selected(string_id: StringName, _col: StringName, _mouse_pos: Vector2) -> void:
@@ -687,20 +955,30 @@ func _on_multiple_rows_selected(_ids: Array[StringName]) -> void:
 
 
 func _on_cell_edited(
-	string_id: StringName,
+	row_id: StringName,
 	column: StringName,
 	old_value: Variant,
 	new_value: Variant,
 ) -> void:
+	if is_in_subresource_view():
+		if column == STRINGID_COLUMN:
+			YardLogger.warn(
+				"String ID is read-only in sub-resource view. Go back to the main view to rename entries."
+			)
+		else:
+			_edit_subresource_property(row_id, column, old_value, new_value)
+		update_view()
+		return
+
 	if column not in [UID_COLUMN, STRINGID_COLUMN]:
-		var uid := current_registry.get_uid(string_id)
+		var uid := current_registry.get_uid(row_id)
 		var property := column
 		if RegistryIO.is_uid_valid(uid):
 			_edit_entry_property(uid, property, old_value, new_value)
 	elif column == STRINGID_COLUMN and new_value:
-		RegistryIO.rename_entry(current_registry, string_id, new_value)
+		RegistryIO.rename_entry(current_registry, row_id, new_value)
 	elif column == UID_COLUMN and new_value:
-		var uid := current_registry.get_uid(string_id)
+		var uid := current_registry.get_uid(row_id)
 		RegistryIO.change_entry_uid(current_registry, uid, new_value)
 	update_view()
 
@@ -712,7 +990,7 @@ func _on_column_resized(column: StringName, new_width: float) -> void:
 		STRINGID_COLUMN:
 			current_cache_data.string_id_column_width = new_width
 		_:
-			current_cache_data.property_columns_widths[column] = new_width
+			current_cache_data.property_columns_widths[_cache_key(column)] = new_width
 
 	current_cache_data.save()
 
@@ -740,5 +1018,16 @@ func _on_edit_context_menu_about_to_popup() -> void:
 	_toggle_edit_context_menu_items()
 
 
+func _on_subresource_back_button_pressed() -> void:
+	_exit_subresource_view()
+
+
 func _on_footer_add_entry_requested(res: Resource, string_id: String, target_dir: String) -> void:
 	_add_entry_from_picker(res, string_id, target_dir)
+
+
+## One level of subresource table navigation: the property that was expanded,
+## and the column set resolved for the resources currently shown at that level.
+class SubresourceFrame:
+	var property: StringName
+	var columns_info: Array[Dictionary] = []
