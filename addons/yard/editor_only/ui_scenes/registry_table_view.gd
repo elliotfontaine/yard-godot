@@ -109,13 +109,6 @@ func _ready() -> void:
 					shortcut,
 				)
 
-	edit_context_menu.add_separator()
-	edit_context_menu.add_item(tr("Open Sub-resources"), EditMenuAction.OPEN_SUBRESOURCES)
-	edit_context_menu.set_item_icon(
-		edit_context_menu.item_count - 1,
-		get_theme_icon(&"ResourcePreloader", &"EditorIcons"),
-	)
-
 	var lighter_base_color := EditorThemeUtils.get_base_color(0.6)
 	drag_and_drop_info_panel.get_theme_stylebox(&"panel").bg_color = lighter_base_color
 	drag_and_drop_info_panel.get_theme_stylebox(&"panel").bg_color.a = 0.8
@@ -314,10 +307,6 @@ func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 	var in_subresource := is_in_subresource_view()
 	var cant_be_cut := col in [UID_COLUMN, STRINGID_COLUMN]
 	var is_cell_invalid: bool = not data_table.is_cell_valid(row, col)
-	var focused_column := data_table.get_column(col) if has_selected_cell else null
-	var can_open_subresources := (
-		focused_column != null and _column_holds_subresources(focused_column)
-	)
 	edit_menu.set_item_disabled(
 		edit_menu.get_item_index(EditMenuAction.DELETE_ENTRIES),
 		!has_selected_row or in_subresource,
@@ -349,10 +338,6 @@ func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 	edit_menu.set_item_disabled(
 		edit_menu.get_item_index(EditMenuAction.PASTE_TO_CELL),
 		!has_selected_cell or is_cell_invalid,
-	)
-	edit_menu.set_item_disabled(
-		edit_menu.get_item_index(EditMenuAction.OPEN_SUBRESOURCES),
-		!can_open_subresources,
 	)
 
 	for select_action: int in [
@@ -886,6 +871,29 @@ func _add_entry_from_picker(res: Resource, string_id: String, target_dir: String
 
 func _toggle_edit_context_menu_items() -> void:
 	toggle_edit_menu_items(edit_context_menu)
+	_update_subresource_menu_item()
+
+
+func _update_subresource_menu_item() -> void:
+	var col := data_table.focused_col
+	var focused_column := data_table.get_column(col) if col != &"" else null
+	var can_open := focused_column != null and _column_holds_subresources(focused_column)
+	var item_idx := edit_context_menu.get_item_index(EditMenuAction.OPEN_SUBRESOURCES)
+	var already_present := item_idx != -1
+
+	if can_open == already_present:
+		return
+
+	if can_open:
+		edit_context_menu.add_separator()
+		edit_context_menu.add_item(tr("Open Sub-resources"), EditMenuAction.OPEN_SUBRESOURCES)
+		edit_context_menu.set_item_icon(
+			edit_context_menu.item_count - 1,
+			get_theme_icon(&"Object", &"EditorIcons"),
+		)
+	else:
+		edit_context_menu.remove_item(item_idx)
+		edit_context_menu.remove_item(item_idx - 1) # the separator added alongside it
 
 
 func _delete_selected_entries() -> void:
