@@ -28,7 +28,6 @@ enum ColumnMenuAction {
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const Compat := Namespace.Compat
-const AnyIcon := Namespace.AnyIcon
 const RegistryIO := Namespace.RegistryIO
 const ClassUtils := Namespace.ClassUtils
 const ShortcutUtils := Namespace.ShortcutUtils
@@ -49,8 +48,6 @@ const ACTION_SHORTCUTS: Dictionary[EditMenuAction, String] = {
 const INVALID_UID := "uid://<invalid>"
 const STRINGID_COLUMN: StringName = &"string_id"
 const UID_COLUMN: StringName = &"uid"
-const AUTO_DIR_ID := -1
-const BROWSE_DIR_ID := -2
 
 var current_cache_data: RegistryCacheData
 var properties_column_info: Array[Dictionary]
@@ -59,44 +56,24 @@ var clipboard: Variant
 var current_registry: Registry:
 	set(new):
 		var is_another := new != current_registry
-		if is_another and current_registry:
-			_cache_add_entry_value(current_registry)
 		current_registry = new
 		current_cache_data = RegistryCacheData.load_or_default(new) if new else null
-		if current_cache_data:
-			_setup_add_entry()
+		footer.set_current_registry(current_registry)
 		if is_another:
 			data_table.clear_filter()
 			data_table.sort_column = STRINGID_COLUMN
 			data_table.sort_ascending = true
 		update_view()
 
-var toggle_button_forward := false:
-	set(forward):
-		var icon_name := &"Forward" if forward else &"Back"
-		toggle_registry_panel_button.icon = get_theme_icon(icon_name, &"EditorIcons")
-
-var _texture_rect_parent: Button
-var _add_entry_target_dir: String = ""
-var _add_entry_custom_dir: String = ""
-var _dir_dialog: EditorFileDialog
-var _res_picker: EditorResourcePicker
 var _uid_resource_to_inspect: String
 var _subresource_to_inspect: Resource
-var _add_entry_cache: Dictionary[String, Dictionary] = { }
 
 @onready var data_table: DataTable = %DataTable
-@onready var toggle_registry_panel_button: Button = %ToggleRegistryPanelButton
-@onready var add_entry_container: HBoxContainer = %AddEntryContainer
-@onready var resource_picker_container: PanelContainer = %ResourcePickerContainer
-@onready var add_entry_directory_container: PanelContainer = %AddEntryDirectoryContainer
-@onready var add_entry_directory_button: OptionButton = %AddEntryDirectoryButton
-@onready var entry_name_line_edit: LineEdit = %EntryNameLineEdit
-@onready var add_entry_button: Button = %AddEntryButton
 @onready var edit_context_menu: PopupMenu = %EditContextMenu
 @onready var delete_entries_confirmation_dialog := %DeleteEntriesConfirmationDialog
 @onready var drag_and_drop_info_panel: PanelContainer = %DragAndDropInfoPanel
 @onready var focus_panel: PanelContainer = %FocusPanel
+@onready var footer: HBoxContainer = %Footer
 
 
 func _ready() -> void:
@@ -110,14 +87,7 @@ func _ready() -> void:
 	data_table.cell_edited.connect(_on_cell_edited)
 	data_table.column_resized.connect(_on_column_resized)
 	data_table.multiple_rows_selected.connect(_on_multiple_rows_selected)
-	entry_name_line_edit.text_submitted.connect(_on_new_entry_text_submitted)
-	add_entry_directory_button.item_selected.connect(_on_add_entry_directory_button_item_selected)
-
-	_dir_dialog = EditorFileDialog.new()
-	_dir_dialog.access = EditorFileDialog.ACCESS_RESOURCES
-	_dir_dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_DIR
-	_dir_dialog.dir_selected.connect(_on_add_entry_dir_selected)
-	add_child(_dir_dialog)
+	footer.add_entry_requested.connect(_on_footer_add_entry_requested)
 
 	for action: EditMenuAction in ACTION_SHORTCUTS:
 		if edit_context_menu.get_item_index(action) != -1:
@@ -129,23 +99,10 @@ func _ready() -> void:
 					shortcut,
 				)
 
-	var editor_line_edit_stylebox := get_theme_stylebox(&"normal", &"LineEdit").duplicate()
-	for container: PanelContainer in [add_entry_directory_container, resource_picker_container]:
-		container.add_theme_stylebox_override(&"panel", editor_line_edit_stylebox)
-		container.get_theme_stylebox(&"panel").content_margin_bottom = 0
-		container.get_theme_stylebox(&"panel").content_margin_top = 0
-		container.get_theme_stylebox(&"panel").content_margin_left = 0
-		container.get_theme_stylebox(&"panel").content_margin_right = 0
-
-	drag_and_drop_info_panel.get_theme_stylebox(&"panel").bg_color = EditorThemeUtils.get_base_color(
-		0.6
-	)
+	var lighter_base_color := EditorThemeUtils.get_base_color(0.6)
+	drag_and_drop_info_panel.get_theme_stylebox(&"panel").bg_color = lighter_base_color
 	drag_and_drop_info_panel.get_theme_stylebox(&"panel").bg_color.a = 0.8
-	focus_panel.add_theme_stylebox_override(&"panel", get_theme_stylebox("Focus", "EditorStyles"))
-
-	var files_shortcut := ShortcutUtils.get_action_shortcut("toggle_registries_panel")
-	if files_shortcut:
-		toggle_registry_panel_button.shortcut = files_shortcut
+	focus_panel.add_theme_stylebox_override(&"panel", get_theme_stylebox(&"Focus", &"EditorStyles"))
 
 	grow_horizontal = Control.GROW_DIRECTION_END
 	grow_vertical = Control.GROW_DIRECTION_END
@@ -163,11 +120,6 @@ func _process(_delta: float) -> void:
 		elif _uid_resource_to_inspect:
 			EditorInterface.edit_resource(load(_uid_resource_to_inspect))
 			_uid_resource_to_inspect = ""
-
-	if _texture_rect_parent and _texture_rect_parent.custom_minimum_size != Vector2(1, 1):
-		# It's set by C++ code to enlarge the resource preview in the inspector.
-		# Since we want the bottom bar height to remain constant, we have to reset it.
-		_texture_rect_parent.custom_minimum_size = Vector2(1, 1)
 
 	if not get_viewport().gui_is_dragging():
 		drag_and_drop_info_panel.visible = current_registry and current_registry.is_empty()
@@ -248,7 +200,7 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 
 func update_view() -> void:
 	if not current_registry:
-		add_entry_container.visible = false
+		footer.toggle_add_entry_fields(false)
 		data_table.set_columns([])
 		data_table.set_data([], [])
 		return
@@ -260,7 +212,7 @@ func update_view() -> void:
 		focus_owner and (data_table == focus_owner or data_table.is_ancestor_of(focus_owner))
 	)
 
-	add_entry_container.visible = true
+	footer.toggle_add_entry_fields(true)
 
 	var resources: Dictionary[StringName, Resource] = current_registry.load_all_blocking()
 	set_columns_data(resources.values())
@@ -443,11 +395,6 @@ func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 		)
 
 
-## Discards the cached Add Entry value for a closed registry.
-func clear_add_entry_cache(uid: String) -> void:
-	_add_entry_cache.erase(uid)
-
-
 func _build_columns() -> Array[DataTable.ColumnConfig]:
 	var columns: Array[DataTable.ColumnConfig] = []
 
@@ -607,97 +554,16 @@ func _ask_confirm_delete_entries() -> void:
 	delete_entries_confirmation_dialog.show()
 
 
-func _setup_add_entry() -> void:
-	if _res_picker:
-		_res_picker.queue_free()
-	_res_picker = EditorResourcePicker.new()
-	_res_picker.custom_minimum_size = Vector2(240, 0)
-	_res_picker.base_type = "Resource"
-
-	var settings := RegistryIO.get_registry_settings(current_registry)
-	if settings.has_any_class_restriction():
-		var all_class_restrictions_usable_strings: PackedStringArray
-		for restriction in settings.get_all_class_restrictions():
-			if not RegistryIO.is_quoted_string(restriction):
-				all_class_restrictions_usable_strings.append(restriction)
-			else:
-				var script: Script = load(RegistryIO.unquote(restriction))
-				all_class_restrictions_usable_strings.append(ClassUtils.get_type_name(script))
-		if not all_class_restrictions_usable_strings.is_empty():
-			_res_picker.base_type = ",".join(all_class_restrictions_usable_strings)
-
-	resource_picker_container.add_child(_res_picker)
-	_texture_rect_parent = _res_picker.get_child(0)
-	_res_picker.resource_changed.connect(_on_res_picker_resource_changed)
-	_res_picker.resource_selected.connect(_on_res_picker_resource_selected)
-
-	var uid := Compat.path_to_uid(current_registry.resource_path)
-	var cached: Dictionary = _add_entry_cache.get(uid, { })
-	entry_name_line_edit.text = cached.get(&"string_id", "")
-	_res_picker.edited_resource = cached.get(&"resource", null)
-
-	var cached_dir: String = cached.get(&"directory", "")
-	_add_entry_target_dir = cached_dir
-	_add_entry_custom_dir = (
-		cached_dir
-		if (cached_dir and cached_dir not in settings.get_all_scan_directories())
-		else ""
-	)
-
-	_rebuild_add_entry_directory_options()
-	_toggle_add_entry_button()
-
-
-func _rebuild_add_entry_directory_options() -> void:
-	add_entry_directory_button.clear()
-	add_entry_directory_button.add_item(tr("Auto (registry file location)"))
-	add_entry_directory_button.set_item_id(0, AUTO_DIR_ID)
-
-	var scan_dirs := RegistryIO.get_registry_settings(current_registry).get_all_scan_directories()
-	for dir in scan_dirs:
-		add_entry_directory_button.add_item(dir)
-	if _add_entry_custom_dir and _add_entry_custom_dir not in scan_dirs:
-		add_entry_directory_button.add_item(_add_entry_custom_dir)
-
-	add_entry_directory_button.add_separator()
-
-	var popup := add_entry_directory_button.get_popup()
-	var browse_idx := add_entry_directory_button.item_count
-	add_entry_directory_button.add_icon_item(AnyIcon.get_icon(&"FolderBrowse"), tr("Browse"))
-	add_entry_directory_button.set_item_id(browse_idx, BROWSE_DIR_ID)
-	popup.set_item_as_radio_checkable(browse_idx, false)
-
-	var target_idx := 0
-	for i in add_entry_directory_button.item_count:
-		var id := add_entry_directory_button.get_item_id(i)
-		if (
-			id not in [AUTO_DIR_ID, BROWSE_DIR_ID]
-			and add_entry_directory_button.get_item_text(i) == _add_entry_target_dir
-		):
-			target_idx = i
-			break
-	add_entry_directory_button.select(target_idx)
-
-
-func _cache_add_entry_value(registry: Registry) -> void:
-	var uid := Compat.path_to_uid(registry.resource_path)
-	_add_entry_cache[uid] = {
-		&"string_id": entry_name_line_edit.text,
-		&"resource": _res_picker.edited_resource if _res_picker else null,
-		&"directory": _add_entry_target_dir,
-	}
-
-
-func _add_entry_from_picker(res: Resource, string_id: String) -> void:
+func _add_entry_from_picker(res: Resource, string_id: String, target_dir: String) -> void:
 	var res_is_file := res.resource_path and ResourceLoader.exists(res.resource_path)
 	string_id = string_id.strip_edges()
 	if not res_is_file:
-		var target_dir := (
-			_add_entry_target_dir
-			if _add_entry_target_dir
+		var chosen_dir := (
+			target_dir
+			if target_dir
 			else current_registry.resource_path.get_base_dir()
 		)
-		var save_path := target_dir.path_join(string_id + ".tres")
+		var save_path := chosen_dir.path_join(string_id + ".tres")
 		if ResourceLoader.exists(save_path):
 			YardLogger.error(
 				"A file already exists at '%s'. Choose a different String ID or save the resource manually first."
@@ -717,9 +583,8 @@ func _add_entry_from_picker(res: Resource, string_id: String) -> void:
 	match adding_status:
 		OK:
 			if res_is_file:
-				_res_picker.edited_resource = null
-			entry_name_line_edit.text = ""
-			_toggle_add_entry_button()
+				footer.clear_resource_picker()
+			footer.clear_string_id_line_edit()
 			update_view()
 			registry_changed.emit()
 		ERR_ALREADY_EXISTS:
@@ -734,12 +599,6 @@ func _add_entry_from_picker(res: Resource, string_id: String) -> void:
 			YardLogger.error("This resource doesn't match the registry class restriction.")
 		_:
 			YardLogger.error("Failed to add entry to the registry.")
-
-
-func _toggle_add_entry_button() -> void:
-	add_entry_button.disabled = !(
-		_res_picker and _res_picker.edited_resource and entry_name_line_edit.text
-	)
 
 
 func _toggle_edit_context_menu_items() -> void:
@@ -873,37 +732,6 @@ func _on_edit_context_menu_id_pressed(id: int) -> void:
 	do_edit_menu_action(id)
 
 
-func _on_entry_name_line_edit_text_changed(_new_text: String) -> void:
-	_toggle_add_entry_button()
-
-
-func _on_res_picker_resource_changed(_new_resource: Resource) -> void:
-	_toggle_add_entry_button()
-
-
-func _on_res_picker_resource_selected(resource: Resource, inspect: bool) -> void:
-	if inspect:
-		EditorInterface.edit_resource(resource)
-
-
-func _on_add_entry_directory_button_item_selected(index: int) -> void:
-	match add_entry_directory_button.get_item_id(index):
-		AUTO_DIR_ID:
-			_add_entry_target_dir = ""
-		BROWSE_DIR_ID:
-			_dir_dialog.current_dir = _add_entry_target_dir if _add_entry_target_dir else "res://"
-			_dir_dialog.popup_file_dialog()
-			_rebuild_add_entry_directory_options() # revert selection until a dir is actually picked
-		_:
-			_add_entry_target_dir = add_entry_directory_button.get_item_text(index)
-
-
-func _on_add_entry_dir_selected(dir: String) -> void:
-	_add_entry_custom_dir = dir
-	_add_entry_target_dir = dir
-	_rebuild_add_entry_directory_options()
-
-
 func _on_delete_entries_confirmation_dialog_confirmed() -> void:
 	_delete_selected_entries()
 
@@ -912,13 +740,5 @@ func _on_edit_context_menu_about_to_popup() -> void:
 	_toggle_edit_context_menu_items()
 
 
-func _on_new_entry_text_submitted(_new_text: String) -> void:
-	_on_add_entry_button_pressed()
-
-
-func _on_add_entry_button_pressed() -> void:
-	_toggle_add_entry_button()
-	if add_entry_button.disabled:
-		return
-
-	_add_entry_from_picker(_res_picker.edited_resource, entry_name_line_edit.text)
+func _on_footer_add_entry_requested(res: Resource, string_id: String, target_dir: String) -> void:
+	_add_entry_from_picker(res, string_id, target_dir)

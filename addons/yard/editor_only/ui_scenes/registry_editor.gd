@@ -105,7 +105,7 @@ func _ready() -> void:
 	columns_menu_button.get_popup().window_input.connect(_on_columns_menu_window_input)
 	columns_menu_button.get_popup().hide_on_checkable_item_selection = false
 	registries_itemlist.registries_dropped.connect(_on_itemlist_registries_dropped)
-	registry_table_view.toggle_registry_panel_button.pressed.connect(_on_toggle_registries_pressed)
+	registry_table_view.footer.registry_panel_toggled.connect(_on_footer_registry_panel_toggled)
 	registry_table_view.registry_changed.connect(_on_registry_table_view_registry_changed)
 	new_registry_dialog.settings_saved.connect(_on_new_registry_dialog_settings_saved)
 
@@ -848,9 +848,8 @@ func _on_registry_settings_button_pressed() -> void:
 	new_registry_dialog.popup_with_state(new_registry_dialog.RegistryDialogState.REGISTRY_SETTINGS)
 
 
-func _on_toggle_registries_pressed() -> void:
-	registries_container.visible = !registries_container.visible
-	registry_table_view.toggle_button_forward = !registries_container.visible
+func _on_footer_registry_panel_toggled(toggled_on: bool) -> void:
+	registries_container.visible = toggled_on
 
 
 func _on_registry_table_view_registry_changed() -> void:

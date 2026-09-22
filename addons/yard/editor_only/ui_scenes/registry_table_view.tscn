@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://tahli441tq7q" path="res://addons/yard/editor_only/ui_scenes/registry_table_view.gd" id="1_isv8r"]
 [ext_resource type="Script" uid="uid://0fmlvbrxn2lf" path="res://addons/yard/editor_only/classes/editor_icon_controls/editor_icon_popup_menu.gd" id="2_8g0vx"]
 [ext_resource type="Script" uid="uid://d25c0lxjdxouk" path="res://addons/yard/editor_only/classes/data_table/data_table.gd" id="2_wsykm"]
-[ext_resource type="Script" uid="uid://djrr6b7fc76rw" path="res://addons/yard/editor_only/classes/editor_icon_controls/editor_icon_button.gd" id="3_5vsn3"]
+[ext_resource type="PackedScene" uid="uid://ew8kojkf6l4i" path="res://addons/yard/editor_only/ui_scenes/components/footer.tscn" id="4_p6h1j"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5vsn3"]
 
@@ -40,20 +40,6 @@ border_width_bottom = 2
 corner_detail = 1
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_p6h1j"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3v8u8"]
-content_margin_left = 0.0
-content_margin_top = 0.0
-content_margin_right = 0.0
-content_margin_bottom = 0.0
-bg_color = Color(0.1, 0.1, 0.1, 0.6)
-border_width_bottom = 2
-border_color = Color(0, 0, 0, 0.6)
-corner_radius_top_left = 3
-corner_radius_top_right = 3
-corner_radius_bottom_right = 3
-corner_radius_bottom_left = 3
-corner_detail = 5
 
 [node name="RegistryTableView" type="PanelContainer" unique_id=1120767594]
 clip_contents = true
@@ -165,58 +151,10 @@ text = "Drop resource files here to add them to the registry."
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_p6h1j")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/PanelContainer" unique_id=611480797]
-layout_mode = 2
-
-[node name="ToggleRegistryPanelButton" type="Button" parent="VBoxContainer/PanelContainer/HBoxContainer" unique_id=1059584425]
+[node name="Footer" parent="VBoxContainer/PanelContainer" unique_id=1668691582 instance=ExtResource("4_p6h1j")]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"FlatButton"
-script = ExtResource("3_5vsn3")
-icon_name = "Back"
-
-[node name="AddEntryContainer" type="HBoxContainer" parent="VBoxContainer/PanelContainer/HBoxContainer" unique_id=745452749]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 8
-alignment = 2
-
-[node name="AddEntryDirectoryContainer" type="PanelContainer" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer" unique_id=254528879]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="AddEntryDirectoryButton" type="OptionButton" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer/AddEntryDirectoryContainer" unique_id=1367429751]
-unique_name_in_owner = true
-layout_mode = 2
-tooltip_text = "Directory where new unsaved resources will be created."
-flat = true
-alignment = 2
-fit_to_longest_item = false
-
-[node name="ResourcePickerContainer" type="PanelContainer" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer" unique_id=717520273]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_3v8u8")
-
-[node name="EntryNameLineEdit" type="LineEdit" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer" unique_id=1083600158]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(200, 0)
-layout_mode = 2
-placeholder_text = "String ID"
-keep_editing_on_text_submit = true
-
-[node name="AddEntryButton" type="Button" parent="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer" unique_id=1232513562]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Add Entry"
-icon_alignment = 2
-script = ExtResource("3_5vsn3")
-icon_name = "Add"
 
 [connection signal="about_to_popup" from="EditContextMenu" to="." method="_on_edit_context_menu_about_to_popup"]
 [connection signal="id_pressed" from="EditContextMenu" to="." method="_on_edit_context_menu_id_pressed"]
 [connection signal="confirmed" from="DeleteEntriesConfirmationDialog" to="." method="_on_delete_entries_confirmation_dialog_confirmed"]
-[connection signal="text_changed" from="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer/EntryNameLineEdit" to="." method="_on_entry_name_line_edit_text_changed"]
-[connection signal="pressed" from="VBoxContainer/PanelContainer/HBoxContainer/AddEntryContainer/AddEntryButton" to="." method="_on_add_entry_button_pressed"]

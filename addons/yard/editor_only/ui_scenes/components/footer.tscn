@@ -1,0 +1,55 @@
+[gd_scene format=3 uid="uid://ew8kojkf6l4i"]
+
+[ext_resource type="Script" uid="uid://djrr6b7fc76rw" path="res://addons/yard/editor_only/classes/editor_icon_controls/editor_icon_button.gd" id="1_snygc"]
+[ext_resource type="Script" uid="uid://dgb6eltsvkqy7" path="res://addons/yard/editor_only/ui_scenes/components/footer.gd" id="1_uesf6"]
+
+[node name="Footer" type="HBoxContainer" unique_id=1668691582]
+offset_right = 8.0
+offset_bottom = 8.0
+script = ExtResource("1_uesf6")
+
+[node name="ToggleRegistryPanelButton" type="Button" parent="." unique_id=2119854184]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"FlatButton"
+script = ExtResource("1_snygc")
+icon_name = "Back"
+
+[node name="AddEntryContainer" type="HBoxContainer" parent="." unique_id=1971291344]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+alignment = 2
+
+[node name="AddEntryDirectoryContainer" type="PanelContainer" parent="AddEntryContainer" unique_id=272720113]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="AddEntryDirectoryButton" type="OptionButton" parent="AddEntryContainer/AddEntryDirectoryContainer" unique_id=787364854]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Directory where new unsaved resources will be created."
+flat = true
+alignment = 2
+fit_to_longest_item = false
+
+[node name="ResourcePickerContainer" type="PanelContainer" parent="AddEntryContainer" unique_id=2075459945]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="EntryNameLineEdit" type="LineEdit" parent="AddEntryContainer" unique_id=1621309724]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+placeholder_text = "String ID"
+keep_editing_on_text_submit = true
+
+[node name="AddEntryButton" type="Button" parent="AddEntryContainer" unique_id=1543369100]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Add Entry"
+icon_alignment = 2
+script = ExtResource("1_snygc")
+icon_name = "Add"
