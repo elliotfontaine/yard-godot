@@ -519,10 +519,10 @@ func _populate_columns_popup_menu() -> void:
 	_add_column_submenu_item(popup, STRINGID_COLUMN, tr("String ID"), { })
 	_add_column_submenu_item(popup, UID_COLUMN, tr("UID"), { })
 
-	if not registry_table_view.properties_column_info:
+	if not registry_table_view.root_properties_column_info:
 		return
 
-	for prop: Dictionary in registry_table_view.properties_column_info:
+	for prop: Dictionary in registry_table_view.root_properties_column_info:
 		var prop_name: StringName = prop[&"name"]
 		if ClassUtils.is_class_property(prop):
 			if prop_name not in [&"Resource", &"RefCounted"]:
@@ -538,7 +538,7 @@ func _populate_columns_popup_menu() -> void:
 			_add_column_submenu_item(popup, prop_name, prop_name.capitalize(), prop)
 
 	popup.add_separator("Resource/RefCounted")
-	for prop: Dictionary in registry_table_view.properties_column_info:
+	for prop: Dictionary in registry_table_view.root_properties_column_info:
 		if prop[&"name"] in BUILTIN_RESOURCE_PROPERTIES:
 			_add_column_submenu_item(popup, prop[&"name"], String(prop[&"name"]).capitalize(), prop)
 
