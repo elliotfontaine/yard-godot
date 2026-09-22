@@ -23,11 +23,6 @@ enum DownloadResult {
 	SUCCESS,
 	FAILURE,
 }
-enum ReleaseState {
-	ALPHA,
-	BETA,
-	STABLE,
-}
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const YardLogger := Namespace.YardLogger
@@ -41,7 +36,6 @@ const MAX_UPDATE_CHECK_ATTEMPTS := 3
 const RETRY_DELAY_SECONDS := 1.0
 
 var update_info: Dictionary
-var current_info: Dictionary
 
 var _update_check_attempts_left := 0
 
@@ -86,65 +80,96 @@ func request_update_download() -> void:
 	_download_request.request(update_info.zipball_url)
 
 
-func get_release_tag_info(release_tag: String) -> Dictionary:
-	release_tag = release_tag.strip_edges().trim_prefix('v')
-	release_tag = release_tag.substr(0, release_tag.find('('))
-	release_tag = release_tag.to_lower()
+## Parses a SemVer 2.0.0 tag (an optional leading "v"/"V" is stripped first,
+## since that's how git tags for this repo are named, e.g. "v1.2.0-beta.1").
+## Returns {} if the tag isn't valid SemVer. See https://semver.org/
+func parse_semver(tag: String) -> Dictionary:
+	tag = tag.strip_edges().trim_prefix('v').trim_prefix('V')
 
 	var regex := RegEx.create_from_string(
-		r"^(?<major>\d+)\.(?<minor>\d+)(-(?<state>alpha|beta)-(?<stateversion>\d+))?(\.(?<patch>\d+))?"
+		r"^(?<major>0|[1-9]\d*)\.(?<minor>0|[1-9]\d*)\.(?<patch>0|[1-9]\d*)(?:-(?<prerelease>[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+(?<build>[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$"
 	)
 
-	var result: RegExMatch = regex.search(release_tag)
-	if !result:
+	var result: RegExMatch = regex.search(tag)
+	if not result:
 		return { }
 
-	var info: Dictionary = { 'tag': release_tag }
-	info['major'] = int(result.get_string('major'))
-	info['minor'] = int(result.get_string('minor'))
-	info['patch'] = int(result.get_string('patch'))
+	var prerelease_str := result.get_string('prerelease')
 
-	match result.get_string('state'):
-		'alpha':
-			info['state'] = ReleaseState.ALPHA
-		'beta':
-			info['state'] = ReleaseState.BETA
-		_:
-			info['state'] = ReleaseState.STABLE
-
-	info['state_version'] = int(result.get_string('stateversion'))
-
-	return info
+	return {
+		'tag': tag,
+		'major': int(result.get_string('major')),
+		'minor': int(result.get_string('minor')),
+		'patch': int(result.get_string('patch')),
+		# Empty array means "no pre-release identifiers", i.e. a final release.
+		# Build metadata (the "+..." suffix) is parsed but never used below:
+		# SemVer explicitly excludes it from precedence comparisons.
+		'prerelease': prerelease_str.split('.') if prerelease_str else [],
+	}
 
 
-## Returns true if `release` is strictly newer than `current_release_info`.
-## As a side effect, caches the exact match for `current_release_info` in
-## `current_info` so the "you are up to date" popup can show its changelog.
-func compare_versions(release: Dictionary, current_release_info: Dictionary) -> bool:
-	var checked_release_info := get_release_tag_info(release.tag_name)
-	if checked_release_info.is_empty():
-		return false
+## Returns true if `a` has strictly higher SemVer 2.0.0 precedence than `b`.
+## See https://semver.org/#spec-item-11
+func is_version_newer(a: Dictionary, b: Dictionary) -> bool:
+	if a.major != b.major:
+		return a.major > b.major
+	if a.minor != b.minor:
+		return a.minor > b.minor
+	if a.patch != b.patch:
+		return a.patch > b.patch
 
-	if checked_release_info.major != current_release_info.major:
-		return checked_release_info.major > current_release_info.major
+	var a_prerelease: Array = a.prerelease
+	var b_prerelease: Array = b.prerelease
 
-	if checked_release_info.minor != current_release_info.minor:
-		return checked_release_info.minor > current_release_info.minor
+	# A version without a pre-release has higher precedence than one with,
+	# for an otherwise identical major.minor.patch (covers the "both empty",
+	# i.e. equal, case too since size() > size() is then false).
+	if a_prerelease.is_empty() or b_prerelease.is_empty():
+		return b_prerelease.size() > a_prerelease.size()
 
-	if checked_release_info.state != current_release_info.state:
-		return checked_release_info.state > current_release_info.state
+	for i in range(min(a_prerelease.size(), b_prerelease.size())):
+		var cmp := _compare_prerelease_identifiers(a_prerelease[i], b_prerelease[i])
+		if cmp != 0:
+			return cmp > 0
 
-	if checked_release_info.state == ReleaseState.STABLE:
-		if checked_release_info.patch != current_release_info.patch:
-			return checked_release_info.patch > current_release_info.patch
-		current_info = release
-		return false
+	# All shared identifiers are equal: the longer set has higher precedence.
+	return a_prerelease.size() > b_prerelease.size()
 
-	if checked_release_info.state_version != current_release_info.state_version:
-		return checked_release_info.state_version > current_release_info.state_version
 
-	current_info = release
-	return false
+## Compares two dot-separated pre-release identifiers per SemVer rule 11:
+## numeric identifiers compare numerically, alphanumeric identifiers compare
+## lexically (ASCII order), and numeric identifiers always have lower
+## precedence than alphanumeric ones. Returns -1, 0 or 1.
+func _compare_prerelease_identifiers(a: String, b: String) -> int:
+	var a_is_numeric := a.is_valid_int()
+	var b_is_numeric := b.is_valid_int()
+
+	if a_is_numeric and b_is_numeric:
+		var a_num := a.to_int()
+		var b_num := b.to_int()
+		if a_num == b_num:
+			return 0
+		return -1 if a_num < b_num else 1
+
+	if a_is_numeric != b_is_numeric:
+		return -1 if a_is_numeric else 1 # numeric identifiers sort lower
+
+	if a == b:
+		return 0
+	return -1 if a < b else 1
+
+
+## Finds the fetched release whose tag has the exact same SemVer precedence
+## as `target`, or an empty dict if none matches (e.g. a local/unreleased
+## build that isn't exactly any published tag).
+func _find_matching_release(releases: Array, target: Dictionary) -> Dictionary:
+	for release: Dictionary in releases:
+		var release_info := parse_semver(release.tag_name)
+		if release_info.is_empty():
+			continue
+		if not is_version_newer(release_info, target) and not is_version_newer(target, release_info):
+			return release
+	return { }
 
 
 func _on_update_check_request_completed(
@@ -167,15 +192,22 @@ func _on_update_check_request_completed(
 		update_check_completed.emit(UpdateCheckResult.NO_ACCESS)
 		return
 
-	var current_release_info := get_release_tag_info(get_current_version())
+	var releases: Array = response
+	var current_release_info := parse_semver(get_current_version())
 
 	# GitHub releases are in order of creation, not order of version
-	var versions: Array = (response as Array).filter(compare_versions.bind(current_release_info))
-	if versions.size() > 0:
-		update_info = versions[0]
+	var newer_releases := releases.filter(
+		func(release: Dictionary) -> bool:
+			var release_info := parse_semver(release.tag_name)
+			return (
+				not release_info.is_empty() and is_version_newer(release_info, current_release_info)
+			),
+	)
+	if newer_releases.size() > 0:
+		update_info = newer_releases[0]
 		update_check_completed.emit(UpdateCheckResult.UPDATE_AVAILABLE)
 	else:
-		update_info = current_info
+		update_info = _find_matching_release(releases, current_release_info)
 		update_check_completed.emit(UpdateCheckResult.UP_TO_DATE)
 
 

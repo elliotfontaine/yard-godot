@@ -925,12 +925,7 @@ func _on_update_manager_update_check_completed(result: UpdateManager.UpdateCheck
 	version_button.add_theme_color_override(&"font_pressed_color", color)
 	version_button.add_theme_color_override(&"font_focus_color", color)
 
-	var info := (
-		update_manager.update_info
-		if result == UpdateManager.UpdateCheckResult.UPDATE_AVAILABLE
-		else update_manager.current_info
-	)
-	update_install_window.load_info(info, result)
+	update_install_window.load_info(update_manager.update_info, result)
 
 
 func _on_resources_reimported(_resources: Array) -> void:
