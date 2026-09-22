@@ -519,7 +519,6 @@ func _reset_table_navigation() -> void:
 
 func _update_root_view() -> void:
 	subresource_bar.visible = false
-	footer.visible = true
 	footer.toggle_add_entry_fields(true)
 
 	var saved_sort_col := data_table.sort_column
@@ -576,8 +575,8 @@ func _update_root_view() -> void:
 
 
 func _update_subresource_view() -> void:
-	footer.visible = false
 	subresource_bar.visible = true
+	footer.toggle_add_entry_fields(false)
 	_update_subresource_bar_label()
 
 	var saved_sort_col := data_table.sort_column
