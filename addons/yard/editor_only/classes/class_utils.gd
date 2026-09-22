@@ -184,7 +184,7 @@ static func get_class_name_or_path_from_prop(property_info: Dictionary) -> Strin
 static func is_class_property(property_info: Dictionary) -> bool:
 	return (
 		property_info[&"name"] != "" and property_info[&"type"] == TYPE_NIL
-		and property_info[&"usage"] & (PROPERTY_USAGE_CATEGORY | PROPERTY_USAGE_GROUP) != 0
+		and property_info[&"usage"] & PROPERTY_USAGE_CATEGORY != 0
 		and property_info[&"hint_string"] != ""
 	)
 
