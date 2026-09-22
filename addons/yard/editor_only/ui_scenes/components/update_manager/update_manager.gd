@@ -35,8 +35,15 @@ const YardLogger := Namespace.YardLogger
 const REMOTE_RELEASES_URL := "https://api.github.com/repos/elliotfontaine/yard-godot/releases"
 const TEMP_FILE_NAME := "user://yard_update.zip"
 
+# The very first HTTPRequest fired right as the editor boots can fail (DNS/TLS not warmed up yet)
+# even with a working connection. This avoids reporting a false NO_ACCESS.
+const MAX_UPDATE_CHECK_ATTEMPTS := 3
+const RETRY_DELAY_SECONDS := 1.0
+
 var update_info: Dictionary
 var current_info: Dictionary
+
+var _update_check_attempts_left := 0
 
 @onready var _update_check_request: HTTPRequest = $UpdateCheckRequest
 @onready var _download_request: HTTPRequest = $DownloadRequest
@@ -49,8 +56,22 @@ func get_current_version() -> String:
 
 
 func request_update_check() -> void:
+	_update_check_attempts_left = MAX_UPDATE_CHECK_ATTEMPTS
+	_start_update_check_request()
+
+
+func _start_update_check_request() -> void:
 	if _update_check_request.get_http_client_status() == HTTPClient.STATUS_DISCONNECTED:
+		_update_check_attempts_left -= 1
 		_update_check_request.request(REMOTE_RELEASES_URL)
+
+
+func _retry_update_check_or_give_up() -> bool:
+	if _update_check_attempts_left <= 0:
+		return false
+	await get_tree().create_timer(RETRY_DELAY_SECONDS).timeout
+	_start_update_check_request()
+	return true
 
 
 func request_update_download() -> void:
@@ -71,7 +92,7 @@ func get_release_tag_info(release_tag: String) -> Dictionary:
 	release_tag = release_tag.to_lower()
 
 	var regex := RegEx.create_from_string(
-		r"(?<major>\d+\.\d+)(-(?<state>alpha|beta)-)?(?(2)(?<stateversion>\d*)|\.(?<minor>\d*))?"
+		r"^(?<major>\d+)\.(?<minor>\d+)(-(?<state>alpha|beta)-(?<stateversion>\d+))?(\.(?<patch>\d+))?"
 	)
 
 	var result: RegExMatch = regex.search(release_tag)
@@ -79,8 +100,9 @@ func get_release_tag_info(release_tag: String) -> Dictionary:
 		return { }
 
 	var info: Dictionary = { 'tag': release_tag }
-	info['major'] = float(result.get_string('major'))
+	info['major'] = int(result.get_string('major'))
 	info['minor'] = int(result.get_string('minor'))
+	info['patch'] = int(result.get_string('patch'))
 
 	match result.get_string('state'):
 		'alpha':
@@ -95,32 +117,34 @@ func get_release_tag_info(release_tag: String) -> Dictionary:
 	return info
 
 
+## Returns true if `release` is strictly newer than `current_release_info`.
+## As a side effect, caches the exact match for `current_release_info` in
+## `current_info` so the "you are up to date" popup can show its changelog.
 func compare_versions(release: Dictionary, current_release_info: Dictionary) -> bool:
 	var checked_release_info := get_release_tag_info(release.tag_name)
-
-	if checked_release_info.major < current_release_info.major:
+	if checked_release_info.is_empty():
 		return false
 
-	if checked_release_info.minor < current_release_info.minor:
+	if checked_release_info.major != current_release_info.major:
+		return checked_release_info.major > current_release_info.major
+
+	if checked_release_info.minor != current_release_info.minor:
+		return checked_release_info.minor > current_release_info.minor
+
+	if checked_release_info.state != current_release_info.state:
+		return checked_release_info.state > current_release_info.state
+
+	if checked_release_info.state == ReleaseState.STABLE:
+		if checked_release_info.patch != current_release_info.patch:
+			return checked_release_info.patch > current_release_info.patch
+		current_info = release
 		return false
 
-	if checked_release_info.state < current_release_info.state:
-		return false
+	if checked_release_info.state_version != current_release_info.state_version:
+		return checked_release_info.state_version > current_release_info.state_version
 
-	elif checked_release_info.state == current_release_info.state:
-		if checked_release_info.state_version < current_release_info.state_version:
-			return false
-
-		if checked_release_info.state_version == current_release_info.state_version:
-			current_info = release
-			return false
-
-		if checked_release_info.state == ReleaseState.STABLE:
-			if checked_release_info.minor == current_release_info.minor:
-				current_info = release
-				return false
-
-	return true
+	current_info = release
+	return false
 
 
 func _on_update_check_request_completed(
@@ -130,12 +154,16 @@ func _on_update_check_request_completed(
 	body: PackedByteArray,
 ) -> void:
 	if result != HTTPRequest.RESULT_SUCCESS:
+		if await _retry_update_check_or_give_up():
+			return
 		update_check_completed.emit(UpdateCheckResult.NO_ACCESS)
 		return
 
 	# Work out the next version from the releases information on GitHub
 	var response: Variant = JSON.parse_string(body.get_string_from_utf8())
 	if typeof(response) != TYPE_ARRAY:
+		if await _retry_update_check_or_give_up():
+			return
 		update_check_completed.emit(UpdateCheckResult.NO_ACCESS)
 		return
 

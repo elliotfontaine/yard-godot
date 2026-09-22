@@ -920,10 +920,10 @@ func _on_update_manager_update_check_completed(result: UpdateManager.UpdateCheck
 				&"EditorIcons",
 			)
 
-	version_button.add_theme_color_override("font_color", color)
-	version_button.add_theme_color_override("font_hover_color", color.lightened(0.5))
-	version_button.add_theme_color_override("font_pressed_color", color)
-	version_button.add_theme_color_override("font_focus_color", color)
+	version_button.add_theme_color_override(&"font_color", color)
+	version_button.add_theme_color_override(&"font_hover_color", color.lightened(0.5))
+	version_button.add_theme_color_override(&"font_pressed_color", color)
+	version_button.add_theme_color_override(&"font_focus_color", color)
 
 	var info := (
 		update_manager.update_info
