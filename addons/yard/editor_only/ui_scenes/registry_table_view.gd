@@ -52,7 +52,9 @@ const UID_COLUMN: StringName = &"uid"
 
 var current_cache_data: RegistryCacheData
 var clipboard: Variant
-var root_properties_column_info: Array[Dictionary]
+var properties_column_info: Array[Dictionary]:
+	get:
+		return _subresource_stack.back().columns_info if is_in_subresource_view() else _root_properties_column_info
 var current_registry: Registry:
 	set(new):
 		var is_another := new != current_registry
@@ -70,6 +72,7 @@ var current_registry: Registry:
 var _subresource_stack: Array[SubresourceFrame] = []
 ## Rows currently shown by the deepest subresource frame: row_id -> {resource, display_id}.
 var _subresource_rows: Dictionary[StringName, Dictionary] = { }
+var _root_properties_column_info: Array[Dictionary]
 var _uid_resource_to_inspect: String
 var _subresource_to_inspect: Resource
 
@@ -282,13 +285,11 @@ func do_edit_menu_action(action_id: int) -> void:
 
 
 func is_column_disabled(column_id: StringName) -> bool:
-	if column_id in [UID_COLUMN, STRINGID_COLUMN]:
-		return column_id in current_cache_data.disabled_columns
-	return _cache_key(column_id) in current_cache_data.disabled_columns
+	return resolve_column_storage_key(column_id) in current_cache_data.disabled_columns
 
 
 func set_columns_data(resources: Array[Resource]) -> void:
-	root_properties_column_info = _compute_columns_info(resources)
+	_root_properties_column_info = _compute_columns_info(resources)
 
 
 func get_resource_row_data(
@@ -415,7 +416,7 @@ func _build_columns(
 		)
 		string_id_column.custom_font_color = get_theme_color(&"accent_color", &"Editor")
 		string_id_column.h_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		string_id_column.frozen = _is_column_frozen(STRINGID_COLUMN)
+		string_id_column.frozen = is_column_frozen(STRINGID_COLUMN)
 		columns.append(string_id_column)
 
 	if include_uid and not is_column_disabled(UID_COLUMN):
@@ -426,7 +427,7 @@ func _build_columns(
 		)
 		uid_column.custom_font_color = get_theme_color(&"disabled_font_color", &"Editor")
 		uid_column.property_hint = PROPERTY_HINT_FILE
-		uid_column.frozen = _is_column_frozen(UID_COLUMN)
+		uid_column.frozen = is_column_frozen(UID_COLUMN)
 		columns.append(uid_column)
 
 	for prop in columns_info:
@@ -440,7 +441,7 @@ func _build_columns(
 		var hint_string: String = prop[&"hint_string"]
 		var class_string: String = prop[&"class_name"]
 		var column := DataTable.ColumnConfig.new(prop_name, prop_header, prop_type)
-		column.frozen = _is_column_frozen(column.identifier)
+		column.frozen = is_column_frozen(column.identifier)
 
 		if hint:
 			column.property_hint = hint
@@ -540,15 +541,18 @@ func _update_root_view() -> void:
 		if RegistryIO.is_uid_valid(uid):
 			entry_data.set(UID_COLUMN, uid)
 			entry_data.merge(
-				get_resource_row_data(current_registry.load_entry(uid), root_properties_column_info)
+				get_resource_row_data(
+					current_registry.load_entry(uid),
+					_root_properties_column_info,
+				)
 			)
 		else:
 			entry_data.set(UID_COLUMN, INVALID_UID)
-			entry_data.merge(get_resource_row_data(null, root_properties_column_info))
+			entry_data.merge(get_resource_row_data(null, _root_properties_column_info))
 		rows.append(entry_data)
 		row_ids.append(string_id)
 
-	data_table.set_columns(_build_columns(root_properties_column_info, true))
+	data_table.set_columns(_build_columns(_root_properties_column_info, true))
 
 	for column: DataTable.ColumnConfig in data_table.get_all_columns():
 		match column.identifier:
@@ -689,21 +693,23 @@ static func _column_holds_subresources(column: DataTable.ColumnConfig) -> bool:
 ## ("weapon:attachments:damage") so a subresource property never collides with a root
 ## property of the same name. UID and String ID stay unprefixed and shared across views.
 func _cache_key(column_id: StringName) -> StringName:
-	var path := _subresource_path()
-	return StringName("%s:%s" % [path, column_id]) if path else column_id
-
-
-func _subresource_path() -> String:
 	var parts: PackedStringArray = []
 	for frame: SubresourceFrame in _subresource_stack:
 		parts.append(frame.property)
-	return ":".join(parts)
+	var path := ":".join(parts)
+	return StringName("%s:%s" % [path, column_id]) if path else column_id
 
 
-func _is_column_frozen(column_id: StringName) -> bool:
+## Storage key used in disabled_columns/frozen_columns. UID and String ID stay shared
+## and unprefixed across views; other columns are namespaced via _cache_key().
+func resolve_column_storage_key(column_id: StringName) -> StringName:
 	if column_id in [UID_COLUMN, STRINGID_COLUMN]:
-		return column_id in current_cache_data.frozen_columns
-	return _cache_key(column_id) in current_cache_data.frozen_columns
+		return column_id
+	return _cache_key(column_id)
+
+
+func is_column_frozen(column_id: StringName) -> bool:
+	return resolve_column_storage_key(column_id) in current_cache_data.frozen_columns
 
 
 func _update_subresource_bar_label() -> void:

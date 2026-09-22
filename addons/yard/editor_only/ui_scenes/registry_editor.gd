@@ -517,12 +517,14 @@ func _populate_columns_popup_menu() -> void:
 
 	popup.add_separator(tr("ID Columns"))
 	_add_column_submenu_item(popup, STRINGID_COLUMN, tr("String ID"), { })
-	_add_column_submenu_item(popup, UID_COLUMN, tr("UID"), { })
+	if not registry_table_view.is_in_subresource_view():
+		_add_column_submenu_item(popup, UID_COLUMN, tr("UID"), { })
 
-	if not registry_table_view.root_properties_column_info:
+	var columns_info := registry_table_view.properties_column_info
+	if not columns_info:
 		return
 
-	for prop: Dictionary in registry_table_view.root_properties_column_info:
+	for prop: Dictionary in columns_info:
 		var prop_name: StringName = prop[&"name"]
 		if ClassUtils.is_class_property(prop):
 			if prop_name not in [&"Resource", &"RefCounted"]:
@@ -538,7 +540,7 @@ func _populate_columns_popup_menu() -> void:
 			_add_column_submenu_item(popup, prop_name, prop_name.capitalize(), prop)
 
 	popup.add_separator("Resource/RefCounted")
-	for prop: Dictionary in registry_table_view.root_properties_column_info:
+	for prop: Dictionary in columns_info:
 		if prop[&"name"] in BUILTIN_RESOURCE_PROPERTIES:
 			_add_column_submenu_item(popup, prop[&"name"], String(prop[&"name"]).capitalize(), prop)
 
@@ -559,10 +561,7 @@ func _add_column_submenu_item(
 	popup.add_check_item(label)
 	var idx := popup.item_count - 1
 	popup.set_item_submenu_node(idx, _build_column_submenu(identifier))
-	popup.set_item_checked(
-		idx,
-		identifier not in registry_table_view.current_cache_data.disabled_columns,
-	)
+	popup.set_item_checked(idx, not registry_table_view.is_column_disabled(identifier))
 	popup.set_item_metadata(idx, identifier)
 	if not prop.is_empty():
 		if Compat.is_engine_version_equal_or_newer(4, 5):
@@ -576,7 +575,7 @@ func _build_column_submenu(identifier: StringName) -> PopupMenu:
 	submenu.add_check_item(tr("Frozen"), ColumnMenuAction.FROZEN)
 	submenu.set_item_checked(
 		submenu.get_item_index(ColumnMenuAction.FROZEN),
-		identifier in registry_table_view.current_cache_data.frozen_columns,
+		registry_table_view.is_column_frozen(identifier),
 	)
 	submenu.id_pressed.connect(_on_column_submenu_id_pressed.bind(identifier, submenu))
 	return submenu
@@ -768,10 +767,11 @@ func _on_columns_menu_id_pressed(id: int) -> void:
 			cache.parent_props_first = checked
 		_:
 			var identifier: StringName = popup.get_item_metadata(item_idx)
+			var key := registry_table_view.resolve_column_storage_key(identifier)
 			if checked:
-				cache.disabled_columns.erase(identifier)
-			elif identifier not in cache.disabled_columns:
-				cache.disabled_columns.append(identifier)
+				cache.disabled_columns.erase(key)
+			elif key not in cache.disabled_columns:
+				cache.disabled_columns.append(key)
 	cache.save()
 	registry_table_view.update_view()
 
@@ -787,11 +787,12 @@ func _on_column_submenu_id_pressed(
 	var cache := registry_table_view.current_cache_data
 	match action_id:
 		ColumnMenuAction.FROZEN:
+			var key := registry_table_view.resolve_column_storage_key(identifier)
 			if checked:
-				if identifier not in cache.frozen_columns:
-					cache.frozen_columns.append(identifier)
+				if key not in cache.frozen_columns:
+					cache.frozen_columns.append(key)
 			else:
-				cache.frozen_columns.erase(identifier)
+				cache.frozen_columns.erase(key)
 	cache.save()
 	registry_table_view.update_view()
 
