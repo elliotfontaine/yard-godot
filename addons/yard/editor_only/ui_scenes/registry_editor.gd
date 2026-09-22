@@ -42,6 +42,9 @@ const NewRegistryDialog := Namespace.NewRegistryDialog
 const AnyIcon := Namespace.AnyIcon
 const YardFuzzySearch := Namespace.YardFuzzySearch
 const YardLogger := Namespace.YardLogger
+const EditorThemeUtils := Namespace.EditorThemeUtils
+const UpdateManager := Namespace.UpdateManager
+const UpdateInstallWindow := Namespace.UpdateInstallWindow
 const FuzzySearchResult := YardFuzzySearch.FuzzySearchResult
 const BUILTIN_RESOURCE_PROPERTIES: Array[StringName] = RegistryCacheData.BUILTIN_RESOURCE_PROPERTIES
 const STRINGID_COLUMN := RegistryTableView.STRINGID_COLUMN
@@ -77,6 +80,9 @@ var _fuz := YardFuzzySearch.new()
 @onready var new_registry_dialog: NewRegistryDialog = %NewRegistryDialog
 @onready var read_me_window: AcceptDialog = $ReadMeWindow
 @onready var version_button: Button = %VersionButton
+@onready var update_manager: UpdateManager = %UpdateManager
+@onready var update_window: Window = %UpdateWindow
+@onready var update_install_window: UpdateInstallWindow = %UpdateInstallWindow
 
 
 func _ready() -> void:
@@ -110,6 +116,18 @@ func _ready() -> void:
 	registry_table_view.registry_changed.connect(_on_registry_table_view_registry_changed)
 	new_registry_dialog.settings_saved.connect(_on_new_registry_dialog_settings_saved)
 	version_button.pressed.connect(_on_version_button_pressed)
+
+	update_manager.update_check_completed.connect(_on_update_manager_update_check_completed)
+	update_manager.download_completed.connect(update_install_window.set_download_result)
+	update_install_window.install_requested.connect(update_manager.request_update_download)
+	update_install_window.refresh_requested.connect(update_manager.request_update_check)
+	update_install_window.close_requested.connect(update_window.hide)
+	update_window.close_requested.connect(update_window.hide)
+	EditorInterface.get_resource_filesystem().resources_reimported.connect(
+		_on_resources_reimported,
+	)
+	version_button.text = update_manager.get_current_version()
+	update_manager.request_update_check()
 
 	# Fuzzy Search settings
 	_fuz.max_results = 20
@@ -877,4 +895,46 @@ func _on_read_me_button_pressed() -> void:
 
 
 func _on_version_button_pressed() -> void:
-	print("_on_version_button_pressed")
+	update_window.popup_centered_ratio(0.5)
+	update_window.mode = Window.MODE_WINDOWED
+	update_window.grab_focus()
+
+
+func _on_update_manager_update_check_completed(result: UpdateManager.UpdateCheckResult) -> void:
+	var color: Color
+	match result:
+		UpdateManager.UpdateCheckResult.UPDATE_AVAILABLE:
+			color = EditorThemeUtils.color_warning
+			version_button.icon = EditorThemeUtils.editor_theme.get_icon(
+				"StatusWarning",
+				"EditorIcons",
+			)
+		UpdateManager.UpdateCheckResult.UP_TO_DATE:
+			color = EditorThemeUtils.color_success
+			version_button.icon = EditorThemeUtils.editor_theme.get_icon(
+				"StatusSuccess",
+				"EditorIcons",
+			)
+		UpdateManager.UpdateCheckResult.NO_ACCESS:
+			color = EditorThemeUtils.color_success
+			version_button.icon = EditorThemeUtils.editor_theme.get_icon(
+				"GuiRadioCheckedDisabled",
+				"EditorIcons",
+			)
+
+	version_button.add_theme_color_override("font_color", color)
+	version_button.add_theme_color_override("font_hover_color", color.lightened(0.5))
+	version_button.add_theme_color_override("font_pressed_color", color)
+	version_button.add_theme_color_override("font_focus_color", color)
+
+	var info := (
+		update_manager.update_info
+		if result == UpdateManager.UpdateCheckResult.UPDATE_AVAILABLE
+		else update_manager.current_info
+	)
+	update_install_window.load_info(info, result)
+
+
+func _on_resources_reimported(_resources: Array) -> void:
+	if update_window.visible:
+		update_window.grab_focus()

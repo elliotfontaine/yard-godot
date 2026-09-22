@@ -7,36 +7,34 @@
 @tool
 extends Control
 
+signal install_requested
+signal refresh_requested
+signal close_requested
+
+const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const EditorThemeUtils := Namespace.EditorThemeUtils
+const UpdateManager := Namespace.UpdateManager
+
 var current_info := { }
-@onready var editor_view := find_parent('EditorView')
 
 
 func _ready() -> void:
-	await editor_view.ready
-	theme = editor_view.theme
+	if Engine.is_editor_hint() and EditorInterface.get_edited_scene_root() == self:
+		return
 
-	%Install.icon = editor_view.get_theme_icon("AssetLib", "EditorIcons")
-	%LoadingIcon.texture = editor_view.get_theme_icon("KeyTrackScale", "EditorIcons")
-	%InstallWarning.modulate = editor_view.get_theme_color("warning_color", "Editor")
-	%CloseButton.icon = editor_view.get_theme_icon("Close", "EditorIcons")
-	EditorInterface.get_resource_filesystem().resources_reimported.connect(_on_resources_reimported)
-
-
-func open() -> void:
-	get_parent().popup_centered_ratio(0.5)
-	get_parent().mode = Window.MODE_WINDOWED
-	get_parent().grab_focus()
+	theme = EditorThemeUtils.editor_theme
+	%Install.icon = EditorThemeUtils.editor_theme.get_icon("AssetLib", "EditorIcons")
+	%LoadingIcon.texture = EditorThemeUtils.editor_theme.get_icon("KeyTrackScale", "EditorIcons")
+	%InstallWarning.modulate = EditorThemeUtils.color_warning
+	%CloseButton.icon = EditorThemeUtils.editor_theme.get_icon("Close", "EditorIcons")
 
 
-func load_info(info: Dictionary, update_type: int) -> void:
+func load_info(info: Dictionary, result: UpdateManager.UpdateCheckResult) -> void:
 	current_info = info
-	if update_type == 2:
+	if result == UpdateManager.UpdateCheckResult.NO_ACCESS:
 		%State.text = "No Information Available"
 		%UpdateName.text = "Unable to access versions."
-		%UpdateName.add_theme_color_override(
-			"font_color",
-			editor_view.get_theme_color("readonly_color", "Editor"),
-		)
+		%UpdateName.add_theme_color_override("font_color", EditorThemeUtils.color_message)
 		%Content.text = "You are probably not connected to the internet. Fair enough."
 		%ShortInfo.text = "Huh, what happened here?"
 		%ReadFull.hide()
@@ -50,25 +48,16 @@ func load_info(info: Dictionary, update_type: int) -> void:
 		info["published_at"] = "????T"
 		info["author"] = { 'login': "???" }
 		%State.text = "Where are we Doc?"
-		%UpdateName.add_theme_color_override(
-			"font_color",
-			editor_view.get_theme_color("property_color_z", "Editor"),
-		)
+		%UpdateName.add_theme_color_override("font_color", EditorThemeUtils.color_message)
 		%Install.disabled = true
 
-	elif update_type == 0:
+	elif result == UpdateManager.UpdateCheckResult.UPDATE_AVAILABLE:
 		%State.text = "Update Available!"
-		%UpdateName.add_theme_color_override(
-			"font_color",
-			editor_view.get_theme_color("warning_color", "Editor"),
-		)
+		%UpdateName.add_theme_color_override("font_color", EditorThemeUtils.color_warning)
 		%Install.disabled = false
 	else:
 		%State.text = "You are up to date:"
-		%UpdateName.add_theme_color_override(
-			"font_color",
-			editor_view.get_theme_color("success_color", "Editor"),
-		)
+		%UpdateName.add_theme_color_override("font_color", EditorThemeUtils.color_success)
 		%Install.disabled = true
 
 	%UpdateName.text = info.name
@@ -109,43 +98,17 @@ func load_info(info: Dictionary, update_type: int) -> void:
 		%Reactions.hide()
 
 
-func _on_window_close_requested() -> void:
-	get_parent().visible = false
-
-
-func _on_install_pressed() -> void:
-	find_parent('UpdateManager').request_update_download()
-
-	%InfoLabel.text = "Downloading. This can take a moment."
-	%Loading.show()
-	%LoadingIcon \
-			.create_tween() \
-			.set_loops() \
-			.tween_property(%LoadingIcon, 'rotation', 2 * PI, 1) \
-			.from(0)
-
-
-func _on_refresh_pressed() -> void:
-	find_parent('UpdateManager').request_update_check()
-
-
-func _on_update_manager_downdload_completed(result: int) -> void:
+func set_download_result(result: UpdateManager.DownloadResult) -> void:
 	%Loading.hide()
 	match result:
-		0: # success
+		UpdateManager.DownloadResult.SUCCESS:
 			%InfoLabel.text = "Installed successfully. Restart needed!"
-			%InfoLabel.modulate = editor_view.get_theme_color("success_color", "Editor")
+			%InfoLabel.modulate = EditorThemeUtils.color_success
 			%Restart.show()
 			%Restart.grab_focus()
-		1: # failure
+		UpdateManager.DownloadResult.FAILURE:
 			%InfoLabel.text = "Download failed."
-			%InfoLabel.modulate = editor_view.get_theme_color("readonly_color", "Editor")
-
-
-func _on_resources_reimported(_resources: Array) -> void:
-	if is_inside_tree():
-		await get_tree().process_frame
-		get_parent().grab_focus()
+			%InfoLabel.modulate = EditorThemeUtils.color_error
 
 
 func markdown_to_bbcode(text: String) -> String:
@@ -198,7 +161,8 @@ func markdown_to_bbcode(text: String) -> String:
 	while res:
 		text = text.replace(
 			res.get_string(),
-			'[code][color=' + get_theme_color("accent_color", "Editor").to_html()
+			'[code][color='
+			+ EditorThemeUtils.editor_theme.get_color("accent_color", "Editor").to_html()
 			+ ']' + res.get_string('text').strip_edges() + '[/color][/code]',
 		)
 		res = small_code_regex.search(text)
@@ -208,12 +172,32 @@ func markdown_to_bbcode(text: String) -> String:
 	while res:
 		text = text.replace(
 			res.get_string(),
-			'[code][bgcolor=' + get_theme_color("box_selection_fill_color", "Editor").to_html()
+			'[code][bgcolor='
+			+ EditorThemeUtils
+			.editor_theme
+			.get_color("box_selection_fill_color", "Editor")
+			.to_html()
 			+ ']' + res.get_string('text').strip_edges() + '[/bgcolor][/code]',
 		)
 		res = big_code_regex.search(text)
 
 	return text
+
+
+func _on_install_pressed() -> void:
+	install_requested.emit()
+
+	%InfoLabel.text = "Downloading. This can take a moment."
+	%Loading.show()
+	%LoadingIcon \
+			.create_tween() \
+			.set_loops() \
+			.tween_property(%LoadingIcon, 'rotation', 2 * PI, 1) \
+			.from(0)
+
+
+func _on_refresh_pressed() -> void:
+	refresh_requested.emit()
 
 
 func _on_content_meta_clicked(meta: Variant) -> void:
@@ -234,4 +218,4 @@ func _on_restart_pressed() -> void:
 
 
 func _on_close_button_pressed() -> void:
-	get_parent().hide()
+	close_requested.emit()

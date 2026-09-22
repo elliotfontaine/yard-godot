@@ -9,6 +9,8 @@
 [ext_resource type="PackedScene" uid="uid://crnac01bnyk3" path="res://addons/yard/editor_only/ui_scenes/registry_table_view.tscn" id="7_w3c1k"]
 [ext_resource type="PackedScene" uid="uid://b3g3e36v7g6kr" path="res://addons/yard/editor_only/ui_scenes/components/new_registry_dialog.tscn" id="8_drmf8"]
 [ext_resource type="PackedScene" uid="uid://woa50nl7s75b" path="res://addons/yard/editor_only/ui_scenes/components/readme_window.tscn" id="9_6e4lp"]
+[ext_resource type="PackedScene" path="res://addons/yard/editor_only/ui_scenes/components/update_manager/update_manager.tscn" id="10_upmgr"]
+[ext_resource type="PackedScene" uid="uid://bgne0jw8apjrx" path="res://addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.tscn" id="11_upiw"]
 
 [sub_resource type="InputEventKey" id="InputEventKey_6e4lp"]
 command_or_control_autoremap = true
@@ -277,6 +279,20 @@ size = Vector2i(674, 754)
 visible = false
 
 [node name="ReadMeWindow" parent="." unique_id=1562972357 instance=ExtResource("9_6e4lp")]
+
+[node name="UpdateManager" parent="." instance=ExtResource("10_upmgr")]
+unique_name_in_owner = true
+
+[node name="UpdateWindow" type="Window" parent="."]
+unique_name_in_owner = true
+title = "YARD Update"
+initial_position = 2
+size = Vector2i(700, 500)
+visible = false
+wrap_controls = true
+
+[node name="UpdateInstallWindow" parent="UpdateWindow" instance=ExtResource("11_upiw")]
+unique_name_in_owner = true
 
 [connection signal="about_to_popup" from="VBoxContainer/HBoxContainer/FileMenuButton" to="." method="_on_file_menu_button_about_to_popup"]
 [connection signal="about_to_popup" from="VBoxContainer/HBoxContainer/EditMenuButton" to="." method="_on_edit_menu_button_about_to_popup"]

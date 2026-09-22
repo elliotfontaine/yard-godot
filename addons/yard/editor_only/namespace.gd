@@ -28,6 +28,12 @@ const RegistriesItemList := preload(
 const NewRegistryDialog := preload(
 	"res://addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd"
 )
+const UpdateManager := preload(
+	"res://addons/yard/editor_only/ui_scenes/components/update_manager/update_manager.gd"
+)
+const UpdateInstallWindow := preload(
+	"res://addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd"
+)
 const EditorPropertyOptionWrapper := preload(
 	"res://addons/yard/editor_only/ui_scenes/components/editor_property_option_wrapper.gd"
 )

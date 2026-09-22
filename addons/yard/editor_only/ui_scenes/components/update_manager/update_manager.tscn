@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://clsb2ca2msylm"]
+
+[ext_resource type="Script" uid="uid://dvm5flvywgbtn" path="res://addons/yard/editor_only/ui_scenes/components/update_manager/update_manager.gd" id="1_up0dm"]
+
+[node name="UpdateManager" type="Node" unique_id=70211637]
+script = ExtResource("1_up0dm")
+
+[node name="UpdateCheckRequest" type="HTTPRequest" parent="." unique_id=1318014346]
+timeout = 5.0
+
+[node name="DownloadRequest" type="HTTPRequest" parent="." unique_id=1212719986]
+
+[connection signal="request_completed" from="UpdateCheckRequest" to="." method="_on_update_check_request_completed"]
+[connection signal="request_completed" from="DownloadRequest" to="." method="_on_download_request_completed"]
