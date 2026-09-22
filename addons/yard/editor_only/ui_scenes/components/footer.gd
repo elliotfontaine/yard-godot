@@ -50,6 +50,7 @@ func _ready() -> void:
 	entry_name_line_edit.text_submitted.connect(_on_new_entry_text_submitted)
 	entry_name_line_edit.text_changed.connect(_on_entry_name_line_edit_text_changed)
 	add_entry_directory_button.item_selected.connect(_on_add_entry_directory_button_item_selected)
+	add_entry_button.pressed.connect(_on_add_entry_button_pressed)
 	toggle_registry_panel_button.pressed.connect(_on_toggle_registry_panel_button_pressed)
 
 	_dir_dialog = EditorFileDialog.new()
@@ -229,7 +230,11 @@ func _on_add_entry_button_pressed() -> void:
 	if add_entry_button.disabled:
 		return
 
-	add_entry_requested.emit(_res_picker.edited_resource, entry_name_line_edit.text)
+	add_entry_requested.emit(
+		_res_picker.edited_resource,
+		entry_name_line_edit.text,
+		_add_entry_target_dir,
+	)
 
 
 func _on_toggle_registry_panel_button_pressed() -> void:
