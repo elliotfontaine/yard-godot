@@ -104,22 +104,19 @@ ok_button_text = "Yes"
 layout_mode = 2
 alignment = 2
 
-[node name="SubresourceBar" type="PanelContainer" parent="VBoxContainer" unique_id=1238541876]
+[node name="SubresourceBar" type="VBoxContainer" parent="VBoxContainer" unique_id=427454043]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/SubresourceBar" unique_id=906492000]
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer/SubresourceBar" unique_id=1957184373]
+visible = false
 layout_mode = 2
+theme_override_constants/separation = 0
 
-[node name="SubresourceBarLabel" type="Label" parent="VBoxContainer/SubresourceBar/HBoxContainer" unique_id=2093758331]
+[node name="SubresourceBarBreadcrumb" type="HBoxContainer" parent="VBoxContainer/SubresourceBar" unique_id=906492000]
 unique_name_in_owner = true
 layout_mode = 2
-text = "lorem ipsum"
-
-[node name="SubresourceBarBackButton" type="Button" parent="VBoxContainer/SubresourceBar/HBoxContainer" unique_id=1606831826]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Back"
+theme_override_constants/separation = 0
 
 [node name="Border" type="PanelContainer" parent="VBoxContainer" unique_id=181058665]
 layout_mode = 2

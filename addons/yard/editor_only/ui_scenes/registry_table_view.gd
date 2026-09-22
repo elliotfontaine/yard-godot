@@ -82,9 +82,8 @@ var _subresource_to_inspect: Resource
 @onready var drag_and_drop_info_panel: PanelContainer = %DragAndDropInfoPanel
 @onready var focus_panel: PanelContainer = %FocusPanel
 @onready var footer: HBoxContainer = %Footer
-@onready var subresource_bar: PanelContainer = %SubresourceBar
-@onready var subresource_bar_label: Label = %SubresourceBarLabel
-@onready var subresource_bar_back_button: Button = %SubresourceBarBackButton
+@onready var subresource_bar: Container = %SubresourceBar
+@onready var subresource_bar_breadcrumb: HBoxContainer = %SubresourceBarBreadcrumb
 
 
 func _ready() -> void:
@@ -121,8 +120,6 @@ func _ready() -> void:
 	drag_and_drop_info_panel.get_theme_stylebox(&"panel").bg_color = lighter_base_color
 	drag_and_drop_info_panel.get_theme_stylebox(&"panel").bg_color.a = 0.8
 	focus_panel.add_theme_stylebox_override(&"panel", get_theme_stylebox(&"Focus", &"EditorStyles"))
-
-	subresource_bar_back_button.pressed.connect(_on_subresource_back_button_pressed)
 
 	grow_horizontal = Control.GROW_DIRECTION_END
 	grow_vertical = Control.GROW_DIRECTION_END
@@ -502,14 +499,6 @@ func _enter_subresource_view(property: StringName) -> void:
 	update_view()
 
 
-func _exit_subresource_view() -> void:
-	if _subresource_stack.is_empty():
-		return
-	_subresource_stack.pop_back()
-	_reset_table_navigation()
-	update_view()
-
-
 func _reset_table_navigation() -> void:
 	data_table.clear_filter()
 	data_table.set_selected_cell(&"", &"")
@@ -577,7 +566,6 @@ func _update_root_view() -> void:
 func _update_subresource_view() -> void:
 	subresource_bar.visible = true
 	footer.toggle_add_entry_fields(false)
-	_update_subresource_bar_label()
 
 	var saved_sort_col := data_table.sort_column
 	var saved_sort_asc := data_table.sort_ascending
@@ -587,6 +575,7 @@ func _update_subresource_view() -> void:
 	)
 
 	_subresource_rows = _resolve_subresource_leaves()
+	_update_subresource_breadcrumb()
 
 	var frame: SubresourceFrame = _subresource_stack.back()
 	var leaf_resources: Array[Resource] = []
@@ -711,11 +700,43 @@ func is_column_frozen(column_id: StringName) -> bool:
 	return resolve_column_storage_key(column_id) in current_cache_data.frozen_columns
 
 
-func _update_subresource_bar_label() -> void:
-	var parts: PackedStringArray = []
-	for frame: SubresourceFrame in _subresource_stack:
-		parts.append(String(frame.property).capitalize())
-	subresource_bar_label.text = " > ".join(parts)
+## Rebuilds the breadcrumb as one clickable crumb per level (root registry included),
+## the current (deepest) level shown as plain text with its row count.
+func _update_subresource_breadcrumb() -> void:
+	for child: Node in subresource_bar_breadcrumb.get_children():
+		child.queue_free()
+
+	var root_label := current_registry.resource_path.get_file() if current_registry else ""
+	_add_breadcrumb_crumb(root_label, 0, _subresource_stack.is_empty())
+
+	for i in _subresource_stack.size():
+		var frame: SubresourceFrame = _subresource_stack[i]
+		var is_current := i == _subresource_stack.size() - 1
+		var label := String(frame.property).capitalize()
+		if is_current:
+			label += " (%d)" % _subresource_rows.size()
+		_add_breadcrumb_crumb(label, i + 1, is_current)
+
+
+func _add_breadcrumb_crumb(label: String, depth: int, is_current: bool) -> void:
+	if depth > 0:
+		var separator := Label.new()
+		separator.text = "›"
+		separator.modulate.a = 0.5
+		subresource_bar_breadcrumb.add_child(separator)
+
+	if is_current:
+		var current_label := Label.new()
+		var accent_color := get_theme_color(&"accent_color", &"Editor")
+		current_label.text = label
+		current_label.add_theme_color_override(&"font_color", accent_color)
+		subresource_bar_breadcrumb.add_child(current_label)
+	else:
+		var crumb := Button.new()
+		crumb.text = label
+		crumb.theme_type_variation = &"FlatButton"
+		crumb.pressed.connect(_on_breadcrumb_crumb_pressed.bind(depth))
+		subresource_bar_breadcrumb.add_child(crumb)
 
 
 func _edit_entry_property(
@@ -1030,8 +1051,10 @@ func _on_edit_context_menu_about_to_popup() -> void:
 	_toggle_edit_context_menu_items()
 
 
-func _on_subresource_back_button_pressed() -> void:
-	_exit_subresource_view()
+func _on_breadcrumb_crumb_pressed(depth: int) -> void:
+	_subresource_stack.resize(depth)
+	_reset_table_navigation()
+	update_view()
 
 
 func _on_footer_add_entry_requested(res: Resource, string_id: String, target_dir: String) -> void:
