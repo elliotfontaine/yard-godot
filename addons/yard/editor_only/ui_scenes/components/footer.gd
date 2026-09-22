@@ -75,6 +75,10 @@ func _process(_delta: float) -> void:
 
 
 func set_current_registry(registry: Registry) -> void:
+	if not registry:
+		_current_registry_uid = ""
+		_current_registry_settings = null
+		return
 	var new_uid := Compat.path_to_uid(registry.resource_path)
 	var is_another := new_uid != _current_registry_uid
 	if is_another and _current_registry_uid:
