@@ -655,7 +655,7 @@ func _resolve_subresource_leaves() -> Dictionary[StringName, Dictionary]:
 						{
 							&"row_id": StringName("%s:%d" % [item[&"row_id"], i]),
 							&"resource": arr[i],
-							&"display_id": "%s:%d" % [item[&"display_id"], i],
+							&"display_id": "%s[%d]" % [item[&"display_id"], i],
 						}
 					)
 			elif value is Resource:
@@ -1001,9 +1001,16 @@ func _on_inspector_property_edited(_property: StringName) -> void:
 		return
 
 	var res: Resource = object
-	var uid := Compat.path_to_uid(res.resource_path)
-	if uid.begins_with("uid://") and current_registry.has_uid(uid):
-		update_view()
+	if is_in_subresource_view():
+		for row_data: Dictionary in _subresource_rows.values():
+			if row_data.get(&"resource").resource_path == res.resource_path:
+				update_view()
+				return
+		return
+	else:
+		var uid := Compat.path_to_uid(res.resource_path)
+		if uid.begins_with("uid://") and current_registry.has_uid(uid):
+			update_view()
 
 
 func _on_edit_context_menu_id_pressed(id: int) -> void:
