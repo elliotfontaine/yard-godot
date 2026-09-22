@@ -23,10 +23,10 @@ func _ready() -> void:
 		return
 
 	theme = EditorThemeUtils.editor_theme
-	%Install.icon = EditorThemeUtils.editor_theme.get_icon("AssetLib", "EditorIcons")
-	%LoadingIcon.texture = EditorThemeUtils.editor_theme.get_icon("KeyTrackScale", "EditorIcons")
+	%Install.icon = EditorThemeUtils.editor_theme.get_icon(&"AssetStore", &"EditorIcons")
+	%LoadingIcon.texture = EditorThemeUtils.editor_theme.get_icon(&"KeyTrackScale", &"EditorIcons")
 	%InstallWarning.modulate = EditorThemeUtils.color_warning
-	%CloseButton.icon = EditorThemeUtils.editor_theme.get_icon("Close", "EditorIcons")
+	%CloseButton.icon = EditorThemeUtils.editor_theme.get_icon(&"Close", &"EditorIcons")
 
 
 func load_info(info: Dictionary, result: UpdateManager.UpdateCheckResult) -> void:

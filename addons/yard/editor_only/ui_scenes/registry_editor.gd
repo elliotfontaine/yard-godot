@@ -123,9 +123,7 @@ func _ready() -> void:
 	update_install_window.refresh_requested.connect(update_manager.request_update_check)
 	update_install_window.close_requested.connect(update_window.hide)
 	update_window.close_requested.connect(update_window.hide)
-	EditorInterface.get_resource_filesystem().resources_reimported.connect(
-		_on_resources_reimported,
-	)
+	EditorInterface.get_resource_filesystem().resources_reimported.connect(_on_resources_reimported)
 	version_button.text = update_manager.get_current_version()
 	update_manager.request_update_check()
 
@@ -906,20 +904,20 @@ func _on_update_manager_update_check_completed(result: UpdateManager.UpdateCheck
 		UpdateManager.UpdateCheckResult.UPDATE_AVAILABLE:
 			color = EditorThemeUtils.color_warning
 			version_button.icon = EditorThemeUtils.editor_theme.get_icon(
-				"StatusWarning",
-				"EditorIcons",
+				&"StatusWarning",
+				&"EditorIcons",
 			)
 		UpdateManager.UpdateCheckResult.UP_TO_DATE:
 			color = EditorThemeUtils.color_success
 			version_button.icon = EditorThemeUtils.editor_theme.get_icon(
-				"StatusSuccess",
-				"EditorIcons",
+				&"StatusSuccess",
+				&"EditorIcons",
 			)
 		UpdateManager.UpdateCheckResult.NO_ACCESS:
 			color = EditorThemeUtils.color_success
 			version_button.icon = EditorThemeUtils.editor_theme.get_icon(
-				"GuiRadioCheckedDisabled",
-				"EditorIcons",
+				&"StatusError",
+				&"EditorIcons",
 			)
 
 	version_button.add_theme_color_override("font_color", color)
