@@ -16,20 +16,15 @@ const RegistryIO := Namespace.RegistryIO
 const AnyIcon := Namespace.AnyIcon
 const ShortcutUtils := Namespace.ShortcutUtils
 
-const AUTO_DIR_ID := -1
-const BROWSE_DIR_ID := -2
-
-var toggle_button_forward := false:
-	set(forward):
-		var icon_name := &"Forward" if forward else &"Back"
-		toggle_registry_panel_button.icon = get_theme_icon(icon_name, &"EditorIcons")
-		toggle_button_forward = forward
+const _AUTO_DIR_ID := -1
+const _BROWSE_DIR_ID := -2
 
 var _current_registry_uid: String
 var _current_registry_settings: RegistryIO.RegistrySettings
 var _add_entry_cache: Dictionary[String, Dictionary] = { }
 var _add_entry_target_dir: String = ""
 var _add_entry_custom_dir: String = ""
+var _toggle_button_forward: bool = false
 var _texture_rect_parent: Button
 var _dir_dialog: EditorFileDialog
 var _res_picker: EditorResourcePicker
@@ -154,7 +149,7 @@ func _setup_add_entry() -> void:
 func _rebuild_add_entry_directory_options() -> void:
 	add_entry_directory_button.clear()
 	add_entry_directory_button.add_item(tr("Auto (registry file location)"))
-	add_entry_directory_button.set_item_id(0, AUTO_DIR_ID)
+	add_entry_directory_button.set_item_id(0, _AUTO_DIR_ID)
 
 	var scan_dirs := _current_registry_settings.get_all_scan_directories()
 	for dir in scan_dirs:
@@ -167,14 +162,14 @@ func _rebuild_add_entry_directory_options() -> void:
 	var popup := add_entry_directory_button.get_popup()
 	var browse_idx := add_entry_directory_button.item_count
 	add_entry_directory_button.add_icon_item(AnyIcon.get_icon(&"FolderBrowse"), tr("Browse"))
-	add_entry_directory_button.set_item_id(browse_idx, BROWSE_DIR_ID)
+	add_entry_directory_button.set_item_id(browse_idx, _BROWSE_DIR_ID)
 	popup.set_item_as_radio_checkable(browse_idx, false)
 
 	var target_idx := 0
 	for i in add_entry_directory_button.item_count:
 		var id := add_entry_directory_button.get_item_id(i)
 		if (
-			id not in [AUTO_DIR_ID, BROWSE_DIR_ID]
+			id not in [_AUTO_DIR_ID, _BROWSE_DIR_ID]
 			and add_entry_directory_button.get_item_text(i) == _add_entry_target_dir
 		):
 			target_idx = i
@@ -205,9 +200,9 @@ func _on_res_picker_resource_selected(resource: Resource, inspect: bool) -> void
 
 func _on_add_entry_directory_button_item_selected(index: int) -> void:
 	match add_entry_directory_button.get_item_id(index):
-		AUTO_DIR_ID:
+		_AUTO_DIR_ID:
 			_add_entry_target_dir = ""
-		BROWSE_DIR_ID:
+		_BROWSE_DIR_ID:
 			_dir_dialog.current_dir = _add_entry_target_dir if _add_entry_target_dir else "res://"
 			_dir_dialog.popup_file_dialog()
 			_rebuild_add_entry_directory_options() # revert selection until a dir is actually picked
@@ -238,5 +233,7 @@ func _on_add_entry_button_pressed() -> void:
 
 
 func _on_toggle_registry_panel_button_pressed() -> void:
-	registry_panel_toggled.emit(toggle_button_forward)
-	toggle_button_forward = !toggle_button_forward
+	registry_panel_toggled.emit(_toggle_button_forward)
+	_toggle_button_forward = !_toggle_button_forward
+	var icon_name := &"Forward" if _toggle_button_forward else &"Back"
+	toggle_registry_panel_button.icon = get_theme_icon(icon_name, &"EditorIcons")
