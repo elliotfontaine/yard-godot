@@ -131,7 +131,7 @@ func _process(_delta: float) -> void:
 			EditorInterface.edit_resource(load(_uid_resource_to_inspect))
 			_uid_resource_to_inspect = ""
 
-	if not get_viewport().gui_is_dragging():
+	if not get_viewport().gui_is_dragging() and drag_and_drop_info_panel:
 		drag_and_drop_info_panel.visible = (
 			current_registry and current_registry.is_empty() and not is_in_subresource_view()
 		)

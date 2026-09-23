@@ -104,7 +104,7 @@ func parse_semver(tag: String) -> Dictionary:
 		# Empty array means "no pre-release identifiers", i.e. a final release.
 		# Build metadata (the "+..." suffix) is parsed but never used below:
 		# SemVer explicitly excludes it from precedence comparisons.
-		'prerelease': prerelease_str.split('.') if prerelease_str else [],
+		'prerelease': prerelease_str.split('.') if prerelease_str else PackedStringArray(),
 	}
 
 
