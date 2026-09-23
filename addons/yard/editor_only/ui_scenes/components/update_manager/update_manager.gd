@@ -26,6 +26,7 @@ enum DownloadResult {
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const YardLogger := Namespace.YardLogger
+const YardSettings := Namespace.YardSettings
 
 const REMOTE_RELEASES_URL := "https://api.github.com/repos/elliotfontaine/yard-godot/releases"
 const TEMP_FILE_NAME := "user://yard_update.zip"
@@ -159,6 +160,14 @@ func _compare_prerelease_identifiers(a: String, b: String) -> int:
 	return -1 if a < b else 1
 
 
+## True if `release` should be excluded from the update suggestions shown to
+## users on the stable channel. Combines two independent signals so a
+## maintainer mistake in either one alone still gets caught: the SemVer tag
+## itself (e.g. "-beta.1") and GitHub's own "This is a pre-release" checkbox.
+func _is_prerelease(release: Dictionary, release_info: Dictionary) -> bool:
+	return not release_info.prerelease.is_empty() or bool(release.get('prerelease', false))
+
+
 ## Finds the fetched release whose tag has the exact same SemVer precedence
 ## as `target`, or an empty dict if none matches (e.g. a local/unreleased
 ## build that isn't exactly any published tag).
@@ -194,13 +203,18 @@ func _on_update_check_request_completed(
 
 	var releases: Array = response
 	var current_release_info := parse_semver(get_current_version())
+	var allow_prereleases: bool = (
+		ProjectSettings.get_setting(YardSettings.UPDATE_CHANNEL, "Stable") != "Stable"
+	)
 
 	# GitHub releases are in order of creation, not order of version
 	var newer_releases := releases.filter(
 		func(release: Dictionary) -> bool:
 			var release_info := parse_semver(release.tag_name)
 			return (
-				not release_info.is_empty() and is_version_newer(release_info, current_release_info)
+				not release_info.is_empty()
+				and (allow_prereleases or not _is_prerelease(release, release_info))
+				and is_version_newer(release_info, current_release_info)
 			),
 	)
 	if newer_releases.size() > 0:

@@ -10,6 +10,7 @@ const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const Compat := Namespace.Compat
 const YardLogger := Namespace.YardLogger
 const ShortcutUtils := Namespace.ShortcutUtils
+const YardSettings := Namespace.YardSettings
 const RegistryEditor := Namespace.RegistryEditor
 const TRANSLATIONS := Namespace.TRANSLATIONS
 const REGISTRY_EDITOR_SCENE := Namespace.REGISTRY_EDITOR_SCENE
@@ -36,6 +37,8 @@ func _init() -> void:
 		editor_domain.add_translation(load(TRANSLATIONS[locale]))
 
 	ShortcutUtils.register_shortcuts()
+
+	YardSettings.register_settings()
 
 
 func _enter_tree() -> void:
