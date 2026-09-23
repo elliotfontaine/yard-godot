@@ -42,6 +42,7 @@ var _update_check_attempts_left := 0
 
 @onready var _update_check_request: HTTPRequest = $UpdateCheckRequest
 @onready var _download_request: HTTPRequest = $DownloadRequest
+@onready var _retry_timer: Timer = $RetryTimer
 
 
 func get_current_version() -> String:
@@ -61,12 +62,15 @@ func _start_update_check_request() -> void:
 		_update_check_request.request(REMOTE_RELEASES_URL)
 
 
-func _retry_update_check_or_give_up() -> bool:
-	if _update_check_attempts_left <= 0:
-		return false
-	await get_tree().create_timer(RETRY_DELAY_SECONDS).timeout
+func _handle_update_check_failure() -> void:
+	if _update_check_attempts_left > 0:
+		_retry_timer.start(RETRY_DELAY_SECONDS)
+	else:
+		update_check_completed.emit(UpdateCheckResult.NO_ACCESS)
+
+
+func _on_retry_timer_timeout() -> void:
 	_start_update_check_request()
-	return true
 
 
 func request_update_download() -> void:
@@ -188,17 +192,13 @@ func _on_update_check_request_completed(
 	body: PackedByteArray,
 ) -> void:
 	if result != HTTPRequest.RESULT_SUCCESS:
-		if await _retry_update_check_or_give_up():
-			return
-		update_check_completed.emit(UpdateCheckResult.NO_ACCESS)
+		_handle_update_check_failure()
 		return
 
 	# Work out the next version from the releases information on GitHub
 	var response: Variant = JSON.parse_string(body.get_string_from_utf8())
 	if typeof(response) != TYPE_ARRAY:
-		if await _retry_update_check_or_give_up():
-			return
-		update_check_completed.emit(UpdateCheckResult.NO_ACCESS)
+		_handle_update_check_failure()
 		return
 
 	var releases: Array = response

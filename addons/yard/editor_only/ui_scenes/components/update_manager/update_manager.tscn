@@ -10,5 +10,9 @@ timeout = 5.0
 
 [node name="DownloadRequest" type="HTTPRequest" parent="." unique_id=1212719986]
 
+[node name="RetryTimer" type="Timer" parent="." unique_id=1993810145]
+one_shot = true
+
 [connection signal="request_completed" from="UpdateCheckRequest" to="." method="_on_update_check_request_completed"]
 [connection signal="request_completed" from="DownloadRequest" to="." method="_on_download_request_completed"]
+[connection signal="timeout" from="RetryTimer" to="." method="_on_retry_timer_timeout"]
