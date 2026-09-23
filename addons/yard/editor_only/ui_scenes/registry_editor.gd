@@ -903,22 +903,16 @@ func _on_update_manager_update_check_completed(result: UpdateManager.UpdateCheck
 	match result:
 		UpdateManager.UpdateCheckResult.UPDATE_AVAILABLE:
 			color = EditorThemeUtils.color_warning
-			version_button.icon = EditorThemeUtils.editor_theme.get_icon(
-				&"StatusWarning",
-				&"EditorIcons",
-			)
+			version_button.tooltip_text = tr("Update available. Click to see details.")
+			version_button.icon = EditorThemeUtils.editor_theme.get_icon(&"Warning", &"EditorIcons")
 		UpdateManager.UpdateCheckResult.UP_TO_DATE:
-			color = EditorThemeUtils.color_success
-			version_button.icon = EditorThemeUtils.editor_theme.get_icon(
-				&"StatusSuccess",
-				&"EditorIcons",
-			)
+			color = EditorThemeUtils.color_message
+			version_button.tooltip_text = tr("YARD is up to date.")
+			version_button.icon = null
 		UpdateManager.UpdateCheckResult.NO_ACCESS:
-			color = EditorThemeUtils.color_success
-			version_button.icon = EditorThemeUtils.editor_theme.get_icon(
-				&"StatusError",
-				&"EditorIcons",
-			)
+			color = EditorThemeUtils.color_message
+			version_button.tooltip_text = tr("Could not check for updates. Retry later.")
+			version_button.icon = null
 
 	version_button.add_theme_color_override(&"font_color", color)
 	version_button.add_theme_color_override(&"font_hover_color", color.lightened(0.5))
