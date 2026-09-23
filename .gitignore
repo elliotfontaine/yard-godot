@@ -4,15 +4,8 @@
 # SPDX-License-Identifier: CC0-1.0
 
 # Project-specific ignores
-addons/kenyoni/plugin_reloader
-addons/explore-editor-theme
-addons/resources_spreadsheet_view
-addons/resource_databases
-addons/zylann.editor_debugger
-addons/GDQuest_GDScript_formatter
-addons/string_wrangler
-addons/gut
-addons/dialogic
+addons/*
+!addons/yard/
 
 # Godot 4+ specific ignores
 .godot/
