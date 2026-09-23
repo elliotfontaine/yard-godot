@@ -12,6 +12,7 @@ signal refresh_requested
 signal close_requested
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const Compat := Namespace.Compat
 const EditorThemeUtils := Namespace.EditorThemeUtils
 const UpdateManager := Namespace.UpdateManager
 
@@ -22,8 +23,8 @@ func _ready() -> void:
 	if Engine.is_editor_hint() and EditorInterface.get_edited_scene_root() == self:
 		return
 
-	theme = EditorThemeUtils.editor_theme
-	%Install.icon = EditorThemeUtils.editor_theme.get_icon(&"AssetStore", &"EditorIcons")
+	var download_icon := &"AssetStore" if Compat.is_engine_version_equal_or_newer(4, 7) else &"AssetLib"
+	%Install.icon = EditorThemeUtils.editor_theme.get_icon(download_icon, &"EditorIcons")
 	%LoadingIcon.texture = EditorThemeUtils.editor_theme.get_icon(&"KeyTrackScale", &"EditorIcons")
 	%InstallWarning.modulate = EditorThemeUtils.color_warning
 	%CloseButton.icon = EditorThemeUtils.editor_theme.get_icon(&"Close", &"EditorIcons")
