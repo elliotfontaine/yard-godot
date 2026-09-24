@@ -9,7 +9,7 @@ extends AcceptDialog
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const MarkdownLabel := Namespace.MarkdownLabel
 
-const README_PATH := "res://README.md"
+const README_PATH := "res://addons/yard/README.md"
 
 @onready var markdown_label: MarkdownLabel = %MarkdownLabel
 
