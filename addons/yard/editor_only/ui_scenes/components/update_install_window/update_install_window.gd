@@ -28,6 +28,16 @@ const INSTALL_WARNING := (
 var current_info := { }
 
 @onready var content: RichTextLabel = %Content
+@onready var install_button: Button = %Install
+@onready var loading_icon: TextureRect = %LoadingIcon
+@onready var state_label: Label = %State
+@onready var update_name_label: Label = %UpdateName
+@onready var short_info_label: Label = %ShortInfo
+@onready var read_full_link: LinkButton = %ReadFull
+@onready var reactions_container: HBoxContainer = %Reactions
+@onready var loading_container: CenterContainer = %Loading
+@onready var info_label: Label = %InfoLabel
+@onready var restart_button: Button = %Restart
 
 
 func _ready() -> void:
@@ -35,9 +45,9 @@ func _ready() -> void:
 		return
 
 	var download_icon := &"AssetStore" if Compat.is_engine_version_equal_or_newer(4, 7) else &"AssetLib"
-	%Install.icon = EditorThemeUtils.editor_theme.get_icon(download_icon, &"EditorIcons")
-	%Install.tooltip_text = INSTALL_WARNING
-	%LoadingIcon.texture = EditorThemeUtils.editor_theme.get_icon(&"KeyTrackScale", &"EditorIcons")
+	install_button.icon = EditorThemeUtils.editor_theme.get_icon(download_icon, &"EditorIcons")
+	install_button.tooltip_text = INSTALL_WARNING
+	loading_icon.texture = EditorThemeUtils.editor_theme.get_icon(&"KeyTrackScale", &"EditorIcons")
 
 	var mono: Font = get_theme_font(&"font", &"CodeEdit")
 	content.add_theme_font_override(&"mono_font", mono)
@@ -60,14 +70,14 @@ func _ready() -> void:
 func load_info(info: Dictionary, result: UpdateManager.UpdateCheckResult) -> void:
 	current_info = info
 	if result == UpdateManager.UpdateCheckResult.NO_ACCESS:
-		%State.text = "No Information Available"
-		%UpdateName.text = "Unable to access versions."
-		%UpdateName.remove_theme_color_override("font_color")
-		%Content.text = "You are probably not connected to the internet. Fair enough."
-		%ShortInfo.text = "Huh, what happened here?"
-		%ReadFull.hide()
-		%Reactions.hide()
-		%Install.disabled = true
+		state_label.text = "No Information Available"
+		update_name_label.text = "Unable to access versions."
+		update_name_label.remove_theme_color_override("font_color")
+		content.text = "You are probably not connected to the internet. Fair enough."
+		short_info_label.text = "Huh, what happened here?"
+		read_full_link.hide()
+		reactions_container.hide()
+		install_button.disabled = true
 		return
 
 	# If we are up to date (or beyond):
@@ -76,31 +86,33 @@ func load_info(info: Dictionary, result: UpdateManager.UpdateCheckResult) -> voi
 		info["body"] = "# 😎 You are using the WIP branch!\nSeems like you are using a version that isn't even released yet. Be careful and give us your feedback ;)"
 		info["published_at"] = "????T"
 		info["author"] = { 'login': "???" }
-		%State.text = "Where are we Doc?"
-		%UpdateName.remove_theme_color_override("font_color")
-		%Install.disabled = true
+		state_label.text = "Where are we Doc?"
+		update_name_label.remove_theme_color_override("font_color")
+		install_button.disabled = true
 
 	elif result == UpdateManager.UpdateCheckResult.UPDATE_AVAILABLE:
-		%State.text = "Update Available!"
-		%UpdateName.add_theme_color_override("font_color", EditorThemeUtils.color_warning)
-		%Install.disabled = false
+		state_label.text = "Update Available!"
+		update_name_label.add_theme_color_override("font_color", EditorThemeUtils.color_warning)
+		install_button.disabled = false
 	else:
-		%State.text = "You are up to date:"
-		%UpdateName.add_theme_color_override("font_color", EditorThemeUtils.color_success)
-		%Install.disabled = true
+		state_label.text = "You are up to date:"
+		update_name_label.add_theme_color_override("font_color", EditorThemeUtils.color_success)
+		install_button.disabled = true
 
-	%UpdateName.text = info.name
-	%Content.text = info.body
-	%ShortInfo.text = "Published on " + info.published_at.substr(0, info.published_at.find('T')) + " by " + info \
+	update_name_label.text = info.name
+	content.text = info.body
+	short_info_label.text = "Published on " + info.published_at.substr(0, info.published_at.find(
+			'T'
+		)) + " by " + info \
 			.author \
 			.login
 	if info.has("html_url"):
-		%ReadFull.uri = info.html_url
-		%ReadFull.show()
+		read_full_link.uri = info.html_url
+		read_full_link.show()
 	else:
-		%ReadFull.hide()
+		read_full_link.hide()
 	if info.has('reactions'):
-		%Reactions.show()
+		reactions_container.show()
 		var reactions := {
 			"laugh": "😂",
 			"hooray": "🎉",
@@ -110,45 +122,45 @@ func load_info(info: Dictionary, result: UpdateManager.UpdateCheckResult) -> voi
 			"eyes": "👀",
 		}
 		for i: String in reactions:
-			%Reactions.get_node(i.capitalize()).visible = info.reactions[i] > 0
-			%Reactions.get_node(i.capitalize()).text = (
+			reactions_container.get_node(i.capitalize()).visible = info.reactions[i] > 0
+			reactions_container.get_node(i.capitalize()).text = (
 				reactions[i] + " " + str(int(info.reactions[i]))
 				if info.reactions[i] > 0
 				else reactions[i]
 			)
 		if info.reactions['+1'] + info.reactions['-1'] > 0:
-			%Reactions.get_node("Likes").visible = true
-			%Reactions.get_node("Likes").text = "👍 " + str(
+			reactions_container.get_node("Likes").visible = true
+			reactions_container.get_node("Likes").text = "👍 " + str(
 				int(info.reactions['+1'] + info.reactions['-1'])
 			)
 		else:
-			%Reactions.get_node("Likes").visible = false
+			reactions_container.get_node("Likes").visible = false
 	else:
-		%Reactions.hide()
+		reactions_container.hide()
 
 
 func set_download_result(result: UpdateManager.DownloadResult) -> void:
-	%Loading.hide()
+	loading_container.hide()
 	match result:
 		UpdateManager.DownloadResult.SUCCESS:
-			%InfoLabel.text = "Installed successfully. Restart needed!"
-			%InfoLabel.modulate = EditorThemeUtils.color_success
-			%Restart.show()
-			%Restart.grab_focus()
+			info_label.text = "Installed successfully. Restart needed!"
+			info_label.modulate = EditorThemeUtils.color_success
+			restart_button.show()
+			restart_button.grab_focus()
 		UpdateManager.DownloadResult.FAILURE:
-			%InfoLabel.text = "Download failed."
-			%InfoLabel.modulate = EditorThemeUtils.color_error
+			info_label.text = "Download failed."
+			info_label.modulate = EditorThemeUtils.color_error
 
 
 func _on_install_pressed() -> void:
 	install_requested.emit()
 
-	%InfoLabel.text = "Downloading. This can take a moment."
-	%Loading.show()
-	%LoadingIcon \
+	info_label.text = "Downloading. This can take a moment."
+	loading_container.show()
+	loading_icon \
 			.create_tween() \
 			.set_loops() \
-			.tween_property(%LoadingIcon, 'rotation', 2 * PI, 1) \
+			.tween_property(loading_icon, 'rotation', 2 * PI, 1) \
 			.from(0)
 
 

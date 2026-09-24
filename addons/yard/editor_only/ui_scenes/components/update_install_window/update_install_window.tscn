@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bgne0jw8apjrx"]
 
 [ext_resource type="Script" uid="uid://dlnougha7247n" path="res://addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd" id="1_2pgh7"]
+[ext_resource type="Script" uid="uid://djrr6b7fc76rw" path="res://addons/yard/editor_only/classes/editor_icon_controls/editor_icon_button.gd" id="2_6elxf"]
 [ext_resource type="Script" uid="uid://bfyublltgtwo3" path="res://addons/yard/editor_only/classes/markdownlabel/markdownlabel.gd" id="2_mdlbl"]
 [ext_resource type="Script" uid="uid://cv5t5tg8tt0fo" path="res://addons/yard/editor_only/classes/markdownlabel/h1_format.gd" id="3_457pt"]
 [ext_resource type="Script" uid="uid://nlhsm3ui24tp" path="res://addons/yard/editor_only/classes/markdownlabel/h2_format.gd" id="4_6elxf"]
@@ -96,6 +97,8 @@ layout_mode = 2
 size_flags_vertical = 0
 focus_mode = 0
 text = "Refresh"
+script = ExtResource("2_6elxf")
+icon_name = "Reload"
 
 [node name="HSeparator" type="HSeparator" parent="VBoxContainer/Header" unique_id=2062778186]
 layout_mode = 2
