@@ -10,9 +10,18 @@
 [resource]
 script = ExtResource("1_script")
 name = "Bonfur"
+type_1 = &"fire"
+growth_rate = 3
+experience_yield = 60
+ev_speed = 1
 gender_ratio = 2
+catch_rate = 45
+step_cycles = 20
+egg_groups = 16
+category = "Warmth"
 color = 7
 shape = 11
+keywords = "animal,vertebrate,mammal,carnivoran,caniform,arctoid,bear,bipedal,red,starter"
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")
 back_normal = ExtResource("4_backn")

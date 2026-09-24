@@ -11,8 +11,10 @@
 script = ExtResource("1_script")
 name = "Dripwirt"
 type_1 = &"water"
+egg_groups = 1
 color = 9
 shape = 4
+keywords = "ambiguous,drip,hooded,cloak,raincoat,coat,cloths,mysterious,poncho,borwn,yellow"
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")
 back_normal = ExtResource("4_backn")

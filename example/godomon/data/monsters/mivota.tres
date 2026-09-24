@@ -11,10 +11,14 @@
 script = ExtResource("1_script")
 name = "Mivota"
 type_1 = &"fire"
-type_2 = &"mind"
+type_2 = &"sacred"
+experience_yield = 100
 gender_ratio = 0
+egg_groups = 0
+category = "Hope"
 color = 1
 shape = 6
+keywords = "object,candle,votive candle, church,inanimate,flame,glass,no arms,blue,yellow,red"
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")
 back_normal = ExtResource("4_backn")

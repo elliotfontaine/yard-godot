@@ -10,9 +10,20 @@
 [resource]
 script = ExtResource("1_script")
 name = "Delugar"
-type_2 = &"water"
+type_1 = &"water"
+type_2 = &"wild"
+growth_rate = 3
+experience_yield = 260
+ev_speed = 3
 gender_ratio = 2
+catch_rate = 45
+step_cycles = 20
+egg_groups = 16
+category = "Water Hose"
+height = 1.5
+weight = 54.0
 color = 1
+keywords = "animal,vertebrate,mammal,carnivoran,feliform,felid,feline,jaguar,tool,hose,quadrupedal,blue,starter"
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")
 back_normal = ExtResource("4_backn")

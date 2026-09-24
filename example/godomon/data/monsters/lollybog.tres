@@ -11,9 +11,10 @@
 script = ExtResource("2_5pmys")
 name = "Lollybog"
 type_1 = &"dread"
-type_2 = &"primal"
+egg_groups = 1024
 color = 6
 shape = 3
+keywords = "blob,amorphous,purple,slime,candy,food,bog"
 front_normal = ExtResource("4_fbrku")
 front_shiny = ExtResource("5_mw6bn")
 back_normal = ExtResource("1_n13gr")

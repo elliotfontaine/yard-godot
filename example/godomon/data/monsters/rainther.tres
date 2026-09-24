@@ -10,9 +10,21 @@
 [resource]
 script = ExtResource("1_script")
 name = "Rainther"
-type_2 = &"water"
+type_1 = &"water"
+type_2 = &"wild"
+growth_rate = 3
+experience_yield = 140
+ev_speed = 2
 gender_ratio = 2
+catch_rate = 45
+step_cycles = 20
+egg_groups = 16
+category = "Water Hose"
+dex_entry = "Rainther is a stealthy hunter that knocks its prey out with jets of water from its tail."
+height = 1.1
+weight = 36.3
 color = 1
+keywords = "animal,vertebrate,mammal,carnivoran,feliform,felid,feline,panther,tool,hose,quadrupedal,blue,starter"
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")
 back_normal = ExtResource("4_backn")

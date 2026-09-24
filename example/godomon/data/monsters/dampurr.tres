@@ -10,8 +10,20 @@
 [resource]
 script = ExtResource("1_script")
 name = "Dampurr"
+type_1 = &"water"
+growth_rate = 3
+experience_yield = 60
+ev_speed = 1
 gender_ratio = 2
+catch_rate = 45
+step_cycles = 20
+egg_groups = 16
+category = "Water Hose"
+dex_entry = "Dampurr is playful and enjoys splashing in pools of water."
+height = 0.4
+weight = 9.1
 color = 1
+keywords = "animal,vertebrate,mammal,carnivoran,feliform,felid,feline,cat,quadrupedal,blue,starter"
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")
 back_normal = ExtResource("4_backn")

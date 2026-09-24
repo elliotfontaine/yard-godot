@@ -10,10 +10,21 @@
 [resource]
 script = ExtResource("1_script")
 name = "Tindursa"
-type_2 = &"fire"
+type_1 = &"fire"
+type_2 = &"wild"
+growth_rate = 3
+experience_yield = 140
+ev_speed = 2
 gender_ratio = 2
+catch_rate = 45
+step_cycles = 20
+egg_groups = 16
+category = "Warmth"
+height = 1.0
+weight = 68.0
 color = 7
 shape = 11
+keywords = "animal,vertebrate,mammal,carnivoran,caniform,arctoid,bear,bipedal,red,starter"
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")
 back_normal = ExtResource("4_backn")

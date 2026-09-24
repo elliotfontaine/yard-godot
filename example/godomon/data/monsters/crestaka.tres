@@ -9,8 +9,10 @@
 script = ExtResource("2_pokdu")
 name = "Crestaka"
 type_1 = &"water"
+egg_groups = 18
 color = 1
 shape = 5
+keywords = "animal,vertebrate,bird,ambiguous,coral,feathers,bipedal,blue,pink,yellow,starter"
 front_normal = ExtResource("2_g2eoy")
 front_shiny = ExtResource("3_4a85s")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

@@ -11,9 +11,14 @@
 script = ExtResource("2_aomiu")
 name = "Plushion"
 type_1 = &"sacred"
+experience_yield = null
 gender_ratio = 5
+egg_groups = 32
+category = "Cushion"
+dex_entry = "Because of its natural padding Plushion is unfazed by drops and falls, but will cry if its bow is torn. It enjoys snuggling next to trainers and will often get underfoot in an attempt to get closer."
 color = 5
 shape = 6
+keywords = "object,cushion,inanimate,plushie,plush,cloth,pink,white"
 front_normal = ExtResource("4_ifav4")
 front_shiny = ExtResource("5_6s5v3")
 back_normal = ExtResource("1_8xsp6")

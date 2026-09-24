@@ -10,8 +10,19 @@
 [resource]
 script = ExtResource("1_script")
 name = "Timberry"
+type_1 = &"plant"
+growth_rate = 3
+experience_yield = 60
+ev_speed = 1
 gender_ratio = 2
+catch_rate = 45
+step_cycles = 20
+egg_groups = 16
+category = "Wild Berry"
+height = 0.6
+weight = 18.0
 color = 4
+keywords = "animal,vertebrate,mammal,quadrupedal,berry,green,starter"
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")
 back_normal = ExtResource("4_backn")

@@ -11,7 +11,11 @@
 script = ExtResource("1_script")
 name = "Smoald"
 type_1 = &"fire"
+egg_groups = 16
+category = "Slow Burn"
+dex_entry = "A haze develops around any stone dais a Smoald has claimed as its own. The smoke it breathes changes scent and color based on what it has last eaten."
 color = 9
+keywords = "animal,vertebrate,amphibian,frog,smoke,symbol,orange,red,white"
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")
 back_normal = ExtResource("4_backn")

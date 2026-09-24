@@ -11,7 +11,9 @@
 script = ExtResource("1_script")
 name = "Droopig"
 gender_ratio = 3
+egg_groups = 16
 color = 5
+keywords = "animal,vertebrate,mammal,ungulate,artiodactyl,pig,quadrupedal,closed eyes,laying,pink,grey,gray"
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")
 back_normal = ExtResource("4_backn")

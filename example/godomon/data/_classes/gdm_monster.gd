@@ -20,9 +20,9 @@ enum GenderRatio {
 
 enum GrowthRate {
 	FAST,
-	MEDIUM, # Also known as "medium fast"
+	MEDIUM_FAST, # Also known as "medium"
 	SLOW,
-	PARABOLIC, # Also known as "medium slow"
+	MEDIUM_SLOW, # Also known as "parabolic"
 	ERRATIC,
 	FLUCTUATING,
 }
@@ -98,19 +98,19 @@ enum BodyColor {
 @export_range(0, 255, 1) var base_speed: int = 1
 
 @export_group("Experience")
-@export var growth_rate: GrowthRate = GrowthRate.MEDIUM
-@export var base_exp: int = 100
+@export var growth_rate: GrowthRate = GrowthRate.MEDIUM_FAST
+@export var experience_yield: int = 0
 @export_subgroup("EVs")
-@export_range(0, 255, 1) var ev_hp: int = 0
-@export_range(0, 255, 1) var ev_attack: int = 0
-@export_range(0, 255, 1) var ev_defense: int = 0
-@export_range(0, 255, 1) var ev_sp_attack: int = 0
-@export_range(0, 255, 1) var ev_sp_defense: int = 0
-@export_range(0, 255, 1) var ev_speed: int = 0
+@export_range(0, 3, 1) var ev_hp: int = 0
+@export_range(0, 3, 1) var ev_attack: int = 0
+@export_range(0, 3, 1) var ev_defense: int = 0
+@export_range(0, 3, 1) var ev_sp_attack: int = 0
+@export_range(0, 3, 1) var ev_sp_defense: int = 0
+@export_range(0, 3, 1) var ev_speed: int = 0
 
 @export_group("Encounter")
 @export var gender_ratio: GenderRatio = GenderRatio.FEMALE_50_PERCENT
-@export_range(0, 255, 1) var catch_rate: int = 255
+@export_range(0, 255, 5) var catch_rate: int = 255
 @export_range(0, 255, 1) var happiness: int = 70
 @export_subgroup("Held Items")
 @export_custom(
@@ -165,6 +165,7 @@ enum BodyColor {
 @export var color: BodyColor = BodyColor.GRAY
 @export var shape: BodyShape = BodyShape.QUADRUPED
 @export var habitat: StringName
+@export var keywords: String
 
 @export_group("Graphics")
 @export_subgroup("Sprites")

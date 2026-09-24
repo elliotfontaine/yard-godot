@@ -9,8 +9,10 @@
 script = ExtResource("2_lgtn2")
 name = "Saurky"
 type_1 = &"water"
+egg_groups = 18
 color = 1
 shape = 5
+keywords = "animal,vertebrate,bird,ambiguous,coral,bipedal,blue,pink,yellow,starter"
 front_normal = ExtResource("2_w0s2h")
 front_shiny = ExtResource("3_es18f")
 metadata/_custom_type_script = "uid://bqx8wrwlsgvnu"

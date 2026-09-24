@@ -10,9 +10,20 @@
 [resource]
 script = ExtResource("1_script")
 name = "Howliage"
-type_2 = &"plant"
+type_1 = &"plant"
+type_2 = &"wild"
+growth_rate = 3
+experience_yield = 140
+ev_speed = 2
 gender_ratio = 2
+catch_rate = 45
+step_cycles = 20
+egg_groups = 16
+category = "Wild Berry"
+height = 10.0
+weight = 22.0
 color = 4
+keywords = "animal,vertebrate,mammal,quadrupedal,carnivoran,canine,berry,leaf,green,starter"
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")
 back_normal = ExtResource("4_backn")

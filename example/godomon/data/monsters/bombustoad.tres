@@ -11,7 +11,11 @@
 script = ExtResource("1_script")
 name = "Bombustoad"
 type_1 = &"fire"
+egg_groups = 16
+category = "Turbo"
+dex_entry = "Its vents let this bulky toad burn fuel for surprising bursts of speed. Push it too far, and Bombustoad overheats and explodes."
 color = 9
+keywords = "animal,vertebrate,amphibian,frog,smoke,orange,red,white"
 front_normal = ExtResource("2_frontn")
 front_shiny = ExtResource("3_fronts")
 back_normal = ExtResource("4_backn")
