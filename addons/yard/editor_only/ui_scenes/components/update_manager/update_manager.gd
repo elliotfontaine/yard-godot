@@ -79,7 +79,7 @@ func request_update_download() -> void:
 		YardLogger.warn(
 			"Looks like you are working on the addon itself. You can't update it from within itself."
 		)
-		download_completed.emit(DownloadResult.FAILURE)
+		call_deferred(&"emit_signal", &"download_completed", DownloadResult.FAILURE)
 		return
 
 	_download_request.request(update_info.zipball_url)
