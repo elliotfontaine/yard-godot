@@ -17,6 +17,7 @@ base_defense = 90
 base_sp_attack = 125
 base_sp_defense = 100
 base_speed = 55
+growth_rate = 3
 experience_yield = 245
 ev_sp_attack = 3
 catch_rate = 45

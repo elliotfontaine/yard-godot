@@ -23,6 +23,7 @@ base_defense = 60
 base_sp_attack = 45
 base_sp_defense = 60
 base_speed = 35
+growth_rate = 0
 experience_yield = 58
 ev_hp = 1
 gender_ratio = 5
