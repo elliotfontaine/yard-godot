@@ -44,7 +44,10 @@ func _ready() -> void:
 	if Engine.is_editor_hint() and EditorInterface.get_edited_scene_root() == self:
 		return
 
-	var download_icon := &"AssetStore" if Compat.is_engine_version_equal_or_newer(4, 7) else &"AssetLib"
+	var is_above_4_7 := Compat.is_engine_version_equal_or_newer(4, 7)
+	if is_above_4_7:
+		loading_icon.set(&"offset_transform_enabled", true)
+	var download_icon := &"AssetStore" if is_above_4_7 else &"AssetLib"
 	install_button.icon = EditorThemeUtils.editor_theme.get_icon(download_icon, &"EditorIcons")
 	install_button.tooltip_text = INSTALL_WARNING
 	loading_icon.texture = EditorThemeUtils.editor_theme.get_icon(&"KeyTrackScale", &"EditorIcons")
@@ -155,12 +158,14 @@ func set_download_result(result: UpdateManager.DownloadResult) -> void:
 func _on_install_pressed() -> void:
 	install_requested.emit()
 
+	var is_above_4_7 := Compat.is_engine_version_equal_or_newer(4, 7)
+	var prop := "offset_transform_rotation" if is_above_4_7 else "rotation"
 	info_label.text = "Downloading. This can take a moment."
 	loading_container.show()
 	loading_icon \
 			.create_tween() \
 			.set_loops() \
-			.tween_property(loading_icon, 'rotation', 2 * PI, 1) \
+			.tween_property(loading_icon, prop, 2 * PI, 1) \
 			.from(0)
 
 
