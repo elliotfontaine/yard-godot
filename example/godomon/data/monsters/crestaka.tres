@@ -5,10 +5,16 @@
 [ext_resource type="Script" uid="uid://bqx8wrwlsgvnu" path="res://example/godomon/data/_classes/gdm_monster.gd" id="2_pokdu"]
 [ext_resource type="Texture2D" uid="uid://dqsvovjm5qjij" path="res://example/godomon/assets/monsters/battler/front_shiny/Crestaka.png" id="3_4a85s"]
 
+[sub_resource type="Resource" id="Resource_vjd8g"]
+script = ExtResource("1_akrwv")
+target_species = &"avipex"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("2_pokdu")
 name = "Crestaka"
 type_1 = &"water"
+evolutions = Array[ExtResource("1_akrwv")]([SubResource("Resource_vjd8g")])
 egg_groups = 18
 color = 1
 shape = 5

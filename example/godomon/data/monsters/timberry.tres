@@ -7,10 +7,16 @@
 [ext_resource type="Texture2D" uid="uid://2qyodxiwjlnb" path="res://example/godomon/assets/monsters/battler/back_normal/Timberry.png" id="4_backn"]
 [ext_resource type="Texture2D" uid="uid://b233y8hd4pb7o" path="res://example/godomon/assets/monsters/battler/back_shiny/Timberry.png" id="5_backs"]
 
+[sub_resource type="Resource" id="Resource_2w53f"]
+script = ExtResource("3_h4ah6")
+target_species = &"howliage"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("1_script")
 name = "Timberry"
 type_1 = &"plant"
+evolutions = Array[ExtResource("3_h4ah6")]([SubResource("Resource_2w53f")])
 growth_rate = 3
 experience_yield = 60
 ev_speed = 1

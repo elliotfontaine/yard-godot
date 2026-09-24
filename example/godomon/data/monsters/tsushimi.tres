@@ -9,11 +9,17 @@
 [ext_resource type="Texture2D" uid="uid://pqtnatskb1ef" path="res://example/godomon/assets/monsters/icon/normal/Tsushimi.png" id="6_0w6yu"]
 [ext_resource type="Texture2D" uid="uid://bq30lggf2od1o" path="res://example/godomon/assets/monsters/icon/shiny/Tsushimi.png" id="7_di0s6"]
 
+[sub_resource type="Resource" id="Resource_duxuu"]
+script = ExtResource("1_ftm8p")
+target_species = &"tobishimi"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("2_7p64m")
 name = "Tsushimi"
 type_1 = &"water"
 type_2 = &"primal"
+evolutions = Array[ExtResource("1_ftm8p")]([SubResource("Resource_duxuu")])
 base_hp = 110
 base_attack = 60
 base_defense = 60

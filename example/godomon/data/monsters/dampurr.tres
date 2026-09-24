@@ -7,10 +7,16 @@
 [ext_resource type="Texture2D" uid="uid://dj7huskf58lb6" path="res://example/godomon/assets/monsters/battler/back_normal/Dampurr.png" id="4_backn"]
 [ext_resource type="Texture2D" uid="uid://bbbsttvwohqkw" path="res://example/godomon/assets/monsters/battler/back_shiny/Dampurr.png" id="5_backs"]
 
+[sub_resource type="Resource" id="Resource_4ba6w"]
+script = ExtResource("3_wprko")
+target_species = &"rainther"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("1_script")
 name = "Dampurr"
 type_1 = &"water"
+evolutions = Array[ExtResource("3_wprko")]([SubResource("Resource_4ba6w")])
 growth_rate = 3
 experience_yield = 60
 ev_speed = 1

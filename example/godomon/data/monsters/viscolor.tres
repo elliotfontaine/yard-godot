@@ -7,10 +7,16 @@
 [ext_resource type="Texture2D" uid="uid://cieaelj3nhurk" path="res://example/godomon/assets/monsters/battler/back_normal/Viscolor.png" id="4_backn"]
 [ext_resource type="Texture2D" uid="uid://bbmhbddybyi6p" path="res://example/godomon/assets/monsters/battler/back_shiny/Viscolor.png" id="5_backs"]
 
+[sub_resource type="Resource" id="Resource_3qll8"]
+script = ExtResource("3_qf88h")
+target_species = &"gelescent"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("1_script")
 name = "Viscolor"
 type_1 = &"water"
+evolutions = Array[ExtResource("3_qf88h")]([SubResource("Resource_3qll8")])
 egg_groups = 256
 color = 2
 shape = 0

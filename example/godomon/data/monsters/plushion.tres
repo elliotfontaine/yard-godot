@@ -7,10 +7,16 @@
 [ext_resource type="Texture2D" uid="uid://btoquxcx08s4r" path="res://example/godomon/assets/monsters/battler/front_normal/Plushion.png" id="4_ifav4"]
 [ext_resource type="Texture2D" uid="uid://dntaosjkmppna" path="res://example/godomon/assets/monsters/battler/front_shiny/Plushion.png" id="5_6s5v3"]
 
+[sub_resource type="Resource" id="Resource_3v88j"]
+script = ExtResource("1_6bx6c")
+target_species = &"rocotton"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("2_aomiu")
 name = "Plushion"
 type_1 = &"sacred"
+evolutions = Array[ExtResource("1_6bx6c")]([SubResource("Resource_3v88j")])
 experience_yield = null
 gender_ratio = 5
 egg_groups = 32

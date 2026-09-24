@@ -10,10 +10,16 @@
 [ext_resource type="Texture2D" uid="uid://dawix3po0rexa" path="res://example/godomon/assets/monsters/icon/shiny/Merlicun.png" id="7_vurle"]
 [ext_resource type="Texture2D" uid="uid://dc4qopmibedx8" path="res://example/godomon/assets/monsters/overworld/normal/Merlicun.png" id="8_d74cx"]
 
+[sub_resource type="Resource" id="Resource_q23kg"]
+script = ExtResource("1_oi0yv")
+target_species = &"firomenis"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("2_xso5v")
 name = "Merlicun"
 type_1 = &"blight"
+evolutions = Array[ExtResource("1_oi0yv")]([SubResource("Resource_q23kg")])
 base_hp = 75
 base_attack = 65
 base_defense = 60

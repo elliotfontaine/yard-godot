@@ -7,11 +7,17 @@
 [ext_resource type="Texture2D" uid="uid://tyb6bm502p28" path="res://example/godomon/assets/monsters/battler/front_normal/Pompet.png" id="4_bc7xl"]
 [ext_resource type="Texture2D" uid="uid://cc30crck5hi3o" path="res://example/godomon/assets/monsters/battler/front_shiny/Pompet.png" id="5_cfasp"]
 
+[sub_resource type="Resource" id="Resource_e3k7t"]
+script = ExtResource("1_5qim8")
+target_species = &"pomprim"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("2_ojn6m")
 name = "Pompet"
 type_1 = &"plant"
 type_2 = &"sacred"
+evolutions = Array[ExtResource("1_5qim8")]([SubResource("Resource_e3k7t")])
 gender_ratio = 5
 egg_groups = 96
 color = 4

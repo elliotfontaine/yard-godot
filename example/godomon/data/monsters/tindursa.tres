@@ -7,11 +7,17 @@
 [ext_resource type="Texture2D" uid="uid://b3mj4qwrnncpf" path="res://example/godomon/assets/monsters/battler/back_normal/Tindursa.png" id="4_backn"]
 [ext_resource type="Texture2D" uid="uid://yimmtc3eac71" path="res://example/godomon/assets/monsters/battler/back_shiny/Tindursa.png" id="5_backs"]
 
+[sub_resource type="Resource" id="Resource_jxo58"]
+script = ExtResource("3_n7ofq")
+target_species = &"sizzly"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("1_script")
 name = "Tindursa"
 type_1 = &"fire"
 type_2 = &"wild"
+evolutions = Array[ExtResource("3_n7ofq")]([SubResource("Resource_jxo58")])
 growth_rate = 3
 experience_yield = 140
 ev_speed = 2

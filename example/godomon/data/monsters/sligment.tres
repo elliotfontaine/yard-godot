@@ -7,10 +7,16 @@
 [ext_resource type="Texture2D" uid="uid://dw0r1ulr5trh7" path="res://example/godomon/assets/monsters/battler/back_normal/Sligment.png" id="4_backn"]
 [ext_resource type="Texture2D" uid="uid://cray6n7jmmfnv" path="res://example/godomon/assets/monsters/battler/back_shiny/Sligment.png" id="5_backs"]
 
+[sub_resource type="Resource" id="Resource_l8e44"]
+script = ExtResource("3_mrw6o")
+target_species = &"viscolor"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("1_script")
 name = "Sligment"
 type_1 = &"water"
+evolutions = Array[ExtResource("3_mrw6o")]([SubResource("Resource_l8e44")])
 egg_groups = 256
 color = 5
 shape = 1

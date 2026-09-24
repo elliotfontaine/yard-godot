@@ -7,10 +7,16 @@
 [ext_resource type="Texture2D" uid="uid://bbufbbfgpau3s" path="res://example/godomon/assets/monsters/battler/back_normal/Dripwirt.png" id="4_backn"]
 [ext_resource type="Texture2D" uid="uid://d3fksrx1njrvg" path="res://example/godomon/assets/monsters/battler/back_shiny/Dripwirt.png" id="5_backs"]
 
+[sub_resource type="Resource" id="Resource_uethx"]
+script = ExtResource("3_que32")
+target_species = &"pourka"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("1_script")
 name = "Dripwirt"
 type_1 = &"water"
+evolutions = Array[ExtResource("3_que32")]([SubResource("Resource_uethx")])
 egg_groups = 1
 color = 9
 shape = 4

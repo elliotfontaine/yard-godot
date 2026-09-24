@@ -9,10 +9,16 @@
 [ext_resource type="Texture2D" uid="uid://c1spjpnxtq3t0" path="res://example/godomon/assets/monsters/icon/normal/Cobarett.png" id="6_3mli7"]
 [ext_resource type="Texture2D" uid="uid://c7xncljp0pnph" path="res://example/godomon/assets/monsters/icon/shiny/Cobarett.png" id="7_nmjds"]
 
+[sub_resource type="Resource" id="Resource_13ikq"]
+script = ExtResource("1_6e4dl")
+target_species = &"pythonova"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("2_jh1gy")
 name = "Cobarett"
 type_1 = &"fire"
+evolutions = Array[ExtResource("1_6e4dl")]([SubResource("Resource_13ikq")])
 base_hp = 62
 base_attack = 76
 base_defense = 59

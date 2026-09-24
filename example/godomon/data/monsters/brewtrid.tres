@@ -7,10 +7,16 @@
 [ext_resource type="Texture2D" uid="uid://bmh8b1bkq4ukl" path="res://example/godomon/assets/monsters/battler/front_normal/Brewtrid.png" id="4_1sgjm"]
 [ext_resource type="Texture2D" uid="uid://j5ho7u7qg1tt" path="res://example/godomon/assets/monsters/battler/front_shiny/Brewtrid.png" id="5_muont"]
 
+[sub_resource type="Resource" id="Resource_33dx8"]
+script = ExtResource("1_plgs1")
+target_species = &"forbiddron"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("2_scjk3")
 name = "Brewtrid"
 type_1 = &"dread"
+evolutions = Array[ExtResource("1_plgs1")]([SubResource("Resource_33dx8")])
 egg_groups = 1024
 color = 6
 shape = 4

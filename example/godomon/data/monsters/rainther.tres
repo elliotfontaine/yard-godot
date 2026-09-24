@@ -7,11 +7,17 @@
 [ext_resource type="Texture2D" uid="uid://d866mxlcg10x" path="res://example/godomon/assets/monsters/battler/back_normal/Rainther.png" id="4_backn"]
 [ext_resource type="Texture2D" uid="uid://cddy8y8oqfhbw" path="res://example/godomon/assets/monsters/battler/back_shiny/Rainther.png" id="5_backs"]
 
+[sub_resource type="Resource" id="Resource_mcnwn"]
+script = ExtResource("3_ou6nb")
+target_species = &"delugar"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("1_script")
 name = "Rainther"
 type_1 = &"water"
 type_2 = &"wild"
+evolutions = Array[ExtResource("3_ou6nb")]([SubResource("Resource_mcnwn")])
 growth_rate = 3
 experience_yield = 140
 ev_speed = 2

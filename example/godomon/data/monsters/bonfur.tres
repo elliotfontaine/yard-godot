@@ -7,10 +7,16 @@
 [ext_resource type="Texture2D" uid="uid://cbye5ger1pjs5" path="res://example/godomon/assets/monsters/battler/back_normal/Bonfur.png" id="4_backn"]
 [ext_resource type="Texture2D" uid="uid://dp26rwlgrcesc" path="res://example/godomon/assets/monsters/battler/back_shiny/Bonfur.png" id="5_backs"]
 
+[sub_resource type="Resource" id="Resource_22f2m"]
+script = ExtResource("3_4myvu")
+target_species = &"tindursa"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("1_script")
 name = "Bonfur"
 type_1 = &"fire"
+evolutions = Array[ExtResource("3_4myvu")]([SubResource("Resource_22f2m")])
 growth_rate = 3
 experience_yield = 60
 ev_speed = 1

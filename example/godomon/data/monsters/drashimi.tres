@@ -10,11 +10,17 @@
 [ext_resource type="Texture2D" uid="uid://dpllov7e0y8xb" path="res://example/godomon/assets/monsters/icon/shiny/Drashimi.png" id="7_pekpg"]
 [ext_resource type="Texture2D" uid="uid://c3bsg363xofb2" path="res://example/godomon/assets/monsters/overworld/normal/Drashimi.png" id="8_p2o3h"]
 
+[sub_resource type="Resource" id="Resource_d74cx"]
+script = ExtResource("1_0vanl")
+target_species = &"tsushimi"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("2_ao2h4")
 name = "Drashimi"
 type_1 = &"water"
 type_2 = &"primal"
+evolutions = Array[ExtResource("1_0vanl")]([SubResource("Resource_d74cx")])
 base_hp = 70
 base_attack = 50
 base_defense = 50

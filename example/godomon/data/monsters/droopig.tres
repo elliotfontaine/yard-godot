@@ -7,9 +7,15 @@
 [ext_resource type="Texture2D" uid="uid://5opof4ajhp55" path="res://example/godomon/assets/monsters/battler/back_normal/Droopig.png" id="4_backn"]
 [ext_resource type="Texture2D" uid="uid://cdu8t4lgsef2f" path="res://example/godomon/assets/monsters/battler/back_shiny/Droopig.png" id="5_backs"]
 
+[sub_resource type="Resource" id="Resource_kyjbj"]
+script = ExtResource("3_e3k8h")
+target_species = &"hoolihog"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("1_script")
 name = "Droopig"
+evolutions = Array[ExtResource("3_e3k8h")]([SubResource("Resource_kyjbj")])
 gender_ratio = 3
 egg_groups = 16
 color = 5

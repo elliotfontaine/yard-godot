@@ -10,6 +10,7 @@
 
 [sub_resource type="Resource" id="Resource_j82u0"]
 script = ExtResource("1_jlm78")
+target_species = &"nymfushia"
 requirement = 1
 context = 7
 parameter_int = 220

@@ -7,11 +7,17 @@
 [ext_resource type="Texture2D" uid="uid://ta67cgjk85tb" path="res://example/godomon/assets/monsters/battler/back_normal/Skelleks.png" id="4_backn"]
 [ext_resource type="Texture2D" uid="uid://ln1qjxuvbxvx" path="res://example/godomon/assets/monsters/battler/back_shiny/Skelleks.png" id="5_backs"]
 
+[sub_resource type="Resource" id="Resource_kg3bo"]
+script = ExtResource("3_yu0dl")
+target_species = &"negagen"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("1_script")
 name = "Skelleks"
 type_1 = &"dread"
 type_2 = &"electric"
+evolutions = Array[ExtResource("3_yu0dl")]([SubResource("Resource_kg3bo")])
 gender_ratio = 0
 egg_groups = 0
 shape = 4

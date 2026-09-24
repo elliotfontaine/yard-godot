@@ -5,10 +5,16 @@
 [ext_resource type="Texture2D" uid="uid://blhw2ukvnbj0j" path="res://example/godomon/assets/monsters/battler/front_normal/Saurky.png" id="2_w0s2h"]
 [ext_resource type="Texture2D" uid="uid://dds3mb7qpcdvb" path="res://example/godomon/assets/monsters/battler/front_shiny/Saurky.png" id="3_es18f"]
 
+[sub_resource type="Resource" id="Resource_s7sn7"]
+script = ExtResource("1_i0ws1")
+target_species = &"crestaka"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("2_lgtn2")
 name = "Saurky"
 type_1 = &"water"
+evolutions = Array[ExtResource("1_i0ws1")]([SubResource("Resource_s7sn7")])
 egg_groups = 18
 color = 1
 shape = 5

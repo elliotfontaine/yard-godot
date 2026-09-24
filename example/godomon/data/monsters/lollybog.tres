@@ -7,10 +7,16 @@
 [ext_resource type="Texture2D" uid="uid://cdslhgoc66ny4" path="res://example/godomon/assets/monsters/battler/front_normal/Lollybog.png" id="4_fbrku"]
 [ext_resource type="Texture2D" uid="uid://clnlgldors2op" path="res://example/godomon/assets/monsters/battler/front_shiny/Lollybog.png" id="5_mw6bn"]
 
+[sub_resource type="Resource" id="Resource_j6ixq"]
+script = ExtResource("1_bs0f4")
+target_species = &"brewtrid"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("2_5pmys")
 name = "Lollybog"
 type_1 = &"dread"
+evolutions = Array[ExtResource("1_bs0f4")]([SubResource("Resource_j6ixq")])
 egg_groups = 1024
 color = 6
 shape = 3

@@ -7,10 +7,16 @@
 [ext_resource type="Texture2D" uid="uid://bpclxswfdn510" path="res://example/godomon/assets/monsters/battler/front_normal/Rocotton.png" id="4_h74tv"]
 [ext_resource type="Texture2D" uid="uid://dkp2g13nma5h3" path="res://example/godomon/assets/monsters/battler/front_shiny/Rocotton.png" id="5_nsvce"]
 
+[sub_resource type="Resource" id="Resource_swkjd"]
+script = ExtResource("1_426bs")
+target_species = &"tuffettry"
+metadata/_custom_type_script = "uid://dh362naomk3hc"
+
 [resource]
 script = ExtResource("2_orxl7")
 name = "Rocotton"
 type_1 = &"sacred"
+evolutions = Array[ExtResource("1_426bs")]([SubResource("Resource_swkjd")])
 gender_ratio = 5
 egg_groups = 32
 category = "Cushion"
