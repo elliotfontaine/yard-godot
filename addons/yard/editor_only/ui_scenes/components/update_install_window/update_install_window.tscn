@@ -1,309 +1,204 @@
 [gd_scene format=3 uid="uid://bgne0jw8apjrx"]
 
 [ext_resource type="Script" uid="uid://dlnougha7247n" path="res://addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd" id="1_2pgh7"]
-[ext_resource type="Texture2D" uid="uid://dfa56rh3ty7hj" path="res://icon.svg" id="2_2pgh7"]
+[ext_resource type="Script" uid="uid://bfyublltgtwo3" path="res://addons/yard/editor_only/classes/markdownlabel/markdownlabel.gd" id="2_mdlbl"]
+[ext_resource type="Script" uid="uid://cv5t5tg8tt0fo" path="res://addons/yard/editor_only/classes/markdownlabel/h1_format.gd" id="3_457pt"]
+[ext_resource type="Script" uid="uid://nlhsm3ui24tp" path="res://addons/yard/editor_only/classes/markdownlabel/h2_format.gd" id="4_6elxf"]
+[ext_resource type="Script" uid="uid://bybkadsssodhg" path="res://addons/yard/editor_only/classes/markdownlabel/h3_format.gd" id="5_27d1v"]
+[ext_resource type="Script" uid="uid://cne86e04ci56j" path="res://addons/yard/editor_only/classes/markdownlabel/h4_format.gd" id="6_5fiib"]
+[ext_resource type="Script" uid="uid://cewol4xb8qqd3" path="res://addons/yard/editor_only/classes/markdownlabel/h5_format.gd" id="7_kayqx"]
+[ext_resource type="Script" uid="uid://ck5yuuybmohr2" path="res://addons/yard/editor_only/classes/markdownlabel/h6_format.gd" id="8_fb67t"]
 
-[sub_resource type="Gradient" id="Gradient_lt7uf"]
-colors = PackedColorArray(0.296484, 0.648457, 1, 1, 0.732014, 0.389374, 1, 1)
+[sub_resource type="Resource" id="Resource_5v6am"]
+resource_local_to_scene = true
+script = ExtResource("3_457pt")
+is_bold = true
+draw_horizontal_rule = true
 
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_nl8ke"]
-gradient = SubResource("Gradient_lt7uf")
-fill_from = Vector2(0.151515, 0.272727)
-fill_to = Vector2(1, 1)
+[sub_resource type="Resource" id="Resource_8lmd3"]
+resource_local_to_scene = true
+script = ExtResource("4_6elxf")
+is_bold = true
+override_font_color = true
+font_color = Color(0, 0, 0, 1)
+draw_horizontal_rule = true
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1g1am"]
-content_margin_left = 0.0
-content_margin_top = 15.0
-content_margin_right = 15.0
-content_margin_bottom = 15.0
-bg_color = Color(0.0627451, 0.0627451, 0.0627451, 0.407843)
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
-expand_margin_left = 20.0
-expand_margin_right = 20.0
+[sub_resource type="Resource" id="Resource_u72bi"]
+resource_local_to_scene = true
+script = ExtResource("5_27d1v")
+is_bold = true
+is_italic = true
+is_underlined = true
+font_color = Color(0, 0, 0, 1)
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_j1mw2"]
+[sub_resource type="Resource" id="Resource_hmvhy"]
+resource_local_to_scene = true
+script = ExtResource("6_5fiib")
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h4v2s"]
-content_margin_left = 5.0
-content_margin_top = 3.0
-content_margin_right = 5.0
-content_margin_bottom = 3.0
-bg_color = Color(0, 0, 0, 0.631373)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
+[sub_resource type="Resource" id="Resource_db5ns"]
+resource_local_to_scene = true
+script = ExtResource("7_kayqx")
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_utju1"]
-content_margin_left = 5.0
-content_margin_top = 3.0
-content_margin_right = 5.0
-content_margin_bottom = 3.0
-bg_color = Color(0.0470588, 0.0470588, 0.0470588, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
+[sub_resource type="Resource" id="Resource_ouans"]
+resource_local_to_scene = true
+script = ExtResource("8_fb67t")
 
-[node name="UpdateInstallWindow" type="ColorRect" unique_id=1751342581]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.207843, 0.129412, 0.372549, 1)
+[node name="UpdateInstallWindow" type="AcceptDialog" unique_id=588891282]
+oversampling_override = 1.0
+title = "YARD Update"
+position = Vector2i(0, 36)
+size = Vector2i(700, 500)
+visible = true
+ok_button_text = "Close"
 script = ExtResource("1_2pgh7")
 
-[node name="TextureRect" type="TextureRect" parent="." unique_id=1067467084]
-modulate = Color(0.447059, 0.447059, 0.447059, 1)
-layout_mode = 1
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1325613024]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -49.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = SubResource("GradientTexture2D_nl8ke")
+theme_override_constants/separation = 8
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1887947658]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 14.0
-offset_top = 13.0
-offset_right = -14.0
-offset_bottom = -13.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer" unique_id=1695024647]
+[node name="Header" type="VBoxContainer" parent="VBoxContainer" unique_id=1239811600]
 layout_mode = 2
-size_flags_vertical = 3
 
-[node name="Control" type="Control" parent="VBoxContainer/HBoxContainer2" unique_id=43588118]
+[node name="TitleRow" type="HBoxContainer" parent="VBoxContainer/Header" unique_id=1300039698]
+layout_mode = 2
+
+[node name="TitleColumn" type="VBoxContainer" parent="VBoxContainer/Header/TitleRow" unique_id=347257885]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 7
+theme_override_constants/separation = 0
 
-[node name="VBox" type="VBoxContainer" parent="VBoxContainer/HBoxContainer2" unique_id=1370860413]
-custom_minimum_size = Vector2(450, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 3.74
-alignment = 1
-
-[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer/HBoxContainer2/VBox" unique_id=1215114222]
-clip_contents = false
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer" unique_id=1069603042]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-alignment = 1
-
-[node name="Panel" type="PanelContainer" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer" unique_id=508342753]
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_1g1am")
-
-[node name="VBox" type="VBoxContainer" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/Panel" unique_id=1356546827]
-layout_mode = 2
-theme_override_constants/separation = -8
-
-[node name="State" type="Label" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/Panel/VBox" unique_id=304146972]
+[node name="State" type="Label" parent="VBoxContainer/Header/TitleRow/TitleColumn" unique_id=203022436]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"DialogicSubTitle"
 text = "Update Available!"
 
-[node name="UpdateName" type="Label" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/Panel/VBox" unique_id=1703854451]
+[node name="UpdateName" type="Label" parent="VBoxContainer/Header/TitleRow/TitleColumn" unique_id=948792429]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"DialogicTitle"
-theme_override_font_sizes/font_size = 25
+theme_override_font_sizes/font_size = 22
 text = "YARD 2.0"
-uppercase = true
 
-[node name="ShortInfo" type="Label" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/Panel/VBox" unique_id=376285222]
+[node name="ShortInfo" type="Label" parent="VBoxContainer/Header/TitleRow/TitleColumn" unique_id=1905926365]
 unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"DialogicHintText2"
-theme_override_font_sizes/font_size = 10
-text = "12/31/23"
+text = "Published on 12/31/23 by octocat"
 
-[node name="Refresh" type="Button" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/Panel" unique_id=1130499877]
+[node name="Refresh" type="Button" parent="VBoxContainer/Header/TitleRow" unique_id=278289381]
 layout_mode = 2
-size_flags_horizontal = 8
 size_flags_vertical = 0
-text = "Refresh
-"
-flat = true
+focus_mode = 0
+text = "Refresh"
 
-[node name="Content" type="RichTextLabel" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer" unique_id=1067043036]
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer/Header" unique_id=2062778186]
+layout_mode = 2
+
+[node name="Content" type="RichTextLabel" parent="VBoxContainer" unique_id=561744955]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/normal_font_size = 14
-theme_override_styles/normal = SubResource("StyleBoxEmpty_j1mw2")
+size_flags_vertical = 3
+focus_mode = 2
 bbcode_enabled = true
-text = "[font_size=25]🎉 New version, new stuff![/font_size]
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.
-Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi. Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat. Duis semper. Duis arcu massa, scelerisque vitae, consequat in, pretium a, enim. Pellentesque congue. Ut in risus volutpat libero pharetra tempor. Cras vestibulum bibendum augue. Praesent egestas leo in pede. Praesent blandit odio eu enim.
- Pellentesque sed dui ut augue blandit sodales. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae;
-Aliquam nibh. Mauris ac mauris sed pede pellentesque fermentum. Maecenas adipiscing ante non diam sodales hendrerit.
-"
-fit_content = true
+selection_enabled = true
+script = ExtResource("2_mdlbl")
+h1 = SubResource("Resource_5v6am")
+h2 = SubResource("Resource_8lmd3")
+h3 = SubResource("Resource_u72bi")
+h4 = SubResource("Resource_hmvhy")
+h5 = SubResource("Resource_db5ns")
+h6 = SubResource("Resource_ouans")
+code_override_color = true
+code_override_background_color = true
 
-[node name="Reactions" type="HBoxContainer" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer" unique_id=11798362]
+[node name="Footer" type="VBoxContainer" parent="VBoxContainer" unique_id=964790981]
+layout_mode = 2
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer/Footer" unique_id=206170844]
+layout_mode = 2
+
+[node name="ReactionsRow" type="HBoxContainer" parent="VBoxContainer/Footer" unique_id=1483277528]
+layout_mode = 2
+
+[node name="Reactions" type="HBoxContainer" parent="VBoxContainer/Footer/ReactionsRow" unique_id=2070113627]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_constants/separation = 10
 
-[node name="Likes" type="Label" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/Reactions" unique_id=636944493]
+[node name="Likes" type="Label" parent="VBoxContainer/Footer/ReactionsRow/Reactions" unique_id=1437852892]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
-theme_override_styles/normal = SubResource("StyleBoxFlat_h4v2s")
-text = "👍12"
+text = "👍 12"
 
-[node name="Hooray" type="Label" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/Reactions" unique_id=949185995]
+[node name="Hooray" type="Label" parent="VBoxContainer/Footer/ReactionsRow/Reactions" unique_id=969193826]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
-theme_override_styles/normal = SubResource("StyleBoxFlat_h4v2s")
-text = "🎉12"
+text = "🎉 12"
 
-[node name="Laugh" type="Label" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/Reactions" unique_id=183203802]
+[node name="Laugh" type="Label" parent="VBoxContainer/Footer/ReactionsRow/Reactions" unique_id=1886660182]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
-theme_override_styles/normal = SubResource("StyleBoxFlat_h4v2s")
-text = "👀12"
+text = "😂 12"
 
-[node name="Heart" type="Label" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/Reactions" unique_id=71371725]
+[node name="Heart" type="Label" parent="VBoxContainer/Footer/ReactionsRow/Reactions" unique_id=470040995]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
-theme_override_styles/normal = SubResource("StyleBoxFlat_h4v2s")
-text = "❤️12"
+text = "❤️ 12"
 
-[node name="Rocket" type="Label" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/Reactions" unique_id=1656086777]
+[node name="Rocket" type="Label" parent="VBoxContainer/Footer/ReactionsRow/Reactions" unique_id=2080204551]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
-theme_override_styles/normal = SubResource("StyleBoxFlat_h4v2s")
-text = "😕12"
+text = "🚀 12"
 
-[node name="Eyes" type="Label" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/Reactions" unique_id=1808937606]
+[node name="Eyes" type="Label" parent="VBoxContainer/Footer/ReactionsRow/Reactions" unique_id=1044694333]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
-theme_override_styles/normal = SubResource("StyleBoxFlat_h4v2s")
-text = "🚀12"
+text = "👀 12"
 
-[node name="Confused" type="Label" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/Reactions" unique_id=579545502]
+[node name="Confused" type="Label" parent="VBoxContainer/Footer/ReactionsRow/Reactions" unique_id=1882345031]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
-theme_override_styles/normal = SubResource("StyleBoxFlat_h4v2s")
-text = "😂12"
+text = "😕 12"
 
-[node name="ReadFull" type="LinkButton" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/Reactions" unique_id=2012014614]
+[node name="ReadFull" type="LinkButton" parent="VBoxContainer/Footer/ReactionsRow" unique_id=1801184274]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 10
 text = "Read Full Announcement"
 
-[node name="Control" type="Control" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer" unique_id=1517373925]
-custom_minimum_size = Vector2(0, 20)
+[node name="BottomRow" type="HBoxContainer" parent="VBoxContainer/Footer" unique_id=2147107419]
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer" unique_id=1651367355]
-layout_mode = 2
-alignment = 2
-
-[node name="InfoLabel" type="Label" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/HBoxContainer" unique_id=607109208]
+[node name="InfoLabel" type="Label" parent="VBoxContainer/Footer/BottomRow" unique_id=622425943]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-horizontal_alignment = 2
-autowrap_mode = 3
+vertical_alignment = 1
 
-[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/HBoxContainer" unique_id=1270745302]
-self_modulate = Color(0, 0, 0, 1)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_styles/panel = SubResource("StyleBoxFlat_h4v2s")
-
-[node name="HBox" type="HBoxContainer" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/HBoxContainer/PanelContainer" unique_id=741493187]
-layout_mode = 2
-alignment = 2
-
-[node name="Loading" type="CenterContainer" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/HBoxContainer/PanelContainer/HBox" unique_id=1139489247]
+[node name="Loading" type="CenterContainer" parent="VBoxContainer/Footer/BottomRow" unique_id=215301131]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
 
-[node name="Control" type="Control" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/HBoxContainer/PanelContainer/HBox/Loading" unique_id=119536783]
-layout_mode = 2
-
-[node name="LoadingIcon" type="Sprite2D" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/HBoxContainer/PanelContainer/HBox/Loading/Control" unique_id=1767382840]
+[node name="LoadingIcon" type="TextureRect" parent="VBoxContainer/Footer/BottomRow/Loading" unique_id=1319619876]
 unique_name_in_owner = true
-texture = ExtResource("2_2pgh7")
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
 
-[node name="Restart" type="Button" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/HBoxContainer/PanelContainer/HBox" unique_id=987427271]
+[node name="Restart" type="Button" parent="VBoxContainer/Footer/BottomRow" unique_id=574896655]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
-size_flags_vertical = 4
 text = "Restart Now"
 flat = true
 
-[node name="Install" type="Button" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/HBoxContainer/PanelContainer/HBox" unique_id=1595717196]
+[node name="Install" type="Button" parent="VBoxContainer/Footer/BottomRow" unique_id=1771241791]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 4
 text = "Install"
-flat = true
 
-[node name="InstallWarning" type="PanelContainer" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/HBoxContainer/PanelContainer/HBox/Install" unique_id=205031465]
-unique_name_in_owner = true
-visible = false
-self_modulate = Color(0, 0, 0, 1)
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -493.0
-offset_top = -92.0
-offset_right = 5.0
-offset_bottom = -8.0
-grow_horizontal = 0
-theme_override_styles/panel = SubResource("StyleBoxFlat_utju1")
-
-[node name="Label" type="Label" parent="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/HBoxContainer/PanelContainer/HBox/Install/InstallWarning" unique_id=941681170]
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "Be careful. This will delete the addons/yard folder and install the new version. Any custom changes in that folder will be lost.
-To be on the safe side, use version control!"
-autowrap_mode = 3
-
-[node name="Control2" type="Control" parent="VBoxContainer/HBoxContainer2" unique_id=1569425188]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 7
-
-[node name="Close" type="HBoxContainer" parent="VBoxContainer" unique_id=871931908]
-layout_mode = 2
-alignment = 1
-
-[node name="CloseButton" type="Button" parent="VBoxContainer/Close" unique_id=589871687]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Close"
-
-[connection signal="pressed" from="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/Panel/Refresh" to="." method="_on_refresh_pressed"]
-[connection signal="meta_clicked" from="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/Content" to="." method="_on_content_meta_clicked"]
-[connection signal="pressed" from="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/HBoxContainer/PanelContainer/HBox/Restart" to="." method="_on_restart_pressed"]
-[connection signal="mouse_entered" from="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/HBoxContainer/PanelContainer/HBox/Install" to="." method="_on_install_mouse_entered"]
-[connection signal="mouse_exited" from="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/HBoxContainer/PanelContainer/HBox/Install" to="." method="_on_install_mouse_exited"]
-[connection signal="pressed" from="VBoxContainer/HBoxContainer2/VBox/ScrollContainer/VBoxContainer/HBoxContainer/PanelContainer/HBox/Install" to="." method="_on_install_pressed"]
-[connection signal="pressed" from="VBoxContainer/Close/CloseButton" to="." method="_on_close_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/Header/TitleRow/Refresh" to="." method="_on_refresh_pressed"]
+[connection signal="pressed" from="VBoxContainer/Footer/BottomRow/Restart" to="." method="_on_restart_pressed"]
+[connection signal="pressed" from="VBoxContainer/Footer/BottomRow/Install" to="." method="_on_install_pressed"]

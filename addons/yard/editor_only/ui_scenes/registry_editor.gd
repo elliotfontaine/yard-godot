@@ -81,7 +81,6 @@ var _fuz := YardFuzzySearch.new()
 @onready var read_me_window: AcceptDialog = $ReadMeWindow
 @onready var version_button: Button = %VersionButton
 @onready var update_manager: UpdateManager = %UpdateManager
-@onready var update_window: Window = %UpdateWindow
 @onready var update_install_window: UpdateInstallWindow = %UpdateInstallWindow
 
 
@@ -121,8 +120,6 @@ func _ready() -> void:
 	update_manager.download_completed.connect(update_install_window.set_download_result)
 	update_install_window.install_requested.connect(update_manager.request_update_download)
 	update_install_window.refresh_requested.connect(update_manager.request_update_check)
-	update_install_window.close_requested.connect(update_window.hide)
-	update_window.close_requested.connect(update_window.hide)
 	EditorInterface.get_resource_filesystem().resources_reimported.connect(_on_resources_reimported)
 	version_button.text = update_manager.get_current_version()
 	update_manager.request_update_check()
@@ -893,9 +890,7 @@ func _on_read_me_button_pressed() -> void:
 
 
 func _on_version_button_pressed() -> void:
-	update_window.popup_centered_ratio(0.5)
-	update_window.mode = Window.MODE_WINDOWED
-	update_window.grab_focus()
+	update_install_window.popup_centered_ratio(0.5)
 
 
 func _on_update_manager_update_check_completed(result: UpdateManager.UpdateCheckResult) -> void:
@@ -923,5 +918,5 @@ func _on_update_manager_update_check_completed(result: UpdateManager.UpdateCheck
 
 
 func _on_resources_reimported(_resources: Array) -> void:
-	if update_window.visible:
-		update_window.grab_focus()
+	if update_install_window.visible:
+		update_install_window.grab_focus()

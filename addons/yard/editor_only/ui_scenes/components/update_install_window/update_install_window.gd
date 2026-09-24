@@ -5,18 +5,29 @@
 # SPDX-License-Identifier: MIT
 
 @tool
-extends Control
+extends AcceptDialog
+
+## Displays release info and drives an update. Knows nothing about its
+## container: it only asks for things via signals, and gets fed data through
+## load_info()/set_download_result(). Closing is handled by AcceptDialog's
+## own OK button (relabeled "Close"), nothing to wire up for that.
 
 signal install_requested
 signal refresh_requested
-signal close_requested
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const Compat := Namespace.Compat
 const EditorThemeUtils := Namespace.EditorThemeUtils
 const UpdateManager := Namespace.UpdateManager
 
+const INSTALL_WARNING := (
+	"Be careful. This will delete the addons/yard folder and install the new version."
+	+ " Any custom changes in that folder will be lost.\nTo be on the safe side, use version control!"
+)
+
 var current_info := { }
+
+@onready var content: RichTextLabel = %Content
 
 
 func _ready() -> void:
@@ -25,9 +36,25 @@ func _ready() -> void:
 
 	var download_icon := &"AssetStore" if Compat.is_engine_version_equal_or_newer(4, 7) else &"AssetLib"
 	%Install.icon = EditorThemeUtils.editor_theme.get_icon(download_icon, &"EditorIcons")
+	%Install.tooltip_text = INSTALL_WARNING
 	%LoadingIcon.texture = EditorThemeUtils.editor_theme.get_icon(&"KeyTrackScale", &"EditorIcons")
-	%InstallWarning.modulate = EditorThemeUtils.color_warning
-	%CloseButton.icon = EditorThemeUtils.editor_theme.get_icon(&"Close", &"EditorIcons")
+
+	var mono: Font = get_theme_font(&"font", &"CodeEdit")
+	content.add_theme_font_override(&"mono_font", mono)
+	content.add_theme_color_override(
+		&"table_even_row_bg",
+		get_theme_color(&"prop_section", &"Editor"),
+	)
+	content.add_theme_color_override(
+		&"table_odd_row_bg",
+		get_theme_color(&"separator_color", &"Editor"),
+	)
+
+	content.h2.font_color = get_theme_color(&"accent_color", &"Editor")
+	content.h3.font_color = get_theme_color(&"font_focus_color", &"Editor")
+
+	content.code_color = get_theme_color(&"warning_color", &"Editor")
+	content.code_background_color = get_theme_color(&"background", &"Editor")
 
 
 func load_info(info: Dictionary, result: UpdateManager.UpdateCheckResult) -> void:
@@ -35,10 +62,11 @@ func load_info(info: Dictionary, result: UpdateManager.UpdateCheckResult) -> voi
 	if result == UpdateManager.UpdateCheckResult.NO_ACCESS:
 		%State.text = "No Information Available"
 		%UpdateName.text = "Unable to access versions."
-		%UpdateName.add_theme_color_override("font_color", EditorThemeUtils.color_message)
+		%UpdateName.remove_theme_color_override("font_color")
 		%Content.text = "You are probably not connected to the internet. Fair enough."
 		%ShortInfo.text = "Huh, what happened here?"
 		%ReadFull.hide()
+		%Reactions.hide()
 		%Install.disabled = true
 		return
 
@@ -49,7 +77,7 @@ func load_info(info: Dictionary, result: UpdateManager.UpdateCheckResult) -> voi
 		info["published_at"] = "????T"
 		info["author"] = { 'login': "???" }
 		%State.text = "Where are we Doc?"
-		%UpdateName.add_theme_color_override("font_color", EditorThemeUtils.color_message)
+		%UpdateName.remove_theme_color_override("font_color")
 		%Install.disabled = true
 
 	elif result == UpdateManager.UpdateCheckResult.UPDATE_AVAILABLE:
@@ -62,7 +90,7 @@ func load_info(info: Dictionary, result: UpdateManager.UpdateCheckResult) -> voi
 		%Install.disabled = true
 
 	%UpdateName.text = info.name
-	%Content.text = markdown_to_bbcode(info.body).get_slice("\n[font_size", 0).strip_edges()
+	%Content.text = info.body
 	%ShortInfo.text = "Published on " + info.published_at.substr(0, info.published_at.find('T')) + " by " + info \
 			.author \
 			.login
@@ -112,79 +140,6 @@ func set_download_result(result: UpdateManager.DownloadResult) -> void:
 			%InfoLabel.modulate = EditorThemeUtils.color_error
 
 
-func markdown_to_bbcode(text: String) -> String:
-	var font_sizes := { 1: 20, 2: 16, 3: 16, 4: 14, 5: 14 }
-	var title_regex := RegEx.create_from_string('(^|\n)((?<level>#+)(?<title>.*))\\n')
-	var res := title_regex.search(text)
-	while res:
-		text = text.replace(
-			res.get_string(2),
-			'[font_size=' + str(font_sizes[len(res.get_string('level'))])
-			+ ']' + res.get_string('title').strip_edges() + '[/font_size]',
-		)
-		res = title_regex.search(text)
-
-	var link_regex := RegEx.create_from_string('(?<!\\!)\\[(?<text>[^\\]]*)]\\((?<link>[^)]*)\\)')
-	res = link_regex.search(text)
-	while res:
-		text = text.replace(
-			res.get_string(),
-			'[url=' + res.get_string('link') + ']' + res.get_string('text').strip_edges() + '[/url]',
-		)
-		res = link_regex.search(text)
-
-	var image_regex := RegEx.create_from_string('\\!\\[(?<text>[^\\]]*)]\\((?<link>[^)]*)\\)\n*')
-	res = image_regex.search(text)
-	while res:
-		text = text.replace(
-			res.get_string(),
-			'[url=' + res.get_string('link') + ']' + res.get_string('text').strip_edges() + '[/url]',
-		)
-		res = image_regex.search(text)
-
-	var italics_regex := RegEx.create_from_string('\\*(?<text>[^\\*\\n]*)\\*')
-	res = italics_regex.search(text)
-	while res:
-		text = text.replace(res.get_string(), '[i]' + res.get_string('text').strip_edges() + '[/i]')
-		res = italics_regex.search(text)
-
-	var bullets_regex := RegEx.create_from_string('(?<=\\n)(\\*|-)(?<text>[^\\*\\n]*)\\n')
-	res = bullets_regex.search(text)
-	while res:
-		text = text.replace(
-			res.get_string(),
-			'[ul]' + res.get_string('text').strip_edges() + '[/ul]\n',
-		)
-		res = bullets_regex.search(text)
-
-	var small_code_regex := RegEx.create_from_string('(?<!`)`(?<text>[^`]+)`')
-	res = small_code_regex.search(text)
-	while res:
-		text = text.replace(
-			res.get_string(),
-			'[code][color='
-			+ EditorThemeUtils.editor_theme.get_color("accent_color", "Editor").to_html()
-			+ ']' + res.get_string('text').strip_edges() + '[/color][/code]',
-		)
-		res = small_code_regex.search(text)
-
-	var big_code_regex := RegEx.create_from_string('(?<!`)```(?<text>[^`]+)```')
-	res = big_code_regex.search(text)
-	while res:
-		text = text.replace(
-			res.get_string(),
-			'[code][bgcolor='
-			+ EditorThemeUtils
-			.editor_theme
-			.get_color("box_selection_fill_color", "Editor")
-			.to_html()
-			+ ']' + res.get_string('text').strip_edges() + '[/bgcolor][/code]',
-		)
-		res = big_code_regex.search(text)
-
-	return text
-
-
 func _on_install_pressed() -> void:
 	install_requested.emit()
 
@@ -201,22 +156,5 @@ func _on_refresh_pressed() -> void:
 	refresh_requested.emit()
 
 
-func _on_content_meta_clicked(meta: Variant) -> void:
-	OS.shell_open(str(meta))
-
-
-func _on_install_mouse_entered() -> void:
-	if not %Install.disabled:
-		%InstallWarning.show()
-
-
-func _on_install_mouse_exited() -> void:
-	%InstallWarning.hide()
-
-
 func _on_restart_pressed() -> void:
 	EditorInterface.restart_editor(true)
-
-
-func _on_close_button_pressed() -> void:
-	close_requested.emit()

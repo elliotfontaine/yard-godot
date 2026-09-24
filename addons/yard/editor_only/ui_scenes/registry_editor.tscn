@@ -284,16 +284,9 @@ visible = false
 [node name="UpdateManager" parent="." unique_id=702632922 instance=ExtResource("10_upmgr")]
 unique_name_in_owner = true
 
-[node name="UpdateWindow" type="Window" parent="." unique_id=1122959990]
+[node name="UpdateInstallWindow" parent="." unique_id=1879623580 instance=ExtResource("11_upiw")]
 unique_name_in_owner = true
-title = "YARD Update"
-initial_position = 2
-size = Vector2i(700, 500)
 visible = false
-wrap_controls = true
-
-[node name="UpdateInstallWindow" parent="UpdateWindow" unique_id=1879623580 instance=ExtResource("11_upiw")]
-unique_name_in_owner = true
 
 [connection signal="about_to_popup" from="VBoxContainer/HBoxContainer/FileMenuButton" to="." method="_on_file_menu_button_about_to_popup"]
 [connection signal="about_to_popup" from="VBoxContainer/HBoxContainer/EditMenuButton" to="." method="_on_edit_menu_button_about_to_popup"]
