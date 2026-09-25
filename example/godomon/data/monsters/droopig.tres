@@ -10,6 +10,9 @@
 [sub_resource type="Resource" id="Resource_kyjbj"]
 script = ExtResource("3_e3k8h")
 target_species = &"hoolihog"
+trigger = 3
+requirement = 13
+parameter_int = 3
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

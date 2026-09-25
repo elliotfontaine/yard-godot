@@ -10,6 +10,7 @@
 [sub_resource type="Resource" id="Resource_yu0dl"]
 script = ExtResource("3_q23kg")
 target_species = &"bombustoad"
+min_level = 30
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

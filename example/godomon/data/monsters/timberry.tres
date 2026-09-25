@@ -10,6 +10,7 @@
 [sub_resource type="Resource" id="Resource_2w53f"]
 script = ExtResource("3_h4ah6")
 target_species = &"howliage"
+min_level = 16
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

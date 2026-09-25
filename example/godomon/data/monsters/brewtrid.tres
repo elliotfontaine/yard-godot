@@ -10,6 +10,8 @@
 [sub_resource type="Resource" id="Resource_33dx8"]
 script = ExtResource("1_plgs1")
 target_species = &"forbiddron"
+context = 4
+min_level = 42
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

@@ -10,6 +10,7 @@
 [sub_resource type="Resource" id="Resource_swkjd"]
 script = ExtResource("1_426bs")
 target_species = &"tuffettry"
+min_level = 34
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

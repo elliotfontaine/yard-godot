@@ -13,6 +13,7 @@
 [sub_resource type="Resource" id="Resource_d74cx"]
 script = ExtResource("1_0vanl")
 target_species = &"tsushimi"
+min_level = 30
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

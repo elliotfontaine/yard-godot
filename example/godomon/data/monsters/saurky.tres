@@ -8,6 +8,7 @@
 [sub_resource type="Resource" id="Resource_s7sn7"]
 script = ExtResource("1_i0ws1")
 target_species = &"crestaka"
+min_level = 16
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

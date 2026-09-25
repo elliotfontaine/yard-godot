@@ -10,6 +10,7 @@
 [sub_resource type="Resource" id="Resource_l8e44"]
 script = ExtResource("3_mrw6o")
 target_species = &"viscolor"
+min_level = 26
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

@@ -10,6 +10,8 @@
 [sub_resource type="Resource" id="Resource_e3k7t"]
 script = ExtResource("1_5qim8")
 target_species = &"pomprim"
+context = 1
+min_level = 32
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

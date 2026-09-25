@@ -10,6 +10,7 @@
 [sub_resource type="Resource" id="Resource_4ba6w"]
 script = ExtResource("3_wprko")
 target_species = &"rainther"
+min_level = 16
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

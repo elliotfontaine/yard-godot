@@ -13,6 +13,7 @@
 [sub_resource type="Resource" id="Resource_q23kg"]
 script = ExtResource("1_oi0yv")
 target_species = &"firomenis"
+min_level = 55
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

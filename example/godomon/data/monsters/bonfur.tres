@@ -10,6 +10,7 @@
 [sub_resource type="Resource" id="Resource_22f2m"]
 script = ExtResource("3_4myvu")
 target_species = &"tindursa"
+min_level = 16
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

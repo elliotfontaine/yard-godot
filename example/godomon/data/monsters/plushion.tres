@@ -10,6 +10,8 @@
 [sub_resource type="Resource" id="Resource_3v88j"]
 script = ExtResource("1_6bx6c")
 target_species = &"rocotton"
+requirement = 1
+parameter_int = 220
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

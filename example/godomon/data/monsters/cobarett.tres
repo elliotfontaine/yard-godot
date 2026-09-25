@@ -12,6 +12,7 @@
 [sub_resource type="Resource" id="Resource_13ikq"]
 script = ExtResource("1_6e4dl")
 target_species = &"pythonova"
+min_level = 36
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

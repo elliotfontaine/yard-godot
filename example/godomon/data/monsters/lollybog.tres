@@ -10,6 +10,7 @@
 [sub_resource type="Resource" id="Resource_j6ixq"]
 script = ExtResource("1_bs0f4")
 target_species = &"brewtrid"
+min_level = 22
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

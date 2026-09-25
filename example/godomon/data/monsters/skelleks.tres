@@ -10,6 +10,7 @@
 [sub_resource type="Resource" id="Resource_kg3bo"]
 script = ExtResource("3_yu0dl")
 target_species = &"negagen"
+min_level = 30
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

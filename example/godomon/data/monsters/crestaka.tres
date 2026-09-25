@@ -8,6 +8,7 @@
 [sub_resource type="Resource" id="Resource_vjd8g"]
 script = ExtResource("1_akrwv")
 target_species = &"avipex"
+min_level = 36
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

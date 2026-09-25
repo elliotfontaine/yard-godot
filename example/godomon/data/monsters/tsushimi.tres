@@ -12,6 +12,7 @@
 [sub_resource type="Resource" id="Resource_duxuu"]
 script = ExtResource("1_ftm8p")
 target_species = &"tobishimi"
+min_level = 55
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

@@ -10,6 +10,8 @@
 [sub_resource type="Resource" id="Resource_uethx"]
 script = ExtResource("3_que32")
 target_species = &"pourka"
+context = 10
+min_level = 30
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

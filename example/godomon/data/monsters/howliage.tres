@@ -10,6 +10,7 @@
 [sub_resource type="Resource" id="Resource_1u46t"]
 script = ExtResource("3_414uh")
 target_species = &"botanine"
+min_level = 36
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]

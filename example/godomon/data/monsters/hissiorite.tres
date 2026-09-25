@@ -12,6 +12,7 @@
 [sub_resource type="Resource" id="Resource_rog3g"]
 script = ExtResource("1_668oc")
 target_species = &"cobarett"
+min_level = 16
 metadata/_custom_type_script = "uid://dh362naomk3hc"
 
 [resource]
