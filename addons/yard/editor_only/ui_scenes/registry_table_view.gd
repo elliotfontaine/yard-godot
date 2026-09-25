@@ -289,12 +289,17 @@ func get_resource_row_data(
 	if columns_info.is_empty() or not res:
 		return { }
 
+	var displayed_props: Dictionary[StringName, bool] = { }
+	for prop: Dictionary in res.get_property_list():
+		if _can_display_property(prop):
+			displayed_props[prop[&"name"]] = true
+
 	var row: Dictionary[StringName, Variant] = { }
 	for prop: Dictionary in columns_info:
 		var prop_name: StringName = prop[&"name"]
 		if is_column_disabled(prop_name) or ClassUtils.is_class_property(prop):
 			continue
-		if prop_name in res:
+		if displayed_props.has(prop_name):
 			row.set(prop_name, res.get(prop_name))
 	return row
 
@@ -442,8 +447,16 @@ func _collect_props(resources: Array[Resource]) -> Dictionary[StringName, Dictio
 	for res: Resource in resources:
 		if res:
 			for prop: Dictionary in res.get_property_list():
-				prop[&"owner_object"] = res
-				found_props[prop[&"name"]] = prop
+				var prop_name: StringName = prop[&"name"]
+				if (
+					found_props.has(prop_name)
+					and (
+						_can_display_property(found_props[prop_name])
+						or not _can_display_property(prop)
+					)
+				):
+					continue
+				found_props[prop_name] = prop
 	return found_props
 
 
