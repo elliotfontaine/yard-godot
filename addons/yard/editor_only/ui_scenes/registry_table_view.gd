@@ -612,20 +612,22 @@ func _update_subresource_view() -> void:
 
 ## Walks the whole subresource stack from the root registry entries down to the deepest
 ## level, expanding Array[Resource] properties into one row per element along the way.
-## Returns row_id -> {resource, display_id}. A Resource property keeps its parent's row_id;
-## an Array element appends ":n" to it. row_id must be used as an opaque key, never
-## parsed back — the resource reference and display string are resolved once, here.
+## Returns row_id -> {resource, display_id, file_resource}. A Resource property keeps its
+## parent's row_id; an Array element appends ":n" to it. row_id is an opaque key, never parsed.
+## file_resource is the file-backed resource that saves this row's resource, held to keep it loaded.
 func _resolve_subresource_leaves() -> Dictionary[StringName, Dictionary]:
 	var current: Array[Dictionary] = []
 	for uid in current_registry.get_all_uids():
 		if not RegistryIO.is_uid_valid(uid):
 			continue
 		var string_id := current_registry.get_string_id(uid)
+		var entry := current_registry.load_entry(uid)
 		current.append(
 			{
 				&"row_id": string_id,
-				&"resource": current_registry.load_entry(uid),
+				&"resource": entry,
 				&"display_id": String(string_id),
+				&"file_resource": entry,
 			}
 		)
 
@@ -635,25 +637,30 @@ func _resolve_subresource_leaves() -> Dictionary[StringName, Dictionary]:
 			var parent_res: Resource = item[&"resource"]
 			if not parent_res or frame.property not in parent_res:
 				continue
+			var parent_file_res: Resource = item[&"file_resource"]
 			var value: Variant = parent_res.get(frame.property)
 			if value is Array:
 				var arr: Array = value
 				for i in arr.size():
 					if arr[i] is not Resource:
 						continue
+					var element: Resource = arr[i]
 					next.append(
 						{
 							&"row_id": StringName("%s:%d" % [item[&"row_id"], i]),
-							&"resource": arr[i],
+							&"resource": element,
 							&"display_id": "%s[%d]" % [item[&"display_id"], i],
+							&"file_resource": parent_file_res if element.is_built_in() else element,
 						}
 					)
 			elif value is Resource:
+				var sub_res: Resource = value
 				next.append(
 					{
 						&"row_id": item[&"row_id"],
-						&"resource": value,
+						&"resource": sub_res,
 						&"display_id": item[&"display_id"],
+						&"file_resource": parent_file_res if sub_res.is_built_in() else sub_res,
 					}
 				)
 		current = next
@@ -764,15 +771,24 @@ func _edit_subresource_property(
 	if not res:
 		return
 	var display_id: String = row_data.get(&"display_id", "")
-	_apply_property_edit(res, column, old_value, new_value, "%s—>%s" % [display_id, column])
+	_apply_property_edit(
+		res,
+		column,
+		old_value,
+		new_value,
+		"%s—>%s" % [display_id, column],
+		row_data.get(&"file_resource"),
+	)
 
 
+## file_resource: the resource saved to the file [param res] is embedded in, if built-in.
 func _apply_property_edit(
 	res: Resource,
 	property: StringName,
 	old_value: Variant,
 	new_value: Variant,
 	label: String,
+	file_resource: Resource = null,
 ) -> void:
 	if not property in res:
 		YardLogger.error("Property %s not in resource" % property)
@@ -820,6 +836,11 @@ func _apply_property_edit(
 	undo_redo.create_action("Set %s" % label)
 	undo_redo.add_do_property(res, property, new_value)
 	undo_redo.add_undo_property(res, property, old_value)
+	if file_resource and file_resource != res:
+		# A built-in resource is only saved with its file, and the editor only saves edited
+		# files. The action also keeps file_resource loaded until it is saved.
+		undo_redo.add_do_method(EditorInterface, &"set_object_edited", file_resource, true)
+		undo_redo.add_undo_method(EditorInterface, &"set_object_edited", file_resource, true)
 	undo_redo.add_undo_method(self, &"update_view")
 	undo_redo.commit_action()
 
@@ -1050,7 +1071,7 @@ func _on_inspector_property_edited(_property: StringName) -> void:
 	var res: Resource = object
 	if is_in_subresource_view():
 		for row_data: Dictionary in _subresource_rows.values():
-			if row_data.get(&"resource").resource_path == res.resource_path:
+			if row_data.get(&"resource") == res:
 				update_view()
 				return
 		return
