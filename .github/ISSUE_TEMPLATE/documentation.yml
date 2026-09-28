@@ -1,0 +1,39 @@
+# SPDX-FileCopyrightText: 2025-2026, Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>
+# SPDX-FileCopyrightText: 2026-present, YARD contributors (see AUTHORS.md)
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: Documentation issue
+description: Report outdated, wrong or missing documentation
+labels: ["documentation"]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        - Write a descriptive issue title above.
+        - Search [open](https://github.com/elliotfontaine/yard-godot/issues) and [closed](https://github.com/elliotfontaine/yard-godot/issues?q=is%3Aissue+is%3Aclosed) issues to ensure it has not already been reported.
+
+  - type: dropdown
+    attributes:
+      label: Document
+      options:
+        - README.md
+        - CONTRIBUTING.md
+        - ARCHITECTURE.md
+        - Code documentation (doc comments)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: What's wrong
+      description: Quote or link the part of the documentation, and explain what doesn't match the code or is missing.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Suggested fix
+      description: If you know what it should say, write it here.

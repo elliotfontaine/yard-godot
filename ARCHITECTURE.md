@@ -9,6 +9,9 @@ SPDX-License-Identifier: MIT
 
 This document describes how the codebase is organized and the rules specific to each part of it. The contribution process and the conventions that apply to all code are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
+> [!WARNING]
+> This document is maintained by hand and may lag behind the code. If something here doesn't match what you see, trust the code, and please [open an issue](https://github.com/elliotfontaine/yard-godot/issues/new?template=documentation.yml) or fix it in your pull request.
+
 ## Project structure
 
 ```r
