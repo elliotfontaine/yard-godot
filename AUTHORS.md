@@ -27,8 +27,9 @@ GitHub usernames appear in parentheses, or on their own when no other name is av
 ## Developers
 
     Cer0reZ
+    François de la Taste (francoisdlt)
     Guihurt
     Marion Allard (Mar0Lard)
     skison
+    Thomas ten Cate (ttencate)
     Verfeon
-    François de la Taste (francoisdlt)
