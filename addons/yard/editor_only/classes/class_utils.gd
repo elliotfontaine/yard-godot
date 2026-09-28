@@ -21,6 +21,60 @@ const _SCRIPT_BODY_EDITOR := "static func eval():
 
 const _SCRIPT_BODY_RUNTIME := "static func eval(): return %s"
 
+## Conversions applied by [method convert_implicitly]: value type -> declared types it converts to.
+## Conversions to String are handled separately, for any value.
+const _IMPLICIT_CONVERSIONS: Dictionary[Variant.Type, Array] = {
+	TYPE_BOOL: [TYPE_INT],
+	TYPE_INT: [TYPE_FLOAT, TYPE_BOOL],
+	TYPE_FLOAT: [TYPE_INT],
+	TYPE_STRING: [TYPE_STRING_NAME],
+	TYPE_VECTOR2: [TYPE_VECTOR2I],
+	TYPE_VECTOR2I: [TYPE_VECTOR2],
+	TYPE_VECTOR3: [TYPE_VECTOR3I],
+	TYPE_VECTOR3I: [TYPE_VECTOR3],
+	TYPE_VECTOR4: [TYPE_VECTOR4I],
+	TYPE_VECTOR4I: [TYPE_VECTOR4],
+	TYPE_RECT2: [TYPE_RECT2I],
+	TYPE_RECT2I: [TYPE_RECT2],
+	TYPE_ARRAY: [
+		TYPE_PACKED_BYTE_ARRAY,
+		TYPE_PACKED_INT32_ARRAY,
+		TYPE_PACKED_INT64_ARRAY,
+		TYPE_PACKED_FLOAT32_ARRAY,
+		TYPE_PACKED_FLOAT64_ARRAY,
+		TYPE_PACKED_STRING_ARRAY,
+		TYPE_PACKED_VECTOR2_ARRAY,
+		TYPE_PACKED_VECTOR3_ARRAY,
+		TYPE_PACKED_COLOR_ARRAY,
+		TYPE_PACKED_VECTOR4_ARRAY,
+	],
+	TYPE_PACKED_BYTE_ARRAY: [TYPE_ARRAY],
+	TYPE_PACKED_INT32_ARRAY: [
+		TYPE_ARRAY,
+		TYPE_PACKED_INT64_ARRAY,
+		TYPE_PACKED_FLOAT32_ARRAY,
+		TYPE_PACKED_FLOAT64_ARRAY,
+	],
+	TYPE_PACKED_INT64_ARRAY: [TYPE_ARRAY, TYPE_PACKED_FLOAT32_ARRAY, TYPE_PACKED_FLOAT64_ARRAY],
+	TYPE_PACKED_FLOAT32_ARRAY: [
+		TYPE_ARRAY,
+		TYPE_PACKED_INT32_ARRAY,
+		TYPE_PACKED_INT64_ARRAY,
+		TYPE_PACKED_FLOAT64_ARRAY,
+	],
+	TYPE_PACKED_FLOAT64_ARRAY: [
+		TYPE_ARRAY,
+		TYPE_PACKED_INT32_ARRAY,
+		TYPE_PACKED_INT64_ARRAY,
+		TYPE_PACKED_FLOAT32_ARRAY,
+	],
+	TYPE_PACKED_STRING_ARRAY: [TYPE_ARRAY],
+	TYPE_PACKED_VECTOR2_ARRAY: [TYPE_ARRAY],
+	TYPE_PACKED_VECTOR3_ARRAY: [TYPE_ARRAY],
+	TYPE_PACKED_COLOR_ARRAY: [TYPE_ARRAY],
+	TYPE_PACKED_VECTOR4_ARRAY: [TYPE_ARRAY],
+}
+
 
 ## Returns the inheritance tree of a class type reference or name.
 static func get_inheritance_list(class_type: Variant, include_self: bool = false) -> Array[String]:
@@ -469,6 +523,31 @@ static func get_property_declared_types(target: Variant, property_name: String) 
 			for s in str(p["hint_string"]).split(","):
 				types.append(s.strip_edges())
 	return types
+
+
+## Converts [param value] to one of [param declared_types] (see [method get_property_declared_types])
+## when an implicit conversion is supported: any value to String, or one listed in
+## [constant _IMPLICIT_CONVERSIONS]. Unlike [method @GlobalScope.type_convert], returns [param value]
+## unchanged when no conversion applies, so that [method is_assignable] rejects it.
+static func convert_implicitly(value: Variant, declared_types: Array[String]) -> Variant:
+	if type_string(TYPE_STRING) in declared_types:
+		return str(value)
+	for target_type: Variant.Type in _IMPLICIT_CONVERSIONS.get(typeof(value), []):
+		if type_string(target_type) in declared_types:
+			return type_convert(value, target_type)
+	return value
+
+
+## True if [param value] can be assigned to a property declared with one of [param declared_types]
+## (see [method get_property_declared_types]). [code]null[/code] is assignable to any class type.
+static func is_assignable(value: Variant, declared_types: Array[String]) -> bool:
+	for declared_type: String in declared_types:
+		if (
+			(is_type_builtin(typeof(value)) and type_string(typeof(value)) == declared_type)
+			or is_class_of(value, declared_type) or (value == null and is_valid(declared_type))
+		):
+			return true
+	return false
 
 
 ## Returns the default (zero/empty) value for a given built-in Variant type.

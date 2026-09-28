@@ -781,11 +781,13 @@ func _apply_property_edit(
 			)
 
 	var prop_types := ClassUtils.get_property_declared_types(res, property)
-	new_value = _convert_value(new_value, prop_types)
-	if not _is_value_assignable(new_value, prop_types, old_value):
+	new_value = ClassUtils.convert_implicitly(new_value, prop_types)
+
+	var new_value_type_name := ClassUtils.get_type_name(new_value)
+	if not ClassUtils.is_assignable(new_value, prop_types):
 		YardLogger.error(
 			"Invalid type. Couldn't set %s (%s) to %s (%s)"
-			% [property, ", ".join(prop_types), new_value, ClassUtils.get_type_name(new_value)],
+			% [property, ", ".join(prop_types), var_to_str(new_value), new_value_type_name],
 		)
 		return
 
@@ -800,35 +802,6 @@ func _apply_property_edit(
 		undo_redo.add_undo_method(EditorInterface, &"set_object_edited", file_resource, true)
 	undo_redo.add_undo_method(self, &"update_view")
 	undo_redo.commit_action()
-
-
-## Converts [param value] to the declared type of a property when an implicit conversion
-## is supported (numbers to String). Returns [param value] unchanged otherwise.
-static func _convert_value(value: Variant, prop_types: Array[String]) -> Variant:
-	if typeof(value) in [TYPE_INT, TYPE_FLOAT] and type_string(TYPE_STRING) in prop_types:
-		return str(value)
-	return value
-
-
-## True if [param value] can be set on a property declared with one of [param prop_types].
-## null is accepted to clear an Object property, which [param old_value] tells apart.
-static func _is_value_assignable(
-	value: Variant,
-	prop_types: Array[String],
-	old_value: Variant,
-) -> bool:
-	for prop_type: String in prop_types:
-		if (
-			(ClassUtils.is_type_builtin(typeof(value)) and type_string(typeof(value)) == prop_type)
-			or (
-				typeof(value) in [TYPE_INT, TYPE_FLOAT]
-				and prop_type in [type_string(TYPE_INT), type_string(TYPE_FLOAT)]
-			)
-			or ClassUtils.is_class_of(value, prop_type)
-			or (value == null and typeof(old_value) == TYPE_OBJECT)
-		):
-			return true
-	return false
 
 
 func _ask_confirm_delete_entries() -> void:
