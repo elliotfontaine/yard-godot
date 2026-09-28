@@ -588,10 +588,7 @@ func _build_column_submenu(identifier: StringName) -> PopupMenu:
 	var submenu := PopupMenu.new()
 	submenu.hide_on_checkable_item_selection = false
 	submenu.add_check_item(tr("Frozen"), ColumnMenuAction.FROZEN)
-	submenu.set_item_checked(
-		submenu.get_item_index(ColumnMenuAction.FROZEN),
-		registry_table_view.is_column_frozen(identifier),
-	)
+	registry_table_view.update_column_menu_items(submenu, identifier)
 	submenu.id_pressed.connect(_on_column_submenu_id_pressed.bind(identifier, submenu))
 	return submenu
 
@@ -776,19 +773,15 @@ func _on_columns_menu_id_pressed(id: int) -> void:
 	var item_idx := popup.get_item_index(id)
 	popup.toggle_item_checked(item_idx)
 	var checked := popup.is_item_checked(item_idx)
-	var cache := registry_table_view.current_cache_data
 	match id:
 		0: # Parent props first
+			var cache := registry_table_view.current_cache_data
 			cache.parent_props_first = checked
+			cache.save()
+			registry_table_view.update_view()
 		_:
 			var identifier: StringName = popup.get_item_metadata(item_idx)
-			var key := registry_table_view.resolve_column_storage_key(identifier)
-			if checked:
-				cache.disabled_columns.erase(key)
-			elif key not in cache.disabled_columns:
-				cache.disabled_columns.append(key)
-	cache.save()
-	registry_table_view.update_view()
+			registry_table_view.set_column_disabled(identifier, not checked)
 
 
 func _on_column_submenu_id_pressed(
@@ -796,20 +789,8 @@ func _on_column_submenu_id_pressed(
 	identifier: StringName,
 	submenu: PopupMenu,
 ) -> void:
-	var item_idx := submenu.get_item_index(action_id)
-	submenu.toggle_item_checked(item_idx)
-	var checked := submenu.is_item_checked(item_idx)
-	var cache := registry_table_view.current_cache_data
-	match action_id:
-		ColumnMenuAction.FROZEN:
-			var key := registry_table_view.resolve_column_storage_key(identifier)
-			if checked:
-				if key not in cache.frozen_columns:
-					cache.frozen_columns.append(key)
-			else:
-				cache.frozen_columns.erase(key)
-	cache.save()
-	registry_table_view.update_view()
+	registry_table_view.do_column_menu_action(action_id, identifier)
+	registry_table_view.update_column_menu_items(submenu, identifier)
 
 
 func _on_itemlist_registries_dropped(registries: Array[Registry]) -> void:

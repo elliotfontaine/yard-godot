@@ -21,10 +21,12 @@ enum EditMenuAction {
 	SELECT_ALL = 9,
 	INVERT_SELECTION = 10,
 	UNSELECT = 11,
-	OPEN_SUBRESOURCES = 12,
+	SUBRESOURCES_TABLE = ColumnMenuAction.SUBRESOURCES_TABLE,
 }
 enum ColumnMenuAction {
+	HIDE = 0,
 	FROZEN = 1,
+	SUBRESOURCES_TABLE = 99,
 }
 
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
@@ -75,9 +77,11 @@ var _subresource_rows: Dictionary[StringName, Dictionary] = { }
 var _root_properties_column_info: Array[Dictionary]
 var _uid_resource_to_inspect: String
 var _subresource_to_inspect: Resource
+var _context_column: StringName
 
 @onready var data_table: DataTable = %DataTable
 @onready var edit_context_menu: PopupMenu = %EditContextMenu
+@onready var column_context_menu: PopupMenu = %ColumnContextMenu
 @onready var delete_entries_confirmation_dialog := %DeleteEntriesConfirmationDialog
 @onready var drag_and_drop_info_panel: PanelContainer = %DragAndDropInfoPanel
 @onready var focus_panel: PanelContainer = %FocusPanel
@@ -94,6 +98,7 @@ func _ready() -> void:
 
 	data_table.cell_selected.connect(_on_cell_selected)
 	data_table.cell_right_selected.connect(_on_cell_right_selected)
+	data_table.header_right_clicked.connect(_on_header_right_clicked)
 	data_table.cell_edited.connect(_on_cell_edited)
 	data_table.column_resized.connect(_on_column_resized)
 	data_table.multiple_rows_selected.connect(_on_multiple_rows_selected)
@@ -251,7 +256,7 @@ func do_edit_menu_action(action_id: int) -> void:
 			EditorInterface.get_file_system_dock().navigate_to_path(path)
 		EditMenuAction.DUPLICATE_ENTRIES:
 			_duplicate_selected_entries()
-		EditMenuAction.OPEN_SUBRESOURCES:
+		EditMenuAction.SUBRESOURCES_TABLE:
 			_enter_subresource_view(focused_col)
 		EditMenuAction.CUT_CELL_VALUE:
 			var value: Variant = data_table.get_cell_value(focused_row, focused_col)
@@ -274,8 +279,33 @@ func do_edit_menu_action(action_id: int) -> void:
 			_unselect()
 
 
+func do_column_menu_action(action_id: int, column: StringName) -> void:
+	if not current_registry or not column:
+		return
+
+	match action_id:
+		ColumnMenuAction.HIDE:
+			set_column_disabled(column, true)
+		ColumnMenuAction.FROZEN:
+			set_column_frozen(column, not is_column_frozen(column))
+		ColumnMenuAction.SUBRESOURCES_TABLE:
+			_enter_subresource_view(column)
+
+
+func is_column_frozen(column_id: StringName) -> bool:
+	return _resolve_column_storage_key(column_id) in current_cache_data.frozen_columns
+
+
 func is_column_disabled(column_id: StringName) -> bool:
-	return resolve_column_storage_key(column_id) in current_cache_data.disabled_columns
+	return _resolve_column_storage_key(column_id) in current_cache_data.disabled_columns
+
+
+func set_column_frozen(column_id: StringName, frozen: bool) -> void:
+	_set_column_flag(current_cache_data.frozen_columns, column_id, frozen)
+
+
+func set_column_disabled(column_id: StringName, disabled: bool) -> void:
+	_set_column_flag(current_cache_data.disabled_columns, column_id, disabled)
 
 
 func set_columns_data(resources: Array[Resource]) -> void:
@@ -370,6 +400,13 @@ func toggle_edit_menu_items(edit_menu: PopupMenu) -> void:
 			edit_menu.get_item_index(EditMenuAction.DUPLICATE_ENTRIES),
 			tr("Duplicate Entry"),
 		)
+
+
+func update_column_menu_items(menu: PopupMenu, column: StringName) -> void:
+	var frozen_idx := menu.get_item_index(ColumnMenuAction.FROZEN)
+	if frozen_idx != -1:
+		menu.set_item_checked(frozen_idx, is_column_frozen(column))
+	_update_subresource_menu_item(menu, column)
 
 
 func _compute_columns_info(resources: Array[Resource]) -> Array[Dictionary]:
@@ -695,14 +732,26 @@ func _cache_key(column_id: StringName) -> StringName:
 
 ## Storage key used in disabled_columns/frozen_columns. UID and String ID stay shared
 ## and unprefixed across views; other columns are namespaced via _cache_key().
-func resolve_column_storage_key(column_id: StringName) -> StringName:
+func _resolve_column_storage_key(column_id: StringName) -> StringName:
 	if column_id in [UID_COLUMN, STRINGID_COLUMN]:
 		return column_id
 	return _cache_key(column_id)
 
 
-func is_column_frozen(column_id: StringName) -> bool:
-	return resolve_column_storage_key(column_id) in current_cache_data.frozen_columns
+## Adds or removes the column's storage key from a cache list (frozen_columns, disabled_columns),
+## then saves the cache and refreshes the view.
+func _set_column_flag(
+	flagged_columns: Array[StringName],
+	column_id: StringName,
+	enabled: bool,
+) -> void:
+	var key := _resolve_column_storage_key(column_id)
+	if not enabled:
+		flagged_columns.erase(key)
+	elif key not in flagged_columns:
+		flagged_columns.append(key)
+	current_cache_data.save()
+	update_view()
 
 
 ## Rebuilds the breadcrumb as one clickable crumb per level (root registry included),
@@ -862,31 +911,22 @@ func _add_entry_from_picker(res: Resource, string_id: String, target_dir: String
 			YardLogger.error("Failed to add entry to the registry.")
 
 
-func _toggle_edit_context_menu_items() -> void:
-	toggle_edit_menu_items(edit_context_menu)
-	_update_subresource_menu_item()
-
-
-func _update_subresource_menu_item() -> void:
-	var col := data_table.focused_col
-	var focused_column := data_table.get_column(col) if col != &"" else null
-	var can_open := focused_column != null and _column_holds_subresources(focused_column)
-	var item_idx := edit_context_menu.get_item_index(EditMenuAction.OPEN_SUBRESOURCES)
+func _update_subresource_menu_item(menu: PopupMenu, col: StringName) -> void:
+	var column := data_table.get_column(col) if col != &"" else null
+	var can_open := column != null and _column_holds_subresources(column)
+	var item_idx := menu.get_item_index(ColumnMenuAction.SUBRESOURCES_TABLE)
 	var already_present := item_idx != -1
 
 	if can_open == already_present:
 		return
 
 	if can_open:
-		edit_context_menu.add_separator()
-		edit_context_menu.add_item(tr("Open Sub-resources"), EditMenuAction.OPEN_SUBRESOURCES)
-		edit_context_menu.set_item_icon(
-			edit_context_menu.item_count - 1,
-			get_theme_icon(&"Object", &"EditorIcons"),
-		)
+		menu.add_separator()
+		menu.add_item(tr("Show Sub-resources"), ColumnMenuAction.SUBRESOURCES_TABLE)
+		menu.set_item_icon(menu.item_count - 1, get_theme_icon(&"Object", &"EditorIcons"))
 	else:
-		edit_context_menu.remove_item(item_idx)
-		edit_context_menu.remove_item(item_idx - 1) # the separator added alongside it
+		menu.remove_item(item_idx)
+		menu.remove_item(item_idx - 1) # the separator added alongside it
 
 
 func _delete_selected_entries() -> void:
@@ -977,6 +1017,12 @@ func _on_cell_right_selected(string_id: StringName, _col: StringName, _mouse_pos
 		edit_context_menu.popup(Rect2(DisplayServer.mouse_get_position(), Vector2.ZERO))
 
 
+func _on_header_right_clicked(column: StringName) -> void:
+	_context_column = column
+	if column != &"":
+		column_context_menu.popup(Rect2(DisplayServer.mouse_get_position(), Vector2.ZERO))
+
+
 func _on_multiple_rows_selected(_ids: Array[StringName]) -> void:
 	pass
 
@@ -1041,12 +1087,21 @@ func _on_edit_context_menu_id_pressed(id: int) -> void:
 	do_edit_menu_action(id)
 
 
+func _on_column_context_menu_id_pressed(id: int) -> void:
+	do_column_menu_action(id, _context_column)
+
+
 func _on_delete_entries_confirmation_dialog_confirmed() -> void:
 	_delete_selected_entries()
 
 
 func _on_edit_context_menu_about_to_popup() -> void:
-	_toggle_edit_context_menu_items()
+	toggle_edit_menu_items(edit_context_menu)
+	_update_subresource_menu_item(edit_context_menu, data_table.focused_col)
+
+
+func _on_column_context_menu_about_to_popup() -> void:
+	update_column_menu_items(column_context_menu, _context_column)
 
 
 func _on_breadcrumb_crumb_pressed(depth: int) -> void:

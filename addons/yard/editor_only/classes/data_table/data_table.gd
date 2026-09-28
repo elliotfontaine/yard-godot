@@ -10,7 +10,8 @@ extends Control
 signal cell_selected(row_id: StringName, col: StringName)
 signal multiple_rows_selected(row_ids: Array[StringName])
 signal cell_right_selected(row_id: StringName, col: StringName, mouse_pos: Vector2)
-signal header_clicked(column: StringName)
+signal header_left_clicked(column: StringName)
+signal header_right_clicked(column: StringName)
 signal column_resized(column: StringName, new_width: float)
 signal progress_changed(row_id: StringName, col: StringName, new_value: float)
 signal cell_edited(row_id: StringName, col: StringName, old_value: Variant, new_value: Variant)
@@ -1185,6 +1186,10 @@ func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> voi
 
 
 func _handle_right_click(mouse_pos: Vector2) -> void:
+	if mouse_pos.y < header_height:
+		_handle_header_right_click(mouse_pos)
+		return
+
 	var clicked_idx := _get_row_at_y(mouse_pos.y)
 	var clicked_col_idx := _get_col_at_x(mouse_pos.x)
 	var clicked_row := _order[clicked_idx] if clicked_idx >= 0 else &""
@@ -1225,8 +1230,16 @@ func _handle_header_click(mouse_pos: Vector2) -> void:
 			_finish_editing(false)
 			sort_ascending = not sort_ascending if sort_column == col else true
 			ordering_data(col, sort_ascending)
-			header_clicked.emit(col)
+			header_left_clicked.emit(col)
 			break
+
+
+func _handle_header_right_click(mouse_pos: Vector2) -> void:
+	var col_idx := _get_col_at_x(mouse_pos.x)
+	if col_idx == -1:
+		return
+	_finish_editing(false)
+	header_right_clicked.emit(_columns[col_idx].identifier)
 
 
 func _handle_header_double_click(mouse_pos: Vector2) -> void:
