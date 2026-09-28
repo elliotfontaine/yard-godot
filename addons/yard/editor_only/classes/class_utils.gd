@@ -437,8 +437,8 @@ static func _get_typed_dictionary_name(value: Dictionary) -> String:
 
 
 ## Returns all declared types of a property as an array of strings (e.g. ["int"], ["BaseMaterial3D","ShaderMaterial"], ...).
-static func get_property_declared_types(target: Variant, property_name: String) -> Array:
-	var types := []
+static func get_property_declared_types(target: Variant, property_name: String) -> Array[String]:
+	var types: Array[String] = []
 	var target_obj: Object = null
 	if target is String:
 		target_obj = get_type(target)
