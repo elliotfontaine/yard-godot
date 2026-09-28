@@ -103,8 +103,16 @@ func _has_main_screen() -> bool:
 
 
 func _make_visible(visible: bool) -> void:
+	if Compat.is_engine_version_equal_or_newer(4, 8):
+		# If a resource of a different type is being edited, the editor will call
+		# _make_visible(false). Since this is a persistent dock, we don't actually want to hide it.
+		if visible and is_instance_valid(_dock):
+			_dock.call(&"make_visible")
+	else:
+		if is_instance_valid(_registry_editor):
+			_registry_editor.visible = visible
+
 	if is_instance_valid(_registry_editor):
-		_registry_editor.visible = visible
 		_registry_editor._update_registries_itemlist()
 		_registry_editor.registry_table_view.update_view()
 
