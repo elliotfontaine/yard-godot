@@ -367,6 +367,7 @@ msgid "Refresh table view from the underlying registry."
 msgstr "Обновить вид из реестра."
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.tscn
 msgid "Refresh"
 msgstr "Обновить"
 
@@ -490,3 +491,100 @@ msgstr "RegEx исключения:"
 #: addons/yard/editor_only/ui_scenes/components/scan_ruleset_editor/scan_ruleset_editor.tscn
 msgid "e.g. `\\.tscn$|\\.scn$`"
 msgstr "напр. `\\.tscn$|\\.scn$`"
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd
+msgid ""
+"Be careful. This will delete the addons/yard folder and install the new version. Any custom changes in that folder will be lost.\n"
+"To be on the safe side, use version control!"
+msgstr ""
+"Осторожно. Это удалит папку addons/yard и установит новую версию. Все ваши изменения в этой папке будут потеряны.\n"
+"На всякий случай используйте систему контроля версий!"
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd
+msgid "No Information Available"
+msgstr "Информация недоступна"
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd
+msgid "Unable to access versions."
+msgstr "Не удалось получить доступ к версиям."
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd
+msgid "You are probably not connected to the internet. Fair enough."
+msgstr "Вероятно, вы не подключены к интернету. Бывает."
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd
+msgid "Huh, what happened here?"
+msgstr "Хм, что здесь произошло?"
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd
+msgid "You are in the future, Marty!"
+msgstr "Ты в будущем, Марти!"
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd
+msgid ""
+"# You are using the WIP branch!\n"
+"Seems like you are using a version that isn't even released yet. Be careful and give us your feedback ;)"
+msgstr ""
+"# Вы используете ветку разработки!\n"
+"Похоже, вы используете версию, которая ещё даже не выпущена. Будьте осторожны и поделитесь с нами своим мнением ;)"
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd
+msgid "Where are we Doc?"
+msgstr "Где мы, Док?"
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.tscn
+msgid "Update Available!"
+msgstr "Доступно обновление!"
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd
+msgid "You are up to date:"
+msgstr "У вас последняя версия:"
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd
+msgid "Published on {release_date} by {author}"
+msgstr "Опубликовано {release_date}, автор: {author}"
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd
+msgid "Installed successfully. Restart needed!"
+msgstr "Установка завершена. Требуется перезапуск!"
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd
+msgid "Download failed."
+msgstr "Ошибка загрузки."
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd
+msgid "Stable"
+msgstr "Стабильный"
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd
+msgid "Prerelease"
+msgstr "Предварительный"
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd
+msgid "Downloading. This can take a moment."
+msgstr "Загрузка. Это может занять некоторое время."
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.tscn
+msgid "YARD Update"
+msgstr "Обновление YARD"
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.tscn
+msgid "Close"
+msgstr "Закрыть"
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.tscn
+msgid "Update channel"
+msgstr "Канал обновлений"
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.tscn
+msgid "Read Full Announcement"
+msgstr "Читать полное объявление"
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.tscn
+msgid "Restart Now"
+msgstr "Перезапустить сейчас"
+
+#: addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.tscn
+msgid "Install"
+msgstr "Установить"
