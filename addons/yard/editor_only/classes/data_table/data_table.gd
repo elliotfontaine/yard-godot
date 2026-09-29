@@ -1084,10 +1084,16 @@ func _handle_mouse_button(event: InputEventMouseButton) -> void:
 				_handle_right_click(event.position)
 			MOUSE_BUTTON_WHEEL_UP:
 				if not _current_editor_node:
-					_v_scroll.value = maxf(0.0, _v_scroll.value - _v_scroll.step)
+					if Input.is_key_pressed(KEY_SHIFT):
+						_h_scroll.value = maxf(0.0, _h_scroll.value - _v_scroll.step)
+					else:
+						_v_scroll.value = maxf(0.0, _v_scroll.value - _v_scroll.step)
 			MOUSE_BUTTON_WHEEL_DOWN:
 				if not _current_editor_node:
-					_v_scroll.value = minf(_v_scroll.max_value, _v_scroll.value + _v_scroll.step)
+					if Input.is_key_pressed(KEY_SHIFT):
+						_h_scroll.value = minf(_h_scroll.max_value, _h_scroll.value + _v_scroll.step)
+					else:
+						_v_scroll.value = minf(_v_scroll.max_value, _v_scroll.value + _v_scroll.step)
 			MOUSE_BUTTON_WHEEL_LEFT:
 				if not _current_editor_node:
 					_h_scroll.value = maxf(0.0, _h_scroll.value - _v_scroll.step)
