@@ -890,13 +890,14 @@ func _on_update_manager_update_check_completed(result: UpdateManager.UpdateCheck
 			version_button.tooltip_text = tr("Could not check for updates. Retry later.")
 			version_button.icon = null
 
-	version_button.text = update_manager.get_current_version()
+	var current_version := update_manager.get_current_version()
+	version_button.text = current_version
 	version_button.add_theme_color_override(&"font_color", color)
 	version_button.add_theme_color_override(&"font_hover_color", color.lightened(0.5))
 	version_button.add_theme_color_override(&"font_pressed_color", color)
 	version_button.add_theme_color_override(&"font_focus_color", color)
 
-	update_install_window.load_info(update_manager.update_info, result)
+	update_install_window.load_info(update_manager.update_info, result, current_version)
 
 
 func _on_resources_reimported(_resources: Array) -> void:

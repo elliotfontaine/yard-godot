@@ -81,23 +81,38 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Update Available!"
 
-[node name="UpdateName" type="Label" parent="VBoxContainer/Header/TitleRow/TitleColumn" unique_id=948792429]
+[node name="VersionRow" type="HBoxContainer" parent="VBoxContainer/Header/TitleRow/TitleColumn" unique_id=386159151]
+layout_mode = 2
+
+[node name="CurrentVersion" type="Label" parent="VBoxContainer/Header/TitleRow/TitleColumn/VersionRow" unique_id=398222651]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "YARD 2.0"
+theme_type_variation = &"HeaderLarge"
+text = "1.1.0"
+
+[node name="VersionArrow" type="Label" parent="VBoxContainer/Header/TitleRow/TitleColumn/VersionRow" unique_id=379914644]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLarge"
+text = "→"
+
+[node name="UpdateName" type="Label" parent="VBoxContainer/Header/TitleRow/TitleColumn/VersionRow" unique_id=948792429]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLarge"
+text = "1.2.0"
 
 [node name="ShortInfo" type="Label" parent="VBoxContainer/Header/TitleRow/TitleColumn" unique_id=1905926365]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Published on 12/31/23 by octocat"
 
-[node name="ChannelOptionButton" type="OptionButton" parent="VBoxContainer/Header/TitleRow"]
+[node name="ChannelOptionButton" type="OptionButton" parent="VBoxContainer/Header/TitleRow" unique_id=741759336]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 0
-focus_mode = 0
 tooltip_text = "Update channel"
+focus_mode = 0
 
 [node name="Refresh" type="Button" parent="VBoxContainer/Header/TitleRow" unique_id=278289381]
 layout_mode = 2

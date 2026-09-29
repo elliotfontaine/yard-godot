@@ -30,6 +30,8 @@ var _last_known_channel := ""
 @onready var install_button: Button = %Install
 @onready var loading_icon: TextureRect = %LoadingIcon
 @onready var state_label: Label = %State
+@onready var current_version_label: Label = %CurrentVersion
+@onready var version_arrow_label: Label = %VersionArrow
 @onready var update_name_label: Label = %UpdateName
 @onready var short_info_label: Label = %ShortInfo
 @onready var read_full_link: LinkButton = %ReadFull
@@ -76,8 +78,16 @@ func _ready() -> void:
 	ProjectSettings.settings_changed.connect(_on_project_settings_changed)
 
 
-func load_info(info: Dictionary, result: UpdateManager.UpdateCheckResult) -> void:
+func load_info(
+	info: Dictionary,
+	result: UpdateManager.UpdateCheckResult,
+	current_version: String,
+) -> void:
 	current_info = info
+	var is_update_available := result == UpdateManager.UpdateCheckResult.UPDATE_AVAILABLE
+	current_version_label.visible = is_update_available
+	version_arrow_label.visible = is_update_available
+
 	if result == UpdateManager.UpdateCheckResult.NO_ACCESS:
 		state_label.text = "No Information Available"
 		update_name_label.text = "Unable to access versions."
@@ -92,15 +102,20 @@ func load_info(info: Dictionary, result: UpdateManager.UpdateCheckResult) -> voi
 	# If we are up to date (or beyond):
 	if info.is_empty():
 		info['name'] = "You are in the future, Marty!"
-		info["body"] = "# 😎 You are using the WIP branch!\nSeems like you are using a version that isn't even released yet. Be careful and give us your feedback ;)"
-		info["published_at"] = "????T"
-		info["author"] = { 'login': "???" }
+		info["body"] = "# You are using the WIP branch!\nSeems like you are using a version that isn't even released yet. Be careful and give us your feedback ;)"
+		info["published_at"] = "-T"
+		info["author"] = { 'login': "-" }
 		state_label.text = "Where are we Doc?"
 		update_name_label.remove_theme_color_override("font_color")
 		install_button.disabled = true
 
-	elif result == UpdateManager.UpdateCheckResult.UPDATE_AVAILABLE:
+	elif is_update_available:
 		state_label.text = "Update Available!"
+		current_version_label.text = "v%s" % current_version
+		current_version_label.add_theme_color_override(
+			&"font_color",
+			EditorThemeUtils.color_warning,
+		)
 		update_name_label.add_theme_color_override("font_color", EditorThemeUtils.color_warning)
 		install_button.disabled = false
 	else:
