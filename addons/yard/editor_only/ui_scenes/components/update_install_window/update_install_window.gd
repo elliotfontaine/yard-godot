@@ -51,7 +51,7 @@ func _ready() -> void:
 		loading_icon.set(&"offset_transform_enabled", true)
 	var download_icon := &"AssetStore" if is_above_4_7 else &"AssetLib"
 	install_button.icon = EditorThemeUtils.editor_theme.get_icon(download_icon, &"EditorIcons")
-	install_button.tooltip_text = INSTALL_WARNING
+	install_button.tooltip_text = tr(INSTALL_WARNING)
 	loading_icon.texture = EditorThemeUtils.editor_theme.get_icon(&"KeyTrackScale", &"EditorIcons")
 
 	var mono: Font = get_theme_font(&"font", &"CodeEdit")
@@ -89,11 +89,11 @@ func load_info(
 	version_arrow_label.visible = is_update_available
 
 	if result == UpdateManager.UpdateCheckResult.NO_ACCESS:
-		state_label.text = "No Information Available"
-		update_name_label.text = "Unable to access versions."
+		state_label.text = tr("No Information Available")
+		update_name_label.text = tr("Unable to access versions.")
 		update_name_label.remove_theme_color_override("font_color")
-		content.text = "You are probably not connected to the internet. Fair enough."
-		short_info_label.text = "Huh, what happened here?"
+		content.text = tr("You are probably not connected to the internet. Fair enough.")
+		short_info_label.text = tr("Huh, what happened here?")
 		read_full_link.hide()
 		reactions_container.hide()
 		install_button.disabled = true
@@ -101,35 +101,35 @@ func load_info(
 
 	# If we are up to date (or beyond):
 	if info.is_empty():
-		info['name'] = "You are in the future, Marty!"
-		info["body"] = "# You are using the WIP branch!\nSeems like you are using a version that isn't even released yet. Be careful and give us your feedback ;)"
+		info['name'] = tr("You are in the future, Marty!")
+		info["body"] = tr("# You are using the WIP branch!\nSeems like you are using a version that isn't even released yet. Be careful and give us your feedback ;)")
 		info["published_at"] = "-T"
 		info["author"] = { 'login': "-" }
-		state_label.text = "Where are we Doc?"
+		state_label.text = tr("Where are we Doc?")
 		update_name_label.remove_theme_color_override("font_color")
 		install_button.disabled = true
 
 	elif is_update_available:
-		state_label.text = "Update Available!"
+		state_label.text = tr("Update Available!")
 		current_version_label.text = "v%s" % current_version
 		current_version_label.add_theme_color_override(
 			&"font_color",
 			EditorThemeUtils.color_warning,
 		)
-		update_name_label.add_theme_color_override("font_color", EditorThemeUtils.color_warning)
+		update_name_label.add_theme_color_override(&"font_color", EditorThemeUtils.color_success)
 		install_button.disabled = false
 	else:
-		state_label.text = "You are up to date:"
-		update_name_label.add_theme_color_override("font_color", EditorThemeUtils.color_success)
+		state_label.text = tr("You are up to date:")
+		update_name_label.add_theme_color_override(&"font_color", EditorThemeUtils.color_success)
 		install_button.disabled = true
 
 	update_name_label.text = info.name
 	content.text = info.body
-	short_info_label.text = "Published on " + info.published_at.substr(0, info.published_at.find(
-			'T'
-		)) + " by " + info \
-			.author \
-			.login
+	var release_date: String = info.published_at.substr(0, info.published_at.find('T'))
+	var author: String = info.author.login
+	short_info_label.text = tr("Published on {release_date} by {author}").format(
+		{ "release_date": release_date, "author": author }
+	)
 	if info.has("html_url"):
 		read_full_link.uri = info.html_url
 		read_full_link.show()
@@ -167,12 +167,12 @@ func set_download_result(result: UpdateManager.DownloadResult) -> void:
 	loading_container.hide()
 	match result:
 		UpdateManager.DownloadResult.SUCCESS:
-			info_label.text = "Installed successfully. Restart needed!"
+			info_label.text = tr("Installed successfully. Restart needed!")
 			info_label.modulate = EditorThemeUtils.color_success
 			restart_button.show()
 			restart_button.grab_focus()
 		UpdateManager.DownloadResult.FAILURE:
-			info_label.text = "Download failed."
+			info_label.text = tr("Download failed.")
 			info_label.modulate = EditorThemeUtils.color_error
 
 
@@ -181,7 +181,7 @@ func _populate_channel_option_button() -> void:
 	_channel_names = (setting.hint_string as String).split(",")
 	channel_option_button.clear()
 	for channel_name: String in _channel_names:
-		channel_option_button.add_item(channel_name)
+		channel_option_button.add_item(tr(channel_name))
 
 
 func _get_current_channel() -> String:
@@ -199,7 +199,7 @@ func _on_install_pressed() -> void:
 
 	var is_above_4_7 := Compat.is_engine_version_equal_or_newer(4, 7)
 	var prop := "offset_transform_rotation" if is_above_4_7 else "rotation"
-	info_label.text = "Downloading. This can take a moment."
+	info_label.text = tr("Downloading. This can take a moment.")
 	loading_container.show()
 	loading_icon \
 			.create_tween() \
@@ -213,10 +213,8 @@ func _on_refresh_pressed() -> void:
 
 
 func _on_channel_option_button_item_selected(index: int) -> void:
-	ProjectSettings.set_setting(
-		YardSettings.UPDATE_CHANNEL,
-		channel_option_button.get_item_text(index),
-	)
+	# Item texts are translated, so the raw channel name comes from _channel_names
+	ProjectSettings.set_setting(YardSettings.UPDATE_CHANNEL, _channel_names[index])
 	ProjectSettings.save()
 
 
