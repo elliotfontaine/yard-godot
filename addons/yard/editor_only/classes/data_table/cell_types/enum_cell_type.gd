@@ -53,7 +53,7 @@ static func get_sort_key(value: Variant, column: ColumnConfig) -> Variant:
 
 static func create_editor(
 	owner: Control,
-	_rect: Rect2,
+	rect: Rect2,
 	value: Variant,
 	column: ColumnConfig,
 	on_finished: Callable,
@@ -96,7 +96,10 @@ static func create_editor(
 			on_finished.call(false), # Same issue
 	)
 
-	popup_menu.position = DisplayServer.mouse_get_position()
+	var window_pos := Vector2(DisplayServer.window_get_position())
+	popup_menu.position = window_pos + owner.global_position + rect.position
+	popup_menu.position.y += int(rect.size.y)
+
 	popup_menu.popup()
 	return popup_menu
 
