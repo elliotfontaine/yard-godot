@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2026-present, YARD contributors (see AUTHORS.md)
 #
 # SPDX-License-Identifier: MIT
-extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
+extends "res://addons/yard/editor_only/classes/data_table/cell_types/popup_menu_cell_type.gd"
 
 
 static func matches(column: ColumnConfig) -> bool:
@@ -44,10 +44,6 @@ static func draw_cell(
 	#value_str = "%s:%s" % [map[int_value], int_value] if map.has(int_value) else "?:%d" % int_value
 
 
-static func has_editor() -> bool:
-	return true
-
-
 static func get_sort_key(value: Variant, _column: ColumnConfig) -> Variant:
 	return str(value) # Sort on bitflags integer value.
 
@@ -69,9 +65,6 @@ static func create_editor(
 	on_finished: Callable,
 ) -> Node:
 	var popup_menu := PopupMenu.new()
-	popup_menu.hide_on_checkable_item_selection = false
-	owner.add_child(popup_menu)
-
 	var iter := 0
 	var bit_value: Variant = 0
 
@@ -91,22 +84,7 @@ static func create_editor(
 			popup_menu.set_item_checked(iter, true)
 		iter += 1
 
-	popup_menu.index_pressed.connect(
-		func(idx: int) -> void:
-			popup_menu.toggle_item_checked(idx),
-	)
-	popup_menu.popup_hide.connect(
-		func() -> void:
-			await popup_menu.get_tree().create_timer(0.05).timeout
-			on_finished.call(true),
-	)
-
-	var window_pos := Vector2(DisplayServer.window_get_position())
-	popup_menu.position = window_pos + owner.global_position + rect.position
-	popup_menu.position.y += int(rect.size.y)
-
-	popup_menu.popup()
-	return popup_menu
+	return popup_multiple_choice(popup_menu, owner, rect, on_finished)
 
 
 static func read_editor_value(editor: Node, _column: ColumnConfig) -> Variant:
@@ -136,12 +114,3 @@ static func _unpack_indices(bitflags: int) -> Array[int]:
 			result.append(idx)
 		idx += 1
 	return result
-
-
-# SPDX-SnippetBegin
-# SPDX-SnippetCopyrightText: Copyright 2022 Gennady Krupenyov (Don Tnowe) <https://github.com/don-tnowe/godot-resources-as-sheets-plugin>
-#
-# SPDX-License-Identifier: MIT
-static func _hashed_color(text: String) -> Color:
-	return Color(text.hash()) + Color(0.25, 0.25, 0.25, 1.0)
-# SPDX-SnippetEnd

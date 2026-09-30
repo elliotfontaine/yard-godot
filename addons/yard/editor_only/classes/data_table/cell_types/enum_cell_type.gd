@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2026-present, YARD contributors (see AUTHORS.md)
 #
 # SPDX-License-Identifier: MIT
-extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
+extends "res://addons/yard/editor_only/classes/data_table/cell_types/popup_menu_cell_type.gd"
 ## Enum columns (any type with PROPERTY_HINT_ENUM), edited via a PopupMenu.
 ## Draw color is a deterministic pseudo-random hash of the display string,
 ## ignoring the column's normal font-color resolution.
@@ -41,10 +41,6 @@ static func draw_cell(
 	)
 
 
-static func has_editor() -> bool:
-	return true
-
-
 static func get_sort_key(value: Variant, column: ColumnConfig) -> Variant:
 	if _is_numeric(column):
 		return float(value)
@@ -59,13 +55,10 @@ static func create_editor(
 	on_finished: Callable,
 ) -> Node:
 	var popup_menu := PopupMenu.new()
-	owner.add_child(popup_menu)
-
 	var is_numeric := _is_numeric(column)
 
 	@warning_ignore("incompatible_ternary")
 	var value_iter: Variant = -1 if is_numeric else ""
-	var checked_idx := -1
 
 	for choice: String in column.hint_string.split(",", false):
 		var colon := choice.rfind(":")
@@ -80,46 +73,10 @@ static func create_editor(
 		popup_menu.add_radio_check_item(text)
 		popup_menu.set_item_metadata(popup_menu.item_count - 1, value_iter)
 		if value == value_iter:
-			checked_idx = popup_menu.item_count - 1
-			popup_menu.set_item_checked(checked_idx, true)
+			popup_menu.set_item_checked(popup_menu.item_count - 1, true)
 
-	popup_menu.index_pressed.connect(
-		func(idx: int) -> void:
-			if checked_idx != -1:
-				popup_menu.set_item_checked(checked_idx, false)
-			popup_menu.set_item_checked(idx, true)
-			on_finished.call(true), # Not good. Why does it know callback signature?!
-	)
-	popup_menu.popup_hide.connect(
-		func() -> void:
-			await popup_menu.get_tree().create_timer(0.05).timeout
-			on_finished.call(false), # Same issue
-	)
-
-	var window_pos := Vector2(DisplayServer.window_get_position())
-	popup_menu.position = window_pos + owner.global_position + rect.position
-	popup_menu.position.y += int(rect.size.y)
-
-	popup_menu.popup()
-	return popup_menu
-
-
-static func read_editor_value(editor: Node, _column: ColumnConfig) -> Variant:
-	var popup_menu: PopupMenu = editor
-	for idx in popup_menu.item_count:
-		if popup_menu.is_item_checked(idx):
-			return popup_menu.get_item_metadata(idx)
-	return null
+	return popup_single_choice(popup_menu, owner, rect, on_finished)
 
 
 static func _is_numeric(column: ColumnConfig) -> bool:
 	return column.type in [TYPE_INT, TYPE_FLOAT]
-
-
-# SPDX-SnippetBegin
-# SPDX-SnippetCopyrightText: Copyright 2022 Gennady Krupenyov (Don Tnowe) <https://github.com/don-tnowe/godot-resources-as-sheets-plugin>
-#
-# SPDX-License-Identifier: MIT
-static func _hashed_color(text: String) -> Color:
-	return Color(text.hash()) + Color(0.25, 0.25, 0.25, 1.0)
-# SPDX-SnippetEnd
