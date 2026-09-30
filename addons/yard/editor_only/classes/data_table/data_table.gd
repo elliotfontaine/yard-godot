@@ -94,8 +94,10 @@ var _resizing_start_width := 0
 var _mouse_over_divider := -1
 var _divider_width := 5
 
-# Sort icon (header rendering)
-var _icon_sort := " ▼ "
+# Header sort rendering
+var _sort_icon: Texture2D
+var _hovered_header_col: StringName = &""
+var _is_sort_icon_hovered := false
 
 # Column filter (double-click a header to search within that column)
 var _filter_line_edit: LineEdit
@@ -169,8 +171,14 @@ func _ready() -> void:
 
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_PREDELETE and _pixelated_canvas_rid.is_valid():
-		RenderingServer.free_rid(_pixelated_canvas_rid)
+	match what:
+		NOTIFICATION_PREDELETE:
+			if _pixelated_canvas_rid.is_valid():
+				RenderingServer.free_rid(_pixelated_canvas_rid)
+		NOTIFICATION_MOUSE_EXIT:
+			_hovered_header_col = &""
+			_is_sort_icon_hovered = false
+			queue_redraw()
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -411,7 +419,6 @@ func ordering_data(column: StringName, ascending: bool = true) -> void:
 	_finish_editing(false)
 	sort_column = column
 	sort_ascending = ascending
-	_icon_sort = " ▼ " if ascending else " ▲ "
 	var handler := column_cfg.get_cell_type()
 
 	_order.sort_custom(
@@ -563,6 +570,7 @@ func _refresh_style() -> void:
 	_style.checkbox_checked_icon = get_theme_icon(&"checked", &"CheckBox")
 	_style.checkbox_unchecked_icon = get_theme_icon(&"unchecked", &"CheckBox")
 	_style.file_dead_icon = get_theme_icon(&"FileDead", &"EditorIcons")
+	_sort_icon = get_theme_icon(&"Sort", &"EditorIcons")
 	_style.progress_bar_start_color = progress_bar_start_color
 	_style.progress_bar_middle_color = progress_bar_middle_color
 	_style.progress_bar_end_color = progress_bar_end_color
@@ -733,40 +741,40 @@ func _draw_header_cell(col_idx: int, cell_x: float, vis_w: float) -> void:
 		font_color = header_filter_active_font_color
 		header_text += " (" + str(_order.size()) + ")"
 
+	var is_sorted := column.identifier == sort_column
+	var is_hovered := column.identifier == _hovered_header_col
+	var show_sort_icon := _sort_icon != null and (is_sorted or is_hovered)
+
 	var header_alignment := HORIZONTAL_ALIGNMENT_LEFT
 	var x_margin: int = CellType.H_ALIGNMENT_MARGINS.get(header_alignment)
+	var text_width: float = column.current_width - absi(x_margin)
+	var sort_icon_rect := Rect2()
+	if show_sort_icon:
+		sort_icon_rect = _get_sort_icon_rect(cell_x, column)
+		text_width = sort_icon_rect.position.x - (cell_x + x_margin)
 	var baseline_y := CellType.get_text_baseline_y(font, font_size, 0.0, header_height)
 	draw_string(
 		font,
 		Vector2(cell_x + x_margin, baseline_y),
 		header_text,
 		header_alignment,
-		column.current_width - abs(x_margin),
+		text_width,
 		font_size,
 		font_color,
 	)
 
-	if column.identifier == sort_column:
-		var text_size := font.get_string_size(
-			header_text,
-			header_alignment,
-			column.current_width,
-			font_size,
-		)
-		var icon_align := (
-			HORIZONTAL_ALIGNMENT_RIGHT
-			if header_alignment in [HORIZONTAL_ALIGNMENT_LEFT, HORIZONTAL_ALIGNMENT_CENTER]
-			else HORIZONTAL_ALIGNMENT_LEFT
-		)
-		draw_string(
-			font,
-			Vector2(cell_x, header_height / 2.0 + text_size.y / 2.0 - (font_size / 2.0 - 1.0)),
-			_icon_sort,
-			icon_align,
-			column.current_width,
-			int(font_size / 1.3),
-			font_color,
-		)
+	if show_sort_icon:
+		# Mirror it around its horizontal center line for ascending.
+		if not is_sorted or (is_sorted and sort_ascending):
+			draw_set_transform(
+				Vector2(0.0, sort_icon_rect.get_center().y * 2.0),
+				0.0,
+				Vector2(1.0, -1.0),
+			)
+		var is_icon_active := is_sorted or (is_hovered and _is_sort_icon_hovered)
+		var icon_modulate := Color.WHITE if is_icon_active else Color(1.0, 1.0, 1.0, 0.5)
+		draw_texture_rect(_sort_icon, sort_icon_rect, false, icon_modulate)
+		draw_set_transform_matrix(Transform2D.IDENTITY)
 
 	var divider_x := cell_x + column.current_width
 	if col_idx < _columns.size() - 1 and divider_x < vis_w:
@@ -950,6 +958,29 @@ func _get_col_x_pos(col_idx: int) -> float:
 		return x
 
 
+func _get_sort_icon_rect(cell_x: float, column: ColumnConfig) -> Rect2:
+	var icon_size := _sort_icon.get_size()
+	var margin: int = absi(CellType.H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_RIGHT))
+	return Rect2(
+		Vector2(
+			cell_x + column.current_width - icon_size.x - margin,
+			(header_height - icon_size.y) / 2.0,
+		),
+		icon_size,
+	)
+
+
+## Returns the index of the column whose sort icon is under mouse_pos, or -1.
+func _get_sort_icon_col_at(mouse_pos: Vector2) -> int:
+	if not _sort_icon or mouse_pos.y >= header_height:
+		return -1
+	var col_idx := _get_col_at_x(mouse_pos.x)
+	if col_idx == -1:
+		return -1
+	var icon_rect := _get_sort_icon_rect(_get_col_x_pos(col_idx), _columns[col_idx])
+	return col_idx if icon_rect.has_point(mouse_pos) else -1
+
+
 func _check_mouse_over_divider(mouse_pos: Vector2) -> void:
 	_mouse_over_divider = -1
 	mouse_default_cursor_shape = CURSOR_ARROW
@@ -1073,7 +1104,16 @@ func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
 		queue_redraw()
 	else:
 		_check_mouse_over_divider(m_pos)
+		if _mouse_over_divider == -1:
+			var col_idx := _get_col_at_x(m_pos.x) if m_pos.y < header_height else -1
+			var hovered_col: StringName = _columns[col_idx].identifier if col_idx != -1 else &""
+			_hovered_header_col = hovered_col
+			_is_sort_icon_hovered = _get_sort_icon_col_at(m_pos) != -1
+		else:
+			_hovered_header_col = &""
+			_is_sort_icon_hovered = false
 		_update_tooltip(m_pos)
+		queue_redraw()
 
 
 func _handle_mouse_button(event: InputEventMouseButton) -> void:
@@ -1229,8 +1269,9 @@ func _handle_header_click(mouse_pos: Vector2) -> void:
 		):
 			var col := _columns[col_idx].identifier
 			_finish_editing(false)
-			sort_ascending = not sort_ascending if sort_column == col else true
-			ordering_data(col, sort_ascending)
+			if _get_sort_icon_col_at(mouse_pos) == col_idx:
+				sort_ascending = not sort_ascending if sort_column == col else true
+				ordering_data(col, sort_ascending)
 			header_left_clicked.emit(col)
 			break
 
@@ -1244,6 +1285,10 @@ func _handle_header_right_click(mouse_pos: Vector2) -> void:
 
 
 func _handle_header_double_click(mouse_pos: Vector2) -> void:
+	# Rapid clicks on the sort icon keep toggling the sort, not open the filter.
+	if _get_sort_icon_col_at(mouse_pos) != -1:
+		_handle_header_click(mouse_pos)
+		return
 	_finish_editing(false)
 	var col_idx := _get_col_at_x(mouse_pos.x)
 	if col_idx != -1:
