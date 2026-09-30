@@ -2,12 +2,11 @@
 # SPDX-FileCopyrightText: 2026-present, YARD contributors (see AUTHORS.md)
 #
 # SPDX-License-Identifier: MIT
+
 extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
-## Shared PopupMenu-based editor for EnumCellType, RegistryEntryCellType and
-## BitFlagsCellType. Not used directly as a handler. Subclasses fill a PopupMenu
-## (item metadata = value) in their create_editor(), then open it with
-## popup_single_choice() or popup_multiple_choice(). Static calls aren't virtual
-## in GDScript, so this can't be a shared create_editor() calling a subclass hook.
+## Shared PopupMenu-based editor for EnumCellType, BitFlagsCellType, etc.
+## Subclasses fill a PopupMenu (item metadata = value) in their create_editor(),
+##  then open it with popup_single_choice() or popup_multiple_choice().
 
 
 static func has_editor() -> bool:
