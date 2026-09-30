@@ -185,12 +185,15 @@ static func read_editor_value(_editor: Node, _column: ColumnConfig) -> Variant:
 ## unhandled. Return a Dictionary to claim it: &"value" (optional) applies
 ## immediately; &"commit" (default false) finalizes vs. keeps the
 ## interaction open for more events. A release must eventually commit.
+## &"state" (optional) replaces the data kept for the open interaction, handed
+## back as `state` on each follow-up event; it starts empty.
 static func handle_input(
 	_event: InputEvent,
 	_rect: Rect2,
 	_value: Variant,
 	_column: ColumnConfig,
 	_style: CellStyle,
+	_state: Dictionary,
 ) -> Dictionary:
 	return { }
 

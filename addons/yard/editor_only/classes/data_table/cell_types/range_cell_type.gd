@@ -8,6 +8,10 @@ extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.g
 ## editor when a range cell is double-clicked. Drag-to-adjust is the main
 ## interaction.
 
+# Motion within this distance of the press is a click, not a drag. Matches
+# DataTable's double-click tolerance.
+const _DRAG_DEAD_ZONE := 5.0 # pixels
+
 
 static func matches(column: ColumnConfig) -> bool:
 	return column.type in [TYPE_FLOAT, TYPE_INT] and column.property_hint == PROPERTY_HINT_RANGE
@@ -139,28 +143,28 @@ static func handle_input(
 	_value: Variant,
 	column: ColumnConfig,
 	_style: CellStyle,
+	state: Dictionary,
 ) -> Dictionary:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
-			return { &"commit": false } # claim the drag; value doesn't move until motion
-		var released_value: Variant = _compute_drag_value(
-			event.position,
-			column,
-			rect.position.x,
-			rect.size.x,
-		)
-		return { &"value": released_value, &"commit": true } if released_value != null else {
-			&"commit": true
-		}
+			# claim the drag; value doesn't move until motion leaves the dead zone
+			return { &"commit": false, &"state": { &"press_position": event.position } }
+		return { &"commit": true } # motion already applied the value
 
 	if event is InputEventMouseMotion and (event.button_mask & MOUSE_BUTTON_MASK_LEFT):
+		var is_dragging: bool = state.get(&"is_dragging", false)
+		var press_position: Vector2 = state.get(&"press_position", event.position)
+		if not is_dragging and event.position.distance_to(press_position) < _DRAG_DEAD_ZONE:
+			return { }
 		var new_value: Variant = _compute_drag_value(
 			event.position,
 			column,
 			rect.position.x,
 			rect.size.x,
 		)
-		return { &"value": new_value, &"commit": false } if new_value != null else { }
+		if new_value == null:
+			return { }
+		return { &"value": new_value, &"commit": false, &"state": { &"is_dragging": true } }
 
 	return { }
 
@@ -203,8 +207,10 @@ static func _compute_range_config(column: ColumnConfig) -> Dictionary[StringName
 	var result: Dictionary[StringName, Variant] = {
 		&"min": float(hint_elements[0]) if hint_elements.size() > 0 else 0.0,
 		&"max": float(hint_elements[1]) if hint_elements.size() > 1 else 1.0,
-		&"step": float(hint_elements[2]) if hint_elements.size() > 2 else (
-			0.001 if column.type == TYPE_FLOAT else 1.0
+		&"step": (
+			float(hint_elements[2])
+			if hint_elements.size() > 2
+			else (0.001 if column.type == TYPE_FLOAT else 1.0)
 		),
 	}
 	for hint_str in hint_elements.slice(3):

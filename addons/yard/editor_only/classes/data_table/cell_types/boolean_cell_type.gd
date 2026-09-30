@@ -53,6 +53,7 @@ static func handle_input(
 	value: Variant,
 	_column: ColumnConfig,
 	style: CellStyle,
+	_state: Dictionary,
 ) -> Dictionary:
 	var is_click: bool = (
 		event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT

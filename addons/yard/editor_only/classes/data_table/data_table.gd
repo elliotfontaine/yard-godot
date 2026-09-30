@@ -116,11 +116,11 @@ var _style: CellStyle
 
 # Live cell interaction claimed via CellType.handle_input (e.g. a Range drag).
 # Only one interaction can be in flight. Once claimed, routing for follow-up
-# motion/release events is pinned to this (row, col), so the interaction can
-# survive the mouse leaving the cell's rect.
+# motion/release events is pinned to this (row, col).
 var _live_edit_row: StringName = &""
 var _live_edit_col: StringName = &""
 var _live_edit_start_value: Variant
+var _live_edit_state: Dictionary = { }
 
 # Click detection (single vs. double click)
 var _double_click_timer: Timer
@@ -1468,12 +1468,15 @@ func _dispatch_cell_input(event: InputEvent, row: StringName, col: StringName) -
 	var column := get_column(col)
 	var cell_value: Variant = get_cell_value(row, col)
 	var rect := _get_cell_rect(row, col)
+	var is_live_cell := row == _live_edit_row and col == _live_edit_col
+	var state: Dictionary = _live_edit_state if is_live_cell else { }
 	var result: Dictionary = column.get_cell_type().handle_input(
 		event,
 		rect,
 		cell_value,
 		column,
 		_style,
+		state,
 	)
 	if result.is_empty():
 		return false
@@ -1482,20 +1485,20 @@ func _dispatch_cell_input(event: InputEvent, row: StringName, col: StringName) -
 		update_cell(row, col, result[&"value"])
 
 	if result.get(&"commit", false):
-		var old_value: Variant = (
-			_live_edit_start_value
-			if (row == _live_edit_row and col == _live_edit_col)
-			else cell_value
-		)
-		cell_edited.emit(row, col, old_value, get_cell_value(row, col))
+		var old_value: Variant = _live_edit_start_value if is_live_cell else cell_value
+		var new_value: Variant = get_cell_value(row, col)
+		if old_value != new_value:
+			cell_edited.emit(row, col, old_value, new_value)
 		_live_edit_row = &""
 		_live_edit_col = &""
 		_live_edit_start_value = null
+		_live_edit_state = { }
 	else:
-		if _live_edit_row != row or _live_edit_col != col:
+		if not is_live_cell:
 			_live_edit_row = row
 			_live_edit_col = col
 			_live_edit_start_value = cell_value
+		_live_edit_state = result.get(&"state", state)
 		if result.has(&"value"):
 			progress_changed.emit(row, col, result[&"value"])
 
