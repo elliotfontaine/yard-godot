@@ -153,24 +153,6 @@ size_flags_vertical = 3
 focus_mode = 2
 mouse_filter = 1
 script = ExtResource("2_wsykm")
-default_font_color = Color(1, 1, 1, 0.75)
-header_height = 28.0
-header_color = Color(0.105454996, 0.105454996, 0.105454996, 1)
-header_filter_active_font_color = Color(0.337, 0.62, 1, 1)
-row_height = 28.0
-grid_color = Color(0.063273, 0.063273, 0.063273, 1)
-selected_row_back_color = Color(1, 1, 1, 0.2)
-selected_cell_back_color = Color(0.337, 0.62, 1, 1)
-row_color = Color(0.161, 0.161, 0.161, 1)
-alternate_row_color = Color(0.12236, 0.12236, 0.12236, 1)
-progress_bar_start_color = Color(0.96, 0.2, 0.32, 1)
-progress_bar_middle_color = Color(0.98, 0.89, 0.27, 1)
-progress_bar_end_color = Color(0.45, 0.95, 0.5, 1)
-progress_background_color = Color(0.07888999, 0.07888999, 0.07888999, 1)
-progress_border_color = Color(1, 1, 1, 0.2)
-progress_text_color_light = Color(1, 1, 1, 0.75)
-progress_text_color_dark = Color(0.105454996, 0.105454996, 0.105454996, 1)
-invalid_cell_color = Color(0.117529996, 0.117529996, 0.117529996, 1)
 
 [node name="DragAndDropInfoPanel" type="PanelContainer" parent="VBoxContainer/Border" unique_id=1840337053]
 unique_name_in_owner = true
