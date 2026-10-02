@@ -69,12 +69,12 @@ static func draw_text(
 	line.width = width
 	line.alignment = h_align
 
-	if Compat.is_engine_version_equal_or_newer(4, 5):
-		var ELLIPSIS_FORCE := ClassDB.class_get_integer_constant(
+	if Compat.is_engine_version_equal_or_newer(4, 6):
+		var TRIM_ELLIPSIS_FORCE := ClassDB.class_get_integer_constant(
 			&"TextServer",
 			&"OVERRUN_TRIM_ELLIPSIS_FORCE",
 		)
-		line.text_overrun_behavior = ELLIPSIS_FORCE as TextServer.OverrunBehavior 
+		line.text_overrun_behavior = TRIM_ELLIPSIS_FORCE as TextServer.OverrunBehavior
 	else:
 		line.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 
