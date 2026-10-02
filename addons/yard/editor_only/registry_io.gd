@@ -32,12 +32,8 @@ static func create_registry_file(path: String, settings: RegistrySettings = null
 
 	var save_err := ResourceSaver.save(registry, path, ResourceSaver.FLAG_CHANGE_PATH)
 
-	if Compat.is_engine_version_equal_or_newer(4, 5):
-		var uid_int := ResourceUID.create_id()
-		ResourceSaver.call(&"set_uid", path, uid_int)
-		if not ResourceUID.has_id(uid_int):
-			# Ensures the UID is in the in-memory cache, not just on disk
-			ResourceUID.add_id(uid_int, path)
+	if save_err != OK:
+		YardLogger.error("Could not create registry file (%s)" % error_string(save_err))
 
 	EditorInterface.get_resource_filesystem().scan()
 	return save_err

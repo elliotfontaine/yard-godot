@@ -153,12 +153,13 @@ func open_registry(registry: Registry) -> void:
 	if uid not in _editor_state_data.opened_registries:
 		_editor_state_data.opened_registries[uid] = registry
 		_editor_state_data = _editor_state_data.save_and_reload()
+
+	if not _editor_state_data.opened_registries.has(uid):
+		YardLogger.error("UID '%s' could not be added to the cache. It must be invalid." % uid)
+		return
+
 	_update_registries_itemlist()
 	_editor_state_data.add_recent(registry)
-
-	if RegistryIO.get_registry_settings(registry).has_any_scan_directory():
-		RegistryIO.sync_from_scan_directories(registry)
-
 	select_registry(uid)
 
 
