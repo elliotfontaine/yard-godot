@@ -138,7 +138,7 @@ func load_info(
 	if info.has('reactions'):
 		reactions_container.show()
 		var reactions := {
-			"laugh": "😂",
+			"laugh": "😄",
 			"hooray": "🎉",
 			"confused": "😕",
 			"heart": "❤️",
