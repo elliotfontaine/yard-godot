@@ -152,7 +152,7 @@ func _get_plugin_icon() -> Texture2D:
 
 # Force reimport of icons if it doesn't match the editor scale
 func _reimport_icons() -> void:
-	var icon: CompressedTexture2D = load("res://addons/yard/editor_only/assets/github_icon.svg")
+	var icon: CompressedTexture2D = load(ICONS[0])
 	var scale := EditorInterface.get_editor_scale()
 	if float(icon.get_width()) == scale * 16:
 		return
