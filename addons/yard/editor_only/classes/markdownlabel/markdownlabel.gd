@@ -15,14 +15,27 @@ extends RichTextLabel
 ## [br][br]
 ## You can still use BBCode tags that don't have a Markdown equivalent, such as `[u]underlined text[/u]`, allowing you to have the full functionality of RichTextLabel with the simplicity and readibility of Markdown.
 ## [br][br]
+## Images can be written as [code]![alt](url "title")[/code] or as HTML [code]<img src="url" alt="alt" width="100" height="50">[/code]. Images with an [code]http(s)://[/code] URL are downloaded and kept in memory (PNG, JPEG, WebP, BMP and SVG only); their alt text is shown if the download fails.
+## [br][br]
 ## Check out the full guide in the Github repo readme file (linked below). If encountering any unreported bug or unexpected bahaviour, please ensure that your Markdown is written as clean as possible, following best practices.
 ##
 ## @tutorial(Github repository): https://github.com/daenvil/MarkdownLabel
+
+const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const YardLogger := Namespace.YardLogger
 
 const _ESCAPE_PLACEHOLDER := ";$\uFFFD:%s$;"
 const _ESCAPEABLE_CHARACTERS := "\\*_~`[]()\"<>#-+.!"
 const _ESCAPEABLE_CHARACTERS_REGEX := "[\\\\\\*\\_\\~`\\[\\]\\(\\)\\\"\\<\\>#\\-\\+\\.\\!]"
 const _CHECKBOX_KEY := "markdownlabel-checkbox"
+const _REMOTE_IMAGE_MARKER := "\uFFFC%d\uFFFC"
+const _REMOTE_IMAGE_MARKER_REGEX := "\uFFFC(\\d+)\uFFFC"
+const _HTML_ALIGN_TAGS := {
+	"left": "left",
+	"center": "center",
+	"right": "right",
+	"justify": "fill",
+}
 const _FRONTMATTER_REGEX := r"^(?:(?:---|\+\+\+)\r?\n([\s\S]*?)\r?\n(?:---|\+\+\+)\r?\n)?(?:\r?\n)?([\s\S]*)$"
 
 const H1Format := preload("h1_format.gd")
@@ -93,31 +106,17 @@ signal task_checkbox_clicked(id: int, line: int, checked: bool, task_string: Str
 
 @export_group("Horizontal rules", "hr_")
 ## Height of horizontal rules. Only for Godot 4.5+.
-@export_range(
-	0,
-	99,
-	1,
-	"suffix:px",
-) var hr_height: int = 2:
+@export_range(0, 99, 1, "suffix:px") var hr_height: int = 2:
 	set(new_value):
 		hr_height = new_value
 		queue_update()
 ## Width of horizontal rules, as a percentage of the label's width. Only for Godot 4.5+.
-@export_range(
-	0,
-	100,
-	1,
-	"suffix:%",
-) var hr_width: float = 90:
+@export_range(0, 100, 1, "suffix:%") var hr_width: float = 90:
 	set(new_value):
 		hr_width = new_value
 		queue_update()
 ## Alignment of horizontal rules. Only for Godot 4.5+.
-@export_enum(
-	"left",
-	"center",
-	"right",
-) var hr_alignment: String = "center":
+@export_enum("left", "center", "right") var hr_alignment: String = "center":
 	set(new_value):
 		hr_alignment = new_value
 		queue_update()
@@ -162,11 +161,16 @@ var _header_anchor_count := { }
 var _within_table := false
 var _table_row := -1
 var _skip_line_break := false
+var _html_paragraph_tags: Array[String] = []
 var _checkbox_id: int = 0
 var _current_line: int = 0
 var _checkbox_record := { }
 var _debug_mode := false
 var _frontmatter := ""
+var _remote_images: Array[Dictionary] = []
+var _remote_textures: Dictionary[String, Texture2D] = { }
+var _remote_image_requests: Dictionary[String, HTTPRequest] = { }
+var _failed_remote_images: Dictionary[String, bool] = { }
 #endregion
 
 
@@ -306,7 +310,12 @@ func _update() -> void:
 	var bbcode_text: String = _convert_markdown(
 		TranslationServer.translate(markdown_text) as String if _can_auto_translate() else markdown_text
 	)
-	super.parse_bbcode(bbcode_text)
+	var last_end := 0
+	for marker in RegEx.create_from_string(_REMOTE_IMAGE_MARKER_REGEX).search_all(bbcode_text):
+		super.append_text(bbcode_text.substr(last_end, marker.get_start() - last_end))
+		_add_remote_image(_remote_images[marker.get_string(1).to_int()])
+		last_end = marker.get_end()
+	super.append_text(bbcode_text.substr(last_end))
 
 
 func _can_auto_translate() -> bool:
@@ -348,7 +357,7 @@ func _set_h6_format(new_format: H6Format) -> void:
 
 func _convert_markdown(source_text: String = "") -> String:
 	if not bbcode_enabled:
-		push_warning(
+		YardLogger.warn(
 			"WARNING: MarkdownLabel node will not format Markdown syntax if it doesn't have 'bbcode_enabled=true'"
 		)
 		return source_text
@@ -370,7 +379,9 @@ func _convert_markdown(source_text: String = "") -> String:
 	_within_table = false
 	_table_row = -1
 	_skip_line_break = false
+	_html_paragraph_tags.clear()
 	_checkbox_id = 0
+	_remote_images.clear()
 
 	for line: String in lines:
 		line = line.trim_suffix("\r")
@@ -432,6 +443,7 @@ func _convert_markdown(source_text: String = "") -> String:
 		_processed_line = _process_list_syntax(_processed_line, indent_spaces, indent_types)
 		_processed_line = _process_inline_code_syntax(_processed_line)
 		_processed_line = _process_image_syntax(_processed_line)
+		_processed_line = _process_html_paragraph_syntax(_processed_line)
 		_processed_line = _process_link_syntax(_processed_line)
 		_processed_line = _process_hr_syntax(_processed_line)
 		_processed_line = _process_text_formatting_syntax(_processed_line)
@@ -648,21 +660,206 @@ func _process_image_syntax(line: String) -> String:
 			if title_result:
 				title = title_result.get_string(1)
 				url = url.rstrip(" ").trim_suffix(title_result.get_string()).rstrip(" ")
-			url = _escape_chars(url)
 			processed_line = processed_line.erase(_start, _end - _start).insert(
 				_start,
-				"[img%s%s]%s[/img]"
-				% [
-					" alt=\"%s\"" % alt_text if alt_text else "",
-					" tooltip=\"%s\"" % title if title_result and title else "",
-					url,
-				],
+				_get_image_tag(url, alt_text, title),
 			)
 			_debug("... image: " + result.get_string())
 			break
 		if not found_proper_match:
 			break
+	# HTML images, as written in GitHub release notes:
+	var html_regex := RegEx.create_from_string("(?i)<img\\s[^>]*>")
+	var attribute_regex := RegEx.create_from_string("([\\w-]+)\\s*=\\s*\"([^\"]*)\"")
+	while true:
+		var result := html_regex.search(processed_line)
+		if not result:
+			break
+		var attributes := { }
+		for attribute in attribute_regex.search_all(result.get_string()):
+			attributes[attribute.get_string(1).to_lower()] = attribute.get_string(2)
+		processed_line = processed_line \
+				.erase(result.get_start(), result.get_end() - result.get_start()) \
+				.insert(
+			result.get_start(),
+			_get_image_tag(
+				attributes.get("src", ""),
+				attributes.get("alt", ""),
+				attributes.get("title", ""),
+				attributes.get("width", "").to_int(),
+				attributes.get("height", "").to_int(),
+			),
+		)
+		_debug("... html image: " + result.get_string())
 	return processed_line
+
+
+## Turns HTML [code]<p align="...">[/code] into alignment tags. Must run before
+## [method _process_link_syntax], which would otherwise turn them into links.
+func _process_html_paragraph_syntax(line: String) -> String:
+	var regex := RegEx.create_from_string("(?i)<(/?)p(\\s[^>]*)?>")
+	var align_regex := RegEx.create_from_string("(?i)align\\s*=\\s*\"(\\w+)\"")
+	# A tag alone on its line (as in GitHub release notes) shouldn't add an empty line:
+	var stripped_line := line.strip_edges()
+	var lone_tag := regex.search(stripped_line)
+	if lone_tag and lone_tag.get_string() == stripped_line:
+		if not lone_tag.get_string(1):
+			_skip_line_break = true
+		elif _converted_text.ends_with("\n"):
+			_converted_text = _converted_text.trim_suffix("\n")
+			_current_paragraph -= 1
+	var processed_line := line
+	while true:
+		var result := regex.search(processed_line)
+		if not result:
+			break
+		var bbcode_tag := ""
+		if result.get_string(1):
+			var align_tag: String = _html_paragraph_tags.pop_back() if _html_paragraph_tags else ""
+			if align_tag:
+				bbcode_tag = "[/%s]" % align_tag
+		else:
+			var align := align_regex.search(result.get_string(2))
+			var align_tag: String = _HTML_ALIGN_TAGS.get(align.get_string(1).to_lower(), "") if align else ""
+			_html_paragraph_tags.push_back(align_tag)
+			if align_tag:
+				bbcode_tag = "[%s]" % align_tag
+		processed_line = processed_line \
+				.erase(result.get_start(), result.get_end() - result.get_start()) \
+				.insert(result.get_start(), bbcode_tag)
+		_debug("... html paragraph: " + result.get_string())
+	return processed_line
+
+
+## Returns an [code][img][/code] tag, or a marker that [method _update] replaces with
+## [method RichTextLabel.add_image] if [param url] is remote.
+func _get_image_tag(
+	url: String,
+	alt_text: String,
+	title: String,
+	width := 0,
+	height := 0,
+) -> String:
+	var raw_url := _reset_escaped_chars(url)
+	if raw_url.begins_with("http://") or raw_url.begins_with("https://"):
+		_remote_images.append(
+			{
+				"url": raw_url,
+				"alt": _reset_escaped_chars(alt_text),
+				"tooltip": _reset_escaped_chars(title),
+				"width": width,
+				"height": height,
+			},
+		)
+		return _REMOTE_IMAGE_MARKER % (_remote_images.size() - 1)
+	var options := ""
+	if width > 0:
+		options += " width=%d" % width
+	if height > 0:
+		options += " height=%d" % height
+	if alt_text:
+		options += " alt=\"%s\"" % alt_text
+	if title:
+		options += " tooltip=\"%s\"" % title
+	return "[img%s]%s[/img]" % [options, _escape_chars(url)]
+
+
+func _add_remote_image(image: Dictionary) -> void:
+	var url: String = image.url
+	if url in _failed_remote_images:
+		add_text(image.alt)
+		return
+	var texture: Texture2D = _remote_textures.get(url)
+	var is_placeholder := not texture
+	if is_placeholder:
+		texture = get_theme_icon(&"FileDeadBigThumb", &"EditorIcons")
+		_download_remote_image(url)
+	# The URL is the key, so update_image() can swap in the texture once downloaded.
+	# Padding keeps the placeholder at its own size inside the image's box.
+	add_image(
+		texture,
+		image.width,
+		image.height,
+		Color.WHITE,
+		INLINE_ALIGNMENT_CENTER,
+		Rect2(),
+		url,
+		is_placeholder,
+		image.tooltip,
+	)
+
+
+func _download_remote_image(url: String) -> void:
+	if url in _remote_image_requests:
+		return
+	var request := HTTPRequest.new()
+	add_child(request, false, INTERNAL_MODE_BACK)
+	request.request_completed.connect(_on_remote_image_request_completed.bind(url))
+	_remote_image_requests[url] = request
+	if request.request(url) != OK:
+		_on_remote_image_request_completed(
+			HTTPRequest.RESULT_CANT_CONNECT,
+			0,
+			PackedStringArray(),
+			PackedByteArray(),
+			url,
+		)
+
+
+func _on_remote_image_request_completed(
+	result: int,
+	response_code: int,
+	_headers: PackedStringArray,
+	body: PackedByteArray,
+	url: String,
+) -> void:
+	_remote_image_requests[url].queue_free()
+	_remote_image_requests.erase(url)
+	var texture: Texture2D
+	if result != HTTPRequest.RESULT_SUCCESS or response_code != HTTPClient.RESPONSE_OK:
+		YardLogger.warn(
+			"Couldn't download image (result %d, HTTP %d): %s" % [result, response_code, url]
+		)
+	else:
+		texture = _create_texture_from_buffer(body)
+		if not texture:
+			YardLogger.warn(
+				"Unsupported image format (expected PNG, JPEG, WebP, BMP or SVG): " + url
+			)
+	if not texture:
+		_failed_remote_images[url] = true
+		queue_update() # Shows the alt text instead.
+		return
+	_remote_textures[url] = texture
+	update_image(
+		url,
+		UPDATE_TEXTURE | UPDATE_PAD,
+		texture,
+		0,
+		0,
+		Color.WHITE,
+		INLINE_ALIGNMENT_CENTER,
+		Rect2(),
+		false,
+	)
+
+
+func _create_texture_from_buffer(buffer: PackedByteArray) -> Texture2D:
+	var image := Image.new()
+	var error: Error = ERR_FILE_UNRECOGNIZED
+	if buffer.slice(1, 4).get_string_from_ascii() == "PNG":
+		error = image.load_png_from_buffer(buffer)
+	elif buffer.slice(0, 3) == PackedByteArray([0xFF, 0xD8, 0xFF]):
+		error = image.load_jpg_from_buffer(buffer)
+	elif buffer.slice(8, 12).get_string_from_ascii() == "WEBP":
+		error = image.load_webp_from_buffer(buffer)
+	elif buffer.slice(0, 2).get_string_from_ascii() == "BM":
+		error = image.load_bmp_from_buffer(buffer)
+	elif "<svg" in buffer.slice(0, 1024).get_string_from_ascii():
+		error = image.load_svg_from_buffer(buffer)
+	if error != OK:
+		return null
+	return ImageTexture.create_from_image(image)
 
 
 func _process_link_syntax(line: String) -> String:
@@ -991,7 +1188,7 @@ func _get_header_format(level: int) -> Resource:
 			return h5
 		6:
 			return h6
-	push_warning("Invalid header level: " + str(level))
+	YardLogger.warn("Invalid header level: " + str(level))
 	return null
 
 
@@ -1061,7 +1258,9 @@ func _on_checkbox_clicked(id: int, was_checked: bool) -> void:
 	var new_string := "[ ]" if was_checked else "[x]"
 	var i := lines[iline].find(old_string)
 	if i == -1:
-		push_error("Couldn't find the clicked task list checkbox (id=%d, line=%d)" % [id, iline]) # Shouldn't happen. Please report the bug if it happens.
+		YardLogger.error(
+			"Couldn't find the clicked task list checkbox (id=%d, line=%d)" % [id, iline]
+		) # Shouldn't happen. Please report the bug if it happens.
 		return
 	lines[iline] = lines[iline].erase(i, old_string.length()).insert(i, new_string)
 	_set("text", "\n".join(lines)) #calling [text] directly from this class does not use [_set()].
