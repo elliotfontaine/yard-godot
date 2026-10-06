@@ -82,10 +82,10 @@ var _columns: Array[ColumnConfig] = []
 var _column_index_by_id: Dictionary[StringName, int] = { } # Position cache into _columns.
 var n_frozen_columns: int = 0 ## Derived value
 
-# Scrolling
-var _h_scroll: HScrollBar
-var _v_scroll: VScrollBar
-var _visible_rows_range: Array[int] = [0, 0]
+# Scrolling.
+var _scroll_container: ScrollContainer
+var _scroll_content: Control
+var _scroll_panel_style: StyleBoxEmpty # Left margin = frozen width
 
 # Column resizing (dragging a header divider)
 var _resizing_column: StringName = &""
@@ -137,9 +137,6 @@ var _resource_thumb_pending: Dictionary = { }
 var _tooltip_row: StringName = &""
 var _tooltip_col: StringName = &""
 
-# Trackpad / touch pan gesture
-var _pan_delta_accumulation: Vector2 = Vector2.ZERO
-
 # Rendering
 var _pixelated_canvas_rid: RID
 
@@ -156,6 +153,7 @@ func _ready() -> void:
 		set_native_theming()
 
 	self.focus_mode = Control.FOCUS_ALL
+	self.clip_contents = true
 
 	_setup_components()
 	_reset_column_widths()
@@ -182,9 +180,7 @@ func _notification(what: int) -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventPanGesture:
-		_handle_pan_gesture(event)
-	elif event is InputEventMouseMotion:
+	if event is InputEventMouseMotion:
 		_handle_mouse_motion(event)
 	elif event is InputEventMouseButton:
 		_handle_mouse_button(event)
@@ -197,77 +193,90 @@ func _draw() -> void:
 	if not is_inside_tree() or _columns.is_empty():
 		return
 
-	var frozen_w := _get_frozen_width()
-	_style.frozen_width = frozen_w
-	var scroll_x := frozen_w - _h_scroll.value
-	var vis_w := size.x - (_v_scroll.size.x if _v_scroll.visible else 0.0)
-	var y_offset := header_height
+	var frozen_width := _get_frozen_width()
+	_style.frozen_width = frozen_width
+	var scrollable_start_x := frozen_width - _scroll_container.scroll_horizontal
+	var visible_width := _get_visible_width()
+	var visible_rows := _get_visible_row_range()
 	RenderingServer.canvas_item_set_clip(_pixelated_canvas_rid, true)
 	RenderingServer.canvas_item_set_custom_rect(
 		_pixelated_canvas_rid,
 		true,
-		Rect2(frozen_w, 0.0, maxf(0.0, vis_w - frozen_w), size.y),
+		Rect2(
+			frozen_width,
+			header_height,
+			maxf(0.0, visible_width - frozen_width),
+			maxf(0.0, size.y - header_height),
+		),
 	)
 
-	draw_rect(Rect2(0, 0, size.x, header_height), header_color)
-
 	# Pass 1: scrollable columns
-	_draw_header_column_range(n_frozen_columns, _columns.size(), scroll_x, frozen_w, vis_w)
-
-	for row_idx in range(_visible_rows_range[0], _visible_rows_range[1]):
-		if row_idx >= _order.size():
-			continue
+	for row_idx in range(visible_rows.x, visible_rows.y):
 		var row := _order[row_idx]
-		var row_y := y_offset + (row_idx - _visible_rows_range[0]) * row_height
+		var row_y := _get_row_y(row_idx)
 		var bg := alternate_row_color if row_idx % 2 == 1 else row_color
-		draw_rect(Rect2(0, row_y, vis_w, row_height), bg)
+		draw_rect(Rect2(0, row_y, visible_width, row_height), bg)
 		if selected_rows.has(row):
-			draw_rect(Rect2(0, row_y, vis_w, row_height - 1), selected_row_back_color)
-		draw_line(Vector2(0, row_y + row_height), Vector2(vis_w, row_y + row_height), grid_color)
+			draw_rect(Rect2(0, row_y, visible_width, row_height - 1), selected_row_back_color)
+		draw_line(
+			Vector2(0, row_y + row_height),
+			Vector2(visible_width, row_y + row_height),
+			grid_color,
+		)
 		_draw_cells_column_range(
 			row,
 			row_y,
 			n_frozen_columns,
 			_columns.size(),
-			scroll_x,
-			frozen_w,
-			vis_w,
+			scrollable_start_x,
+			frozen_width,
+			visible_width,
 		)
 
 	# Pass 2: frozen columns drawn on top
 	if n_frozen_columns > 0:
-		for row_idx in range(_visible_rows_range[0], _visible_rows_range[1]):
-			if row_idx >= _order.size():
-				continue
+		for row_idx in range(visible_rows.x, visible_rows.y):
 			var row := _order[row_idx]
-			var row_y := y_offset + (row_idx - _visible_rows_range[0]) * row_height
+			var row_y := _get_row_y(row_idx)
 			var bg := alternate_row_color if row_idx % 2 == 1 else row_color
-			draw_rect(Rect2(0, row_y, frozen_w, row_height), bg)
+			draw_rect(Rect2(0, row_y, frozen_width, row_height), bg)
 			if selected_rows.has(row):
-				draw_rect(Rect2(0, row_y, frozen_w, row_height - 1), selected_row_back_color)
+				draw_rect(Rect2(0, row_y, frozen_width, row_height - 1), selected_row_back_color)
 			draw_line(
 				Vector2(0, row_y + row_height),
-				Vector2(frozen_w, row_y + row_height),
+				Vector2(frozen_width, row_y + row_height),
 				grid_color,
 			)
-			_draw_cells_column_range(row, row_y, 0, n_frozen_columns, 0.0, 0.0, frozen_w)
+			_draw_cells_column_range(row, row_y, 0, n_frozen_columns, 0.0, 0.0, frozen_width)
 
-		draw_rect(Rect2(0, 0, frozen_w, header_height), header_color)
-		_draw_header_column_range(0, n_frozen_columns, 0.0, 0.0, vis_w)
+	# Pass 3: header drawn last, over the partially scrolled-out top row
+	draw_rect(Rect2(0, 0, size.x, header_height), header_color)
+	_draw_header_column_range(
+		n_frozen_columns,
+		_columns.size(),
+		scrollable_start_x,
+		frozen_width,
+		visible_width,
+	)
 
-		var separator_bottom := header_height + mini(
-			_order.size(),
-			_visible_rows_range[1] - _visible_rows_range[0],
-		) * row_height
+	if n_frozen_columns > 0:
+		draw_rect(Rect2(0, 0, frozen_width, header_height), header_color)
+		_draw_header_column_range(0, n_frozen_columns, 0.0, 0.0, visible_width)
+
+		var separator_bottom := minf(_get_row_y(_order.size()), size.y)
 		draw_line(
-			Vector2(frozen_w, 0),
-			Vector2(frozen_w, separator_bottom),
+			Vector2(frozen_width, 0),
+			Vector2(frozen_width, separator_bottom),
 			grid_color.darkened(0.2),
 			2.0,
 		)
 
-		if _v_scroll.visible:
-			draw_rect(Rect2(vis_w, header_height, _v_scroll.size.x + 50, size.y), row_color)
+		var v_scroll_bar := _scroll_container.get_v_scroll_bar()
+		if v_scroll_bar.visible:
+			draw_rect(
+				Rect2(visible_width, header_height, v_scroll_bar.size.x + 50, size.y),
+				row_color,
+			)
 
 
 #region PUBLIC METHODS
@@ -306,6 +315,9 @@ func set_native_theming(delay: int = 0) -> void:
 
 	row_height = font_size * 2
 	header_height = font_size * 2
+	if _scroll_container:
+		_scroll_container.offset_top = header_height
+		_update_content_size()
 
 	_refresh_style()
 	queue_redraw()
@@ -351,11 +363,6 @@ func set_data(rows: Array[Dictionary], row_ids: Array[StringName]) -> void:
 	_order = _base_order.duplicate()
 	_rebuild_filtered_order()
 
-	_visible_rows_range = [
-		0,
-		min(_order.size(), floori(size.y / row_height) if row_height > 0 else 0),
-	]
-
 	# Preserve selection / focus for rows that still exist
 	var kept_rows: Array[StringName] = []
 	for row in selected_rows:
@@ -372,7 +379,7 @@ func set_data(rows: Array[Dictionary], row_ids: Array[StringName]) -> void:
 	_resource_thumb_cache.clear()
 	_resource_thumb_pending.clear()
 
-	_update_scrollbars()
+	_update_content_size()
 	queue_redraw()
 
 
@@ -391,7 +398,7 @@ func add_row(row: StringName, cells: Dictionary[StringName, Variant]) -> void:
 	_rows[row] = cells.duplicate()
 	_base_order.append(row)
 	_order.append(row)
-	_update_scrollbars()
+	_update_content_size()
 	queue_redraw()
 
 
@@ -408,7 +415,7 @@ func remove_row(row: StringName) -> void:
 		focused_col = &""
 	if _anchor_row == row:
 		_anchor_row = &""
-	_update_scrollbars()
+	_update_content_size()
 	queue_redraw()
 
 
@@ -416,7 +423,7 @@ func ordering_data(column: StringName, ascending: bool = true) -> void:
 	var column_cfg := get_column(column)
 	if not column_cfg:
 		return
-	_finish_editing(false)
+	_finish_cell_editing(false)
 	sort_column = column
 	sort_ascending = ascending
 	var handler := column_cfg.get_cell_type()
@@ -515,7 +522,7 @@ func clear_filter() -> void:
 ## Call after changing column widths or other layout properties. (Freeze
 ## changes via set_column_frozen()/set_columns() already call this.)
 func refresh_layout() -> void:
-	_update_scrollbars()
+	_update_content_size()
 	queue_redraw()
 
 #endregion
@@ -547,19 +554,27 @@ func _setup_components() -> void:
 	_style.pixelated_canvas_rid = _pixelated_canvas_rid
 	_style.get_thumbnail = _get_or_queue_thumbnail
 
-	_h_scroll = HScrollBar.new()
-	_h_scroll.set_anchors_and_offsets_preset(PRESET_BOTTOM_WIDE)
-	_h_scroll.offset_top = -8 * get_theme_default_base_scale()
-	_h_scroll.value_changed.connect(_on_h_scroll_value_changed)
+	_scroll_content = Control.new()
+	_scroll_content.mouse_filter = MOUSE_FILTER_IGNORE
 
-	_v_scroll = VScrollBar.new()
-	_v_scroll.set_anchors_and_offsets_preset(PRESET_RIGHT_WIDE)
-	_v_scroll.offset_top = header_height
-	_v_scroll.offset_left = -8 * get_theme_default_base_scale()
-	_v_scroll.value_changed.connect(_on_v_scroll_value_changed)
+	# Its left margin moves both the viewport and the HScrollBar past the frozen
+	# columns, while the container still catches wheel input over them.
+	_scroll_panel_style = StyleBoxEmpty.new()
 
-	add_child(_h_scroll)
-	add_child(_v_scroll)
+	_scroll_container = ScrollContainer.new()
+	_scroll_container.set_anchors_and_offsets_preset(PRESET_FULL_RECT)
+	_scroll_container.offset_top = header_height
+	_scroll_container.mouse_filter = MOUSE_FILTER_PASS
+	_scroll_container.focus_mode = FOCUS_NONE
+	_scroll_container.add_theme_stylebox_override(&"panel", _scroll_panel_style)
+	_scroll_container.add_child(_scroll_content)
+	for scroll_bar: ScrollBar in [
+		_scroll_container.get_h_scroll_bar(),
+		_scroll_container.get_v_scroll_bar(),
+	]:
+		scroll_bar.focus_mode = FOCUS_NONE
+		scroll_bar.value_changed.connect(_on_scroll_value_changed)
+	add_child(_scroll_container)
 
 
 func _refresh_style() -> void:
@@ -604,39 +619,37 @@ func _rebuild_display_columns() -> void:
 		_column_index_by_id[_columns[i].identifier] = i
 
 
-func _update_scrollbars() -> void:
-	if not is_inside_tree():
+func _update_content_size() -> void:
+	if not _scroll_container:
 		return
 	if row_height <= 0:
 		row_height = 30.0
 
-	var visible_width := size.x - (_v_scroll.size.x if _v_scroll.visible else 0.)
-	var visible_height := size.y - (_h_scroll.size.y if _h_scroll.visible else 0.) - header_height
+	_scroll_panel_style.content_margin_left = _get_frozen_width()
 
-	var frozen_w := _get_frozen_width()
-	var visible_scrollable_w := visible_width - frozen_w
-	var total_scrollable_w := 0.0
-	for i in range(n_frozen_columns, _columns.size()):
-		total_scrollable_w += _columns[i].current_width
+	var scrollable_width := 0.0
+	for col_idx in range(n_frozen_columns, _columns.size()):
+		scrollable_width += _columns[col_idx].current_width
+	_scroll_content.custom_minimum_size = Vector2(scrollable_width, _order.size() * row_height)
 
-	_h_scroll.visible = total_scrollable_w > visible_scrollable_w
-	_h_scroll.offset_left = frozen_w
-	if _h_scroll.visible:
-		_h_scroll.max_value = total_scrollable_w
-		_h_scroll.page = visible_scrollable_w
-	else:
-		_h_scroll.value = 0
 
-	var total_content_height := float(_order.size()) * row_height
-	_v_scroll.visible = total_content_height > visible_height
-	if _v_scroll.visible:
-		_v_scroll.max_value = total_content_height + row_height / 2
-		_v_scroll.page = visible_height
-		_v_scroll.step = row_height
-	else:
-		_v_scroll.value = 0
+func _get_visible_width() -> float:
+	var v_scroll_bar := _scroll_container.get_v_scroll_bar()
+	return size.x - (v_scroll_bar.size.x if v_scroll_bar.visible else 0.0)
 
-	_on_v_scroll_value_changed(_v_scroll.value)
+
+## Rows intersecting the body, as [first, end) indices into _order.
+func _get_visible_row_range() -> Vector2i:
+	if row_height <= 0:
+		return Vector2i.ZERO
+	var vertical_scroll := _scroll_container.scroll_vertical
+	var first_row_idx := floori(vertical_scroll / row_height)
+	var end_row_idx := ceili((vertical_scroll + size.y - header_height) / row_height)
+	return Vector2i(first_row_idx, mini(end_row_idx, _order.size()))
+
+
+func _get_row_y(row_idx: int) -> float:
+	return header_height + row_idx * row_height - _scroll_container.scroll_vertical
 
 
 func _get_column_index(col: StringName) -> int:
@@ -664,6 +677,8 @@ func _start_cell_editing(row: StringName, col: StringName) -> void:
 		YardLogger.warn("There is no editor for this type of cell.")
 		return
 
+	_ensure_row_visible(row)
+	_ensure_col_visible(col)
 	var cell_rect := _get_cell_rect(row, col)
 	if not cell_rect:
 		return
@@ -678,9 +693,10 @@ func _start_cell_editing(row: StringName, col: StringName) -> void:
 		column,
 		_on_editor_finished,
 	)
+	_scroll_container.mouse_filter = MOUSE_FILTER_IGNORE
 
 
-func _finish_editing(save_changes: bool = true) -> void:
+func _finish_cell_editing(save_changes: bool = true) -> void:
 	if _edited_row == &"" and _edited_col == &"":
 		return
 
@@ -702,20 +718,22 @@ func _finish_editing(save_changes: bool = true) -> void:
 		_current_editor_node.queue_free()
 		_current_editor_node = null
 	_current_editor_handler = null
+	_scroll_container.mouse_filter = MOUSE_FILTER_PASS
 	queue_redraw()
 
 
 func _get_cell_rect(row: StringName, col: StringName) -> Rect2:
 	var row_idx := _order.find(row)
 	var col_idx := _get_column_index(col)
-	if row_idx < _visible_rows_range[0] or row_idx >= _visible_rows_range[1] or col_idx < 0:
+	if row_idx < 0 or col_idx < 0:
+		return Rect2()
+	var row_y := _get_row_y(row_idx)
+	if row_y + row_height <= header_height or row_y >= size.y:
 		return Rect2()
 	var cell_x := _get_col_x_pos(col_idx)
-	var vis_w := size.x - (_v_scroll.size.x if _v_scroll.visible else 0.)
 	var col_cfg := get_column(col)
-	if cell_x + col_cfg.current_width <= 0 or cell_x >= vis_w:
+	if cell_x + col_cfg.current_width <= 0 or cell_x >= _get_visible_width():
 		return Rect2()
-	var row_y := header_height + (row_idx - _visible_rows_range[0]) * row_height
 	return Rect2(cell_x, row_y, col_cfg.current_width, row_height)
 
 
@@ -879,7 +897,7 @@ func _apply_filter(search_key: String) -> void:
 		_filter_text = search_key
 
 	_rebuild_filtered_order()
-	_v_scroll.value = 0
+	_scroll_container.scroll_vertical = 0
 
 	# Keep selection only for rows still visible after filter
 	var kept: Array[StringName] = []
@@ -892,7 +910,7 @@ func _apply_filter(search_key: String) -> void:
 
 	sort_column = &""
 
-	_update_scrollbars()
+	_update_content_size()
 	queue_redraw()
 
 
@@ -923,7 +941,7 @@ func _get_col_at_x(x: float) -> int:
 			col_x += _columns[col_idx].current_width
 		return -1
 
-	col_x = frozen_w - _h_scroll.value
+	col_x = frozen_w - _scroll_container.scroll_horizontal
 	for col_idx in range(n_frozen_columns, _columns.size()):
 		var col_end := col_x + _columns[col_idx].current_width
 		if x >= maxf(col_x, frozen_w) and x < col_end:
@@ -935,7 +953,7 @@ func _get_col_at_x(x: float) -> int:
 func _get_row_at_y(y: float) -> int:
 	if y < header_height or row_height <= 0:
 		return -1
-	var row: int = floori((y - header_height) / row_height) + _visible_rows_range[0]
+	var row: int = floori((y - header_height + _scroll_container.scroll_vertical) / row_height)
 	return row if row < _order.size() else -1
 
 
@@ -953,7 +971,7 @@ func _get_col_x_pos(col_idx: int) -> float:
 			x += _columns[i].current_width
 		return x
 	else:
-		var x := _get_frozen_width() - _h_scroll.value
+		var x := _get_frozen_width() - _scroll_container.scroll_horizontal
 		for i in range(n_frozen_columns, col_idx):
 			x += _columns[i].current_width
 		return x
@@ -1041,51 +1059,36 @@ func _update_tooltip(mouse_pos: Vector2) -> void:
 
 func _ensure_row_visible(row: StringName) -> void:
 	var row_idx := _order.find(row)
-	if row_idx < 0 or _order.is_empty() or row_height == 0 or not _v_scroll.visible:
+	if row_idx < 0:
 		return
 
-	var visible_area_height: float = size.y - header_height - (
-		_h_scroll.size.y if _h_scroll.visible else 0.0
-	)
-	var num_visible_rows := floori(visible_area_height / row_height)
-	var first_fully_visible: int = _visible_rows_range[0]
-
-	if row_idx < first_fully_visible:
-		_v_scroll.value = row_idx * row_height
-	elif row_idx >= first_fully_visible + num_visible_rows:
-		_v_scroll.value = (row_idx - num_visible_rows + 1) * row_height
-
-	_v_scroll.value = clamp(_v_scroll.value, 0, _v_scroll.max_value)
+	var row_top := row_idx * row_height
+	var row_bottom := row_top + row_height
+	var viewport_height := _scroll_container.get_v_scroll_bar().page
+	if row_top < _scroll_container.scroll_vertical:
+		_scroll_container.scroll_vertical = floori(row_top)
+	elif row_bottom > _scroll_container.scroll_vertical + viewport_height:
+		_scroll_container.scroll_vertical = ceili(row_bottom - viewport_height)
 
 
 func _ensure_col_visible(col: StringName) -> void:
 	var col_idx := _get_column_index(col)
-	if _columns.is_empty() or col_idx < 0 or not _h_scroll.visible:
-		return
-	if col_idx < n_frozen_columns:
+	if col_idx < 0 or col_idx < n_frozen_columns:
 		return
 
 	var col_scroll_pos := 0.0
 	for i in range(n_frozen_columns, col_idx):
 		col_scroll_pos += _columns[i].current_width
 	var col_scroll_end := col_scroll_pos + _columns[col_idx].current_width
-	var visible_scrollable_w := _h_scroll.page
+	var viewport_width := _scroll_container.get_h_scroll_bar().page
 
-	if col_scroll_pos < _h_scroll.value:
-		_h_scroll.value = col_scroll_pos
-	elif col_scroll_end > _h_scroll.value + visible_scrollable_w:
-		_h_scroll.value = (
-			col_scroll_end - visible_scrollable_w
-			if _columns[col_idx].current_width <= visible_scrollable_w
-			else col_scroll_pos
-		)
-	_h_scroll.value = clamp(_h_scroll.value, 0.0, _h_scroll.max_value)
-
-
-func _handle_pan_gesture(event: InputEventPanGesture) -> void:
-	_apply_pan_axis(event.delta.y, _v_scroll, Vector2.AXIS_Y)
-	if abs(event.delta.x) > 0.05:
-		_apply_pan_axis(event.delta.x, _h_scroll, Vector2.AXIS_X)
+	if col_scroll_pos < _scroll_container.scroll_horizontal:
+		_scroll_container.scroll_horizontal = floori(col_scroll_pos)
+	elif col_scroll_end > _scroll_container.scroll_horizontal + viewport_width:
+		if _columns[col_idx].current_width <= viewport_width:
+			_scroll_container.scroll_horizontal = ceili(col_scroll_end - viewport_width)
+		else:
+			_scroll_container.scroll_horizontal = floori(col_scroll_pos)
 
 
 func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
@@ -1100,7 +1103,7 @@ func _handle_mouse_motion(event: InputEventMouseMotion) -> void:
 			get_column(_resizing_column).minimum_width,
 		)
 		get_column(_resizing_column).current_width = new_width
-		_update_scrollbars()
+		_update_content_size()
 		column_resized.emit(_resizing_column, new_width)
 		queue_redraw()
 	else:
@@ -1124,24 +1127,6 @@ func _handle_mouse_button(event: InputEventMouseButton) -> void:
 				_handle_left_press(event)
 			MOUSE_BUTTON_RIGHT:
 				_handle_right_click(event.position)
-			MOUSE_BUTTON_WHEEL_UP:
-				if not _current_editor_node:
-					if Input.is_key_pressed(KEY_SHIFT):
-						_h_scroll.value = maxf(0.0, _h_scroll.value - _v_scroll.step)
-					else:
-						_v_scroll.value = maxf(0.0, _v_scroll.value - _v_scroll.step)
-			MOUSE_BUTTON_WHEEL_DOWN:
-				if not _current_editor_node:
-					if Input.is_key_pressed(KEY_SHIFT):
-						_h_scroll.value = minf(_h_scroll.max_value, _h_scroll.value + _v_scroll.step)
-					else:
-						_v_scroll.value = minf(_v_scroll.max_value, _v_scroll.value + _v_scroll.step)
-			MOUSE_BUTTON_WHEEL_LEFT:
-				if not _current_editor_node:
-					_h_scroll.value = maxf(0.0, _h_scroll.value - _v_scroll.step)
-			MOUSE_BUTTON_WHEEL_RIGHT:
-				if not _current_editor_node:
-					_h_scroll.value = minf(_h_scroll.max_value, _h_scroll.value + _v_scroll.step)
 	else:
 		match event.button_index:
 			MOUSE_BUTTON_LEFT:
@@ -1196,7 +1181,7 @@ func _handle_left_release(event: InputEventMouseButton) -> void:
 
 func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> void:
 	if _edited_col != &"":
-		_finish_editing(false)
+		_finish_cell_editing(false)
 
 	var clicked_idx := _get_row_at_y(mouse_pos.y)
 	var clicked_col_idx := _get_col_at_x(mouse_pos.x)
@@ -1225,6 +1210,7 @@ func _handle_cell_click(mouse_pos: Vector2, event: InputEventMouseButton) -> voi
 		_anchor_row = clicked_row
 
 	cell_selected.emit(focused_row, focused_col)
+	_ensure_row_visible(focused_row)
 	_ensure_col_visible(focused_col)
 
 	if selected_rows.size() > 1:
@@ -1275,7 +1261,7 @@ func _handle_header_click(mouse_pos: Vector2) -> void:
 			and mouse_pos.x < col_x + _columns[col_idx].current_width - _divider_width / 2.0
 		):
 			var col := _columns[col_idx].identifier
-			_finish_editing(false)
+			_finish_cell_editing(false)
 			if _get_sort_icon_col_at(mouse_pos) == col_idx:
 				sort_ascending = not sort_ascending if sort_column == col else true
 				ordering_data(col, sort_ascending)
@@ -1287,7 +1273,7 @@ func _handle_header_right_click(mouse_pos: Vector2) -> void:
 	var col_idx := _get_col_at_x(mouse_pos.x)
 	if col_idx == -1:
 		return
-	_finish_editing(false)
+	_finish_cell_editing(false)
 	header_right_clicked.emit(_columns[col_idx].identifier)
 
 
@@ -1296,7 +1282,7 @@ func _handle_header_double_click(mouse_pos: Vector2) -> void:
 	if _get_sort_icon_col_at(mouse_pos) != -1:
 		_handle_header_click(mouse_pos)
 		return
-	_finish_editing(false)
+	_finish_cell_editing(false)
 	var col_idx := _get_col_at_x(mouse_pos.x)
 	if col_idx != -1:
 		var col := _columns[col_idx].identifier
@@ -1452,18 +1438,6 @@ func _navigate_to(new_idx: int, new_col_idx: int, key_event: InputEventKey) -> v
 		cell_selected.emit(focused_row, focused_col)
 
 
-func _apply_pan_axis(delta: float, scroll: ScrollBar, axis: int) -> void:
-	if not scroll.visible:
-		return
-	if sign(delta) != sign(_pan_delta_accumulation[axis]):
-		_pan_delta_accumulation[axis] = 0.0
-	_pan_delta_accumulation[axis] += delta
-	if abs(_pan_delta_accumulation[axis]) >= 1.0:
-		if not _current_editor_node:
-			scroll.value += sign(_pan_delta_accumulation[axis]) * _v_scroll.step
-		_pan_delta_accumulation[axis] -= sign(_pan_delta_accumulation[axis])
-
-
 ## Lets the CellType at (row, col) claim an InputEvent (true) or pass it
 ## through (false). On claim, pins live-edit routing so follow-up motion or
 ## release events keep reaching this cell even after the cursor leaves it.
@@ -1517,36 +1491,20 @@ func _dispatch_cell_input(event: InputEvent, row: StringName, col: StringName) -
 #region SIGNAL CALLBACKS
 
 func _on_resized() -> void:
-	_update_scrollbars()
 	queue_redraw()
 
 
 func _on_editor_finished(save_changes: bool) -> void:
-	_finish_editing(save_changes)
+	_finish_cell_editing(save_changes)
 
 
 func _on_double_click_timeout() -> void:
 	_click_count = 0
 
 
-func _on_h_scroll_value_changed(_value: float) -> void:
+func _on_scroll_value_changed(_value: float) -> void:
 	if _current_editor_node:
-		_finish_editing(false)
-	queue_redraw()
-
-
-func _on_v_scroll_value_changed(value: float) -> void:
-	if row_height > 0:
-		_visible_rows_range[0] = floori(value / row_height)
-		_visible_rows_range[1] = _visible_rows_range[0] + floori(
-			(size.y - header_height) / row_height
-		) + 1
-		_visible_rows_range[1] = min(_visible_rows_range[1], _order.size())
-	else:
-		_visible_rows_range = [0, _order.size()]
-
-	if _current_editor_node:
-		_finish_editing(false)
+		_finish_cell_editing(false)
 	queue_redraw()
 
 
