@@ -12,11 +12,17 @@ const YardLogger := Namespace.YardLogger
 const ShortcutUtils := Namespace.ShortcutUtils
 const YardSettings := Namespace.YardSettings
 const RegistryEditor := Namespace.RegistryEditor
+
 const TRANSLATIONS := Namespace.TRANSLATIONS
 const REGISTRY_EDITOR_SCENE := Namespace.REGISTRY_EDITOR_SCENE
 const FILESYSTEM_CREATE_CONTEXT_MENU_PLUGIN := Namespace.FILESYSTEM_CREATE_CONTEXT_MENU_PLUGIN
 const EDITOR_INSPECTOR_PLUGIN := Namespace.EDITOR_INSPECTOR_PLUGIN
 const EDITOR_EXPORT_PLUGIN := Namespace.EDITOR_EXPORT_PLUGIN
+
+const ICONS := [
+	"res://addons/yard/editor_only/assets/github_icon.svg",
+	"res://addons/yard/editor_only/assets/yard.svg",
+]
 
 var _registry_editor: RegistryEditor
 var _filesystem_create_context_menu_plugin: EditorContextMenuPlugin
@@ -146,20 +152,18 @@ func _get_plugin_icon() -> Texture2D:
 
 # Force reimport of icons if it doesn't match the editor scale
 func _reimport_icons() -> void:
-	var icon: CompressedTexture2D = load("res://addons/yard/editor_only/assets/github_icon.svg")
+	var icon: CompressedTexture2D = load(ICONS[0])
 	var scale := EditorInterface.get_editor_scale()
-	if float(icon.get_width()) != scale * 16:
-		YardLogger.warn(
-			"YARD - Editor scale changed, reimporting icons. This might throw an error. Disregard."
-		)
-		EditorInterface.get_resource_filesystem().reimport_files(
-			PackedStringArray(
-				[
-					"res://addons/yard/editor_only/assets/github_icon.svg",
-					"res://addons/yard/editor_only/assets/yard.svg",
-				],
-			),
-		)
+	if float(icon.get_width()) == scale * 16:
+		return
+
+	var filesystem := EditorInterface.get_resource_filesystem()
+	while filesystem.is_scanning():
+		await get_tree().process_frame
+		if not is_inside_tree():
+			return
+
+	filesystem.reimport_files(PackedStringArray(ICONS))
 
 
 func _filesystem_create_context_menu_plugin_callback(context: Array) -> void:
