@@ -150,6 +150,12 @@ func _notification(what: int) -> void:
 			_on_drag_end()
 
 
+func _input(event: InputEvent) -> void:
+	if event is InputEventKey:
+		# runs prior to shortcut handling
+		toggle_edit_menu_items(edit_context_menu)
+
+
 func _shortcut_input(event: InputEvent) -> void:
 	if not event.is_pressed() or event.is_echo():
 		return
@@ -260,17 +266,14 @@ func do_edit_menu_action(action_id: int) -> void:
 			_enter_subresource_view(focused_col)
 		EditMenuAction.CUT_CELL_VALUE:
 			var value: Variant = data_table.get_cell_value(focused_row, focused_col)
-			if data_table.is_cell_valid(focused_row, focused_col):
-				clipboard = value
-				_on_cell_edited(focused_row, focused_col, value, null)
+			clipboard = value
+			_on_cell_edited(focused_row, focused_col, value, null)
 		EditMenuAction.COPY_CELL_VALUE:
 			var value: Variant = data_table.get_cell_value(focused_row, focused_col)
-			if data_table.is_cell_valid(focused_row, focused_col):
-				clipboard = value
+			clipboard = value
 		EditMenuAction.PASTE_TO_CELL:
 			var value: Variant = data_table.get_cell_value(focused_row, focused_col)
-			if data_table.is_cell_valid(focused_row, focused_col):
-				_on_cell_edited(focused_row, focused_col, value, clipboard)
+			_on_cell_edited(focused_row, focused_col, value, clipboard)
 		EditMenuAction.SELECT_ALL:
 			_select_all()
 		EditMenuAction.INVERT_SELECTION:
