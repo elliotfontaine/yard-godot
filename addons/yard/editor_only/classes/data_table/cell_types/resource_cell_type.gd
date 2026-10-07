@@ -55,6 +55,7 @@ static func draw_cell(
 			texture,
 			thumb_rect,
 			style.frozen_width,
+			resolve_texture_modulate(column, style),
 		)
 
 	var text_rect := inner.grow_individual(-thumb_width - x_margin_val, 0, 0, 0)

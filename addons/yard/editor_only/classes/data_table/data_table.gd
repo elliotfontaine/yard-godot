@@ -567,9 +567,13 @@ func _refresh_style() -> void:
 	_style.mono_font = mono_font
 	_style.font_size = font_size
 	_style.default_font_color = default_font_color
+	_style.readonly_font_color = get_theme_color(&"readonly_color", &"EditorProperty")
+	_style.readonly_texture_modulate = get_theme_color(&"icon_disabled_color", &"Button")
 	_style.error_color = get_theme_color(&"error_color", &"Editor")
 	_style.checkbox_checked_icon = get_theme_icon(&"checked", &"CheckBox")
 	_style.checkbox_unchecked_icon = get_theme_icon(&"unchecked", &"CheckBox")
+	_style.checkbox_checked_disabled_icon = get_theme_icon(&"checked_disabled", &"CheckBox")
+	_style.checkbox_unchecked_disabled_icon = get_theme_icon(&"unchecked_disabled", &"CheckBox")
 	_style.file_dead_icon = get_theme_icon(&"FileDead", &"EditorIcons")
 	_sort_icon = get_theme_icon(&"Sort", &"EditorIcons")
 	_style.progress_bar_start_color = progress_bar_start_color
@@ -659,6 +663,9 @@ func _start_cell_editing(row: StringName, col: StringName) -> void:
 		return
 
 	var column := get_column(col)
+	if column.read_only:
+		YardLogger.warn("%s is read-only." % column.identifier)
+		return
 	var handler := column.get_editor_cell_type()
 	if not handler.has_editor():
 		YardLogger.warn("There is no editor for this type of cell.")
@@ -737,7 +744,7 @@ func _draw_header_cell(col_idx: int, cell_x: float, vis_w: float) -> void:
 	)
 
 	var header_text := column.header
-	var font_color := default_font_color
+	var font_color: Color = _style.readonly_font_color if column.read_only else default_font_color
 	if column.identifier == _filtered_column:
 		font_color = header_filter_active_font_color
 		header_text += " (" + str(_order.size()) + ")"
@@ -1472,6 +1479,8 @@ func _dispatch_cell_input(event: InputEvent, row: StringName, col: StringName) -
 		return false
 
 	var column := get_column(col)
+	if column.read_only:
+		return false
 	var cell_value: Variant = get_cell_value(row, col)
 	var rect := _get_cell_rect(row, col)
 	var is_live_cell := row == _live_edit_row and col == _live_edit_col

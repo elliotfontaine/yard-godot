@@ -103,11 +103,17 @@ static func resolve_text_color(
 	style: CellStyle,
 	override: Color = Color.TRANSPARENT,
 ) -> Color:
+	if column.read_only:
+		return style.readonly_font_color
 	if override != Color.TRANSPARENT:
 		return override
 	if column.custom_font_color:
 		return column.custom_font_color
 	return style.default_font_color
+
+
+static func resolve_texture_modulate(column: ColumnConfig, style: CellStyle) -> Color:
+	return style.readonly_texture_modulate if column.read_only else Color.WHITE
 
 
 static func fit_texture_rect(
@@ -134,6 +140,7 @@ static func draw_filtered_texture_rect(
 	texture: Texture2D,
 	rect: Rect2,
 	frozen_width: float,
+	modulate := Color.WHITE,
 ) -> void:
 	var ratio := rect.size / texture.get_size()
 	if (
@@ -146,15 +153,18 @@ static func draw_filtered_texture_rect(
 				rect,
 				texture.get_rid(),
 				texture.region,
+				modulate,
 			)
 		else:
 			RenderingServer.canvas_item_add_texture_rect(
 				pixelated_canvas_rid,
 				rect,
 				texture.get_rid(),
+				false,
+				modulate,
 			)
 	else:
-		canvas.draw_texture_rect(texture, rect, false)
+		canvas.draw_texture_rect(texture, rect, false, modulate)
 
 
 # Editing: stateless factory. create_editor builds a fresh Node each time,
