@@ -497,8 +497,16 @@ func _toggle_edit_menu_items() -> void:
 
 func _populate_open_recent_submenu() -> void:
 	var file_menu := file_menu_button.get_popup()
+	var open_recent_idx := file_menu.get_item_index(FileMenuAction.OPEN_RECENT)
 
-	var recent := PopupMenu.new()
+	var recent := file_menu.get_item_submenu_node(open_recent_idx)
+	if recent:
+		recent.clear()
+	else:
+		recent = PopupMenu.new()
+		recent.id_pressed.connect(_on_open_recent_submenu_id_pressed)
+		file_menu.set_item_submenu_node(open_recent_idx, recent)
+
 	for entry in _editor_state_data.recent_registry_uids:
 		if ResourceUID.has_id(ResourceUID.text_to_id(entry)):
 			recent.add_item(Compat.uid_to_path(entry))
@@ -508,20 +516,6 @@ func _populate_open_recent_submenu() -> void:
 		recent.get_item_index(FileMenuAction.CLEAR_RECENT),
 		recent.get_item_count() == 2,
 	) # only the "Clear" item
-	recent.id_pressed.connect(
-		func(id: int) -> void:
-			if id == FileMenuAction.CLEAR_RECENT:
-				_editor_state_data.clear_recent()
-				return
-			var uid := _editor_state_data.recent_registry_uids[id]
-			if RegistryIO.is_uid_valid(uid):
-				if _editor_state_data.opened_registries.has(uid):
-					select_registry(uid)
-				else:
-					open_registry(load(uid)),
-	)
-
-	file_menu.set_item_submenu_node(file_menu.get_item_index(FileMenuAction.OPEN_RECENT), recent)
 
 
 func _populate_columns_popup_menu() -> void:
@@ -751,6 +745,18 @@ func _on_registry_context_menu_about_to_popup() -> void:
 
 func _on_file_menu_id_pressed(id: int) -> void:
 	_do_file_menu_action(id)
+
+
+func _on_open_recent_submenu_id_pressed(id: int) -> void:
+	if id == FileMenuAction.CLEAR_RECENT:
+		_editor_state_data.clear_recent()
+		return
+	var uid := _editor_state_data.recent_registry_uids[id]
+	if RegistryIO.is_uid_valid(uid):
+		if _editor_state_data.opened_registries.has(uid):
+			select_registry(uid)
+		else:
+			open_registry(load(uid))
 
 
 func _on_edit_menu_id_pressed(id: int) -> void:
