@@ -141,7 +141,7 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventKey:
+	if is_visible_in_tree() and event is InputEventKey:
 		# runs prior to shortcut handling
 		_toggle_registry_context_menu_items()
 		_toggle_file_menu_items()
