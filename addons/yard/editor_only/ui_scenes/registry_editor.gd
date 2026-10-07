@@ -140,9 +140,20 @@ func _ready() -> void:
 	_update_registries_itemlist()
 
 
+func _input(event: InputEvent) -> void:
+	if is_visible_in_tree() and event is InputEventKey:
+		# runs prior to shortcut handling
+		_toggle_registry_context_menu_items()
+		_toggle_file_menu_items()
+		_toggle_edit_menu_items()
+
+
 func _shortcut_input(event: InputEvent) -> void:
-	if is_visible_in_tree() and event.is_pressed():
-		registry_context_menu.activate_item_by_event(event)
+	if not event.is_pressed() or event.is_echo():
+		return
+
+	if is_visible_in_tree() and registry_context_menu.activate_item_by_event(event):
+		get_viewport().set_input_as_handled()
 
 
 ## Open a registry from the filesystem and add it to the list of opened ones
@@ -603,8 +614,6 @@ func _do_file_menu_action(action_id: int) -> void:
 		FileMenuAction.OPEN:
 			_file_dialog.popup_file_dialog()
 		FileMenuAction.REOPEN_CLOSED:
-			if _session_closed_uids.is_empty(): # check because of shortcut
-				return
 			for idx in range(_session_closed_uids.size() - 1, -1, -1):
 				var uid := _session_closed_uids[idx]
 				if RegistryIO.is_uid_valid(uid):
@@ -614,8 +623,7 @@ func _do_file_menu_action(action_id: int) -> void:
 				_session_closed_uids.remove_at(idx)
 			YardLogger.warn(tr("None of the closed resources exist anymore"))
 		FileMenuAction.CLOSE:
-			if is_any_registry_selected(): # check because of shortcut
-				close_registry(_current_registry_uid)
+			close_registry(_current_registry_uid)
 		FileMenuAction.CLOSE_OTHER_TABS:
 			_close_other_tabs(_current_registry_uid)
 		FileMenuAction.CLOSE_TABS_BELOW:
@@ -639,8 +647,6 @@ func _do_file_menu_action(action_id: int) -> void:
 		FileMenuAction.SORT:
 			_sort_opened_registries_by_filename()
 			_update_registries_itemlist()
-	_toggle_file_menu_items()
-	_toggle_registry_context_menu_items()
 
 
 func _reorder_opened_registries_move(uid: String, delta: int) -> bool:
