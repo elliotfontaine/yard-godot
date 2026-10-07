@@ -466,6 +466,7 @@ func _build_columns(
 		var class_string: String = prop[&"class_name"]
 		var column := DataTable.ColumnConfig.new(prop_name, prop_header, prop_type)
 		column.frozen = is_column_frozen(column.identifier)
+		column.read_only = prop[&"usage"] & PROPERTY_USAGE_READ_ONLY != 0
 
 		if hint:
 			column.property_hint = hint

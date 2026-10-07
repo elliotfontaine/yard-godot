@@ -37,7 +37,7 @@ static func draw_cell(
 		resolve_font(column, style.font),
 		style.font_size,
 		HORIZONTAL_ALIGNMENT_CENTER,
-		_hashed_color(value_str),
+		resolve_text_color(column, style, _hashed_color(value_str)),
 	)
 
 

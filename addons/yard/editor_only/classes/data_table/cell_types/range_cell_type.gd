@@ -33,6 +33,8 @@ static func draw_cell(
 		style.progress_bar_end_color,
 		progress,
 	)
+	if column.read_only:
+		progress_color = style.readonly_font_color
 
 	var scale := EditorInterface.get_editor_scale()
 	var bar := rect.grow(-2.0 * scale)
@@ -67,7 +69,7 @@ static func draw_cell(
 		HORIZONTAL_ALIGNMENT_LEFT,
 		rect.size.x - absf(x_margin_val),
 		style.font_size,
-		style.progress_text_color_light,
+		resolve_text_color(column, style, style.progress_text_color_light),
 	)
 	canvas.draw_rect(fill, progress_color)
 	@warning_ignore("integer_division")

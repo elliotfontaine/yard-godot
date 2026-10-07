@@ -30,7 +30,10 @@ static func draw_cell(
 		)
 		return
 
-	var icon: Texture2D = style.checkbox_checked_icon if (value as bool) else style.checkbox_unchecked_icon
+	var is_checked := value as bool
+	var icon: Texture2D = style.checkbox_checked_icon if is_checked else style.checkbox_unchecked_icon
+	if column.read_only:
+		icon = style.checkbox_checked_disabled_icon if is_checked else style.checkbox_unchecked_disabled_icon
 	if icon == null:
 		return
 
