@@ -154,6 +154,8 @@ static func _format_element_text(elem: Variant, enum_map: Dictionary = { }) -> S
 
 # SPDX-SnippetBegin
 # SPDX-SnippetCopyrightText: Copyright 2025 Okxa <https://github.com/godotengine/godot-proposals/issues/538#issuecomment-2989009057>
+# SPDX-SnippetCopyrightText: 2026, Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>
+# SPDX-SnippetComment: Adapted for YARD: typed loops, formats dictionary keys of any type.
 #
 # SPDX-License-Identifier: MIT
 static func _value_to_string_pretty(value: Variant, indent_level: int = 0) -> String:
@@ -177,11 +179,13 @@ static func _value_to_string_pretty(value: Variant, indent_level: int = 0) -> St
 				formatted += "{}"
 			else:
 				formatted += "{\n"
-				for i: int in value.size():
+				var keys: Array = value.keys()
+				for i: int in keys.size():
 					formatted += (
-						INDENT.repeat(indent_level + 1) + "\"" + value.keys()[i]
-						+ "\": " + _value_to_string_pretty(value.values()[i], indent_level + 1)
-						+ ("," if i < value.size() - 1 else "") + "\n"
+						INDENT.repeat(indent_level + 1)
+						+ _value_to_string_pretty(keys[i], indent_level + 1)
+						+ ": " + _value_to_string_pretty(value[keys[i]], indent_level + 1)
+						+ ("," if i < keys.size() - 1 else "") + "\n"
 					)
 				formatted += INDENT.repeat(indent_level) + "}"
 		_:
