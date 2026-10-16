@@ -103,9 +103,13 @@ static func draw_cell(
 static func _get_covered_text(text: String, font: Font, size: int, covered_width: float) -> String:
 	var count := 0
 	while count < text.length():
-		var char_start := font \
-				.get_string_size(text.left(count), HORIZONTAL_ALIGNMENT_LEFT, -1, size) \
-				.x
+		var string_size := font.get_string_size(
+			text.left(count),
+			HORIZONTAL_ALIGNMENT_LEFT,
+			-1,
+			size,
+		)
+		var char_start := string_size.x
 		if char_start >= covered_width:
 			break
 		count += 1
