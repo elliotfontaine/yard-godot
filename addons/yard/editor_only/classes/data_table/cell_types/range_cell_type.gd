@@ -56,10 +56,14 @@ static func draw_cell(
 		rect.position.x + (rect.size.x - text_width) / 2.0,
 		get_text_baseline_y(style.font, style.font_size, rect.position.y, rect.size.y),
 	)
-	var fill_width: float = maxf(
-		0.001,
-		fill.position.x + fill.size.x - text_pos.x - absf(x_margin_val) + 5 * scale,
-	)
+	var covered_text := ""
+	if fill.size.x > 0.0:
+		covered_text = _get_covered_text(
+			display_text,
+			style.font,
+			style.font_size,
+			fill.end.x - text_pos.x,
+		)
 
 	canvas.draw_rect(bar, style.progress_background_color)
 	canvas.draw_string(
@@ -72,27 +76,44 @@ static func draw_cell(
 		resolve_text_color(column, style, style.progress_text_color_light),
 	)
 	canvas.draw_rect(fill, progress_color)
-	@warning_ignore("integer_division")
-	canvas.draw_string_outline(
-		style.font,
-		text_pos,
-		display_text,
-		HORIZONTAL_ALIGNMENT_LEFT,
-		fill_width,
-		style.font_size,
-		style.font_size / 3,
-		progress_color,
-	)
-	canvas.draw_string(
-		style.font,
-		text_pos,
-		display_text,
-		HORIZONTAL_ALIGNMENT_LEFT,
-		fill_width,
-		style.font_size,
-		Color.BLACK,
-	)
+	if not covered_text.is_empty():
+		@warning_ignore("integer_division")
+		canvas.draw_string_outline(
+			style.font,
+			text_pos,
+			covered_text,
+			HORIZONTAL_ALIGNMENT_LEFT,
+			-1,
+			style.font_size,
+			style.font_size / 3,
+			progress_color,
+		)
+		canvas.draw_string(
+			style.font,
+			text_pos,
+			covered_text,
+			HORIZONTAL_ALIGNMENT_LEFT,
+			-1,
+			style.font_size,
+			Color.BLACK,
+		)
 	canvas.draw_rect(bar, style.progress_border_color, false, 1.0 * scale)
+
+
+static func _get_covered_text(text: String, font: Font, size: int, covered_width: float) -> String:
+	var count := 0
+	while count < text.length():
+		var string_size := font.get_string_size(
+			text.left(count),
+			HORIZONTAL_ALIGNMENT_LEFT,
+			-1,
+			size,
+		)
+		var char_start := string_size.x
+		if char_start >= covered_width:
+			break
+		count += 1
+	return text.left(count)
 
 
 static func _get_display_text(text: String, font: Font, font_size: int, max_width: float) -> String:
