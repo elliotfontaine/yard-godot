@@ -842,11 +842,13 @@ func _draw_cells_column_range(
 		draw_line(Vector2(col_x, row_y), Vector2(col_x, row_y + row_height), grid_color)
 
 
-func _get_or_queue_thumbnail(resource_path: String, type_name: String = "Resource") -> Texture2D:
+func _get_or_queue_thumbnail(resource_path: String, type_name: String = "") -> Texture2D:
 	if _resource_thumb_cache.has(resource_path):
 		return _resource_thumb_cache[resource_path]
 	if not _resource_thumb_pending.has(resource_path):
 		_resource_thumb_pending[resource_path] = true
+		if type_name.is_empty():
+			type_name = ClassUtils.get_type_name(load(resource_path))
 		EditorInterface.get_resource_previewer().queue_resource_preview(
 			resource_path,
 			self,
