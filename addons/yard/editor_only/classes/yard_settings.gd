@@ -10,6 +10,12 @@ extends Object
 ## entry to SETTINGS below.
 
 const UPDATE_CHANNEL := "yard/updates/channel"
+const RESOURCE_LABEL_PRIORITY := "yard/table/resource_label_priority"
+
+enum ResourceLabelPriority {
+	RESOURCE_NAME_FIRST,
+	TO_STRING_FIRST,
+}
 
 const SETTINGS: Array[Dictionary] = [
 	{
@@ -18,6 +24,13 @@ const SETTINGS: Array[Dictionary] = [
 		"default": "Stable",
 		"hint": PROPERTY_HINT_ENUM,
 		"hint_string": "Stable,Prerelease",
+	},
+	{
+		"name": RESOURCE_LABEL_PRIORITY,
+		"type": TYPE_INT,
+		"default": ResourceLabelPriority.RESOURCE_NAME_FIRST,
+		"hint": PROPERTY_HINT_ENUM,
+		"hint_string": "resource_name > _to_string(),_to_string() > resource_name",
 	},
 ]
 

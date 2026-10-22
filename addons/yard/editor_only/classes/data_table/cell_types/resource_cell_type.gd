@@ -3,11 +3,12 @@
 #
 # SPDX-License-Identifier: MIT
 extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
-## Resource columns: a thumbnail + filename, edited via Godot's own
-## EditorResourcePicker. Clicking away does not commit; the picker manages
+## Resource columns: a thumbnail + label (see get_label()), edited via Godot's
+## own EditorResourcePicker. Clicking away does not commit; the picker manages
 ## its own commit/cancel through its popup.
 
 const ClassUtils := Namespace.ClassUtils
+const YardSettings := Namespace.YardSettings
 
 
 static func matches(column: ColumnConfig) -> bool:
@@ -38,12 +39,13 @@ static func draw_cell(
 		return
 
 	var res: Resource = value
-	var label := "<" + res.resource_path.get_file() + ">"
+	var label := get_label(res)
 	var x_margin_val: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_LEFT)
 	var thumb_width := 0.0
-	var texture: Texture2D = res if res is Texture2D else style.get_thumbnail.call(
-		res.resource_path,
-		ClassUtils.get_type_name(res),
+	var texture: Texture2D = (
+		res
+		if res is Texture2D
+		else style.get_thumbnail.call(res.resource_path, ClassUtils.get_type_name(res))
 	)
 	if texture != null:
 		var thumb_rect := fit_texture_rect(texture, inner, true)
@@ -76,11 +78,55 @@ static func has_editor() -> bool:
 
 static func get_sort_key(value: Variant, _column: ColumnConfig) -> Variant:
 	if value is Resource:
-		var r: Resource = value
-		if r.resource_path != "":
-			return r.resource_path.get_file()
-		return str(r.get_class()) + ":" + str(r.get_instance_id())
+		return get_label(value)
 	return str(value)
+
+
+static func get_filter_key(value: Variant, _column: ColumnConfig) -> Variant:
+	if value is Resource:
+		return get_label(value)
+	return "<empty>"
+
+
+## The name shown for a resource in table cells, shared with collection cells.
+## First non-empty of: resource_name, _to_string() (order swappable through the
+## RESOURCE_LABEL_PRIORITY project setting), file name, then class name.
+static func get_label(res: Resource) -> String:
+	var to_string_label := _get_to_string_label(res)
+	var priority: int = YardSettings.get_setting(YardSettings.RESOURCE_LABEL_PRIORITY)
+	if priority == YardSettings.ResourceLabelPriority.TO_STRING_FIRST and to_string_label:
+		return to_string_label
+	if res.resource_name:
+		return res.resource_name
+	if to_string_label:
+		return to_string_label
+	if not res.is_built_in():
+		return res.resource_path.get_file()
+	return ClassUtils.get_type_name(res)
+
+
+static func get_inline_summary(res: Resource) -> String:
+	return "<%s> (%s)" % [get_label(res), ", ".join(get_summary_lines(res))]
+
+
+static func get_summary_lines(res: Resource) -> Array[String]:
+	var lines: Array[String]
+	if not res.is_built_in():
+		lines.append("%s" % res.resource_path)
+	lines.append("Type: %s" % ClassUtils.get_type_name(res))
+	if res is Texture2D:
+		lines.append("Dimensions: %s × %s" % [res.get_width(), res.get_height()])
+	return lines
+
+
+## Empty unless the script overrides _to_string() and is a @tool: in the editor,
+## other scripts only get a placeholder instance, which never runs it. Newlines
+## are flattened since cells draw a single line.
+static func _get_to_string_label(res: Resource) -> String:
+	var script: Script = res.get_script()
+	if not script or not script.is_tool() or not res.has_method(&"_to_string"):
+		return ""
+	return res.to_string().replace("\n", " ").strip_edges()
 
 
 static func create_editor(
@@ -121,12 +167,7 @@ static func get_tooltip(value: Variant, column: ColumnConfig) -> String:
 		return super(value, column)
 
 	var res := value as Resource
-	var lines: Array[String]
-	if not res.is_built_in():
-		lines.append("%s" % res.resource_path)
-	lines.append("Type: %s" % ClassUtils.get_type_name(res))
-	if res is Texture2D:
-		lines.append("Dimensions: %s × %s" % [res.get_width(), res.get_height()])
+	var lines := get_summary_lines(res)
 	lines.append("Properties:")
 	for prop: Dictionary in res.get_property_list():
 		if _can_display_property(prop):

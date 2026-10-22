@@ -37,6 +37,7 @@ const ShortcutUtils := Namespace.ShortcutUtils
 const EditorThemeUtils := Namespace.EditorThemeUtils
 const DataTable := Namespace.DataTable
 const YardLogger := Namespace.YardLogger
+const YardSettings := Namespace.YardSettings
 const RegistryCacheData := Namespace.YardEditorCache.RegistryCacheData
 
 const ACTION_SHORTCUTS: Dictionary[EditMenuAction, String] = {
@@ -78,6 +79,7 @@ var _root_properties_column_info: Array[Dictionary]
 var _uid_resource_to_inspect: String
 var _subresource_to_inspect: Resource
 var _context_column: StringName
+var _resource_label_priority: int
 
 @onready var data_table: DataTable = %DataTable
 @onready var edit_context_menu: PopupMenu = %EditContextMenu
@@ -95,6 +97,8 @@ func _ready() -> void:
 		return
 
 	EditorInterface.get_inspector().property_edited.connect(_on_inspector_property_edited)
+	ProjectSettings.settings_changed.connect(_on_project_settings_changed)
+	_resource_label_priority = YardSettings.get_setting(YardSettings.RESOURCE_LABEL_PRIORITY)
 
 	data_table.cell_selected.connect(_on_cell_selected)
 	data_table.cell_right_selected.connect(_on_cell_right_selected)
@@ -1087,6 +1091,14 @@ func _on_inspector_property_edited(_property: StringName) -> void:
 		var uid := Compat.path_to_uid(res.resource_path)
 		if uid.begins_with("uid://") and current_registry.has_uid(uid):
 			update_view()
+
+
+func _on_project_settings_changed() -> void:
+	var priority: int = YardSettings.get_setting(YardSettings.RESOURCE_LABEL_PRIORITY)
+	if priority == _resource_label_priority:
+		return
+	_resource_label_priority = priority
+	update_view()
 
 
 func _on_edit_context_menu_id_pressed(id: int) -> void:
