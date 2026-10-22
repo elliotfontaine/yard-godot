@@ -224,6 +224,12 @@ static func get_filter_key(value: Variant, _column: ColumnConfig) -> Variant:
 	return str(value)
 
 
+## Translates through the editor's domain, where plugin.gd adds YARD's own
+## translations. Cell types are static, so they can't use Object.tr().
+static func editor_tr(message: StringName) -> String:
+	return TranslationServer.get_or_add_domain(&"godot.editor").translate(message)
+
+
 ## Shared enum hint_string parser: "A,B:1,C" -> {0:"A", 1:"B", 2:"C"}. Used by
 ## EnumCellType directly, and by CollectionCellType after it extracts the
 ## relevant sub-hint from a compound array/dictionary hint_string.

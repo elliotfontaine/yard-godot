@@ -26,7 +26,7 @@ static func draw_cell(
 		draw_text(
 			canvas,
 			rect,
-			"<empty>",
+			editor_tr("<empty>"),
 			resolve_font(column, style.font),
 			style.font_size,
 			column.h_alignment,
@@ -85,7 +85,7 @@ static func get_sort_key(value: Variant, _column: ColumnConfig) -> Variant:
 static func get_filter_key(value: Variant, _column: ColumnConfig) -> Variant:
 	if value is Resource:
 		return get_label(value)
-	return "<empty>"
+	return editor_tr("<empty>")
 
 
 ## The name shown for a resource in table cells, shared with collection cells.
@@ -113,9 +113,9 @@ static func get_summary_lines(res: Resource) -> Array[String]:
 	var lines: Array[String]
 	if not res.is_built_in():
 		lines.append("%s" % res.resource_path)
-	lines.append("Type: %s" % ClassUtils.get_type_name(res))
+	lines.append(editor_tr("Type: %s") % ClassUtils.get_type_name(res))
 	if res is Texture2D:
-		lines.append("Dimensions: %s × %s" % [res.get_width(), res.get_height()])
+		lines.append(editor_tr("Dimensions: %d × %d") % [res.get_width(), res.get_height()])
 	return lines
 
 
@@ -168,7 +168,7 @@ static func get_tooltip(value: Variant, column: ColumnConfig) -> String:
 
 	var res := value as Resource
 	var lines := get_summary_lines(res)
-	lines.append("Properties:")
+	lines.append("%s:" % editor_tr("Properties"))
 	for prop: Dictionary in res.get_property_list():
 		if _can_display_property(prop):
 			lines.append('    "%s": %s' % [prop.name, var_to_str(res.get(prop.name))])

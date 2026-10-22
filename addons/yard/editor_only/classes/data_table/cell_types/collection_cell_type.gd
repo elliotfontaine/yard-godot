@@ -106,7 +106,7 @@ static func _is_resource_collection_hint(hint: String) -> bool:
 
 
 static func _get_null_element_text(column: ColumnConfig) -> String:
-	return "<empty>" if _holds_resources(column) else "null"
+	return editor_tr("<empty>") if _holds_resources(column) else "null"
 
 
 static func _get_dict_key_hint_part(column: ColumnConfig) -> String:
