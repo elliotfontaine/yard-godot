@@ -78,8 +78,8 @@ static func draw_text(
 	else:
 		line.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 
-	var line_height := font.get_ascent(font_size) + font.get_descent(font_size)
-	var top_y := rect.position.y + (rect.size.y - line_height) / 2.0
+	var baseline_y := get_text_baseline_y(font, font_size, rect.position.y, rect.size.y)
+	var top_y := baseline_y - line.get_line_ascent()
 	line.draw(canvas.get_canvas_item(), Vector2(rect.position.x + x_margin, top_y), color)
 
 
@@ -89,8 +89,10 @@ static func get_text_baseline_y(
 	cell_y: float,
 	cell_height: float,
 ) -> float:
-	var ascent := font.get_ascent(font_size)
-	var descent := font.get_descent(font_size)
+	var reference_line := TextLine.new()
+	reference_line.add_string("x", font, font_size)
+	var ascent := reference_line.get_line_ascent()
+	var descent := reference_line.get_line_descent()
 	return cell_y + (cell_height + ascent - descent) / 2.0
 
 
