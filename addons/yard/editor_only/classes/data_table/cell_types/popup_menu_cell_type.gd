@@ -63,6 +63,9 @@ static func _popup_under_cell(
 			await popup_menu.get_tree().create_timer(0.05).timeout
 			on_hidden.call(),
 	)
+	if Compat.is_engine_version_equal_or_newer(4, 7):
+		popup_menu.set(&"search_bar_enabled", true)
+		popup_menu.set(&"search_bar_min_item_count", 10)
 	owner.add_child(popup_menu)
 	# Anchored to the cell, not the mouse: editing may have started from the keyboard.
 	var bottom_left := owner.get_screen_transform() * Vector2(rect.position.x, rect.end.y)

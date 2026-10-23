@@ -9,6 +9,9 @@
 ## Dynamically disables already-selected entries and supports clean UI expansion.
 extends EditorProperty
 
+const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const Compat := Namespace.Compat
+
 var available_options: Array[String] = []
 var selected_options: Array[String] = []
 
@@ -145,6 +148,9 @@ func _build_row(index: int) -> void:
 	option_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	option_button.fit_to_longest_item = false
 	option_button.clip_text = true
+	if Compat.is_engine_version_equal_or_newer(4, 7):
+		option_button.set(&"search_bar_enabled", true)
+		option_button.set(&"search_bar_min_item_count", 10)
 	var stylebox := EditorInterface.get_editor_theme().get_stylebox(&"child_bg", &"EditorProperty")
 	option_button.add_theme_stylebox_override(&"normal", stylebox)
 	option_button.add_theme_stylebox_override(&"hover", stylebox)

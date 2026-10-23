@@ -7,6 +7,9 @@
 @tool
 extends EditorProperty
 
+const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
+const Compat := Namespace.Compat
+
 var inner_control: OptionButton
 var show_empty: bool = false
 var string_type: Variant.Type # TYPE_STRING or TYPE_STRING_NAME
@@ -35,6 +38,9 @@ func _build_dropdown(
 	dropdown.fit_to_longest_item = false
 	dropdown.allow_reselect = true
 	dropdown.clip_text = true
+	if Compat.is_engine_version_equal_or_newer(4, 7):
+		dropdown.set(&"search_bar_enabled", true)
+		dropdown.set(&"search_bar_min_item_count", 10)
 
 	if p_show_empty:
 		dropdown.add_item("<empty>")
