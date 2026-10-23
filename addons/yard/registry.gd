@@ -44,10 +44,15 @@ extends Resource
 ## [br] • [b]allow_duplicates[/b] (optional, default [code]true[/code]): allows the same ID to appear multiple times in an
 ## [Array][lb]StringName[rb] or
 ## [Array][lb]String[rb]
+## [br][br]
+## A [code]sort=property[/code] option can follow them to order the dropdown by an indexed property
+## instead of registry order. Prefix the property with [code]-[/code] for descending order.
+## Entries without a value for that property come last.
 ## [codeblock]
 ## @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres") var item: StringName
 ## @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres,true") var item_or_empty: StringName
 ## @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres,true,false") var unique_items: Array[StringName]
+## @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres,sort=-price") var priciest_first: StringName
 ## [/codeblock]
 const PROPERTY_HINT_CUSTOM: int = 1024
 

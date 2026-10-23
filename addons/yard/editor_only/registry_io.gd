@@ -318,6 +318,68 @@ static func rebuild_property_index(registry: Registry) -> Error:
 	return ResourceSaver.save(registry)
 
 
+## Splits a [constant Registry.PROPERTY_HINT_CUSTOM] hint string into its positional values
+## and its named [code]key=value[/code] options.[br][br]
+##
+## Returns [code]{ "positional": PackedStringArray, "sort": String }[/code].
+static func parse_custom_hint(hint_string: String) -> Dictionary:
+	var positional := PackedStringArray()
+	var sort_spec := ""
+	for token: String in hint_string.split(","):
+		token = token.strip_edges()
+		var separator := token.find("=")
+		if separator == -1:
+			positional.append(token)
+			continue
+		var key := token.left(separator).strip_edges()
+		if key == "sort":
+			sort_spec = token.substr(separator + 1).strip_edges()
+		else:
+			YardLogger.warn("Unknown option '%s' in hint string \"%s\"." % [key, hint_string])
+	return { "positional": positional, "sort": sort_spec }
+
+
+## Returns the string IDs of [param registry] ordered by the value of an indexed property.[br][br]
+##
+## [param sort_spec] is a property name, prefixed with [code]-[/code] for descending order.
+## Entries sharing a value keep their registry order, and entries without an indexed value
+## come last. An empty or non-indexed [param sort_spec] returns the registry order.
+static func get_string_ids_sorted_by(registry: Registry, sort_spec: String) -> Array[StringName]:
+	var all_string_ids := registry.get_all_string_ids()
+	if sort_spec.is_empty():
+		return all_string_ids
+
+	var property := StringName(sort_spec.trim_prefix("-"))
+	if not registry.is_property_indexed(property):
+		YardLogger.warn(
+			"Cannot sort by '%s': property is not indexed in %s."
+			% [property, registry.resource_path.get_file()]
+		)
+		return all_string_ids
+
+	var value_map: Dictionary = registry._property_index[property]
+	var values: Array = value_map.keys()
+	values.sort_custom(_is_index_value_less)
+	if sort_spec.begins_with("-"):
+		values.reverse()
+
+	# One bucket per value rank, plus a last one for entries without an indexed value.
+	var rank_by_string_id: Dictionary[StringName, int] = { }
+	for rank in range(values.size()):
+		for string_id: StringName in value_map[values[rank]]:
+			rank_by_string_id[string_id] = rank
+	var buckets: Array[Array] = []
+	for rank in range(values.size() + 1):
+		buckets.append([])
+	for string_id in all_string_ids:
+		buckets[rank_by_string_id.get(string_id, values.size())].append(string_id)
+
+	var sorted_string_ids: Array[StringName] = []
+	for bucket in buckets:
+		sorted_string_ids.append_array(bucket)
+	return sorted_string_ids
+
+
 ## NOTE: Only one of the ruleset's scan directories can be checked at a time! When multiple are
 ## defined, they should be iterated through in a parent scope.
 static func dir_has_matching_resource(
@@ -659,6 +721,27 @@ static func _resolve_property_path(obj: Object, path: StringName) -> Variant:
 		if current == null:
 			return null
 	return current
+
+
+# Total order over index values of any type: numbers first, then strings, then everything
+# else by its string form. Strings compare naturally, so "item_2" comes before "item_10".
+static func _is_index_value_less(a: Variant, b: Variant) -> bool:
+	var a_group := _get_index_value_sort_group(a)
+	var b_group := _get_index_value_sort_group(b)
+	if a_group != b_group:
+		return a_group < b_group
+	if a_group == 0:
+		return float(a) < float(b)
+	return str(a).naturalnocasecmp_to(str(b)) < 0
+
+
+static func _get_index_value_sort_group(value: Variant) -> int:
+	match typeof(value):
+		TYPE_BOOL, TYPE_INT, TYPE_FLOAT:
+			return 0
+		TYPE_STRING, TYPE_STRING_NAME:
+			return 1
+	return 2
 
 
 static func _normalize_abs_path(path: String) -> String:

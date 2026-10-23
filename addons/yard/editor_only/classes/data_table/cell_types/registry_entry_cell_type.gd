@@ -4,6 +4,8 @@
 # SPDX-License-Identifier: MIT
 extends "res://addons/yard/editor_only/classes/data_table/cell_types/popup_menu_cell_type.gd"
 
+const RegistryIO := Namespace.RegistryIO
+
 const RIGHTWARDS_ARROW := "↪"
 
 
@@ -83,7 +85,7 @@ static func get_tooltip(value: Variant, column: ColumnConfig) -> String:
 
 
 static func _get_registry(hint_string: String) -> Registry:
-	var parts: PackedStringArray = hint_string.split(",")
+	var parts: PackedStringArray = RegistryIO.parse_custom_hint(hint_string).positional
 	var registry_path: String = parts[0]
 
 	if not (registry_path.begins_with("res://") or registry_path.begins_with("uid://")):
@@ -98,4 +100,8 @@ static func _get_registry(hint_string: String) -> Registry:
 
 static func _get_registry_entries(hint_string: String) -> Array[StringName]:
 	var registry := _get_registry(hint_string)
-	return registry.get_all_string_ids() if registry else []
+	if not registry:
+		return []
+
+	var parsed_custom_hint := RegistryIO.parse_custom_hint(hint_string)
+	return RegistryIO.get_string_ids_sorted_by(registry, parsed_custom_hint.sort)

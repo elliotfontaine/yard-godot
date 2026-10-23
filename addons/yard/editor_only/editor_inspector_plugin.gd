@@ -9,6 +9,7 @@ extends EditorInspectorPlugin
 const Namespace := preload("res://addons/yard/editor_only/namespace.gd")
 const EditorPropertyOptionWrapper := Namespace.EditorPropertyOptionWrapper
 const MultiOptionEditorProperty := Namespace.MultiOptionEditorProperty
+const RegistryIO := Namespace.RegistryIO
 
 
 func _can_handle(_object: Object) -> bool:
@@ -27,7 +28,8 @@ func _parse_property(
 	if hint != Registry.PROPERTY_HINT_CUSTOM:
 		return false
 
-	var parts: PackedStringArray = hint_text.split(",")
+	var parsed_hint := RegistryIO.parse_custom_hint(hint_text)
+	var parts: PackedStringArray = parsed_hint.positional
 	var registry_path: String = parts[0]
 
 	if not (registry_path.begins_with("res://") or registry_path.begins_with("uid://")):
@@ -37,11 +39,11 @@ func _parse_property(
 	if not registry is Registry:
 		return false
 
-	var show_empty: bool = parts.size() > 1 and parts[1].strip_edges() == "true" # when unspecified: false
-	var allow_duplicates: bool = parts.size() <= 2 or parts[2].strip_edges() != "false" # when unspecified: true
+	var show_empty: bool = parts.size() > 1 and parts[1] == "true" # when unspecified: false
+	var allow_duplicates: bool = parts.size() <= 2 or parts[2] != "false" # when unspecified: true
 
 	var string_ids: Array[String] = []
-	for id in registry.get_all_string_ids():
+	for id in RegistryIO.get_string_ids_sorted_by(registry, parsed_hint.sort):
 		string_ids.append(str(id))
 
 	match type:
