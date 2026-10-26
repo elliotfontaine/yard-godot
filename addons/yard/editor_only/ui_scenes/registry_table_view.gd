@@ -39,6 +39,7 @@ const DataTable := Namespace.DataTable
 const YardLogger := Namespace.YardLogger
 const YardSettings := Namespace.YardSettings
 const RegistryCacheData := Namespace.YardEditorCache.RegistryCacheData
+const ViewState := Namespace.YardEditorCache.RegistryCacheData.ViewState
 
 const ACTION_SHORTCUTS: Dictionary[EditMenuAction, String] = {
 	EditMenuAction.DELETE_ENTRIES: "delete_entries",
@@ -61,15 +62,14 @@ var properties_column_info: Array[Dictionary]:
 var current_registry: Registry:
 	set(new):
 		var is_another := new != current_registry
+		_store_view_state()
 		current_registry = new
 		current_cache_data = RegistryCacheData.load_or_default(new) if new else null
 		footer.set_current_registry(current_registry)
 		if is_another:
-			_subresource_stack.clear()
-			data_table.clear_filter()
-			data_table.sort_column = STRINGID_COLUMN
-			data_table.sort_ascending = true
-		update_view()
+			_restore_view_state()
+		else:
+			update_view()
 
 ## Path of expanded subresource properties. Empty means we're viewing the root registry.
 var _subresource_stack: Array[SubresourceFrame] = []
@@ -144,6 +144,10 @@ func _process(_delta: float) -> void:
 		drag_and_drop_info_panel.visible = (
 			current_registry and current_registry.is_empty() and not is_in_subresource_view()
 		)
+
+
+func _exit_tree() -> void:
+	_store_view_state()
 
 
 func _notification(what: int) -> void:
@@ -537,18 +541,95 @@ func _can_display_property(property_info: Dictionary) -> bool:
 func _enter_subresource_view(property: StringName) -> void:
 	if property == &"":
 		return
+	if not is_in_subresource_view():
+		current_cache_data.root_view = _capture_view_state()
 	var frame := SubresourceFrame.new()
 	frame.property = property
 	_subresource_stack.append(frame)
-	_reset_table_navigation()
+	_show_current_level()
+
+
+func _show_current_level() -> void:
+	data_table.set_selected_cell(&"", &"")
+	if is_in_subresource_view():
+		current_cache_data.subresource_view = ViewState.new()
+		_show_view_state(current_cache_data.subresource_view)
+	else:
+		_show_view_state(current_cache_data.root_view)
+	current_cache_data.subresource_path = _get_subresource_path()
+	current_cache_data.save()
+
+
+func _show_view_state(state: ViewState) -> void:
+	_set_table_navigation(state)
+	await get_tree().process_frame
+	data_table.set_scroll(state.scroll_row, state.scroll_horizontal)
+
+
+func _set_table_navigation(state: ViewState) -> void:
+	data_table.set_filter(state.filter_column, state.filter_text)
+	data_table.sort_column = state.sort_column
+	data_table.sort_ascending = state.sort_ascending
 	update_view()
 
 
-func _reset_table_navigation() -> void:
-	data_table.clear_filter()
-	data_table.set_selected_cell(&"", &"")
-	data_table.sort_column = STRINGID_COLUMN
-	data_table.sort_ascending = true
+func _capture_view_state() -> ViewState:
+	var state := ViewState.new()
+	state.filter_column = data_table.get_filter_column()
+	state.filter_text = data_table.get_filter_text()
+	state.sort_column = data_table.sort_column
+	state.sort_ascending = data_table.sort_ascending
+	state.scroll_row = data_table.get_scroll_row()
+	state.scroll_horizontal = data_table.get_scroll_horizontal()
+	return state
+
+
+func _store_view_state() -> void:
+	if not current_cache_data:
+		return
+	current_cache_data.subresource_path = _get_subresource_path()
+	if is_in_subresource_view():
+		current_cache_data.subresource_view = _capture_view_state()
+	else:
+		current_cache_data.root_view = _capture_view_state()
+	current_cache_data.save()
+
+
+func _restore_view_state() -> void:
+	_subresource_stack.clear()
+	if not current_cache_data:
+		_set_table_navigation(ViewState.new())
+		update_view()
+		return
+
+	## Reopens the saved subresource path as far as its properties still hold subresources.
+	var saved_path := current_cache_data.subresource_path
+	if not saved_path.is_empty():
+		_set_table_navigation(ViewState.new())
+		for property: StringName in saved_path:
+			var column := data_table.get_column(property)
+			if not column or not _column_holds_subresources(column):
+				break
+			var frame := SubresourceFrame.new()
+			frame.property = property
+			_subresource_stack.append(frame)
+			if _subresource_stack.size() < saved_path.size():
+				update_view()
+		if _subresource_stack.size() < saved_path.size():
+			current_cache_data.subresource_path = _get_subresource_path()
+			current_cache_data.subresource_view = ViewState.new()
+
+	if is_in_subresource_view():
+		_show_view_state(current_cache_data.subresource_view)
+	else:
+		_show_view_state(current_cache_data.root_view)
+
+
+func _get_subresource_path() -> Array[StringName]:
+	var path: Array[StringName] = []
+	for frame: SubresourceFrame in _subresource_stack:
+		path.append(frame.property)
+	return path
 
 
 func _update_root_view() -> void:
@@ -1124,8 +1205,7 @@ func _on_column_context_menu_about_to_popup() -> void:
 
 func _on_breadcrumb_crumb_pressed(depth: int) -> void:
 	_subresource_stack.resize(depth)
-	_reset_table_navigation()
-	update_view()
+	_show_current_level()
 
 
 func _on_footer_add_entry_requested(res: Resource, string_id: String, target_dir: String) -> void:

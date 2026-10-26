@@ -14,10 +14,12 @@ const _BASE_DIR := "res://.godot/plugins/yard/"
 
 
 class RegistryCacheData:
-	const _REGISTRY_CACHE_VERSION := 3
+	const _REGISTRY_CACHE_VERSION := 4
 	const _REGISTRIES_DIR := _BASE_DIR + "registries/"
 	const _SECTION_GENERAL := "general"
 	const _SECTION_TABLE := "table"
+	const _SECTION_ROOT_VIEW := "root_view"
+	const _SECTION_SUBRESOURCE_VIEW := "subresource_view"
 	const BUILTIN_RESOURCE_PROPERTIES: Array[StringName] = [
 		&"script",
 		&"resource_local_to_scene",
@@ -32,6 +34,10 @@ class RegistryCacheData:
 	var uid_column_width: float = 200.0
 	var string_id_column_width: float = 200.0
 	var property_columns_widths: Dictionary[StringName, float] = { }
+	var root_view := RegistryCacheData.ViewState.new()
+	## Properties expanded from the root to the subresource level shown. Empty = root view.
+	var subresource_path: Array[StringName] = []
+	var subresource_view := RegistryCacheData.ViewState.new() # State of the deepest level only
 
 	var _registry: Registry
 
@@ -49,6 +55,11 @@ class RegistryCacheData:
 		cfg.set_value(_SECTION_TABLE, "uid_column_width", uid_column_width)
 		cfg.set_value(_SECTION_TABLE, "string_id_column_width", string_id_column_width)
 		cfg.set_value(_SECTION_TABLE, "property_columns_widths", property_columns_widths)
+		root_view.write(cfg, _SECTION_ROOT_VIEW)
+		# Left out when back on the root view, so a stale subresource state never lingers.
+		if not subresource_path.is_empty():
+			cfg.set_value(_SECTION_SUBRESOURCE_VIEW, "path", subresource_path)
+			subresource_view.write(cfg, _SECTION_SUBRESOURCE_VIEW)
 		DirAccess.make_dir_recursive_absolute(_REGISTRIES_DIR)
 		return cfg.save(_get_registry_cache_path(_registry))
 
@@ -90,6 +101,13 @@ class RegistryCacheData:
 			"property_columns_widths",
 			data.property_columns_widths,
 		)
+		data.root_view = RegistryCacheData.ViewState.read(cfg, _SECTION_ROOT_VIEW)
+		data.subresource_path = cfg.get_value(
+			_SECTION_SUBRESOURCE_VIEW,
+			"path",
+			data.subresource_path,
+		)
+		data.subresource_view = RegistryCacheData.ViewState.read(cfg, _SECTION_SUBRESOURCE_VIEW)
 		return data
 
 
@@ -115,7 +133,43 @@ class RegistryCacheData:
 			_data.frozen_columns = [&"string_id", &"uid"]
 			_data.version = 3
 
+		if _data.version < 4:
+			_data.version = 4
+
 		_data.version = _REGISTRY_CACHE_VERSION
+
+
+	class ViewState:
+		var filter_column: StringName = &""
+		var filter_text: String = ""
+		var sort_column: StringName = &"string_id"
+		var sort_ascending: bool = true
+		var scroll_row: float = 0.0 # Vertical scroll, in rows (fractional)
+		var scroll_horizontal: int = 0 # In pixels
+
+
+		func write(cfg: ConfigFile, section: String) -> void:
+			cfg.set_value(section, "filter_column", filter_column)
+			cfg.set_value(section, "filter_text", filter_text)
+			cfg.set_value(section, "sort_column", sort_column)
+			cfg.set_value(section, "sort_ascending", sort_ascending)
+			cfg.set_value(section, "scroll_row", scroll_row)
+			cfg.set_value(section, "scroll_horizontal", scroll_horizontal)
+
+
+		static func read(cfg: ConfigFile, section: String) -> ViewState:
+			var state := RegistryCacheData.ViewState.new()
+			state.filter_column = cfg.get_value(section, "filter_column", state.filter_column)
+			state.filter_text = cfg.get_value(section, "filter_text", state.filter_text)
+			state.sort_column = cfg.get_value(section, "sort_column", state.sort_column)
+			state.sort_ascending = cfg.get_value(section, "sort_ascending", state.sort_ascending)
+			state.scroll_row = cfg.get_value(section, "scroll_row", state.scroll_row)
+			state.scroll_horizontal = cfg.get_value(
+				section,
+				"scroll_horizontal",
+				state.scroll_horizontal,
+			)
+			return state
 
 
 class EditorStateData:

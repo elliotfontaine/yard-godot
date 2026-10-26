@@ -519,6 +519,36 @@ func clear_filter() -> void:
 	_filter_text = ""
 
 
+func get_filter_column() -> StringName:
+	return _filtered_column
+
+
+func get_filter_text() -> String:
+	return _filter_text
+
+
+## Sets the column filter without rebuilding data. The next set_data() applies it.
+func set_filter(column: StringName, text: String) -> void:
+	_filtered_column = column
+	_filter_text = text
+
+
+## Vertical scroll position, in rows (fractional).
+func get_scroll_row() -> float:
+	if not _scroll_container or row_height <= 0:
+		return 0.0
+	return _scroll_container.scroll_vertical / row_height
+
+
+func get_scroll_horizontal() -> int:
+	return _scroll_container.scroll_horizontal if _scroll_container else 0
+
+
+func set_scroll(row: float, horizontal: int) -> void:
+	_scroll_container.scroll_vertical = roundi(row * row_height)
+	_scroll_container.scroll_horizontal = horizontal
+
+
 ## Call after changing column widths or other layout properties. (Freeze
 ## changes via set_column_frozen()/set_columns() already call this.)
 func refresh_layout() -> void:
@@ -924,6 +954,8 @@ func _apply_filter(search_key: String) -> void:
 
 
 func _rebuild_filtered_order() -> void:
+	if _filtered_column != &"" and not get_column(_filtered_column):
+		clear_filter() # e.g. a restored filter on a column that was removed or hidden since
 	if _filtered_column == &"" or _filter_text.is_empty():
 		_order = _base_order.duplicate()
 		return
