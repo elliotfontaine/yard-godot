@@ -116,10 +116,11 @@ func _ready() -> void:
 	new_registry_dialog.settings_saved.connect(_on_new_registry_dialog_settings_saved)
 	version_button.pressed.connect(_on_version_button_pressed)
 	registries_itemlist.set_drag_forwarding(
-		Callable(), #_drag_from_registries_itemlist,
+		_drag_from_registries_itemlist,
 		_can_drop_on_registries_itemlist,
 		_drop_on_registries_itemlist,
 	)
+	registries_itemlist.gui_input.connect(_on_registries_itemlist_gui_input)
 
 	update_manager.update_check_completed.connect(_on_update_manager_update_check_completed)
 	update_manager.download_completed.connect(update_install_window.set_download_result)
@@ -215,7 +216,7 @@ func close_all() -> void:
 
 ## Select a registry on the list and view its content on the right
 ## UID is supposed to be valid
-func select_registry(uid: String) -> void:
+func select_registry(uid: String, inspect: bool = true) -> void:
 	var current_selection := registries_itemlist.get_selected_items()
 	var target_already_selected := false
 
@@ -233,8 +234,8 @@ func select_registry(uid: String) -> void:
 	_editor_state_data.set_current_registry_uid(uid)
 
 	var registry: Registry = _editor_state_data.opened_registries[uid]
-	if EditorInterface.get_inspector().get_edited_object() != registry:
-		EditorInterface.inspect_object(registry, "", true)
+	if inspect:
+		_inspect_registry(registry)
 
 	if RegistryIO.get_registry_settings(registry).has_any_scan_directory():
 		RegistryIO.sync_from_scan_directories(registry)
@@ -244,6 +245,11 @@ func select_registry(uid: String) -> void:
 	_toggle_file_menu_items()
 	_toggle_registry_context_menu_items()
 	_update_registries_itemlist()
+
+
+func _inspect_registry(registry: Registry) -> void:
+	if EditorInterface.get_inspector().get_edited_object() != registry:
+		EditorInterface.inspect_object(registry, "", true)
 
 
 func unselect_registry() -> void:
@@ -649,32 +655,40 @@ func _do_file_menu_action(action_id: int) -> void:
 		FileMenuAction.SHOW_IN_FILESYSTEM:
 			_show_in_filesystem(_current_registry_uid)
 		FileMenuAction.MOVE_UP:
-			_reorder_opened_registries_move(_current_registry_uid, -1)
+			_move_opened_registry_by_offset(_current_registry_uid, -1)
 			_update_registries_itemlist()
 		FileMenuAction.MOVE_DOWN:
-			_reorder_opened_registries_move(_current_registry_uid, +1)
+			_move_opened_registry_by_offset(_current_registry_uid, +1)
 			_update_registries_itemlist()
 		FileMenuAction.SORT:
 			_sort_opened_registries_by_filename()
 			_update_registries_itemlist()
 
 
-func _reorder_opened_registries_move(uid: String, delta: int) -> bool:
+func _move_opened_registry_by_offset(uid: String, offset: int) -> void:
 	var keys: Array[String] = _editor_state_data.opened_registries.keys()
-	var i := keys.find(uid)
-	var j := i + delta
-	if i == -1 or j < 0 or j >= keys.size():
-		return false
+	var current_index := keys.find(uid)
+	var new_index := current_index + offset
+	if current_index == -1 or new_index < 0 or new_index >= keys.size():
+		return
 
-	keys[i] = keys[j]
-	keys[j] = uid
+	_move_opened_registry(uid, new_index)
+
+
+func _move_opened_registry(uid: String, new_index: int) -> void:
+	var keys: Array[String] = _editor_state_data.opened_registries.keys()
+	var current_index := keys.find(uid)
+	if current_index == -1 or current_index == new_index:
+		return
+
+	keys.erase(uid)
+	keys.insert(new_index, uid)
 
 	var reordered: Dictionary[String, Registry] = { }
 	for k in keys:
 		reordered[k] = _editor_state_data.opened_registries[k]
 	_editor_state_data.opened_registries = reordered
 	_editor_state_data = _editor_state_data.save_and_reload()
-	return true
 
 
 func _sort_opened_registries_by_filename() -> void:
@@ -728,12 +742,38 @@ func _show_in_filesystem(uid: String) -> void:
 
 
 func _drag_from_registries_itemlist(at_position: Vector2) -> Variant:
-	return { }
+	var idx := registries_itemlist.get_item_at_position(at_position, true)
+	if idx == -1:
+		return null
+	var uid: String = registries_itemlist.get_item_metadata(idx)
+	var registry: Registry = _editor_state_data.opened_registries.get(uid)
+	if not registry:
+		return null
+
+	var preview := HBoxContainer.new()
+	var icon := TextureRect.new()
+	icon.texture = registries_itemlist.get_item_icon(idx)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.custom_minimum_size = registries_itemlist.fixed_icon_size
+	preview.add_child(icon)
+	var label := Label.new()
+	label.text = registries_itemlist.get_item_text(idx)
+	label.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+	preview.add_child(label)
+	set_drag_preview(preview)
+
+	# Same payload as a resource dragged from the inspector (EditorNode::drag_resource()),
+	# so resource pickers accept it. "from" tells our own drop handler to reorder the list.
+	return { "type": "resource", "resource": registry, "from": registries_itemlist }
 
 
-func _can_drop_on_registries_itemlist(at_position: Vector2, data: Variant) -> bool:
+func _can_drop_on_registries_itemlist(_at_position: Vector2, data: Variant) -> bool:
 	if typeof(data) != TYPE_DICTIONARY:
 		return false
+
+	if _is_dragged_from_registries_itemlist(data):
+		return true
 
 	var drop_type: StringName = data.get(&"type", &"")
 	if drop_type != &"files" and drop_type != &"resource":
@@ -743,13 +783,35 @@ func _can_drop_on_registries_itemlist(at_position: Vector2, data: Variant) -> bo
 	return registries.size() > 0
 
 
-func _drop_on_registries_itemlist(_at_position: Vector2, data: Variant) -> void:
+func _drop_on_registries_itemlist(at_position: Vector2, data: Variant) -> void:
 	if typeof(data) != TYPE_DICTIONARY:
+		return
+
+	if _is_dragged_from_registries_itemlist(data):
+		# The dragged registry takes the place of the one it is dropped on.
+		var target_idx := -1
+		if at_position == Vector2(INF, INF): # Dropped without a mouse, e.g. from the keyboard
+			var selected_items := registries_itemlist.get_selected_items()
+			if not selected_items.is_empty():
+				target_idx = selected_items[0]
+		else:
+			target_idx = registries_itemlist.get_item_at_position(at_position)
+		if target_idx == -1:
+			return
+		var registry: Registry = data.get(&"resource")
+		var target_uid: String = registries_itemlist.get_item_metadata(target_idx)
+		var keys: Array[String] = _editor_state_data.opened_registries.keys()
+		_move_opened_registry(Compat.path_to_uid(registry.resource_path), keys.find(target_uid))
+		_update_registries_itemlist()
 		return
 
 	var drop_type: StringName = data.get(&"type", &"")
 	for registry in _extract_registries_from_drop(data, drop_type):
 		open_registry(registry)
+
+
+func _is_dragged_from_registries_itemlist(data: Dictionary) -> bool:
+	return is_same(data.get(&"from"), registries_itemlist)
 
 
 func _extract_registries_from_drop(data: Dictionary, drop_type: StringName) -> Array[Registry]:
@@ -779,7 +841,16 @@ func _on_registries_filter_text_changed(_new_text: String) -> void:
 
 func _on_registries_list_item_selected(idx: int) -> void:
 	var selection_uid: String = registries_itemlist.get_item_metadata(idx)
-	select_registry(selection_uid)
+	# A mouse press may start a drag, so the registry is inspected on release instead.
+	select_registry(selection_uid, not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT))
+
+
+func _on_registries_itemlist_gui_input(event: InputEvent) -> void:
+	var mouse_button := event as InputEventMouseButton
+	if mouse_button and mouse_button.button_index == MOUSE_BUTTON_LEFT and not mouse_button.pressed:
+		var is_over_item := registries_itemlist.get_item_at_position(mouse_button.position, true) != -1
+		if is_any_registry_selected() and is_over_item:
+			_inspect_registry(_editor_state_data.opened_registries[_current_registry_uid])
 
 
 func _on_registries_list_item_clicked(idx: int, _at: Vector2, mouse_button_index: int) -> void:
