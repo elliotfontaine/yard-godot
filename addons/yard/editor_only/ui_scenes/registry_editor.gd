@@ -139,8 +139,10 @@ func _ready() -> void:
 
 	_editor_state_data = EditorStateData.load_or_default()
 	if _editor_state_data.opened_registries.size() > 0:
-		var first_uid: String = _editor_state_data.opened_registries.keys()[0]
-		select_registry(first_uid)
+		var uid_to_select := _editor_state_data.current_registry_uid
+		if not _editor_state_data.opened_registries.has(uid_to_select):
+			uid_to_select = _editor_state_data.opened_registries.keys()[0]
+		select_registry(uid_to_select)
 	_update_registries_itemlist()
 
 
@@ -219,6 +221,7 @@ func select_registry(uid: String) -> void:
 				break
 
 	_current_registry_uid = uid
+	_editor_state_data.set_current_registry_uid(uid)
 
 	var registry: Registry = _editor_state_data.opened_registries[uid]
 	if EditorInterface.get_inspector().get_edited_object() != registry:
@@ -236,6 +239,7 @@ func select_registry(uid: String) -> void:
 
 func unselect_registry() -> void:
 	_current_registry_uid = ""
+	_editor_state_data.set_current_registry_uid("")
 	registry_table_view.current_registry = null
 	_toggle_visibility_topbar_buttons()
 	registries_itemlist.deselect_all()

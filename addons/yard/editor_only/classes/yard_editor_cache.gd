@@ -173,7 +173,7 @@ class RegistryCacheData:
 
 
 class EditorStateData:
-	const _EDITOR_STATE_VERSION := 1
+	const _EDITOR_STATE_VERSION := 2
 	const _STATE_FILE := _BASE_DIR + "editor_state.cfg"
 	const _SECTION_GENERAL := "general"
 	const _SECTION_RECENT := "recent"
@@ -182,6 +182,7 @@ class EditorStateData:
 	var version: int = _EDITOR_STATE_VERSION
 	var recent_registry_uids: Array[String] = []
 	var opened_registries: Dictionary[String, Registry] = { } # uid -> Registry
+	var current_registry_uid: String = ""
 
 
 	func save() -> Error:
@@ -193,6 +194,7 @@ class EditorStateData:
 			"uids",
 			opened_registries.keys().filter(RegistryIO.is_uid_valid),
 		)
+		cfg.set_value(_SECTION_OPENED, "current_uid", current_registry_uid)
 		DirAccess.make_dir_recursive_absolute(_BASE_DIR)
 		return cfg.save(_STATE_FILE)
 
@@ -213,12 +215,6 @@ class EditorStateData:
 			return data
 
 		data.version = cfg.get_value(_SECTION_GENERAL, "version", data.version)
-		if data.version != _EDITOR_STATE_VERSION:
-			EditorStateData._update_format(data, cfg)
-			data.version = _EDITOR_STATE_VERSION
-			data.save()
-			return data
-
 		var raw_recent: Array = cfg.get_value(_SECTION_RECENT, "uids", [])
 		data.recent_registry_uids.assign(raw_recent.filter(RegistryIO.is_uid_valid))
 		var raw_opened: Array = cfg.get_value(_SECTION_OPENED, "uids", [])
@@ -230,6 +226,15 @@ class EditorStateData:
 			var registry := ResourceLoader.load(path) as Registry
 			if registry:
 				data.opened_registries[uid] = registry
+		data.current_registry_uid = cfg.get_value(
+			_SECTION_OPENED,
+			"current_uid",
+			data.current_registry_uid,
+		)
+
+		if data.version != _EDITOR_STATE_VERSION:
+			EditorStateData._update_format(data, cfg)
+			data.save()
 		return data
 
 
@@ -247,6 +252,14 @@ class EditorStateData:
 		save()
 
 
+	func set_current_registry_uid(uid: String) -> void:
+		current_registry_uid = uid
+		save()
+
+
 	static func _update_format(_data: EditorStateData, _old_cfg: ConfigFile) -> void:
-		# Migrate old state formats here when _EDITOR_STATE_VERSION is incremented.
-		pass
+		if _data.version < 2:
+			# current_uid is new: its default applies.
+			_data.version = 2
+
+		_data.version = _EDITOR_STATE_VERSION
