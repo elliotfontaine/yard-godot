@@ -732,19 +732,13 @@ func _drag_from_registries_itemlist(at_position: Vector2) -> Variant:
 
 
 func _can_drop_on_registries_itemlist(at_position: Vector2, data: Variant) -> bool:
-	if not registries_itemlist.get_rect().has_point(at_position):
-		return false
-
 	if typeof(data) != TYPE_DICTIONARY:
 		return false
 
 	var drop_type: StringName = data.get(&"type", &"")
-
-	# Accept only expected payload types
 	if drop_type != &"files" and drop_type != &"resource":
 		return false
 
-	# Validate content (must resolve to Registry instances)
 	var registries := _extract_registries_from_drop(data, drop_type)
 	return registries.size() > 0
 
