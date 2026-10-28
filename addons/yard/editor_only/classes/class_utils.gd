@@ -544,6 +544,7 @@ static func is_assignable(value: Variant, declared_types: Array[String]) -> bool
 	for declared_type: String in declared_types:
 		if (
 			(is_type_builtin(typeof(value)) and type_string(typeof(value)) == declared_type)
+			or (value is Object and value.is_class(declared_type))
 			or is_class_of(value, declared_type) or (value == null and is_valid(declared_type))
 		):
 			return true
