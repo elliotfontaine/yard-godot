@@ -178,9 +178,35 @@ text = "Reindex"
 script = ExtResource("4_dd5h4")
 icon_name = "Loop"
 
+[node name="RegistryNameContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer" unique_id=27717625]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="RegistryNameLeftSpacer" type="Control" parent="VBoxContainer/HBoxContainer/RegistryNameContainer" unique_id=825413415]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RegistryNameButton" type="Button" parent="VBoxContainer/HBoxContainer/RegistryNameContainer" unique_id=1555697300]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Navigate to registry list."
+focus_mode = 0
+theme_type_variation = &"FlatButton"
+flat = true
+text_overrun_behavior = 3
+
+[node name="RegistryNameRightSpacer" type="Control" parent="VBoxContainer/HBoxContainer/RegistryNameContainer" unique_id=1163740088]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
 [node name="ReportIssueButton" type="Button" parent="VBoxContainer/HBoxContainer" unique_id=1835086163]
 layout_mode = 2
-size_flags_horizontal = 10
 tooltip_text = "Open project's issues in your browser."
 focus_mode = 0
 theme_type_variation = &"FlatButton"

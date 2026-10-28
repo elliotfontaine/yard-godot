@@ -395,6 +395,10 @@ msgid "Open project's issues in your browser."
 msgstr "Apri il tracker dei bug nel browser."
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
+msgid "Navigate to registry list."
+msgstr "Vai all'elenco dei registri."
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Report Issue"
 msgstr "Segnala problema"
 

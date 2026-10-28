@@ -398,6 +398,10 @@ msgid "Open project's issues in your browser."
 msgstr "Abrir el rastreador de errores en el navegador."
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
+msgid "Navigate to registry list."
+msgstr "Navegar a la lista de registros."
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Report Issue"
 msgstr "Reportar problema"
 

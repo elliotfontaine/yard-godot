@@ -393,6 +393,10 @@ msgid "Open project's issues in your browser."
 msgstr "Proje hata takipçisini tarayıcıda aç."
 
 #: addons/yard/editor_only/ui_scenes/registry_editor.tscn
+msgid "Navigate to registry list."
+msgstr "Kayıt defteri listesine git."
+
+#: addons/yard/editor_only/ui_scenes/registry_editor.tscn
 msgid "Report Issue"
 msgstr "Sorun bildir"
 

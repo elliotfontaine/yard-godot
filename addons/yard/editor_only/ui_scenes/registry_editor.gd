@@ -71,6 +71,10 @@ var _fuz := YardFuzzySearch.new()
 @onready var refresh_view_button: Button = %RefreshViewButton
 @onready var reindex_button: Button = %ReindexButton
 @onready var rescan_button: Button = %RescanButton
+@onready var registry_name_container: HBoxContainer = %RegistryNameContainer
+@onready var registry_name_left_spacer: Control = %RegistryNameLeftSpacer
+@onready var registry_name_button: Button = %RegistryNameButton
+@onready var registry_name_right_spacer: Control = %RegistryNameRightSpacer
 @onready var registries_filter: LineEdit = %RegistriesFilter
 @onready var registries_container: VBoxContainer = %RegistriesContainer
 @onready var registries_split: HSplitContainer = %RegistriesSplit
@@ -121,6 +125,9 @@ func _ready() -> void:
 		_drop_on_registries_itemlist,
 	)
 	registries_itemlist.gui_input.connect(_on_registries_itemlist_gui_input)
+	registry_name_button.pressed.connect(registries_itemlist.ensure_current_is_visible)
+	registry_name_button.theme_changed.connect(_update_registry_name_button_ratio)
+	registry_name_container.item_rect_changed.connect(_update_registry_name_button_ratio)
 
 	update_manager.update_check_completed.connect(_on_update_manager_update_check_completed)
 	update_manager.download_completed.connect(update_install_window.set_download_result)
@@ -330,6 +337,7 @@ func _get_registry_list_index(uid: String) -> int:
 func _update_registries_itemlist() -> void:
 	registries_itemlist.set_block_signals(true)
 	registries_itemlist.clear()
+	var current_display_name := ""
 
 	if not _editor_state_data.opened_registries.is_empty():
 		_editor_state_data = _editor_state_data.save_and_reload()
@@ -339,8 +347,34 @@ func _update_registries_itemlist() -> void:
 			_add_registry_to_itemlist(uid, display_name_by_uid[uid])
 		if _current_registry_uid:
 			_restore_selection(_current_registry_uid)
+			current_display_name = display_name_by_uid.get(_current_registry_uid, "")
 
 	registries_itemlist.set_block_signals(false)
+	registry_name_button.text = current_display_name
+	registry_name_button.visible = not current_display_name.is_empty()
+	_update_registry_name_button_ratio()
+
+
+## Centers the registry name button at the width of its text, trimming the text only when
+## the toolbar is too narrow. Same layout as the script name in Godot's script editor.
+func _update_registry_name_button_ratio() -> void:
+	var total_width := registry_name_container.size.x
+	if total_width <= 0:
+		return
+
+	var font := registry_name_button.get_theme_font(&"font")
+	var font_size := registry_name_button.get_theme_font_size(&"font_size")
+	var normal_style := registry_name_button.get_theme_stylebox(&"normal")
+	var name_width := (
+		font.get_string_size(registry_name_button.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		+ normal_style.get_content_margin(SIDE_LEFT)
+		+ normal_style.get_content_margin(SIDE_RIGHT)
+	)
+	# A few extra pixels avoid trimming a text that just fits.
+	var name_ratio := minf(1.0, (name_width + 4) / total_width)
+	registry_name_button.size_flags_stretch_ratio = name_ratio
+	registry_name_left_spacer.size_flags_stretch_ratio = (1.0 - name_ratio) / 2
+	registry_name_right_spacer.size_flags_stretch_ratio = (1.0 - name_ratio) / 2
 
 
 # Fuzzy match on display names (mimicking the Godot script list).
