@@ -36,7 +36,6 @@ const ClassUtils := Namespace.ClassUtils
 const ShortcutUtils := Namespace.ShortcutUtils
 const EditorStateData := Namespace.YardEditorCache.EditorStateData
 const RegistryCacheData := Namespace.YardEditorCache.RegistryCacheData
-const RegistriesItemList := Namespace.RegistriesItemList
 const RegistryTableView := Namespace.RegistryTableView
 const NewRegistryDialog := Namespace.NewRegistryDialog
 const AnyIcon := Namespace.AnyIcon
@@ -75,7 +74,7 @@ var _fuz := YardFuzzySearch.new()
 @onready var registries_filter: LineEdit = %RegistriesFilter
 @onready var registries_container: VBoxContainer = %RegistriesContainer
 @onready var registries_split: HSplitContainer = %RegistriesSplit
-@onready var registries_itemlist: RegistriesItemList = %RegistriesItemList
+@onready var registries_itemlist: ItemList = %RegistriesItemList
 @onready var registry_table_view: RegistryTableView = %RegistryTableView
 @onready var registry_context_menu: PopupMenu = %RegistryContextMenu
 @onready var new_registry_dialog: NewRegistryDialog = %NewRegistryDialog
@@ -111,12 +110,16 @@ func _ready() -> void:
 	columns_menu_button.get_popup().id_pressed.connect(_on_columns_menu_id_pressed)
 	columns_menu_button.get_popup().window_input.connect(_on_columns_menu_window_input)
 	columns_menu_button.get_popup().hide_on_checkable_item_selection = false
-	registries_itemlist.registries_dropped.connect(_on_itemlist_registries_dropped)
 	registries_split.drag_ended.connect(_on_registries_split_drag_ended)
 	registry_table_view.footer.registry_panel_toggled.connect(_on_footer_registry_panel_toggled)
 	registry_table_view.registry_changed.connect(_on_registry_table_view_registry_changed)
 	new_registry_dialog.settings_saved.connect(_on_new_registry_dialog_settings_saved)
 	version_button.pressed.connect(_on_version_button_pressed)
+	registries_itemlist.set_drag_forwarding(
+		Callable(), #_drag_from_registries_itemlist,
+		_can_drop_on_registries_itemlist,
+		_drop_on_registries_itemlist,
+	)
 
 	update_manager.update_check_completed.connect(_on_update_manager_update_check_completed)
 	update_manager.download_completed.connect(update_install_window.set_download_result)
@@ -724,6 +727,58 @@ func _show_in_filesystem(uid: String) -> void:
 	fs.navigate_to_path(path)
 
 
+func _drag_from_registries_itemlist(at_position: Vector2) -> Variant:
+	return { }
+
+
+func _can_drop_on_registries_itemlist(at_position: Vector2, data: Variant) -> bool:
+	if not registries_itemlist.get_rect().has_point(at_position):
+		return false
+
+	if typeof(data) != TYPE_DICTIONARY:
+		return false
+
+	var drop_type: StringName = data.get(&"type", &"")
+
+	# Accept only expected payload types
+	if drop_type != &"files" and drop_type != &"resource":
+		return false
+
+	# Validate content (must resolve to Registry instances)
+	var registries := _extract_registries_from_drop(data, drop_type)
+	return registries.size() > 0
+
+
+func _drop_on_registries_itemlist(_at_position: Vector2, data: Variant) -> void:
+	if typeof(data) != TYPE_DICTIONARY:
+		return
+
+	var drop_type: StringName = data.get(&"type", &"")
+	for registry in _extract_registries_from_drop(data, drop_type):
+		open_registry(registry)
+
+
+func _extract_registries_from_drop(data: Dictionary, drop_type: StringName) -> Array[Registry]:
+	var registries: Array[Registry] = []
+
+	if drop_type == &"files":
+		# Godot editor "files" payload generally carries an Array of paths in `files`
+		var files: Array = data.get(&"files", [])
+		for path: Variant in files:
+			if typeof(path) != TYPE_STRING:
+				continue
+			var res := load(path)
+			if res is Registry:
+				registries.append(res)
+
+	elif drop_type == &"resource":
+		var res: Variant = data.get(&"resource", null)
+		if res is Registry:
+			registries.append(res)
+
+	return registries
+
+
 func _on_registries_filter_text_changed(_new_text: String) -> void:
 	_update_registries_itemlist()
 
@@ -818,11 +873,6 @@ func _on_column_submenu_id_pressed(
 ) -> void:
 	registry_table_view.do_column_menu_action(action_id, identifier)
 	registry_table_view.update_column_menu_items(submenu, identifier)
-
-
-func _on_itemlist_registries_dropped(registries: Array[Registry]) -> void:
-	for registry in registries:
-		open_registry(registry)
 
 
 func _on_file_dialog_action(path: String) -> void:

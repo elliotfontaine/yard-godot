@@ -23,9 +23,6 @@ const RegistryTableView := preload("res://addons/yard/editor_only/ui_scenes/regi
 const MarkdownLabel := preload(
 	"res://addons/yard/editor_only/classes/markdownlabel/markdownlabel.gd"
 )
-const RegistriesItemList := preload(
-	"res://addons/yard/editor_only/ui_scenes/components/registries_itemlist.gd"
-)
 const NewRegistryDialog := preload(
 	"res://addons/yard/editor_only/ui_scenes/components/new_registry_dialog.gd"
 )
