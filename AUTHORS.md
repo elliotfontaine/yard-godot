@@ -33,3 +33,4 @@ GitHub usernames appear in parentheses, or on their own when no other name is av
     skison
     Thomas ten Cate (ttencate)
     Verfeon
+    Vojtech Struhar (VojtaStruhar)
