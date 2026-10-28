@@ -173,16 +173,18 @@ class RegistryCacheData:
 
 
 class EditorStateData:
-	const _EDITOR_STATE_VERSION := 2
+	const _EDITOR_STATE_VERSION := 3
 	const _STATE_FILE := _BASE_DIR + "editor_state.cfg"
 	const _SECTION_GENERAL := "general"
 	const _SECTION_RECENT := "recent"
 	const _MAX_RECENT := 10
 	const _SECTION_OPENED := "opened"
+	const _SECTION_LAYOUT := "layout"
 	var version: int = _EDITOR_STATE_VERSION
 	var recent_registry_uids: Array[String] = []
 	var opened_registries: Dictionary[String, Registry] = { } # uid -> Registry
 	var current_registry_uid: String = ""
+	var registries_split_offset: int = -1
 
 
 	func save() -> Error:
@@ -195,6 +197,7 @@ class EditorStateData:
 			opened_registries.keys().filter(RegistryIO.is_uid_valid),
 		)
 		cfg.set_value(_SECTION_OPENED, "current_uid", current_registry_uid)
+		cfg.set_value(_SECTION_LAYOUT, "registries_split_offset", registries_split_offset)
 		DirAccess.make_dir_recursive_absolute(_BASE_DIR)
 		return cfg.save(_STATE_FILE)
 
@@ -231,6 +234,11 @@ class EditorStateData:
 			"current_uid",
 			data.current_registry_uid,
 		)
+		data.registries_split_offset = cfg.get_value(
+			_SECTION_LAYOUT,
+			"registries_split_offset",
+			data.registries_split_offset,
+		)
 
 		if data.version != _EDITOR_STATE_VERSION:
 			EditorStateData._update_format(data, cfg)
@@ -257,9 +265,18 @@ class EditorStateData:
 		save()
 
 
+	func set_registries_split_offset(offset: int) -> void:
+		registries_split_offset = offset
+		save()
+
+
 	static func _update_format(_data: EditorStateData, _old_cfg: ConfigFile) -> void:
 		if _data.version < 2:
 			# current_uid is new: its default applies.
 			_data.version = 2
+
+		if _data.version < 3:
+			# registries_split_offset is new: its default applies.
+			_data.version = 3
 
 		_data.version = _EDITOR_STATE_VERSION

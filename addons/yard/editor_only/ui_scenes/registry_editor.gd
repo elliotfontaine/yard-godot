@@ -74,6 +74,7 @@ var _fuz := YardFuzzySearch.new()
 @onready var rescan_button: Button = %RescanButton
 @onready var registries_filter: LineEdit = %RegistriesFilter
 @onready var registries_container: VBoxContainer = %RegistriesContainer
+@onready var registries_split: HSplitContainer = %RegistriesSplit
 @onready var registries_itemlist: RegistriesItemList = %RegistriesItemList
 @onready var registry_table_view: RegistryTableView = %RegistryTableView
 @onready var registry_context_menu: PopupMenu = %RegistryContextMenu
@@ -111,6 +112,7 @@ func _ready() -> void:
 	columns_menu_button.get_popup().window_input.connect(_on_columns_menu_window_input)
 	columns_menu_button.get_popup().hide_on_checkable_item_selection = false
 	registries_itemlist.registries_dropped.connect(_on_itemlist_registries_dropped)
+	registries_split.drag_ended.connect(_on_registries_split_drag_ended)
 	registry_table_view.footer.registry_panel_toggled.connect(_on_footer_registry_panel_toggled)
 	registry_table_view.registry_changed.connect(_on_registry_table_view_registry_changed)
 	new_registry_dialog.settings_saved.connect(_on_new_registry_dialog_settings_saved)
@@ -138,6 +140,10 @@ func _ready() -> void:
 	registries_itemlist.fixed_icon_size = Vector2i(fixed_size, fixed_size)
 
 	_editor_state_data = EditorStateData.load_or_default()
+	var saved_split_offset := _editor_state_data.registries_split_offset
+	if saved_split_offset >= 0:
+		var editor_scale := EditorInterface.get_editor_scale()
+		registries_split.split_offset = roundi(saved_split_offset * editor_scale)
 	if _editor_state_data.opened_registries.size() > 0:
 		var uid_to_select := _editor_state_data.current_registry_uid
 		if not _editor_state_data.opened_registries.has(uid_to_select):
@@ -868,6 +874,11 @@ func _on_registry_settings_button_pressed() -> void:
 
 func _on_footer_registry_panel_toggled(toggled_on: bool) -> void:
 	registries_container.visible = toggled_on
+
+
+func _on_registries_split_drag_ended() -> void:
+	var unscaled_offset := registries_split.split_offset / EditorInterface.get_editor_scale()
+	_editor_state_data.set_registries_split_offset(roundi(unscaled_offset))
 
 
 func _on_registry_table_view_registry_changed() -> void:
