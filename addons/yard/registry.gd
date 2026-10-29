@@ -51,12 +51,14 @@ extends Resource
 ## [Dictionary] holds string IDs. By default, it's the [String] or [StringName] side. If both are, it's the
 ## [StringName] side, or the keys if they have the same type.
 ## [codeblock]
+## const REGISTRY_HINT := Registry.PROPERTY_HINT_CUSTOM
 ## const ITEM_REGISTRY := "res://data/registries/item_registry.tres"
-## @export_custom(Registry.PROPERTY_HINT_CUSTOM, ITEM_REGISTRY) var item: StringName
-## @export_custom(Registry.PROPERTY_HINT_CUSTOM, "%s,true" % ITEM_REGISTRY) var item_or_custom: StringName
-## @export_custom(Registry.PROPERTY_HINT_CUSTOM, ITEM_REGISTRY) var loot: Array[StringName]
-## @export_custom(Registry.PROPERTY_HINT_CUSTOM, ITEM_REGISTRY) var prices: Dictionary[StringName, int]
-## @export_custom(Registry.PROPERTY_HINT_CUSTOM, "%s,sort=-price" % ITEM_REGISTRY) var priciest_first: StringName
+##
+## @export_custom(REGISTRY_HINT, ITEM_REGISTRY) var item: StringName
+## @export_custom(REGISTRY_HINT, "%s,true" % ITEM_REGISTRY) var item_or_custom: StringName
+## @export_custom(REGISTRY_HINT, ITEM_REGISTRY) var loot: Array[StringName]
+## @export_custom(REGISTRY_HINT, ITEM_REGISTRY) var prices: Dictionary[StringName, int]
+## @export_custom(REGISTRY_HINT, "%s,sort=-price" % ITEM_REGISTRY) var priciest_first: StringName
 ## [/codeblock]
 const PROPERTY_HINT_CUSTOM: int = 1024
 

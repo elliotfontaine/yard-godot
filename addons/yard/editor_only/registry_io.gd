@@ -324,39 +324,6 @@ static func rebuild_property_index(registry: Registry) -> Error:
 	return ResourceSaver.save(registry)
 
 
-## Splits a [constant Registry.PROPERTY_HINT_CUSTOM] hint string into its positional values
-## and its named [code]key=value[/code] options.[br][br]
-##
-## Returns [code]{ "positional": PackedStringArray, "sort": String, "dict": String }[/code],
-## where [code]"dict"[/code] is [code]"keys"[/code], [code]"values"[/code], [code]"both"[/code],
-## or empty when the option is not set.
-static func parse_custom_hint(hint_string: String) -> Dictionary:
-	var positional := PackedStringArray()
-	var sort_spec := ""
-	var dict_side := ""
-	for token: String in hint_string.split(","):
-		token = token.strip_edges()
-		var separator := token.find("=")
-		if separator == -1:
-			positional.append(token)
-			continue
-		var key := token.left(separator).strip_edges()
-		var value := token.substr(separator + 1).strip_edges()
-		if key == "sort":
-			sort_spec = value
-		elif key == "dict":
-			if value in ["keys", "values", "both"]:
-				dict_side = value
-			else:
-				YardLogger.warn(
-					"Unknown value '%s' for option 'dict' in hint string \"%s\". Expected keys, values or both."
-					% [value, hint_string]
-				)
-		else:
-			YardLogger.warn("Unknown option '%s' in hint string \"%s\"." % [key, hint_string])
-	return { "positional": positional, "sort": sort_spec, "dict": dict_side }
-
-
 ## Returns the string IDs of [param registry] ordered by the value of an indexed property.[br][br]
 ##
 ## [param sort_spec] is a property name, prefixed with [code]-[/code] for descending order.
@@ -919,3 +886,77 @@ class RegistryScanRuleset:
 				if is_additional_ruleset:
 					new_ruleset.override_properties.append(property_key)
 		return new_ruleset
+
+
+## A [constant Registry.PROPERTY_HINT_CUSTOM] hint string: comma-separated positional values,
+## then named [code]key=value[/code] options.
+class CustomHint:
+	## [code]res://[/code] or [code]uid://[/code] path to the registry, empty if the hint string
+	## has no valid one.
+	var registry_path: String = ""
+	## Only suggests the string IDs: the value can also be empty or custom.
+	var suggestion: bool = false
+	## Indexed property ordering the string IDs, see [method RegistryIO.get_string_ids_sorted_by].
+	var sort: String = ""
+	## Side of a dictionary holding string IDs: [code]"keys"[/code], [code]"values"[/code],
+	## [code]"both"[/code], or empty for the default side.
+	var dict_side: String = ""
+
+
+	static func parse(hint_string: String) -> CustomHint:
+		var custom_hint := CustomHint.new()
+		var positional := PackedStringArray()
+		for token: String in hint_string.split(","):
+			token = token.strip_edges()
+			var separator := token.find("=")
+			if separator == -1:
+				positional.append(token)
+				continue
+			var key := token.left(separator).strip_edges()
+			var value := token.substr(separator + 1).strip_edges()
+			if key == "sort":
+				custom_hint.sort = value
+			elif key == "dict":
+				if value in ["keys", "values", "both"]:
+					custom_hint.dict_side = value
+				else:
+					YardLogger.warn(
+						"Unknown value '%s' for option 'dict' in hint string \"%s\". Expected 'keys', 'values' or 'both'."
+						% [value, hint_string]
+					)
+			else:
+				YardLogger.warn("Unknown option '%s' in hint string \"%s\"." % [key, hint_string])
+
+		var path := positional[0] if not positional.is_empty() else ""
+		if not (path.begins_with("res://") or path.begins_with("uid://")):
+			YardLogger.error(
+				"Invalid registry path '%s' in hint string \"%s\". Expected a path starting with 'res://' or 'uid://'."
+				% [path, hint_string]
+			)
+		elif not ResourceLoader.exists(path):
+			YardLogger.error(
+				"Invalid registry path '%s' in hint string \"%s\". No resource exists at this path."
+				% [path, hint_string]
+			)
+		else:
+			custom_hint.registry_path = path
+		if positional.size() > 1:
+			custom_hint.suggestion = positional[1] == "true"
+			if positional[1] not in ["true", "false"]:
+				YardLogger.warn(
+					"Unknown value '%s' for option 'suggestion' in hint string \"%s\". Expected true or false."
+					% [positional[1], hint_string]
+				)
+		if positional.size() > 2 and positional[2] == "false":
+			YardLogger.warn(
+				"The allow_duplicates option in hint string \"%s\" is no longer supported: duplicate string IDs are allowed."
+				% hint_string
+			)
+		return custom_hint
+
+
+	## Returns the registry at [member registry_path], or [code]null[/code] if there is none.
+	func load_registry() -> Registry:
+		if registry_path.is_empty():
+			return null
+		return load(registry_path) as Registry

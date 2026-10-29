@@ -45,15 +45,9 @@ func _parse_property(
 	if hint != Registry.PROPERTY_HINT_CUSTOM:
 		return false
 
-	var parsed_hint := RegistryIO.parse_custom_hint(hint_text)
-	var parts: PackedStringArray = parsed_hint.positional
-	var registry_path: String = parts[0]
-
-	if not (registry_path.begins_with("res://") or registry_path.begins_with("uid://")):
-		return false
-
-	var registry: Registry = load(registry_path)
-	if not registry is Registry:
+	var custom_hint := RegistryIO.CustomHint.parse(hint_text)
+	var registry := custom_hint.load_registry()
+	if not registry:
 		return false
 
 	# Created before add_property_editor(), as instantiate_property_editor() runs every
@@ -63,13 +57,12 @@ func _parse_property(
 		TYPE_STRING, TYPE_STRING_NAME:
 			# Also reached for the elements of the collection editors below, with the
 			# collection editor as object and an empty name.
-			var suggestion: bool = parts.size() > 1 and parts[1] == "true" # when unspecified: false
 			editor = EditorInspector.instantiate_property_editor(
 				object,
 				type,
 				name,
-				PROPERTY_HINT_ENUM_SUGGESTION if suggestion else PROPERTY_HINT_ENUM,
-				_get_enum_hint_string(registry, parsed_hint.sort),
+				PROPERTY_HINT_ENUM_SUGGESTION if custom_hint.suggestion else PROPERTY_HINT_ENUM,
+				_get_enum_hint_string(registry, custom_hint.sort),
 				usage,
 				wide,
 			)
@@ -80,12 +73,6 @@ func _parse_property(
 				element_type = array.get_typed_builtin() as Variant.Type if array is Array else TYPE_NIL
 			if element_type not in STRING_TYPES:
 				return false
-
-			if parts.size() > 2 and parts[2] == "false":
-				_warn_once(
-					"The allow_duplicates option is no longer supported, so '%s' accepts duplicate string IDs."
-					% name
-				)
 
 			editor = EditorInspector.instantiate_property_editor(
 				object,
@@ -103,11 +90,11 @@ func _parse_property(
 
 			var key_type := dictionary.get_typed_key_builtin() as Variant.Type
 			var value_type := dictionary.get_typed_value_builtin() as Variant.Type
-			var side := _get_dictionary_registry_side(key_type, value_type, parsed_hint.dict)
+			var side := _get_dictionary_registry_side(key_type, value_type, custom_hint.dict_side)
 			if side.is_empty():
 				_warn_once(
 					"Cannot apply Registry.PROPERTY_HINT_CUSTOM to '%s': its %s must be String or StringName."
-					% [name, DICTIONARY_SIDE_NAMES[parsed_hint.dict]]
+					% [name, DICTIONARY_SIDE_NAMES[custom_hint.dict_side]]
 				)
 				return false
 
