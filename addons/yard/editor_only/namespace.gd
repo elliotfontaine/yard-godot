@@ -32,12 +32,6 @@ const UpdateManager := preload(
 const UpdateInstallWindow := preload(
 	"res://addons/yard/editor_only/ui_scenes/components/update_install_window/update_install_window.gd"
 )
-const EditorPropertyOptionWrapper := preload(
-	"res://addons/yard/editor_only/ui_scenes/components/editor_property_option_wrapper.gd"
-)
-const MultiOptionEditorProperty = preload(
-	"res://addons/yard/editor_only/ui_scenes/components/multi_option_editor_property.gd"
-)
 const REGISTRY_EDITOR_SCENE := preload(
 	"res://addons/yard/editor_only/ui_scenes/registry_editor.tscn"
 )

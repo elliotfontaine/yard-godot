@@ -98,7 +98,7 @@ static func set_registry_settings(registry: Registry, settings: RegistrySettings
 
 
 ## add a new Resource to the Registry from a UID.
-## If no string_id is given, it will use the file basename.
+## If no string_id is given, it will use the file basename, with commas replaced by underscores.
 ## If the string_id is already used in the Registry, it will append a number to it.
 static func add_entry(registry: Registry, uid: StringName, string_id: String = "") -> Error:
 	var cache_id: int = ResourceUID.text_to_id(uid)
@@ -106,7 +106,7 @@ static func add_entry(registry: Registry, uid: StringName, string_id: String = "
 		return ERR_CANT_ACQUIRE_RESOURCE
 
 	string_id = string_id.strip_edges()
-	if string_id.begins_with(("uid://")):
+	if string_id.begins_with(("uid://")) or string_id.contains(","):
 		return ERR_INVALID_PARAMETER
 
 	if uid in registry._uids_to_string_ids:
@@ -123,7 +123,7 @@ static func add_entry(registry: Registry, uid: StringName, string_id: String = "
 		return ERR_DATABASE_CANT_WRITE
 
 	if not string_id:
-		string_id = ResourceUID.get_id_path(cache_id).get_file().get_basename()
+		string_id = ResourceUID.get_id_path(cache_id).get_file().get_basename().replace(",", "_")
 
 	string_id = _make_string_id_unique(registry, string_id)
 	registry._uids_to_string_ids[uid] = string_id as StringName
@@ -158,7 +158,7 @@ static func duplicate_entry(registry: Registry, uid: StringName) -> Error:
 	var dir := path.get_base_dir()
 	var ext := path.get_extension()
 
-	var base_string_id := _strip_index_suffix(string_id)
+	var base_string_id := _strip_index_suffix(string_id).replace(",", "_")
 	var n := 2
 	var new_string_id: String
 	var new_path: String
@@ -180,6 +180,12 @@ static func duplicate_entry(registry: Registry, uid: StringName) -> Error:
 static func rename_entry(registry: Registry, id: StringName, new_string_id: StringName) -> Error:
 	var uid := registry.get_uid(id)
 	if not uid:
+		return ERR_INVALID_PARAMETER
+
+	if new_string_id.contains(","):
+		YardLogger.error(
+			"Rename Error: '%s' is not a valid String ID, as it contains a comma." % new_string_id
+		)
 		return ERR_INVALID_PARAMETER
 
 	registry._string_ids_to_uids.erase(id)
@@ -321,10 +327,13 @@ static func rebuild_property_index(registry: Registry) -> Error:
 ## Splits a [constant Registry.PROPERTY_HINT_CUSTOM] hint string into its positional values
 ## and its named [code]key=value[/code] options.[br][br]
 ##
-## Returns [code]{ "positional": PackedStringArray, "sort": String }[/code].
+## Returns [code]{ "positional": PackedStringArray, "sort": String, "dict": String }[/code],
+## where [code]"dict"[/code] is [code]"keys"[/code], [code]"values"[/code], [code]"both"[/code],
+## or empty when the option is not set.
 static func parse_custom_hint(hint_string: String) -> Dictionary:
 	var positional := PackedStringArray()
 	var sort_spec := ""
+	var dict_side := ""
 	for token: String in hint_string.split(","):
 		token = token.strip_edges()
 		var separator := token.find("=")
@@ -332,11 +341,20 @@ static func parse_custom_hint(hint_string: String) -> Dictionary:
 			positional.append(token)
 			continue
 		var key := token.left(separator).strip_edges()
+		var value := token.substr(separator + 1).strip_edges()
 		if key == "sort":
-			sort_spec = token.substr(separator + 1).strip_edges()
+			sort_spec = value
+		elif key == "dict":
+			if value in ["keys", "values", "both"]:
+				dict_side = value
+			else:
+				YardLogger.warn(
+					"Unknown value '%s' for option 'dict' in hint string \"%s\". Expected keys, values or both."
+					% [value, hint_string]
+				)
 		else:
 			YardLogger.warn("Unknown option '%s' in hint string \"%s\"." % [key, hint_string])
-	return { "positional": positional, "sort": sort_spec }
+	return { "positional": positional, "sort": sort_spec, "dict": dict_side }
 
 
 ## Returns the string IDs of [param registry] ordered by the value of an indexed property.[br][br]

@@ -61,6 +61,11 @@ static func create_editor(
 	on_finished: Callable,
 ) -> Node:
 	var popup_menu := PopupMenu.new()
+	if _is_suggestion(column.hint_string):
+		popup_menu.add_radio_check_item("")
+		popup_menu.set_item_metadata(popup_menu.item_count - 1, "")
+		popup_menu.set_item_checked(popup_menu.item_count - 1, not value)
+
 	for entry: StringName in _get_registry_entries(column.hint_string):
 		var str_entry := str(entry)
 		popup_menu.add_radio_check_item(str_entry)
@@ -96,6 +101,11 @@ static func _get_registry(hint_string: String) -> Registry:
 		return null
 
 	return registry
+
+
+static func _is_suggestion(hint_string: String) -> bool:
+	var parts: PackedStringArray = RegistryIO.parse_custom_hint(hint_string).positional
+	return parts.size() > 1 and parts[1] == "true" # when unspecified: false
 
 
 static func _get_registry_entries(hint_string: String) -> Array[StringName]:
