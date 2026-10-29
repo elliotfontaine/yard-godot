@@ -94,7 +94,7 @@ var string_id := ENEMIES.get_string_id_of(loaded_resource)
 
 ### Querying entries through the property index
 
-Set up indexed properties in **Registry Settings** and press **Reindex** to bake the index. At runtime, queries run without loading any resource.
+List the properties to index in **Registry Settings**. YARD bakes their values into the registry file when you save the settings, and again each time you run the project from the editor or export it. At runtime, queries run without loading any resource.
 
 ```gdscript
 # Single property (exact value or predicate)
@@ -108,7 +108,13 @@ var forest_without_boss := ROOMS.where({
 })
 ```
 
-Properties support dot notation for nested resources: `&"weapon.rarity"` resolves the `rarity` property of the subresource stored in `weapon`.
+To index a property of a nested resource, use a dot-separated path, both in **Registry Settings** and in your queries. For example, if each enemy has a `weapon` property holding a `Weapon` resource, indexing `weapon.rarity` lets you find enemies by the rarity of their weapon:
+
+```gdscript
+var legendary_wielders := ENEMIES.filter(&"weapon.rarity", Rarity.LEGENDARY)
+```
+
+Paths can go several levels deep (e.g. `weapon.enchantment.element`).
 
 ## Contributing
 
