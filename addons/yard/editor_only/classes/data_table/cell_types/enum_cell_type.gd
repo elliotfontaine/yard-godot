@@ -24,11 +24,8 @@ static func draw_cell(
 		value_str = str(value)
 	else:
 		var int_value := value as int
-		var map: Dictionary = column.get_cached(
-			&"enum_values_map",
-			parse_enum_hint_string.bind(column.hint_string),
-		)
-		value_str = "%s:%s" % [map[int_value], int_value] if map.has(int_value) else "?:%d" % int_value
+		var choices := _get_choices(column)
+		value_str = "%s:%s" % [choices[int_value], int_value] if choices.has(int_value) else "?:%d" % int_value
 
 	draw_text(
 		canvas,
@@ -54,32 +51,24 @@ static func create_editor(
 	column: ColumnConfig,
 	on_finished: Callable,
 ) -> Node:
-	if _is_suggestion(column):
-		var suggestions := column.hint_string.split(",", false)
-		return popup_suggestions(suggestions, owner, rect, value, column, on_finished)
+	var choices := _get_choices(column)
+	var suggestion := _is_suggestion(column)
+	return popup_single_choice(owner, rect, value, column, on_finished, choices, suggestion)
 
-	var popup_menu := PopupMenu.new()
-	var is_numeric := _is_numeric(column)
 
-	@warning_ignore("incompatible_ternary")
-	var value_iter: Variant = -1 if is_numeric else ""
+## Ordered value -> label pairs, cached on the column. Only numeric enums have values of their
+## own ("A,B:4" -> {0:"A", 4:"B"}). String ones store the label itself.
+static func _get_choices(column: ColumnConfig) -> Dictionary:
+	return column.get_cached(&"enum_choices", _parse_choices.bind(column)) as Dictionary
 
-	for choice: String in column.hint_string.split(",", false):
-		var colon := choice.rfind(":")
-		var text: String
-		if colon != -1:
-			text = choice.substr(0, colon)
-			value_iter = choice.substr(colon + 1).to_int()
-		else:
-			text = choice
-			value_iter = value_iter + 1 if is_numeric else text
 
-		popup_menu.add_radio_check_item(text)
-		popup_menu.set_item_metadata(popup_menu.item_count - 1, value_iter)
-		if value == value_iter:
-			popup_menu.set_item_checked(popup_menu.item_count - 1, true)
-
-	return popup_single_choice(popup_menu, owner, rect, on_finished)
+static func _parse_choices(column: ColumnConfig) -> Dictionary:
+	if _is_numeric(column):
+		return parse_enum_hint_string(column.hint_string)
+	var choices := { }
+	for label: String in column.hint_string.split(",", false):
+		choices[label] = label
+	return choices
 
 
 static func _is_numeric(column: ColumnConfig) -> bool:

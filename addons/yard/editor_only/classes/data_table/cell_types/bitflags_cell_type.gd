@@ -16,16 +16,10 @@ static func draw_cell(
 	column: ColumnConfig,
 	style: CellStyle,
 ) -> void:
-	var indices := _unpack_indices(value)
-	var keys := column.hint_string.split(",", false)
-	var selected_keys: Array[String] = []
-	for idx in indices:
-		selected_keys.append(keys[idx])
-
 	var font := resolve_font(column, style.font)
 	var x_margin: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_LEFT)
 	var remaining_rect := rect
-	for key in selected_keys:
+	for key in _get_selected_labels(value, column):
 		if not remaining_rect.has_area():
 			break
 		var key_width := font.get_string_size(key, HORIZONTAL_ALIGNMENT_LEFT, -1, style.font_size).x
@@ -46,12 +40,7 @@ static func get_sort_key(value: Variant, _column: ColumnConfig) -> Variant:
 
 
 static func get_filter_key(value: Variant, column: ColumnConfig) -> Variant:
-	var indices := _unpack_indices(value)
-	var keys := column.hint_string.split(",", false)
-	var selected_keys: Array[String] = []
-	for idx in indices:
-		selected_keys.append(keys[idx])
-	return " ".join(selected_keys)
+	return " ".join(_get_selected_labels(value, column))
 
 
 static func create_editor(
@@ -61,53 +50,32 @@ static func create_editor(
 	column: ColumnConfig,
 	on_finished: Callable,
 ) -> Node:
-	var popup_menu := PopupMenu.new()
-	var iter := 0
-	var bit_value: Variant = 0
-
-	for choice: String in column.hint_string.split(",", false):
-		var colon := choice.rfind(":")
-		var text: String
-		if colon != -1:
-			text = choice.substr(0, colon)
-			bit_value = choice.substr(colon + 1).to_int()
-		else:
-			text = choice
-			bit_value = 1 << iter
-
-		popup_menu.add_check_item(text)
-		popup_menu.set_item_metadata(iter, bit_value)
-		if value & bit_value:
-			popup_menu.set_item_checked(iter, true)
-		iter += 1
-
-	return popup_multiple_choice(popup_menu, owner, rect, on_finished)
+	return popup_multiple_choice(owner, rect, value, on_finished, _get_flags(column))
 
 
-static func read_editor_value(editor: Node, _column: ColumnConfig) -> Variant:
-	var popup_menu: PopupMenu = editor
-	var bitflags := 0
-	for idx in popup_menu.item_count:
-		if popup_menu.is_item_checked(idx):
-			bitflags += popup_menu.get_item_metadata(idx)
-	return bitflags
+## Ordered bit value -> label pairs, cached on the column. As in Godot's inspector, implicit
+## values follow the item's position ("A,B,C:8" -> {1:"A", 2:"B", 8:"C"}).
+static func _get_flags(column: ColumnConfig) -> Dictionary:
+	return column.get_cached(&"flags", _parse_flags.bind(column.hint_string)) as Dictionary
 
 
-static func _unpack_flags(bitflags: int) -> Array[int]:
-	var result: Array[int] = []
-	var bit := 1
-	while bit <= bitflags:
-		if bitflags & bit:
-			result.append(bit)
-		bit <<= 1
-	return result
-
-
-static func _unpack_indices(bitflags: int) -> Array[int]:
-	var result: Array[int] = []
+static func _parse_flags(hint_string: String) -> Dictionary:
+	var flags := { }
 	var idx := 0
-	while (1 << idx) <= bitflags:
-		if bitflags & (1 << idx):
-			result.append(idx)
+	for entry: String in hint_string.split(",", false):
+		var colon := entry.rfind(":")
+		if colon == -1:
+			flags[1 << idx] = entry
+		else:
+			flags[entry.substr(colon + 1).to_int()] = entry.substr(0, colon)
 		idx += 1
-	return result
+	return flags
+
+
+static func _get_selected_labels(value: Variant, column: ColumnConfig) -> PackedStringArray:
+	var flags := _get_flags(column)
+	var labels := PackedStringArray()
+	for bit: int in flags:
+		if value & bit:
+			labels.append(flags[bit])
+	return labels

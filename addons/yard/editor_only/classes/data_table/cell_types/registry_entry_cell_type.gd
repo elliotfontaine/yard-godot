@@ -61,19 +61,9 @@ static func create_editor(
 	on_finished: Callable,
 ) -> Node:
 	var custom_hint := RegistryIO.CustomHint.parse(column.hint_string)
-	var entries := _get_registry_entries(custom_hint)
-	if custom_hint.suggestion:
-		return popup_suggestions(PackedStringArray(entries), owner, rect, value, column, on_finished)
-
-	var popup_menu := PopupMenu.new()
-	for entry: StringName in entries:
-		var str_entry := str(entry)
-		popup_menu.add_radio_check_item(str_entry)
-		popup_menu.set_item_metadata(popup_menu.item_count - 1, str_entry)
-		if value == entry:
-			popup_menu.set_item_checked(popup_menu.item_count - 1, true)
-
-	return popup_single_choice(popup_menu, owner, rect, on_finished)
+	var choices := _get_choices(custom_hint)
+	var allow_custom := custom_hint.suggestion
+	return popup_single_choice(owner, rect, value, column, on_finished, choices, allow_custom)
 
 
 static func get_tooltip(value: Variant, column: ColumnConfig) -> String:
@@ -89,9 +79,13 @@ static func get_tooltip(value: Variant, column: ColumnConfig) -> String:
 	return "\n".join(lines)
 
 
-static func _get_registry_entries(custom_hint: RegistryIO.CustomHint) -> Array[StringName]:
+## The registry's string IDs in dropdown order, each one its own label.
+static func _get_choices(custom_hint: RegistryIO.CustomHint) -> Dictionary:
 	var registry := custom_hint.load_registry()
 	if not registry:
-		return []
+		return { }
 
-	return RegistryIO.get_string_ids_sorted_by(registry, custom_hint.sort)
+	var choices := { }
+	for string_id: StringName in RegistryIO.get_string_ids_sorted_by(registry, custom_hint.sort):
+		choices[str(string_id)] = str(string_id)
+	return choices
