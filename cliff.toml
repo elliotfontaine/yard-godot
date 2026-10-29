@@ -31,10 +31,10 @@ body = """
   https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}
 {%- endmacro -%}
 
-{%- macro commit_line(commit) -%}
-    - {% if commit.breaking %}⚠ {% endif -%}
+{%- macro commit_line(commit, description, mark_breaking=true) -%}
+    - {% if mark_breaking and commit.breaking %}⚠ {% endif -%}
     {%- if commit.scope %}**{{ commit.scope }}:** {% endif -%}
-    {{ commit.breaking_description | default(value=commit.message) | split(pat="\n") | first | upper_first | trim }}\
+    {{ description | upper_first | trim }}\
         {%- if commit.remote.username %} **[@{{ commit.remote.username }}\
             {%- if commit.remote.pr_number %} in [#{{ commit.remote.pr_number }}]\
                 ({{ self::remote_url() }}/pull/{{ commit.remote.pr_number }})\
@@ -53,7 +53,14 @@ body = """
     ### ⚠ Breaking Changes
     {% raw %}{% endraw -%}
     {%- for commit in breaking_commits %}
-        {{ self::commit_line(commit=commit) }}
+        {%- set breaking_footers = commit.footers | filter(attribute="breaking", value=true) -%}
+        {%- if breaking_footers | length != 0 %}
+            {%- for footer in breaking_footers %}
+        {{ self::commit_line(commit=commit, description=footer.value | replace(from="\n", to=" "), mark_breaking=false) }}
+            {%- endfor %}
+        {%- else %}
+        {{ self::commit_line(commit=commit, description=commit.message | split(pat="\n") | first, mark_breaking=false) }}
+        {%- endif %}
     {%- endfor %}
 {% endif -%}
 
@@ -61,7 +68,7 @@ body = """
     ### {{ group | upper_first }}
     {% raw %}{% endraw -%}
     {%- for commit in commits %}
-        {{ self::commit_line(commit=commit) }}
+        {{ self::commit_line(commit=commit, description=commit.message | split(pat="\n") | first) }}
     {%- endfor %}
 {% endfor %}
 
