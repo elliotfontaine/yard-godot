@@ -98,7 +98,7 @@ static func set_registry_settings(registry: Registry, settings: RegistrySettings
 
 
 ## add a new Resource to the Registry from a UID.
-## If no string_id is given, it will use the file basename.
+## If no string_id is given, it will use the file basename, with commas replaced by underscores.
 ## If the string_id is already used in the Registry, it will append a number to it.
 static func add_entry(registry: Registry, uid: StringName, string_id: String = "") -> Error:
 	var cache_id: int = ResourceUID.text_to_id(uid)
@@ -106,7 +106,7 @@ static func add_entry(registry: Registry, uid: StringName, string_id: String = "
 		return ERR_CANT_ACQUIRE_RESOURCE
 
 	string_id = string_id.strip_edges()
-	if string_id.begins_with(("uid://")):
+	if string_id.begins_with(("uid://")) or string_id.contains(","):
 		return ERR_INVALID_PARAMETER
 
 	if uid in registry._uids_to_string_ids:
@@ -123,7 +123,7 @@ static func add_entry(registry: Registry, uid: StringName, string_id: String = "
 		return ERR_DATABASE_CANT_WRITE
 
 	if not string_id:
-		string_id = ResourceUID.get_id_path(cache_id).get_file().get_basename()
+		string_id = ResourceUID.get_id_path(cache_id).get_file().get_basename().replace(",", "_")
 
 	string_id = _make_string_id_unique(registry, string_id)
 	registry._uids_to_string_ids[uid] = string_id as StringName
@@ -158,7 +158,7 @@ static func duplicate_entry(registry: Registry, uid: StringName) -> Error:
 	var dir := path.get_base_dir()
 	var ext := path.get_extension()
 
-	var base_string_id := _strip_index_suffix(string_id)
+	var base_string_id := _strip_index_suffix(string_id).replace(",", "_")
 	var n := 2
 	var new_string_id: String
 	var new_path: String
@@ -180,6 +180,12 @@ static func duplicate_entry(registry: Registry, uid: StringName) -> Error:
 static func rename_entry(registry: Registry, id: StringName, new_string_id: StringName) -> Error:
 	var uid := registry.get_uid(id)
 	if not uid:
+		return ERR_INVALID_PARAMETER
+
+	if new_string_id.contains(","):
+		YardLogger.error(
+			"Rename Error: '%s' is not a valid String ID, as it contains a comma." % new_string_id
+		)
 		return ERR_INVALID_PARAMETER
 
 	registry._string_ids_to_uids.erase(id)
@@ -316,27 +322,6 @@ static func rebuild_property_index(registry: Registry) -> Error:
 			registry._property_index[property][value][string_id] = true
 
 	return ResourceSaver.save(registry)
-
-
-## Splits a [constant Registry.PROPERTY_HINT_CUSTOM] hint string into its positional values
-## and its named [code]key=value[/code] options.[br][br]
-##
-## Returns [code]{ "positional": PackedStringArray, "sort": String }[/code].
-static func parse_custom_hint(hint_string: String) -> Dictionary:
-	var positional := PackedStringArray()
-	var sort_spec := ""
-	for token: String in hint_string.split(","):
-		token = token.strip_edges()
-		var separator := token.find("=")
-		if separator == -1:
-			positional.append(token)
-			continue
-		var key := token.left(separator).strip_edges()
-		if key == "sort":
-			sort_spec = token.substr(separator + 1).strip_edges()
-		else:
-			YardLogger.warn("Unknown option '%s' in hint string \"%s\"." % [key, hint_string])
-	return { "positional": positional, "sort": sort_spec }
 
 
 ## Returns the string IDs of [param registry] ordered by the value of an indexed property.[br][br]
@@ -901,3 +886,77 @@ class RegistryScanRuleset:
 				if is_additional_ruleset:
 					new_ruleset.override_properties.append(property_key)
 		return new_ruleset
+
+
+## A [constant Registry.PROPERTY_HINT_CUSTOM] hint string: comma-separated positional values,
+## then named [code]key=value[/code] options.
+class CustomHint:
+	## [code]res://[/code] or [code]uid://[/code] path to the registry, empty if the hint string
+	## has no valid one.
+	var registry_path: String = ""
+	## Only suggests the string IDs: the value can also be empty or custom.
+	var suggestion: bool = false
+	## Indexed property ordering the string IDs, see [method RegistryIO.get_string_ids_sorted_by].
+	var sort: String = ""
+	## Side of a dictionary holding string IDs: [code]"keys"[/code], [code]"values"[/code],
+	## [code]"both"[/code], or empty for the default side.
+	var dict_side: String = ""
+
+
+	static func parse(hint_string: String) -> CustomHint:
+		var custom_hint := CustomHint.new()
+		var positional := PackedStringArray()
+		for token: String in hint_string.split(","):
+			token = token.strip_edges()
+			var separator := token.find("=")
+			if separator == -1:
+				positional.append(token)
+				continue
+			var key := token.left(separator).strip_edges()
+			var value := token.substr(separator + 1).strip_edges()
+			if key == "sort":
+				custom_hint.sort = value
+			elif key == "dict":
+				if value in ["keys", "values", "both"]:
+					custom_hint.dict_side = value
+				else:
+					YardLogger.warn(
+						"Unknown value '%s' for option 'dict' in hint string \"%s\". Expected 'keys', 'values' or 'both'."
+						% [value, hint_string]
+					)
+			else:
+				YardLogger.warn("Unknown option '%s' in hint string \"%s\"." % [key, hint_string])
+
+		var path := positional[0] if not positional.is_empty() else ""
+		if not (path.begins_with("res://") or path.begins_with("uid://")):
+			YardLogger.error(
+				"Invalid registry path '%s' in hint string \"%s\". Expected a path starting with 'res://' or 'uid://'."
+				% [path, hint_string]
+			)
+		elif not ResourceLoader.exists(path):
+			YardLogger.error(
+				"Invalid registry path '%s' in hint string \"%s\". No resource exists at this path."
+				% [path, hint_string]
+			)
+		else:
+			custom_hint.registry_path = path
+		if positional.size() > 1:
+			custom_hint.suggestion = positional[1] == "true"
+			if positional[1] not in ["true", "false"]:
+				YardLogger.warn(
+					"Unknown value '%s' for option 'suggestion' in hint string \"%s\". Expected true or false."
+					% [positional[1], hint_string]
+				)
+		if positional.size() > 2 and positional[2] == "false":
+			YardLogger.warn(
+				"The allow_duplicates option in hint string \"%s\" is no longer supported: duplicate string IDs are allowed."
+				% hint_string
+			)
+		return custom_hint
+
+
+	## Returns the registry at [member registry_path], or [code]null[/code] if there is none.
+	func load_registry() -> Registry:
+		if registry_path.is_empty():
+			return null
+		return load(registry_path) as Registry

@@ -35,24 +35,30 @@ extends Resource
 ## [b]See also:[/b] [Resource], [ResourceLoader]
 
 ## Constant to be used with [annotation @GDScript.@export_custom] instead of a [enum PropertyHint] value.
-## Enables a dropdown in the inspector for any [StringName], [String], [Array][lb]StringName[rb] or
-## [Array][lb]String[rb] property, populated with the string IDs of a [Registry].
+## Enables a dropdown in the inspector for any [StringName] or [String] property, populated with the
+## string IDs of a [Registry]. Also works on the elements of a typed [Array] or a [PackedStringArray],
+## and on the keys or values of a typed [Dictionary].
 ## [br][br]
-## The hint string accepts up to three comma-separated values:
-## [br] • [b]registry path[/b] (required): [code]res://[/code] or [code]uid://[/code] path to the registry
-## [br] • [b]show_empty[/b] (optional, default [code]false[/code]): adds a [code]<empty>[/code] option mapping to an empty string
-## [br] • [b]allow_duplicates[/b] (optional, default [code]true[/code]): allows the same ID to appear multiple times in an
-## [Array][lb]StringName[rb] or
-## [Array][lb]String[rb]
+## The hint string accepts up to two comma-separated values:
+## [br] • [b]registry[/b] (required): [code]res://[/code] or [code]uid://[/code] path to the registry
+## [br] • [b]suggestion[/b] (optional, default [code]false[/code]): only suggests the string IDs, like
+## [constant @GlobalScope.PROPERTY_HINT_ENUM_SUGGESTION]. Adds an empty option and allows typing any value.
 ## [br][br]
-## A [code]sort=property[/code] option can follow them to order the dropdown by an indexed property
-## instead of registry order. Prefix the property with [code]-[/code] for descending order.
-## Entries without a value for that property come last.
+## Named options can follow them:
+## [br] • [code]sort=property[/code]: orders the dropdown by an indexed property instead of registry order.
+## Prefix the property with [code]-[/code] for descending order. Entries without a value for that property come last.
+## [br] • [code]dict=keys[/code], [code]dict=values[/code] or [code]dict=both[/code]: sets which side of a
+## [Dictionary] holds string IDs. By default, it's the [String] or [StringName] side. If both are, it's the
+## [StringName] side, or the keys if they have the same type.
 ## [codeblock]
-## @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres") var item: StringName
-## @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres,true") var item_or_empty: StringName
-## @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres,true,false") var unique_items: Array[StringName]
-## @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres,sort=-price") var priciest_first: StringName
+## const REGISTRY_HINT := Registry.PROPERTY_HINT_CUSTOM
+## const ITEM_REGISTRY := "res://data/registries/item_registry.tres"
+##
+## @export_custom(REGISTRY_HINT, ITEM_REGISTRY) var item: StringName
+## @export_custom(REGISTRY_HINT, "%s,true" % ITEM_REGISTRY) var item_or_custom: StringName
+## @export_custom(REGISTRY_HINT, ITEM_REGISTRY) var loot: Array[StringName]
+## @export_custom(REGISTRY_HINT, ITEM_REGISTRY) var prices: Dictionary[StringName, int]
+## @export_custom(REGISTRY_HINT, "%s,sort=-price" % ITEM_REGISTRY) var priciest_first: StringName
 ## [/codeblock]
 const PROPERTY_HINT_CUSTOM: int = 1024
 

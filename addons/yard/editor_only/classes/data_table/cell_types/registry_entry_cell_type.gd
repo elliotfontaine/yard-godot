@@ -60,8 +60,14 @@ static func create_editor(
 	column: ColumnConfig,
 	on_finished: Callable,
 ) -> Node:
+	var custom_hint := RegistryIO.CustomHint.parse(column.hint_string)
 	var popup_menu := PopupMenu.new()
-	for entry: StringName in _get_registry_entries(column.hint_string):
+	if custom_hint.suggestion:
+		popup_menu.add_radio_check_item("")
+		popup_menu.set_item_metadata(popup_menu.item_count - 1, "")
+		popup_menu.set_item_checked(popup_menu.item_count - 1, not value)
+
+	for entry: StringName in _get_registry_entries(custom_hint):
 		var str_entry := str(entry)
 		popup_menu.add_radio_check_item(str_entry)
 		popup_menu.set_item_metadata(popup_menu.item_count - 1, str_entry)
@@ -72,7 +78,7 @@ static func create_editor(
 
 
 static func get_tooltip(value: Variant, column: ColumnConfig) -> String:
-	var registry := _get_registry(column.hint_string)
+	var registry := RegistryIO.CustomHint.parse(column.hint_string).load_registry()
 	if not registry:
 		return super(value, column)
 
@@ -84,24 +90,9 @@ static func get_tooltip(value: Variant, column: ColumnConfig) -> String:
 	return "\n".join(lines)
 
 
-static func _get_registry(hint_string: String) -> Registry:
-	var parts: PackedStringArray = RegistryIO.parse_custom_hint(hint_string).positional
-	var registry_path: String = parts[0]
-
-	if not (registry_path.begins_with("res://") or registry_path.begins_with("uid://")):
-		return null
-
-	var registry: Registry = load(registry_path)
-	if not registry is Registry:
-		return null
-
-	return registry
-
-
-static func _get_registry_entries(hint_string: String) -> Array[StringName]:
-	var registry := _get_registry(hint_string)
+static func _get_registry_entries(custom_hint: RegistryIO.CustomHint) -> Array[StringName]:
+	var registry := custom_hint.load_registry()
 	if not registry:
 		return []
 
-	var parsed_custom_hint := RegistryIO.parse_custom_hint(hint_string)
-	return RegistryIO.get_string_ids_sorted_by(registry, parsed_custom_hint.sort)
+	return RegistryIO.get_string_ids_sorted_by(registry, custom_hint.sort)

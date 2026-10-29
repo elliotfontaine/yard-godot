@@ -65,6 +65,10 @@ static func _is_dictionary(column: ColumnConfig) -> bool:
 	return column.type == TYPE_DICTIONARY
 
 
+static func _has_dict_type_hint(column: ColumnConfig) -> bool:
+	return _is_dictionary(column) and ";" in column.hint_string
+
+
 static func _is_array_with_enum_values(column: ColumnConfig) -> bool:
 	return (
 		column.type == TYPE_ARRAY and column.hint_string
@@ -74,15 +78,13 @@ static func _is_array_with_enum_values(column: ColumnConfig) -> bool:
 
 static func _is_dict_with_enum_keys(column: ColumnConfig) -> bool:
 	return (
-		_is_dictionary(column) and column.hint_string
-		and _is_enum_collection_hint(_get_dict_key_hint_part(column))
+		_has_dict_type_hint(column) and _is_enum_collection_hint(_get_dict_key_hint_part(column))
 	)
 
 
 static func _is_dict_with_enum_values(column: ColumnConfig) -> bool:
 	return (
-		_is_dictionary(column) and column.hint_string
-		and _is_enum_collection_hint(_get_dict_value_hint_part(column))
+		_has_dict_type_hint(column) and _is_enum_collection_hint(_get_dict_value_hint_part(column))
 	)
 
 
@@ -96,7 +98,7 @@ static func _holds_resources(column: ColumnConfig) -> bool:
 	if column.type == TYPE_ARRAY:
 		return _is_resource_collection_hint(column.hint_string)
 	return (
-		_is_dictionary(column) and column.hint_string
+		_has_dict_type_hint(column)
 		and _is_resource_collection_hint(_get_dict_value_hint_part(column))
 	)
 

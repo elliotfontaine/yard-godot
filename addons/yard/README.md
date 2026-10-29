@@ -65,10 +65,11 @@ If a scan directory is set, entries are managed automatically. Otherwise, you ca
 
 ### Inspector dropdown with `@export_custom`
 
-`Registry.PROPERTY_HINT_CUSTOM` enables a dropdown in the inspector for any `StringName`, `String`, `Array[StringName]`, or `Array[String]` property, populated with the string IDs of a given registry.
+`Registry.PROPERTY_HINT_CUSTOM` enables a dropdown in the inspector for any `StringName` or `String` property, populated with the string IDs of a given registry. It also works on the elements of a typed `Array` or a `PackedStringArray`, and on the keys or values of a typed `Dictionary`.
 
 ```gdscript
 @export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres") var item: StringName
+@export_custom(Registry.PROPERTY_HINT_CUSTOM, "res://data/item_registry.tres") var prices: Dictionary[StringName, int]
 ```
 
 ### Loading entries at runtime

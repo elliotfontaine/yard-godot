@@ -995,7 +995,9 @@ func _add_entry_from_picker(res: Resource, string_id: String, target_dir: String
 				"This resource is not saved as a file. Click [b]v[/b] then [b]Save[/b] on the resource picker to save it first."
 			)
 		ERR_INVALID_PARAMETER:
-			YardLogger.error("The String ID is invalid. It must not start with 'uid://'.")
+			YardLogger.error(
+				"The String ID is invalid. It must not start with 'uid://' or contain commas."
+			)
 		ERR_DATABASE_CANT_WRITE:
 			YardLogger.error("This resource doesn't match the registry class restriction.")
 		_:
