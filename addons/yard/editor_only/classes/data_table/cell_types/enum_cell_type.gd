@@ -3,13 +3,13 @@
 #
 # SPDX-License-Identifier: MIT
 extends "res://addons/yard/editor_only/classes/data_table/cell_types/popup_menu_cell_type.gd"
-## Enum columns (any type with PROPERTY_HINT_ENUM), edited via a PopupMenu.
+## Enum columns (any type with PROPERTY_HINT_ENUM / PROPERTY_HINT_ENUM_SUGGESTION), edited via a PopupMenu.
 ## Draw color is a deterministic pseudo-random hash of the display string,
 ## ignoring the column's normal font-color resolution.
 
 
 static func matches(column: ColumnConfig) -> bool:
-	return column.property_hint == PROPERTY_HINT_ENUM
+	return column.property_hint == PROPERTY_HINT_ENUM or _is_suggestion(column)
 
 
 static func draw_cell(
@@ -54,6 +54,10 @@ static func create_editor(
 	column: ColumnConfig,
 	on_finished: Callable,
 ) -> Node:
+	if _is_suggestion(column):
+		var suggestions := column.hint_string.split(",", false)
+		return popup_suggestions(suggestions, owner, rect, value, column, on_finished)
+
 	var popup_menu := PopupMenu.new()
 	var is_numeric := _is_numeric(column)
 
@@ -80,3 +84,10 @@ static func create_editor(
 
 static func _is_numeric(column: ColumnConfig) -> bool:
 	return column.type in [TYPE_INT, TYPE_FLOAT]
+
+
+static func _is_suggestion(column: ColumnConfig) -> bool:
+	return (
+		column.property_hint == PROPERTY_HINT_ENUM_SUGGESTION
+		and column.type in [TYPE_STRING, TYPE_STRING_NAME]
+	)

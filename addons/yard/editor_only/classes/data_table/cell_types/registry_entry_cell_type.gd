@@ -61,13 +61,12 @@ static func create_editor(
 	on_finished: Callable,
 ) -> Node:
 	var custom_hint := RegistryIO.CustomHint.parse(column.hint_string)
-	var popup_menu := PopupMenu.new()
+	var entries := _get_registry_entries(custom_hint)
 	if custom_hint.suggestion:
-		popup_menu.add_radio_check_item("")
-		popup_menu.set_item_metadata(popup_menu.item_count - 1, "")
-		popup_menu.set_item_checked(popup_menu.item_count - 1, not value)
+		return popup_suggestions(PackedStringArray(entries), owner, rect, value, column, on_finished)
 
-	for entry: StringName in _get_registry_entries(custom_hint):
+	var popup_menu := PopupMenu.new()
+	for entry: StringName in entries:
 		var str_entry := str(entry)
 		popup_menu.add_radio_check_item(str_entry)
 		popup_menu.set_item_metadata(popup_menu.item_count - 1, str_entry)
