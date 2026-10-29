@@ -26,6 +26,9 @@ enum BattleUse {
 	DIRECT, ## used directly, no target (escape items...)
 }
 
+const REGISTRY_HINT := Registry.PROPERTY_HINT_CUSTOM
+const MOVES := "res://example/godomon/data/moves.tres"
+
 @export var name: String
 @export var name_plural: String
 @export_multiline var description: String
@@ -39,10 +42,7 @@ enum BattleUse {
 ## Whether the item is consumed when used.
 @export var consumable: bool = true
 ## The move taught, if this item is a TM/HM/TR (field_use above)
-@export_custom(
-	Registry.PROPERTY_HINT_CUSTOM,
-	"res://example/godomon/data/moves.tres",
-) var move: StringName
+@export_custom(REGISTRY_HINT, MOVES) var move: StringName
 
 @export_group("Bag")
 ## Bag pocket this item is sorted into (adapt to your bag structure)

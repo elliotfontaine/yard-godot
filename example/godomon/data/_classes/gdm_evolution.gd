@@ -68,6 +68,7 @@ enum ParamKind {
 	ELEMENT,
 }
 
+const REGISTRY_HINT := Registry.PROPERTY_HINT_CUSTOM
 const ITEMS := "res://example/godomon/data/items.tres"
 const MOVES := "res://example/godomon/data/moves.tres"
 const MONSTERS := "res://example/godomon/data/monsters.tres"
@@ -136,10 +137,7 @@ const REQUIREMENT_PARAMS := {
 }
 
 ## Species the monster evolves into.
-@export_custom(
-	Registry.PROPERTY_HINT_CUSTOM,
-	MONSTERS + ",sort=dex_number",
-) var target_species: StringName
+@export_custom(REGISTRY_HINT, MONSTERS + ",sort=dex_number") var target_species: StringName
 
 @export var trigger: Trigger = Trigger.LEVEL_UP:
 	set(value):
@@ -161,7 +159,7 @@ const REQUIREMENT_PARAMS := {
 ## Minimum level required. 0 = any level-up. LEVEL_UP only.
 @export_range(0, 100, 1) var min_level: int = 0
 ## Item that must be used on the monster. ITEM only.
-@export_custom(Registry.PROPERTY_HINT_CUSTOM, ITEMS) var trigger_item: StringName
+@export_custom(REGISTRY_HINT, ITEMS) var trigger_item: StringName
 ## Id passed to the script that triggers the evolution. EVENT only.
 @export var event_id: int = 0
 
@@ -209,16 +207,16 @@ func _validate_property(property: Dictionary) -> void:
 		"parameter_id":
 			match get_param_kind():
 				ParamKind.ITEM:
-					property.hint = Registry.PROPERTY_HINT_CUSTOM
+					property.hint = REGISTRY_HINT
 					property.hint_string = ITEMS
 				ParamKind.MOVE:
-					property.hint = Registry.PROPERTY_HINT_CUSTOM
+					property.hint = REGISTRY_HINT
 					property.hint_string = MOVES
 				ParamKind.SPECIES:
-					property.hint = Registry.PROPERTY_HINT_CUSTOM
+					property.hint = REGISTRY_HINT
 					property.hint_string = MONSTERS
 				ParamKind.ELEMENT:
-					property.hint = Registry.PROPERTY_HINT_CUSTOM
+					property.hint = REGISTRY_HINT
 					property.hint_string = ELEMENTS
 				_:
 					property.usage &= ~PROPERTY_USAGE_EDITOR

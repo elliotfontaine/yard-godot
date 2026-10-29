@@ -76,6 +76,7 @@ enum BodyColor {
 	YELLOW,
 }
 
+const REGISTRY_HINT := Registry.PROPERTY_HINT_CUSTOM
 const ITEMS := "res://example/godomon/data/items.tres"
 const MOVES := "res://example/godomon/data/moves.tres"
 const MONSTERS := "res://example/godomon/data/monsters.tres"
@@ -85,8 +86,8 @@ const ABILITIES := "res://example/godomon/data/abilities.tres"
 @export var name: String
 @export var form_name: String
 @export var dex_number: int = 0
-@export_custom(Registry.PROPERTY_HINT_CUSTOM, ELEMENTS) var type_1: StringName = &"wild"
-@export_custom(Registry.PROPERTY_HINT_CUSTOM, ELEMENTS) var type_2: StringName
+@export_custom(REGISTRY_HINT, ELEMENTS) var type_1: StringName = &"wild"
+@export_custom(REGISTRY_HINT, ELEMENTS) var type_2: StringName
 @export var evolutions: Array[GdmEvolution]
 @export var flags: Array[StringName]
 
@@ -125,24 +126,21 @@ const ABILITIES := "res://example/godomon/data/abilities.tres"
 @export_range(0, 255, 5) var catch_rate: int = 255
 @export_range(0, 255, 1) var happiness: int = 70
 @export_subgroup("Held Items")
-@export_custom(Registry.PROPERTY_HINT_CUSTOM, ITEMS) var wild_item_common: Array[StringName] # 50%
-@export_custom(Registry.PROPERTY_HINT_CUSTOM, ITEMS) var wild_item_uncommon: Array[StringName] # 5%
-@export_custom(Registry.PROPERTY_HINT_CUSTOM, ITEMS) var wild_item_rare: Array[StringName] # 1%
+@export_custom(REGISTRY_HINT, ITEMS) var wild_item_common: Array[StringName] # 50%
+@export_custom(REGISTRY_HINT, ITEMS) var wild_item_uncommon: Array[StringName] # 5%
+@export_custom(REGISTRY_HINT, ITEMS) var wild_item_rare: Array[StringName] # 1%
 
 @export_group("Moves & Abilities")
-@export var moves: Dictionary[StringName, int]
-@export_custom(Registry.PROPERTY_HINT_CUSTOM, MOVES) var tutor_moves: Array[StringName]
-@export_custom(Registry.PROPERTY_HINT_CUSTOM, MOVES) var egg_moves: Array[StringName]
-@export_custom(Registry.PROPERTY_HINT_CUSTOM, ABILITIES) var abilities: Array[StringName]
-@export_custom(Registry.PROPERTY_HINT_CUSTOM, ABILITIES) var hidden_abilities: Array[StringName]
+@export_custom(REGISTRY_HINT, MOVES) var moves: Dictionary[StringName, int]
+@export_custom(REGISTRY_HINT, MOVES) var tutor_moves: Array[StringName]
+@export_custom(REGISTRY_HINT, MOVES) var egg_moves: Array[StringName]
+@export_custom(REGISTRY_HINT, ABILITIES) var abilities: Array[StringName]
+@export_custom(REGISTRY_HINT, ABILITIES) var hidden_abilities: Array[StringName]
 
 @export_group("Breeding")
 @export var step_cycles: int = 1
-@export_custom(Registry.PROPERTY_HINT_CUSTOM, ITEMS) var incense: StringName
-@export_custom(
-	Registry.PROPERTY_HINT_CUSTOM,
-	MONSTERS + ",sort=dex_number",
-) var custom_offspring: Array[StringName]
+@export_custom(REGISTRY_HINT, ITEMS) var incense: StringName
+@export_custom(REGISTRY_HINT, MONSTERS + ",sort=dex_number") var custom_offspring: Array[StringName]
 @export var egg_groups: int = EggGroup.UNDISCOVERED # See `_validate_property`
 
 @export_group("Dex Info")
