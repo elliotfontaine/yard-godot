@@ -71,11 +71,13 @@ You don't need to speak every language. An LLM can do a good job here: give it t
 
 ## Testing and CI
 
-There is no automated test suite as of now. Test your changes by hand in the editor. The [`example/`](example/) folder has registries to try things on (`example/godomon/data/`) and a runtime scene (`example/scenes/`).
+Unit tests live in [`test/`](test/) and run with [GdUnit4](https://github.com/godot-gdunit-labs/gdUnit4), which isn't part of the repository. To run them locally, install the version pinned in [`ci.yml`](.github/workflows/ci.yml) in `addons/`. Suites that need the editor are skipped unless run through [`test/tools/run_tests_in_editor.gd`](test/tools/run_tests_in_editor.gd).
+
+Also test your changes by hand in the editor. The [`example/`](example/) folder has registries to try things on (`example/godomon/data/`) and a runtime scene (`example/scenes/`).
 
 CI runs two workflows on each push and pull request. Check their results on your PR:
 
-- [`load_plugin.yml`](.github/workflows/load_plugin.yml) loads the plugin on every Godot version in its matrix. It uses [`test/project/test_project.godot`](test/project/test_project.godot), which raises most GDScript warnings to errors, and fails on any error or warning Godot prints.
+- [`ci.yml`](.github/workflows/ci.yml) first loads the plugin on every Godot version in its matrix. It uses [`test/project/test_project.godot`](test/project/test_project.godot), which raises most GDScript warnings to errors, and fails on any error or warning Godot prints. If that passes, it runs the test suites on Godot 4.5 and later, then again inside the editor.
 - [`reuse_compliance.yml`](.github/workflows/reuse_compliance.yml) checks that every file declares its copyright and license (see [Licensing](#licensing-reuse)).
 
 ## Licensing (REUSE)

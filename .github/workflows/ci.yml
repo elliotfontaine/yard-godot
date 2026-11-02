@@ -1,0 +1,177 @@
+# SPDX-FileCopyrightText: 2025-2026, Elliot Fontaine <yard-godot@elliotfontaine.anonaddy.com>
+# SPDX-FileCopyrightText: 2026-present, YARD contributors (see AUTHORS.md)
+#
+# SPDX-License-Identifier: MIT
+---
+name: CI
+description: |
+  "Load YARD in headless mode on every Godot version, with GDScript warnings treated as errors. Then run the GdUnit4 test suites."
+
+on:
+  push:
+    branches:
+      - "main"
+    paths-ignore:
+      - "**.jpg"
+      - "**.png"
+      - "**.svg"
+      - "**.md"
+      - "**plugin.cfg"
+  pull_request:
+    paths-ignore:
+      - "**.jpg"
+      - "**.png"
+      - "**.svg"
+      - "**.md"
+      - "**plugin.cfg"
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  smoke:
+    name: Smoke · Godot ${{ matrix.version }} / ${{ matrix.os }}
+
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - "4.4.1"
+          - "4.5.2"
+          - "4.6.3"
+          - "4.7.2"
+          - "4.8.0-dev7"
+
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: ${{ matrix.version }}
+          use-dotnet: false
+
+      - name: Check Godot version
+        run: |
+          godot --version
+
+      - name: Replace project.godot with test version
+        run: |
+          cp test/project/test_project.godot project.godot
+
+      - name: Hide the test suites
+        run: |
+          touch test/.gdignore
+
+      - name: Run Godot with plugin
+        run: |
+          set -o pipefail
+
+          godot \
+            --headless \
+            --import \
+            --verbose \
+            2>&1 | tee godot.log
+
+      - name: Check plugin loaded
+        run: |
+          grep -F \
+            "YARD - Yet Another Resource Database. Plugin loaded." \
+            godot.log
+
+      - name: Check for Godot errors or warnings
+        run: |
+          if grep -E '(^| )(ERROR|WARNING)( |:)|SCRIPT ERROR|Parse Error' godot.log; then
+            echo "::error::Godot reported an error or warning."
+            exit 1
+          fi
+
+  tests:
+    name: Tests · Godot ${{ matrix.version }}
+
+    needs: smoke
+
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          # GdUnit4 6.x requires Godot 4.5 or later.
+          - "4.5.2"
+          - "4.7.2"
+          - "4.8.0-dev7"
+
+    env:
+      # Pinned: test/tools/run_tests_in_editor.gd relies on a private member of GdUnit4.
+      GDUNIT_VERSION: v6.2.3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Godot
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: ${{ matrix.version }}
+          use-dotnet: false
+
+      - name: Replace project.godot with test version
+        run: |
+          cp test/project/test_project.godot project.godot
+
+      - name: Install GdUnit4
+        run: |
+          git clone --quiet --depth 1 --branch "$GDUNIT_VERSION" \
+            https://github.com/godot-gdunit-labs/gdUnit4 "$RUNNER_TEMP/gdunit4"
+          cp -R "$RUNNER_TEMP/gdunit4/addons/gdUnit4" addons/
+          # GdUnit4's own test suites, not part of the plugin.
+          rm -rf addons/gdUnit4/test
+
+      # Registers the global classes of GdUnit4 and the UIDs of the test fixtures.
+      - name: Import project
+        run: |
+          godot --headless --import
+
+      # Same command as addons/gdUnit4/runtest.sh. The unreachable remote debugger keeps Godot
+      # from opening its interactive debugger on script errors.
+      - name: Run tests
+        timeout-minutes: 10
+        run: |
+          godot --headless --path . -s -d --remote-debug tcp://127.0.0.1:0 \
+            res://addons/gdUnit4/bin/GdUnitCmdTool.gd \
+            -a res://test/addons -c --ignoreHeadlessMode
+
+      # Runs the suites that need editor-only APIs, skipped by the previous step.
+      - name: Run tests in the editor
+        timeout-minutes: 10
+        run: |
+          exit_code=0
+          godot --headless --editor --path . -s -d --remote-debug tcp://127.0.0.1:0 \
+            res://test/tools/run_tests_in_editor.gd \
+            -a res://test/addons -c --ignoreHeadlessMode || exit_code=$?
+
+          if [ "$exit_code" -eq 101 ]; then
+            echo "::warning::GdUnit4 detected orphan nodes."
+            exit 0
+          fi
+          exit "$exit_code"
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: gdunit4-reports-godot-${{ matrix.version }}
+          path: reports/
