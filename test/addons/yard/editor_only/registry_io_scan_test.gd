@@ -141,6 +141,18 @@ func test_sync_keeps_unmatched_entries_when_asked_to() -> void:
 	assert_array(_sync(settings)).is_equal([&"shield", &"sword"])
 
 
+# Issue #95: registries from YARD 1.1.0 store no class restriction when there is none. Every scan
+# used to find no resource and remove all their entries.
+func test_sync_keeps_the_entries_of_a_v1_registry_without_class_restriction() -> void:
+	RegistryIO.add_entry(_registry, Fixtures.POTION_UID, "healing")
+	_registry._version = 0
+	_registry._scan_directory = Fixtures.ITEMS_DIR
+	RegistryIO.sync_from_scan_directories(_registry)
+	assert_array(_registry.get_all_string_ids()).contains_exactly_in_any_order(
+		[&"healing", &"elixir", &"draft_potion", &"sword", &"trinket", &"gradient"],
+	)
+
+
 func test_sync_without_scan_directory_does_nothing() -> void:
 	RegistryIO.add_entry(_registry, Fixtures.SHIELD_UID)
 	assert_array(_sync(RegistryIO.RegistrySettings.new())).is_equal([&"shield"])

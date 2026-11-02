@@ -97,13 +97,16 @@ func test_add_entry_enforces_class_restrictions() -> void:
 	assert_int(RegistryIO.add_entry(_registry, Fixtures.SWORD_UID)).is_equal(OK)
 
 
-@warning_ignore("unused_parameter")
-func test_add_entry_to_a_v1_registry_without_class_restriction(
-	do_skip := true,
-	skip_reason := "Known bug: V1 settings turn an empty _class_restriction into [&\"\"]",
-) -> void:
+func test_add_entry_to_a_v1_registry_without_class_restriction() -> void:
 	_registry._version = 1
 	assert_int(RegistryIO.add_entry(_registry, Fixtures.POTION_UID)).is_equal(OK)
+
+
+func test_v1_registry_without_restriction_or_scan_directory_has_none() -> void:
+	_registry._version = 1
+	var settings := RegistryIO.get_registry_settings(_registry)
+	assert_bool(settings.has_any_class_restriction()).is_false()
+	assert_bool(settings.has_any_scan_directory()).is_false()
 
 
 func test_add_entry_saves_the_registry() -> void:
