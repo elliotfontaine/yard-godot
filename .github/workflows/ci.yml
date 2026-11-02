@@ -111,6 +111,7 @@ jobs:
         version:
           # GdUnit4 6.x requires Godot 4.5 or later.
           - "4.5.2"
+          - "4.6.3"
           - "4.7.2"
           - "4.8.0-dev7"
 
