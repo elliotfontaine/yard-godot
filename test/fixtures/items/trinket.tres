@@ -1,0 +1,7 @@
+[gd_resource type="Resource" format=3 uid="uid://yardtesttrk1"]
+
+[ext_resource type="Script" path="res://test/fixtures/scripts/unnamed_trinket.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+price = 15
