@@ -15,7 +15,7 @@ extends Resource
 ## resources you didn't ask for.[br][br]
 ##
 ## Entries are managed through the YARD editor tab and stored in a [code].tres[/code] file.
-## The registry is read-only at runtime.
+## The registry should be considered read-only at runtime.
 ##
 ## [codeblock]
 ## const ENEMIES: Registry = preload("res://data/enemy_registry.tres")
@@ -79,17 +79,11 @@ const _REGISTRY_FORMAT_VERSION: int = 2
 # Holds both default + override rulesets. Overridden rulesets only need to define their non-default values.
 @export_storage var _scan_rulesets: Array[Dictionary]
 
-# Bidirectional map. Populated by RegistryIO in the editor, read-only at runtime.
+# Bidirectional map. Populated by RegistryIO in the editor, considered read-only at runtime.
 @export_storage var _uids_to_string_ids: Dictionary[StringName, StringName]
 @export_storage var _string_ids_to_uids: Dictionary[StringName, StringName]
 # Baked property index: property -> value -> set of resources string IDs.
 @export_storage var _property_index: Dictionary[StringName, Dictionary] = { }
-
-
-func _init() -> void:
-	if not Engine.is_editor_hint():
-		_uids_to_string_ids.make_read_only()
-		_string_ids_to_uids.make_read_only()
 
 
 ## Returns the number of entries in the registry. Empty registries always return [code]0[/code].
