@@ -71,8 +71,12 @@ static func get_registry_settings(registry: Registry) -> RegistrySettings:
 		settings.remove_unmatched = registry._scan_remove
 
 		var default_scan_ruleset := RegistryScanRuleset.new()
-		default_scan_ruleset.class_restrictions = [registry._class_restriction]
-		default_scan_ruleset.scan_directories = [_normalize_abs_path(registry._scan_directory)]
+		# V1 stores an empty string when there is no restriction or no scan directory.
+		if registry._class_restriction:
+			default_scan_ruleset.class_restrictions = [registry._class_restriction]
+		var scan_directory := _normalize_abs_path(registry._scan_directory)
+		if scan_directory:
+			default_scan_ruleset.scan_directories = [scan_directory]
 		default_scan_ruleset.recursive_scan = registry._recursive_scan
 		default_scan_ruleset.allowed_file_extensions = []
 		default_scan_ruleset.scan_regex_include = registry._scan_regex_include
