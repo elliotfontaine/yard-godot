@@ -576,9 +576,10 @@ static func _path_passes_scan_filters(
 	if re_exclude and re_exclude.search(path):
 		return false
 	if not file_extensions_filter.is_empty():
+		var path_extension := path.get_extension()
 		var any_file_extension_matches := false
 		for file_extension in file_extensions_filter:
-			if path.ends_with(file_extension):
+			if path_extension.nocasecmp_to(file_extension.trim_prefix(".")) == 0:
 				any_file_extension_matches = true
 				break
 		if not any_file_extension_matches:
