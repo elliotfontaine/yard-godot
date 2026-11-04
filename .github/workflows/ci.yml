@@ -151,12 +151,14 @@ jobs:
         run: |
           cp test/project/test_project.godot project.godot
 
+      # Only downloads addons/gdUnit4, not the whole repository (about 1 MB instead of 30 MB).
       - name: Install GdUnit4
         run: |
-          git clone --quiet --depth 1 --branch "$GDUNIT_VERSION" \
+          git -c advice.detachedHead=false clone --quiet --depth 1 --branch "$GDUNIT_VERSION" \
+            --filter=blob:none --sparse \
             https://github.com/godot-gdunit-labs/gdUnit4 "$RUNNER_TEMP/gdunit4"
+          git -C "$RUNNER_TEMP/gdunit4" sparse-checkout set addons/gdUnit4
           cp -R "$RUNNER_TEMP/gdunit4/addons/gdUnit4" addons/
-          # GdUnit4's own test suites, not part of the plugin.
           rm -rf addons/gdUnit4/test
 
       # Registers the global classes of GdUnit4 and the UIDs of the test fixtures.
