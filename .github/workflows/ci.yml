@@ -30,6 +30,10 @@ defaults:
   run:
     shell: bash
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   smoke:
     name: Smoke · Godot ${{ matrix.version }} / ${{ matrix.os }}
@@ -40,16 +44,24 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - "4.4.1"
+          - &min_stable_version "4.4.1"
           - "4.5.2"
           - "4.6.3"
-          - "4.7.2"
+          - &max_stable_version "4.7.2"
           - "4.8.0-dev7"
 
         os:
           - ubuntu-latest
-          - macos-latest
-          - windows-latest
+
+        include:
+          - version: *min_stable_version
+            os: macos-latest
+          - version: *min_stable_version
+            os: windows-latest
+          - version: *max_stable_version
+            os: macos-latest
+          - version: *max_stable_version
+            os: windows-latest
 
     steps:
       - name: Checkout
