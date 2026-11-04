@@ -101,14 +101,22 @@ func test_sync_with_allowed_file_extensions() -> void:
 	assert_array(_sync(settings)).is_empty()
 
 
-@warning_ignore("unused_parameter")
-func test_allowed_file_extensions_match_whole_extensions(
-	do_skip := true,
-	skip_reason := "Known bug: the extension filter uses ends_with(), so 'res' also matches .tres",
-) -> void:
+func test_allowed_file_extensions_match_whole_extensions() -> void:
 	var settings := Fixtures.scan_settings(Fixtures.ITEMS_DIR, [&"YardTestWeapon"])
 	settings.default_scan_ruleset.allowed_file_extensions = ["res"]
 	assert_array(_sync(settings)).is_empty()
+
+
+func test_allowed_file_extensions_accept_a_leading_dot() -> void:
+	var settings := Fixtures.scan_settings(Fixtures.ITEMS_DIR, [&"YardTestWeapon"])
+	settings.default_scan_ruleset.allowed_file_extensions = [".tres"]
+	assert_array(_sync(settings)).is_equal([&"sword"])
+
+
+func test_allowed_file_extensions_ignore_case() -> void:
+	var settings := Fixtures.scan_settings(Fixtures.ITEMS_DIR, [&"YardTestWeapon"])
+	settings.default_scan_ruleset.allowed_file_extensions = ["TRES"]
+	assert_array(_sync(settings)).is_equal([&"sword"])
 
 
 func test_sync_with_additional_ruleset() -> void:
