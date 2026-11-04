@@ -69,6 +69,12 @@ jobs:
         run: |
           cp test/project/test_project.godot project.godot
 
+      # test_project.godot enables no plugin, so that the test suites run without YARD's editor UI.
+      - name: Enable the plugin
+        run: |
+          printf '\n[editor_plugins]\n\nenabled=PackedStringArray("res://addons/yard/plugin.cfg")\n' \
+            >> project.godot
+
       - name: Hide the test suites
         run: |
           touch test/.gdignore
