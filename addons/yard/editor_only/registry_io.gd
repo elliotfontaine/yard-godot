@@ -35,7 +35,8 @@ static func create_registry_file(path: String, settings: RegistrySettings = null
 	if save_err != OK:
 		YardLogger.error("Could not create registry file (%s)" % error_string(save_err))
 
-	EditorInterface.get_resource_filesystem().scan()
+	if Engine.is_editor_hint():
+		EditorInterface.get_resource_filesystem().scan()
 	return save_err
 
 

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="YardTestWeapon" format=3 uid="uid://yardtestswd1"]
+
+[ext_resource type="Script" path="res://test/fixtures/scripts/yard_test_weapon.gd" id="1_script"]
+[ext_resource type="Script" path="res://test/fixtures/scripts/item_stats.gd" id="2_stats"]
+
+[sub_resource type="Resource" id="Resource_stats"]
+script = ExtResource("2_stats")
+power = 8
+
+[resource]
+script = ExtResource("1_script")
+price = 30
+kind = &"weapon"
+stats = SubResource("Resource_stats")
+damage = 12

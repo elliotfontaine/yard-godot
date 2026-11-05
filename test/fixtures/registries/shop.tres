@@ -1,0 +1,57 @@
+[gd_resource type="Resource" script_class="Registry" format=3 uid="uid://yardtestreg1"]
+
+[ext_resource type="Script" uid="uid://dqtv77mng5dyh" path="res://addons/yard/registry.gd" id="1_registry"]
+
+[resource]
+script = ExtResource("1_registry")
+_version = 2
+_scan_auto = false
+_scan_rulesets = Array[Dictionary]([{
+&"allowed_file_extensions": Array[String]([]),
+&"class_restrictions": Array[StringName]([&"YardTestItem"]),
+&"recursive_scan": false,
+&"scan_directories": Array[String]([]),
+&"scan_regex_exclude": "",
+&"scan_regex_include": ""
+}])
+_uids_to_string_ids = Dictionary[StringName, StringName]({
+&"uid://yardtestpot1": &"potion",
+&"uid://yardtestswd1": &"sword",
+&"uid://yardtestelx1": &"elixir"
+})
+_string_ids_to_uids = Dictionary[StringName, StringName]({
+&"potion": &"uid://yardtestpot1",
+&"sword": &"uid://yardtestswd1",
+&"elixir": &"uid://yardtestelx1"
+})
+_property_index = Dictionary[StringName, Dictionary]({
+&"kind": {
+&"consumable": {
+&"elixir": true,
+&"potion": true
+},
+&"weapon": {
+&"sword": true
+}
+},
+&"price": {
+10: {
+&"potion": true
+},
+30: {
+&"sword": true
+},
+50: {
+&"elixir": true
+}
+},
+&"stats.power": {
+3: {
+&"potion": true
+},
+8: {
+&"elixir": true,
+&"sword": true
+}
+}
+})

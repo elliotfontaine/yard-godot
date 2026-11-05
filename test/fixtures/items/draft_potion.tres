@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="YardTestItem" format=3 uid="uid://yardtestdrf1"]
+
+[ext_resource type="Script" path="res://test/fixtures/scripts/yard_test_item.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+price = 5
+kind = &"consumable"

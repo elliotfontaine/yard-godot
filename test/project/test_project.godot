@@ -48,7 +48,3 @@ gdscript/warnings/confusable_identifier=2
 gdscript/warnings/confusable_local_declaration=2
 gdscript/warnings/confusable_local_usage=2
 gdscript/warnings/confusable_capture_reassignment=2
-
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/yard/plugin.cfg")

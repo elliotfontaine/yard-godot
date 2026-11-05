@@ -6,6 +6,8 @@
 # Project-specific ignores
 addons/*
 !addons/yard/
+reports/
+kanban_tasks_data.kanban
 
 # Godot 4+ specific ignores
 .godot/

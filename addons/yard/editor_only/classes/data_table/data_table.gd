@@ -60,7 +60,7 @@ var _DEBUG_show_cell_draw_profiling: bool = false
 
 # Fonts
 var font := get_theme_default_font()
-var mono_font: Font = EditorInterface.get_editor_theme().get_font(&"font", &"CodeEdit")
+var mono_font: Font = get_theme_default_font()
 var font_size := get_theme_default_font_size()
 
 # Public state: selection, focus and sort (row/column keys)
@@ -289,6 +289,7 @@ func set_native_theming(delay: int = 0) -> void:
 	var editor_settings := EditorInterface.get_editor_settings()
 	font = root.get_theme_font(&"main", &"EditorFonts")
 	default_font_color = root.get_theme_color(&"font_color", &"Editor")
+	mono_font = EditorInterface.get_editor_theme().get_font(&"font", &"CodeEdit")
 	font_size = root.get_theme_font_size(&"main_size", &"EditorFonts")
 	row_color = root.get_theme_color(&"base_color", &"Editor")
 	if (

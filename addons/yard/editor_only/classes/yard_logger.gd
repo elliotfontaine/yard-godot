@@ -12,9 +12,10 @@ const EditorThemeUtils := Namespace.EditorThemeUtils
 
 
 static func info(message: String) -> void:
-	print_rich(
-		"[color=%s]YARD - %s[/color]" % [EditorThemeUtils.color_message.to_html(true), message],
-	)
+	var text := "YARD - %s" % message
+	if Engine.is_editor_hint():
+		text = _colorize(text, EditorThemeUtils.color_message)
+	print_rich(text)
 
 
 static func warn(message: String) -> void:
@@ -22,10 +23,10 @@ static func warn(message: String) -> void:
 	var line: int = caller.get("line", "")
 	var source: String = caller.get("source", "")
 
-	print_rich(
-		"[color=%s]● [b]WARNING:[/b] [url]%s[/url] - YARD: %s[/color]"
-		% [EditorThemeUtils.color_warning.to_html(true), "%s:%s" % [source, line], message],
-	)
+	var text := "● [b]WARNING:[/b] [url]%s[/url] - YARD: %s" % ["%s:%s" % [source, line], message]
+	if Engine.is_editor_hint():
+		text = _colorize(text, EditorThemeUtils.color_warning)
+	print_rich(text)
 
 
 static func error(message: String) -> void:
@@ -41,7 +42,13 @@ static func error(message: String) -> void:
 		line = "{line}"
 		source = "{source}"
 
-	print_rich(
-		"[color=%s]● [b]ERROR:[/b] [url]%s[/url] - YARD: %s[/color]"
-		% [EditorThemeUtils.color_error.to_html(true), "%s:%s" % [source, line], message],
-	)
+	var text := "● [b]ERROR:[/b] [url]%s[/url] - YARD: %s" % ["%s:%s" % [source, line], message]
+	if Engine.is_editor_hint():
+		text = _colorize(text, EditorThemeUtils.color_error)
+	print_rich(text)
+
+
+## Colors come from the editor theme, which only exists in the editor. Elsewhere (e.g. in
+## headless test runs), messages are printed uncolored.
+static func _colorize(text: String, color: Color) -> String:
+	return "[color=%s]%s[/color]" % [color.to_html(true), text]
