@@ -19,12 +19,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **gui:** Accept registries dropped on the top of the registry list **[@elliotfontaine]**
 - **model:** Match whole file extensions in scan filters **[@elliotfontaine]**
 - **model:** Stop scans from emptying V1 registries without class restriction **[@elliotfontaine in [#196](https://github.com/elliotfontaine/yard-godot/pull/196)]**
-- **table:** Allow assigning class-named scripts in table cells **[@elliotfontaine in [#189](https://github.com/elliotfontaine/yard-godot/pull/189)]**
+- **table:** Allow assigning class-named scripts in table cells **[@VojtaStruhar in [#189](https://github.com/elliotfontaine/yard-godot/pull/189)]**
 - **table:** Stop UID cells from slowing down every table redraw **[@elliotfontaine]**
 - **table:** Align all cell text on the same baseline **[@elliotfontaine]**
 - **table:** Stop dictionary tooltips from erroring on non-string keys **[@elliotfontaine]**
 - **table:** Redraw a range cell digit as soon as the bar reaches its edge **[@elliotfontaine in [#183](https://github.com/elliotfontaine/yard-godot/pull/183)]**
 - **gui:** Stop leaking a submenu each time the File menu updates **[@elliotfontaine in [#182](https://github.com/elliotfontaine/yard-godot/pull/182)]**
+
+### New Contributors
+
+- @VojtaStruhar made their first contribution in [#189](https://github.com/elliotfontaine/yard-godot/pull/189)
 
 ## [1.3.1] - 2026-10-08
 
