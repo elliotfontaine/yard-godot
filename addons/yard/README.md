@@ -21,9 +21,9 @@ SPDX-License-Identifier: MIT
 </p>
 
 <p align="center">
-  <a href="https://godotengine.org/download/" target="_blank" style="text-decoration:none"><img alt="Godot v4.4+" src="https://img.shields.io/badge/Godot-v4.4+-%23478cbf?color=49A9B4" /></a>
-  <a href="https://github.com/elliotfontaine/yard-godot/releases"  target="_blank" style="text-decoration:none"><img alt="Latest YARD Release" src="https://img.shields.io/github/v/release/elliotfontaine/yard-godot?include_prereleases&label=Release"></a>
-  <a href="https://github.com/elliotfontaine/yard-godot/actions?query=branch%3Amain"  target="_blank" style="text-decoration:none"><img alt="GitHub branch check suites" src="https://img.shields.io/github/check-suites/elliotfontaine/yard-godot/main?label=Status"></a>
+  <a href="https://godotengine.org/download/" target="_blank" style="text-decoration:none"><img alt="Godot v4.4+" src="https://img.shields.io/badge/Godot-v4.4+-%23478cbf?color=107fbf" /></a>
+  <a href="https://github.com/elliotfontaine/yard-godot/releases"  target="_blank" style="text-decoration:none"><img alt="Latest YARD Release" src="https://img.shields.io/github/v/release/elliotfontaine/yard-godot?include_prereleases&label=Release&color=6a66f2"></a>
+  <a href="https://github.com/elliotfontaine/yard-godot/actions?query=branch%3Amain"  target="_blank" style="text-decoration:none"><img alt="GitHub branch check suites" src="https://img.shields.io/github/check-suites/elliotfontaine/yard-godot/main?label=CI"></a>
 </p>
 
 ## Overview
