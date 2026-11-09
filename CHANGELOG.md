@@ -12,6 +12,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2] - 2026-11-09
+
+### Fixed
+
+- **gui:** Accept registries dropped on the top of the registry list **[@elliotfontaine]**
+- **model:** Match whole file extensions in scan filters **[@elliotfontaine]**
+- **model:** Stop scans from emptying V1 registries without class restriction **[@elliotfontaine in [#196](https://github.com/elliotfontaine/yard-godot/pull/196)]**
+- **table:** Allow assigning class-named scripts in table cells **[@elliotfontaine in [#189](https://github.com/elliotfontaine/yard-godot/pull/189)]**
+- **table:** Stop UID cells from slowing down every table redraw **[@elliotfontaine]**
+- **table:** Align all cell text on the same baseline **[@elliotfontaine]**
+- **table:** Stop dictionary tooltips from erroring on non-string keys **[@elliotfontaine]**
+- **table:** Redraw a range cell digit as soon as the bar reaches its edge **[@elliotfontaine in [#183](https://github.com/elliotfontaine/yard-godot/pull/183)]**
+- **gui:** Stop leaking a submenu each time the File menu updates **[@elliotfontaine in [#182](https://github.com/elliotfontaine/yard-godot/pull/182)]**
+
+## [1.3.1] - 2026-10-08
+
+### Fixed
+
+- **gui:** Stop shortcuts from triggering disabled menu actions **[@elliotfontaine]**
+- **table:** Lock and gray out read-only properties **[@elliotfontaine]**
+- **gui:** Stop "Can't find file" errors after changing editor scale **[@elliotfontaine]**
+- **ui:** Render images and HTML paragraphs in release notes **[@elliotfontaine]**
+- **ui:** Use correct "laugh" emoji in release notes reactions **[@elliotfontaine]**
+
 ## [1.3.0] - 2026-10-02
 
 ### Added
@@ -330,6 +354,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - @elliotfontaine made their first contribution
 
+[1.3.2]: https://github.com/elliotfontaine/yard-godot/compare/v1.3.1...v1.3.2
+[1.3.1]: https://github.com/elliotfontaine/yard-godot/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/elliotfontaine/yard-godot/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/elliotfontaine/yard-godot/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/elliotfontaine/yard-godot/compare/v1.0.1...v1.1.0
