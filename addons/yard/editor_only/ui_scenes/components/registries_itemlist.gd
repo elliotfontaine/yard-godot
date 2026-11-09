@@ -13,9 +13,6 @@ signal registries_dropped(registries: Array[Registry])
 
 
 func _can_drop_data(at_position: Vector2, data: Variant) -> bool:
-	if not get_rect().has_point(at_position):
-		return false
-
 	if typeof(data) != TYPE_DICTIONARY:
 		return false
 
