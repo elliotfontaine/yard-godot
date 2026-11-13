@@ -48,7 +48,7 @@ jobs:
           - "4.5.2"
           - "4.6.3"
           - &max_stable_version "4.7.2"
-          - "4.8.0-dev7"
+          - "4.8.0-beta3"
 
         os:
           - ubuntu-latest
@@ -131,7 +131,7 @@ jobs:
           - "4.5.2"
           - "4.6.3"
           - "4.7.2"
-          - "4.8.0-dev7"
+          - "4.8.0-beta3"
 
     env:
       # Pinned: test/tools/run_tests_in_editor.gd relies on a private member of GdUnit4.
