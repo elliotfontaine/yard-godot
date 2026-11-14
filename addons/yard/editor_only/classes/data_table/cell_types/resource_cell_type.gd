@@ -30,7 +30,7 @@ static func draw_cell(
 			resolve_font(column, style.font),
 			style.font_size,
 			column.h_alignment,
-			resolve_text_color(column, style),
+			style.readonly_font_color, # Gray, so an empty slot doesn't read like typed-in text.
 		)
 		return
 
