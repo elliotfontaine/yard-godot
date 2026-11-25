@@ -14,6 +14,7 @@ const StringCellType := Namespace.StringCellType
 const StringNameCellType := Namespace.StringNameCellType
 const MultilineCellType := Namespace.MultilineCellType
 const NumericCellType := Namespace.NumericCellType
+const VectorCellType := Namespace.VectorCellType
 const BooleanCellType := Namespace.BooleanCellType
 const RangeCellType := Namespace.RangeCellType
 const ColorCellType := Namespace.ColorCellType
@@ -38,6 +39,7 @@ const CELL_TYPES_PRIORITY_LIST: Array[GDScript] = [
 	StringNameCellType,
 	StringCellType,
 	NumericCellType,
+	VectorCellType,
 ]
 
 var identifier: StringName
@@ -72,7 +74,7 @@ func _init(
 	header = p_header
 	type = p_type
 	h_alignment = p_alignment
-	if p_type in [TYPE_INT, TYPE_FLOAT]:
+	if p_type in [TYPE_INT, TYPE_FLOAT] or VectorCellType.COMPONENT_COUNTS.has(p_type):
 		h_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 
 

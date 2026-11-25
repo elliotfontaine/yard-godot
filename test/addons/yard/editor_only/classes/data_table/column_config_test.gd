@@ -12,6 +12,7 @@ const StringCellType := Namespace.StringCellType
 const StringNameCellType := Namespace.StringNameCellType
 const MultilineCellType := Namespace.MultilineCellType
 const NumericCellType := Namespace.NumericCellType
+const VectorCellType := Namespace.VectorCellType
 const BooleanCellType := Namespace.BooleanCellType
 const RangeCellType := Namespace.RangeCellType
 const ColorCellType := Namespace.ColorCellType
@@ -41,6 +42,7 @@ func _column(
 func test_numeric_columns_are_right_aligned() -> void:
 	assert_int(_column(TYPE_INT).h_alignment).is_equal(HORIZONTAL_ALIGNMENT_RIGHT)
 	assert_int(_column(TYPE_FLOAT).h_alignment).is_equal(HORIZONTAL_ALIGNMENT_RIGHT)
+	assert_int(_column(TYPE_VECTOR3).h_alignment).is_equal(HORIZONTAL_ALIGNMENT_RIGHT)
 	assert_int(_column(TYPE_STRING).h_alignment).is_equal(HORIZONTAL_ALIGNMENT_LEFT)
 	var centered := ColumnConfig.new(&"name", "Name", TYPE_STRING, HORIZONTAL_ALIGNMENT_CENTER)
 	assert_int(centered.h_alignment).is_equal(HORIZONTAL_ALIGNMENT_CENTER)
@@ -90,7 +92,8 @@ func test_get_cell_type_picks_the_most_specific_type() -> void:
 		[_column(TYPE_STRING), StringCellType],
 		[_column(TYPE_INT), NumericCellType],
 		[_column(TYPE_FLOAT), NumericCellType],
-		[_column(TYPE_VECTOR2), CellType],
+		[_column(TYPE_VECTOR2), VectorCellType],
+		[_column(TYPE_VECTOR4I), VectorCellType],
 		[_column(TYPE_OBJECT), CellType],
 	]
 	for expected: Array in expected_cell_types:

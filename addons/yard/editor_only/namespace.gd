@@ -75,6 +75,9 @@ const MultilineCellType := preload(
 const NumericCellType := preload(
 	"res://addons/yard/editor_only/classes/data_table/cell_types/numeric_cell_type.gd"
 )
+const VectorCellType := preload(
+	"res://addons/yard/editor_only/classes/data_table/cell_types/vector_cell_type.gd"
+)
 const BooleanCellType := preload(
 	"res://addons/yard/editor_only/classes/data_table/cell_types/boolean_cell_type.gd"
 )
