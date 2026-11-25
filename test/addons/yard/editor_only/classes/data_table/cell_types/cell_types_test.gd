@@ -13,6 +13,7 @@ const ColumnConfig := Namespace.ColumnConfig
 const CellStyle := Namespace.CellStyle
 const CellType := Namespace.CellType
 const NumericCellType := Namespace.NumericCellType
+const VectorCellType := Namespace.VectorCellType
 const BooleanCellType := Namespace.BooleanCellType
 const ColorCellType := Namespace.ColorCellType
 const ResourceCellType := Namespace.ResourceCellType
@@ -106,6 +107,36 @@ func test_boolean_ignores_other_input() -> void:
 		{ },
 	)
 	assert_dict(result).is_empty()
+
+#endregion
+
+
+#region Vectors
+
+func test_vector_sort_key_lists_the_components() -> void:
+	assert_that(VectorCellType.get_sort_key(Vector3i(1, 2, 3), _column(TYPE_VECTOR3I))).is_equal(
+		[1, 2, 3],
+	)
+
+
+func test_vector_editor_keeps_components_that_do_not_parse() -> void:
+	var parent: Control = auto_free(Control.new())
+	add_child(parent)
+	var rect := Rect2(0, 0, 240, 30)
+	var on_finished := func(_save: bool) -> void:
+		pass
+
+	var column := _column(TYPE_VECTOR3I)
+	var editor := VectorCellType.create_editor(parent, rect, Vector3i(1, 2, 3), column, on_finished)
+	(editor.get_child(1) as LineEdit).text = "7"
+	(editor.get_child(2) as LineEdit).text = "4.5"
+	assert_that(VectorCellType.read_editor_value(editor, column)).is_equal(Vector3i(1, 7, 3))
+
+	column = _column(TYPE_VECTOR2)
+	editor = VectorCellType.create_editor(parent, rect, null, column, on_finished)
+	(editor.get_child(0) as LineEdit).text = "0.5"
+	(editor.get_child(1) as LineEdit).text = "abc"
+	assert_that(VectorCellType.read_editor_value(editor, column)).is_equal(Vector2(0.5, 0))
 
 #endregion
 
