@@ -92,12 +92,12 @@ const ABILITIES := "res://example/godomon/data/abilities.tres"
 @export var flags: Array[StringName]
 
 @export_group("Base Stats", "base_")
-@export_range(0, 255, 1) var base_hp: int = 1
-@export_range(0, 255, 1) var base_attack: int = 1
-@export_range(0, 255, 1) var base_defense: int = 1
-@export_range(0, 255, 1) var base_sp_attack: int = 1
-@export_range(0, 255, 1) var base_sp_defense: int = 1
-@export_range(0, 255, 1) var base_speed: int = 1
+@export_range(0, 255, 1, "prefer_slider") var base_hp: int = 1
+@export_range(0, 255, 1, "prefer_slider") var base_attack: int = 1
+@export_range(0, 255, 1, "prefer_slider") var base_defense: int = 1
+@export_range(0, 255, 1, "prefer_slider") var base_sp_attack: int = 1
+@export_range(0, 255, 1, "prefer_slider") var base_sp_defense: int = 1
+@export_range(0, 255, 1, "prefer_slider") var base_speed: int = 1
 @export_custom(
 	PROPERTY_HINT_RANGE,
 	"0,800,hide_control",
@@ -114,17 +114,17 @@ const ABILITIES := "res://example/godomon/data/abilities.tres"
 @export var growth_rate: GrowthRate = GrowthRate.MEDIUM_FAST
 @export var experience_yield: int = 0
 @export_subgroup("EVs")
-@export_range(0, 3, 1) var ev_hp: int = 0
-@export_range(0, 3, 1) var ev_attack: int = 0
-@export_range(0, 3, 1) var ev_defense: int = 0
-@export_range(0, 3, 1) var ev_sp_attack: int = 0
-@export_range(0, 3, 1) var ev_sp_defense: int = 0
-@export_range(0, 3, 1) var ev_speed: int = 0
+@export_range(0, 3, 1, "prefer_slider") var ev_hp: int = 0
+@export_range(0, 3, 1, "prefer_slider") var ev_attack: int = 0
+@export_range(0, 3, 1, "prefer_slider") var ev_defense: int = 0
+@export_range(0, 3, 1, "prefer_slider") var ev_sp_attack: int = 0
+@export_range(0, 3, 1, "prefer_slider") var ev_sp_defense: int = 0
+@export_range(0, 3, 1, "prefer_slider") var ev_speed: int = 0
 
 @export_group("Encounter")
 @export var gender_ratio: GenderRatio = GenderRatio.FEMALE_50_PERCENT
-@export_range(0, 255, 5) var catch_rate: int = 255
-@export_range(0, 255, 1) var happiness: int = 70
+@export_range(0, 255, 5, "prefer_slider") var catch_rate: int = 255
+@export_range(0, 255, 1, "prefer_slider") var happiness: int = 70
 @export_subgroup("Held Items")
 @export_custom(REGISTRY_HINT, ITEMS) var wild_item_common: Array[StringName] # 50%
 @export_custom(REGISTRY_HINT, ITEMS) var wild_item_uncommon: Array[StringName] # 5%
