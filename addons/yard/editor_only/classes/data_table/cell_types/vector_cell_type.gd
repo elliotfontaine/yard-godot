@@ -33,6 +33,7 @@ static func draw_cell(
 		return
 	var count := _get_count(column)
 	var font := resolve_font(column, style.font)
+	var step := _get_step(column)
 	for i: int in count:
 		var slot := _get_slot_rect(rect, i, count)
 		var axis: String = AXES[i]
@@ -48,7 +49,7 @@ static func draw_cell(
 		draw_text(
 			canvas,
 			slot.grow_side(SIDE_LEFT, -_get_axis_label_width(axis, font, style.font_size)),
-			str(value[i]),
+			String.num(snappedf(value[i], step), step_decimals(step)),
 			font,
 			style.font_size,
 			HORIZONTAL_ALIGNMENT_LEFT,
@@ -95,11 +96,12 @@ static func create_editor(
 			on_finished.call(true)
 
 	var count := _get_count(column)
+	var step := _get_step(column)
 	for i: int in count:
 		var line_edit := LineEdit.new()
-		editor.add_child(line_edit) # In the tree first, so the theme lookups below see the editor theme.
+		editor.add_child(line_edit)
 		_add_axis_label(line_edit, AXES[i])
-		line_edit.text = str(vector[i])
+		line_edit.text = String.num(snappedf(vector[i], step), step_decimals(step))
 		line_edit.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		line_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		line_edit.add_theme_constant_override(&"minimum_character_width", 2)
@@ -125,17 +127,39 @@ static func create_editor(
 static func read_editor_value(editor: Node, column: ColumnConfig) -> Variant:
 	var vector: Variant = editor.get_meta(&"vector")
 	var is_int := column.type in INT_TYPES
+	var step := _get_step(column)
 	for i: int in editor.get_child_count():
 		var text := (editor.get_child(i) as LineEdit).text.strip_edges()
 		if is_int and text.is_valid_int():
-			vector[i] = text.to_int()
+			vector[i] = snappedi(text.to_int(), int(step))
 		elif not is_int and text.is_valid_float():
-			vector[i] = text.to_float()
+			vector[i] = snappedf(text.to_float(), step)
 	return vector
 
 
 static func _get_count(column: ColumnConfig) -> int:
 	return COMPONENT_COUNTS[column.type]
+
+
+## The step the inspector's vector fields round to, for display and input: the
+## range hint's step, else the editor's default float step (1 for integer vectors).
+static func _get_step(column: ColumnConfig) -> float:
+	return column.get_cached(
+		&"vector_step",
+		func() -> float:
+			var is_int := column.type in INT_TYPES
+			var hint_elements := column.hint_string.split(",", false)
+			var step: float
+			if column.property_hint == PROPERTY_HINT_RANGE and hint_elements.size() > 2:
+				step = hint_elements[2].to_float()
+			elif is_int:
+				step = 1.0
+			else:
+				step = EditorInterface.get_editor_settings().get_setting(
+					"interface/inspector/default_float_step",
+				)
+			return roundf(step) if is_int else step,
+	)
 
 
 ## The inspector's vector editors draw their axis labels in this color, at half opacity.
