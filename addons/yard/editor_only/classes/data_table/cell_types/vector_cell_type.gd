@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MIT
 extends "res://addons/yard/editor_only/classes/data_table/cell_types/cell_type.gd"
 ## Vector2/3/4 and Vector2i/3i/4i columns. Components are drawn and edited side
-## by side, one LineEdit each, parsed like NumericCellType values.
+## by side, one LineEdit each.
 
 const COMPONENT_COUNTS: Dictionary[Variant.Type, int] = {
 	TYPE_VECTOR2: 2,
@@ -33,12 +33,9 @@ static func draw_cell(
 		return
 	var count := _get_count(column)
 	var font := resolve_font(column, style.font)
-	var x_margin: int = H_ALIGNMENT_MARGINS.get(HORIZONTAL_ALIGNMENT_LEFT)
 	for i: int in count:
 		var slot := _get_slot_rect(rect, i, count)
 		var axis: String = AXES[i]
-		# The inspector's vector editors draw their axis labels in this color, at half opacity.
-		var axis_color: Color = canvas.get_theme_color(StringName("property_color_" + axis), &"Editor")
 		draw_text(
 			canvas,
 			slot,
@@ -46,18 +43,15 @@ static func draw_cell(
 			font,
 			style.font_size,
 			HORIZONTAL_ALIGNMENT_LEFT,
-			resolve_text_color(column, style, axis_color * Color(1, 1, 1, 0.5)),
+			resolve_text_color(column, style, _get_axis_color(canvas, axis)),
 		)
-		var axis_width := font \
-				.get_string_size(axis, HORIZONTAL_ALIGNMENT_LEFT, -1, style.font_size) \
-				.x
 		draw_text(
 			canvas,
-			slot.grow_side(SIDE_LEFT, -(axis_width + x_margin)),
+			slot.grow_side(SIDE_LEFT, -_get_axis_label_width(axis, font, style.font_size)),
 			str(value[i]),
 			font,
 			style.font_size,
-			column.h_alignment,
+			HORIZONTAL_ALIGNMENT_LEFT,
 			resolve_text_color(column, style),
 		)
 
@@ -103,8 +97,10 @@ static func create_editor(
 	var count := _get_count(column)
 	for i: int in count:
 		var line_edit := LineEdit.new()
+		editor.add_child(line_edit) # In the tree first, so the theme lookups below see the editor theme.
+		_add_axis_label(line_edit, AXES[i])
 		line_edit.text = str(vector[i])
-		line_edit.alignment = column.h_alignment
+		line_edit.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		line_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		line_edit.text_submitted.connect(
 			func(_text: String) -> void:
@@ -117,7 +113,6 @@ static func create_editor(
 		)
 		line_edit.select_all_on_focus = true
 		line_edit.focus_exited.connect(finish_if_focus_left, CONNECT_DEFERRED)
-		editor.add_child(line_edit)
 
 	var focused_field: LineEdit = editor.get_child(_get_clicked_index(owner, rect, count))
 	focused_field.grab_focus()
@@ -140,6 +135,42 @@ static func read_editor_value(editor: Node, column: ColumnConfig) -> Variant:
 
 static func _get_count(column: ColumnConfig) -> int:
 	return COMPONENT_COUNTS[column.type]
+
+
+## The inspector's vector editors draw their axis labels in this color, at half opacity.
+static func _get_axis_color(canvas: CanvasItem, axis: String) -> Color:
+	var axis_color: Color = canvas.get_theme_color(StringName("property_color_" + axis), &"Editor")
+	return axis_color * Color(1, 1, 1, 0.5)
+
+
+## Horizontal space the axis label takes at the start of its slot, left margin included.
+static func _get_axis_label_width(axis: String, font: Font, font_size: int) -> float:
+	var x_margin: int = H_ALIGNMENT_MARGINS[HORIZONTAL_ALIGNMENT_LEFT]
+	return x_margin + font.get_string_size(axis, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+
+
+## Draws the axis label inside the field, where draw_cell puts it, and starts the
+## text right after it, so editing doesn't move the label or the value.
+static func _add_axis_label(line_edit: LineEdit, axis: String) -> void:
+	var font := line_edit.get_theme_font(&"font")
+	var font_size := line_edit.get_theme_font_size(&"font_size")
+	var axis_color := _get_axis_color(line_edit, axis)
+	var x_margin: int = H_ALIGNMENT_MARGINS[HORIZONTAL_ALIGNMENT_LEFT]
+	var style := line_edit.get_theme_stylebox(&"normal").duplicate() as StyleBox
+	style.content_margin_left = _get_axis_label_width(axis, font, font_size) + x_margin
+	line_edit.add_theme_stylebox_override(&"normal", style)
+	line_edit.draw.connect(
+		func() -> void:
+			draw_text(
+				line_edit,
+				Rect2(Vector2.ZERO, line_edit.size),
+				axis,
+				font,
+				font_size,
+				HORIZONTAL_ALIGNMENT_LEFT,
+				axis_color,
+			),
+	)
 
 
 ## The component under the mouse when a double-click started the edit (DataTable

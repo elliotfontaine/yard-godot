@@ -42,7 +42,6 @@ func _column(
 func test_numeric_columns_are_right_aligned() -> void:
 	assert_int(_column(TYPE_INT).h_alignment).is_equal(HORIZONTAL_ALIGNMENT_RIGHT)
 	assert_int(_column(TYPE_FLOAT).h_alignment).is_equal(HORIZONTAL_ALIGNMENT_RIGHT)
-	assert_int(_column(TYPE_VECTOR3).h_alignment).is_equal(HORIZONTAL_ALIGNMENT_RIGHT)
 	assert_int(_column(TYPE_STRING).h_alignment).is_equal(HORIZONTAL_ALIGNMENT_LEFT)
 	var centered := ColumnConfig.new(&"name", "Name", TYPE_STRING, HORIZONTAL_ALIGNMENT_CENTER)
 	assert_int(centered.h_alignment).is_equal(HORIZONTAL_ALIGNMENT_CENTER)
