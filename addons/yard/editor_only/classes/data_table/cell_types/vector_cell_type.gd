@@ -84,16 +84,15 @@ static func create_editor(
 	editor.size = rect.size
 
 	# Moving between the component fields keeps the editor open. Leaving all of them commits.
-	# Runs deferred, possibly after the editor is freed, so it looks the editor up by ID:
-	# a lambda capturing the freed node itself would log an error.
-	var editor_id := editor.get_instance_id()
-	var finish_if_focus_left := func() -> void:
-		var live_editor := instance_from_id(editor_id) as Control
-		if not live_editor or not live_editor.is_inside_tree():
-			return
-		var focus_owner := live_editor.get_viewport().gui_get_focus_owner()
-		if not focus_owner or not live_editor.is_ancestor_of(focus_owner):
+	var viewport := owner.get_viewport()
+	var finish_if_focus_left := func(new_focus: Control) -> void:
+		if not editor.is_queued_for_deletion() and not editor.is_ancestor_of(new_focus):
 			on_finished.call(true)
+	viewport.gui_focus_changed.connect(finish_if_focus_left)
+	editor.tree_exiting.connect(
+		func() -> void:
+			viewport.gui_focus_changed.disconnect(finish_if_focus_left),
+	)
 
 	var count := _get_count(column)
 	var step := _get_step(column)
@@ -115,7 +114,6 @@ static func create_editor(
 					on_finished.call(true),
 		)
 		line_edit.select_all_on_focus = true
-		line_edit.focus_exited.connect(finish_if_focus_left, CONNECT_DEFERRED)
 
 	var focused_field: LineEdit = editor.get_child(_get_clicked_index(owner, rect, count))
 	focused_field.grab_focus()

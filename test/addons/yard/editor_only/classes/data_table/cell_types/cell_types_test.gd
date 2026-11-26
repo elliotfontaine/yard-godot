@@ -166,6 +166,28 @@ func test_vector_editor_hides_float_noise_without_a_hint(
 	assert_str((editor.get_child(1) as LineEdit).text).is_equal("-0.3")
 
 
+func test_vector_editor_commits_as_soon_as_the_focus_leaves_it() -> void:
+	var parent: Control = auto_free(Control.new())
+	parent.focus_mode = Control.FOCUS_ALL
+	add_child(parent)
+	var saves: Array[bool] = []
+	var on_finished := func(save: bool) -> void:
+		saves.append(save)
+
+	var editor := VectorCellType.create_editor(
+		parent,
+		Rect2(0, 0, 240, 30),
+		Vector2i(1, 2),
+		_column(TYPE_VECTOR2I),
+		on_finished,
+	)
+	(editor.get_child(1) as LineEdit).grab_focus()
+	assert_array(saves).is_empty()
+	# Synchronously: DataTable discards the edit when the click that took the focus reaches it.
+	parent.grab_focus()
+	assert_array(saves).is_equal([true])
+
+
 func test_vector_editor_keeps_components_that_do_not_parse() -> void:
 	var parent: Control = auto_free(Control.new())
 	add_child(parent)
