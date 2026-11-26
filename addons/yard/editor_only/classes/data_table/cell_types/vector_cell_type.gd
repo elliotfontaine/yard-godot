@@ -102,6 +102,7 @@ static func create_editor(
 		line_edit.text = str(vector[i])
 		line_edit.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		line_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		line_edit.add_theme_constant_override(&"minimum_character_width", 2)
 		line_edit.text_submitted.connect(
 			func(_text: String) -> void:
 				on_finished.call(true),
