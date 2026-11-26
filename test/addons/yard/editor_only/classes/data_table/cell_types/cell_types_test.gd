@@ -27,6 +27,8 @@ const RegistryIO := Namespace.RegistryIO
 @warning_ignore("int_as_enum_without_match")
 const REGISTRY_HINT := Registry.PROPERTY_HINT_CUSTOM as PropertyHint
 
+const REQUIRES_EDITOR := "Requires the editor: run test/tools/run_tests_in_editor.gd"
+
 
 func _column(
 	type: Variant.Type,
@@ -119,6 +121,51 @@ func test_vector_sort_key_lists_the_components() -> void:
 	)
 
 
+func test_vector_editor_rounds_components_to_the_hint_step() -> void:
+	var parent: Control = auto_free(Control.new())
+	add_child(parent)
+	var rect := Rect2(0, 0, 240, 30)
+	var on_finished := func(_save: bool) -> void:
+		pass
+
+	var column := _column(TYPE_VECTOR3, PROPERTY_HINT_RANGE, "-100,100,0.01")
+	var editor := VectorCellType.create_editor(
+		parent,
+		rect,
+		Vector3(4.2, 3, 12.3456),
+		column,
+		on_finished,
+	)
+	var texts: Array[String] = []
+	for line_edit: LineEdit in editor.get_children():
+		texts.append(line_edit.text)
+	assert_array(texts).is_equal(["4.2", "3.0", "12.35"])
+	(editor.get_child(0) as LineEdit).text = "1.006"
+	assert_that(VectorCellType.read_editor_value(editor, column)).is_equal(Vector3(1.01, 3, 12.35))
+
+
+@warning_ignore("unused_parameter")
+func test_vector_editor_hides_float_noise_without_a_hint(
+	do_skip := not Engine.is_editor_hint(),
+	skip_reason := REQUIRES_EDITOR,
+) -> void:
+	var parent: Control = auto_free(Control.new())
+	add_child(parent)
+	var rect := Rect2(0, 0, 240, 30)
+	var on_finished := func(_save: bool) -> void:
+		pass
+
+	var editor := VectorCellType.create_editor(
+		parent,
+		rect,
+		Vector2(4.2, -0.3),
+		_column(TYPE_VECTOR2),
+		on_finished,
+	)
+	assert_str((editor.get_child(0) as LineEdit).text).is_equal("4.2")
+	assert_str((editor.get_child(1) as LineEdit).text).is_equal("-0.3")
+
+
 func test_vector_editor_keeps_components_that_do_not_parse() -> void:
 	var parent: Control = auto_free(Control.new())
 	add_child(parent)
@@ -132,7 +179,7 @@ func test_vector_editor_keeps_components_that_do_not_parse() -> void:
 	(editor.get_child(2) as LineEdit).text = "4.5"
 	assert_that(VectorCellType.read_editor_value(editor, column)).is_equal(Vector3i(1, 7, 3))
 
-	column = _column(TYPE_VECTOR2)
+	column = _column(TYPE_VECTOR2, PROPERTY_HINT_RANGE, "0,1,0.001")
 	editor = VectorCellType.create_editor(parent, rect, null, column, on_finished)
 	(editor.get_child(0) as LineEdit).text = "0.5"
 	(editor.get_child(1) as LineEdit).text = "abc"
