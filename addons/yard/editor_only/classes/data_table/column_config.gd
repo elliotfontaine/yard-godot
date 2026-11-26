@@ -74,7 +74,7 @@ func _init(
 	header = p_header
 	type = p_type
 	h_alignment = p_alignment
-	if p_type in [TYPE_INT, TYPE_FLOAT] or VectorCellType.COMPONENT_COUNTS.has(p_type):
+	if p_type in [TYPE_INT, TYPE_FLOAT]:
 		h_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 
 
